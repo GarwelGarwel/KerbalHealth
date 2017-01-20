@@ -11,14 +11,23 @@ namespace KerbalHealth
         public static double BaseHealth { get; set; } = 100;  // Base amount of health (for level 0 kerbal)
         public static double HealthPerLevel { get; set; } = 10;  // Health increase per kerbal level
 
-        public static double ComaStartHealth { get; set; } = 50;  // Health when kerbal enters coma (i.e. becomes a Tourist). Must be <= ComaEndHealth
-        public static double ComaEndHealth { get; set; } = 60;  // Health when kerbals leaves coma (i.e. becomes Crew again). Must be >= ComeStartHealth
-        public static double DeathHealth { get; set; } = 0;  // Health when kerbal dies
+        public static double ExhaustionStartHealth { get; set; } = 0.20;  // Health % when a kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
+        public static double ExhaustionEndHealth { get; set; } = 0.25;  // Health % when a kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
+        public static double DeathHealth { get; set; } = 0;  // Health % when kerbal dies
 
         public static double AssignedHealthChange { get; set; } = -100;  // Health change per day when kerbal is assigned
         public static double KSCHealthChange { get; set; } = 100;  // Health change per day when kerbal is at KSC (available)
 
-        public string Name { get; set; }
+        string name;
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                name = value;
+                pcmCached = null;
+            }
+        }
 
         protected double health;
         public double Health
@@ -45,7 +54,7 @@ namespace KerbalHealth
             }
         }
 
-        public enum HealthCondition { OK, Coma }
+        public enum HealthCondition { OK, Exhausted }
         HealthCondition condition = HealthCondition.OK;
         public HealthCondition Condition
         {
@@ -60,8 +69,8 @@ namespace KerbalHealth
                         PCM.type = ProtoCrewMember.KerbalType.Crew;
                         PCM.trait = Trait;
                         break;
-                    case HealthCondition.Coma:
-                        Log.Post(Name + " (" + Trait + ") goes into coma.");
+                    case HealthCondition.Exhausted:
+                        Log.Post(Name + " (" + Trait + ") is exhausted.");
                         Trait = PCM.trait;
                         PCM.type = ProtoCrewMember.KerbalType.Tourist;
                         break;
@@ -70,19 +79,30 @@ namespace KerbalHealth
             }
         }
 
+        ProtoCrewMember pcmCached;
         public ProtoCrewMember PCM
         {
             get
             {
+                if (pcmCached != null) return pcmCached;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
-                    if (pcm.name == Name) return pcm;
+                    if (pcm.name == Name)
+                    {
+                        pcmCached = pcm;
+                        return pcm;
+                    }
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Tourist)
-                    if (pcm.name == Name) return pcm;
+                    if (pcm.name == Name)
+                    {
+                        pcmCached = pcm;
+                        return pcm;
+                    }
                 return null;
             }
             set
             {
                 Name = value.name;
+                pcmCached = value;
             }
         }
 
@@ -107,19 +127,19 @@ namespace KerbalHealth
         {
             Log.Post("Updating " + Name + "'s health.");
             Health += HealthChangePerDay(PCM) / 21600 * interval;
-            if (Health <= DeathHealth)
+            if (Health <= DeathHealth * MaxHealth)
             {
                 Log.Post(Name + " dies due to having " + Health + " health.");
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
             }
-            if (Condition == HealthCondition.OK && Health <= ComaStartHealth)
+            if (Condition == HealthCondition.OK && Health <= ExhaustionStartHealth * MaxHealth)
             {
-                Condition = HealthCondition.Coma;
-                ScreenMessages.PostScreenMessage(Name + " is in a coma!");
+                Condition = HealthCondition.Exhausted;
+                ScreenMessages.PostScreenMessage(Name + " is exhausted!");
             }
-            if (Condition == HealthCondition.Coma && Health >= ComaEndHealth)
+            if (Condition == HealthCondition.Exhausted && Health >= ExhaustionEndHealth * MaxHealth)
             {
                 Condition = HealthCondition.OK;
                 ScreenMessages.PostScreenMessage(Name + " has revived.");
@@ -134,16 +154,26 @@ namespace KerbalHealth
                 n.AddValue("name", Name);
                 n.AddValue("health", Health);
                 n.AddValue("condition", Condition);
-                if (Condition == HealthCondition.Coma) n.AddValue("trait", Trait);
+                if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
                 return n;
             }
             set
             {
                 Name = value.GetValue("name");
                 Health = Double.Parse(value.GetValue("health"));
-                Condition = (KerbalHealthStatus.HealthCondition) Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
-                if (Condition == HealthCondition.Coma) Trait = value.GetValue("trait");
+                Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
+                if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ((KerbalHealthStatus)obj).Name.Equals(Name);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         public KerbalHealthStatus() { }
@@ -163,16 +193,6 @@ namespace KerbalHealth
         public KerbalHealthStatus(ConfigNode node)
         {
             ConfigNode = node;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return ((KerbalHealthStatus)obj).Name.Equals(Name);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
         }
     }
 }
