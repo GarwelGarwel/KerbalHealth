@@ -54,13 +54,6 @@ namespace KerbalHealth
             Remove(pcm.name);
         }
 
-        public void UpdateKerbalRegistration(ProtoCrewMember pcm, ProtoCrewMember.KerbalType type1, ProtoCrewMember.KerbalType type2)
-        {
-            //Log.Post("Updating " + pcm.name + "'s registration (type changed from " + type1 + " to " + type2 + ").");
-            //if (type2 == ProtoCrewMember.KerbalType.Crew) Add(pcm.name);
-            //else Remove(pcm.name);
-        }
-
         public void Update(double interval)
         {
             for (int i = 0; i < Count; i++)

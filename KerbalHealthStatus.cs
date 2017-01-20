@@ -15,7 +15,8 @@ namespace KerbalHealth
         public static double ExhaustionEndHealth { get; set; } = 0.25;  // Health % when a kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
         public static double DeathHealth { get; set; } = 0;  // Health % when kerbal dies
 
-        public static double AssignedHealthChange { get; set; } = -100;  // Health change per day when kerbal is assigned
+        public static double AssignedHealthChange { get; set; } = 0;  // Health change per day when kerbal is assigned
+        public static double LivingSpaceBaseChange { get; set; } = -20;  // Health change per day in a crammed vessel
         public static double KSCHealthChange { get; set; } = 100;  // Health change per day when kerbal is at KSC (available)
 
         string name;
@@ -39,6 +40,11 @@ namespace KerbalHealth
                 else if (value > MaxHealth) health = MaxHealth;
                 else health = value;
             }
+        }
+
+        public double HealthPercentage
+        {
+            get { return (Health - MinHealth) / (MaxHealth - MinHealth) * 100; }
         }
 
         string trait = null;
@@ -84,7 +90,7 @@ namespace KerbalHealth
         {
             get
             {
-                if (pcmCached != null) return pcmCached;
+                //if (pcmCached != null) return pcmCached;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
                     if (pcm.name == Name)
                     {
@@ -116,11 +122,57 @@ namespace KerbalHealth
             get { return GetMaxHealth(PCM); }
         }
 
+        public double TimeToValue(double target)
+        {
+            double change = HealthChangePerDay(PCM);
+            if (change == 0) return double.NaN;
+            double res = (target - Health) / change;
+            if (res < 0) return double.NaN;
+            return res * 21600;
+        }
+
+        public double TimeToNextCondition()
+        {
+            if (HealthChangePerDay(PCM) > 0)
+            {
+                switch (Condition)
+                {
+                    case HealthCondition.OK:
+                        return TimeToValue(MaxHealth);
+                    case HealthCondition.Exhausted:
+                        return TimeToValue(ExhaustionEndHealth * MaxHealth);
+                }
+            }
+            switch (Condition)
+            {
+                case HealthCondition.OK:
+                    return TimeToValue(ExhaustionStartHealth * MaxHealth);
+                case HealthCondition.Exhausted:
+                    return TimeToValue(DeathHealth * MaxHealth);
+            }
+            return double.NaN;
+        }
+
+        static double GetLivingSpaceFactor(ProtoCrewMember pcm)
+        {
+            if (pcm?.seat?.vessel == null) return 1;
+            int capacity = pcm.seat.vessel.GetCrewCapacity();
+            if (capacity == 0) return 1;
+            return (double) pcm.seat.vessel.GetCrewCount() / capacity;
+        }
+
         public static double HealthChangePerDay(ProtoCrewMember pcm)
         {
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) return AssignedHealthChange;
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) return KSCHealthChange;
-            return 0;
+            double change = 0;
+            //Log.Post(pcm.name + " is " + pcm.rosterStatus);
+            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+            {
+                change += AssignedHealthChange;
+                //Log.Post(pcm.name + " has LivingFactor of " + GetLivingSpaceFactor(pcm));
+                change += LivingSpaceBaseChange * GetLivingSpaceFactor(pcm);
+            }
+            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) change += KSCHealthChange;
+            return change;
         }
 
         public void Update(double interval)

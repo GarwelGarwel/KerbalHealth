@@ -11,8 +11,6 @@ namespace KerbalHealth
         public static KerbalHealthList KerbalHealthList { get; set; } = new KerbalHealthList();
 
         public static double UpdateInterval { get; set; } = 1;  // # of game seconds between updates
-        //protected static int ticksPerSecond = 25;
-        //static int ticksToUpdate = 0;  // Used for update timer
         static double lastUpdated;  // UT at last health update
 
         ApplicationLauncherButton button;
@@ -20,14 +18,14 @@ namespace KerbalHealth
         public void DisplayData()
         {
             Log.Post("KerbalHealthScenario.DisplayData");
-            ScreenMessages.PostScreenMessage("" + KerbalHealthList.Count + " kerbals' health tracked.");
+            //ScreenMessages.PostScreenMessage("" + KerbalHealthList.Count + " kerbals' health tracked.");
             foreach (KerbalHealthStatus khs in KerbalHealthList)
-                ScreenMessages.PostScreenMessage(khs.Name + ": " + khs.Health);
+                ScreenMessages.PostScreenMessage(khs.Name + "\t" + khs.HealthPercentage.ToString("F2") + "% (" + khs.Health.ToString("F2") + ")\t" + KSPUtil.PrintDateDeltaCompact(khs.TimeToNextCondition(), true, false) + " left");
         }
 
         public void Start()
         {
-            Log.Post("KerbalHealthScenario.Start");
+            Log.Post("KerbalHealth " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
             KerbalHealthList.RegisterKerbals();
             GameEvents.onKerbalAdded.Add(KerbalHealthList.Add);
             GameEvents.onKerbalRemoved.Add(KerbalHealthList.Remove);
@@ -42,7 +40,7 @@ namespace KerbalHealth
         void UpdateKerbals(bool forced = false)
         {
             double timePassed = Planetarium.GetUniversalTime() - lastUpdated;
-            if (forced || (timePassed > UpdateInterval))
+            if (forced || (timePassed >= UpdateInterval))
             {
                 Log.Post("UT is " + Planetarium.GetUniversalTime() + ". Last updated at " + lastUpdated + ". Updating for " + timePassed + " seconds.");
                 KerbalHealthList.Update(timePassed);
@@ -73,10 +71,6 @@ namespace KerbalHealth
             {
                 Log.Post("Saving " + khs.Name + "'s health.");
                 node.AddNode(khs.ConfigNode);
-                //ConfigNode n = node.AddNode("KerbalHealthStatus");
-                //n.AddValue("name", khs.Name);
-                //n.AddValue("health", khs.Health);
-                //n.AddValue("condition", (int) khs.Condition);
                 i++;
             }
             Log.Post("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.");
@@ -91,11 +85,6 @@ namespace KerbalHealth
                 if (n.id == "KerbalHealthStatus")
                 {
                     KerbalHealthList.Add(new KerbalHealthStatus(n));
-                    //KerbalHealthStatus khs = new KerbalHealthStatus(n.GetValue("name"));
-                    //khs.Health = Double.Parse(n.GetValue("health"));
-                    //khs.Condition = (KerbalHealthStatus.HealthCondition) int.Parse(n.GetValue("condition"));
-                    //KerbalHealthList.Add(khs);
-                    //KerbalHealthList.Add(n.GetValue("name"), Double.Parse(n.GetValue("health")));
                     i++;
                 }
             }
