@@ -136,6 +136,7 @@ namespace KerbalHealth
         {
             Log.Post("KerbalHealthScenario.OnLoad");
             int i = 0;
+            KerbalHealthList.Clear();
             foreach (ConfigNode n in node.GetNodes())
             {
                 if (n.id == "KerbalHealthStatus")
