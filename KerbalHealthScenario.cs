@@ -14,14 +14,10 @@ namespace KerbalHealth
         static double lastUpdated;  // UT at last health update
 
         ApplicationLauncherButton button;
-
-        public void DisplayData()
-        {
-            Log.Post("KerbalHealthScenario.DisplayData");
-            //ScreenMessages.PostScreenMessage("" + KerbalHealthList.Count + " kerbals' health tracked.");
-            foreach (KerbalHealthStatus khs in KerbalHealthList)
-                ScreenMessages.PostScreenMessage(khs.Name + "\t" + khs.HealthPercentage.ToString("F2") + "% (" + khs.Health.ToString("F2") + ")\t" + KSPUtil.PrintDateDeltaCompact(khs.TimeToNextCondition(), true, false) + " left");
-        }
+        PopupDialog monitorWindow;  // Health monitor window
+        DialogGUIGridLayout monitorGrid;  // Health Monitor grid
+        System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health monitor grid's labels
+        int colNum = 4;  // # of columns in Health Monitor
 
         public void Start()
         {
@@ -32,7 +28,7 @@ namespace KerbalHealth
             Log.Post("Registering toolbar button...");
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-            button = ApplicationLauncher.Instance.AddModApplication(DisplayData, DisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData , null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             lastUpdated = Planetarium.GetUniversalTime();
             Log.Post("KerbalHealthScenario.Start finished.");
         }
@@ -53,9 +49,69 @@ namespace KerbalHealth
             UpdateKerbals();
         }
 
+        public void DisplayData()  // Called when the AppLauncher button is enabled
+        {
+            Log.Post("DisplayData");
+            gridContents = new System.Collections.Generic.List<DialogGUIBase>((KerbalHealthList.Count + 1) * colNum);
+            // Creating columns' titles
+            gridContents.Add(new DialogGUILabel("Name", true));
+            gridContents.Add(new DialogGUILabel("Health", true));
+            gridContents.Add(new DialogGUILabel("Condition", true));
+            gridContents.Add(new DialogGUILabel("Time Left", true));
+            // Initializing Health Monitor's grid with empty labels, to be filled in Update()
+            for (int i = 0; i < KerbalHealthList.Count * colNum; i++)  
+                gridContents.Add(new DialogGUILabel("", true));
+            monitorGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
+            Update();
+            monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, 500, monitorGrid), false, HighLogic.UISkin, false);
+        }
+
+        public void Update()
+        {
+            if (monitorWindow != null)
+            {
+                //Log.Post("Updating monitor window.");
+                if (monitorGrid == null)
+                {
+                    Log.Post("monitorGrid is null.", Log.LogLevel.Error);
+                    return;
+                }
+                if (gridContents == null)
+                {
+                    Log.Post("gridContents is null.", Log.LogLevel.Error);
+                    return;
+                }
+                if (gridContents.Count != (KerbalHealthList.Count + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
+                {
+                    Log.Post("Kerbals' number has changed. Recreating the Health Monitor window.");
+                    UndisplayData();
+                    DisplayData();
+                }
+                //Log.Post("Filling the Health Monitor for " + KerbalHealthList.Count + " kerbals. HM has " + gridContents.Count + " cells.");
+                for (int i = 0; i < KerbalHealthList.Count; i++)  // Fill the Health Monitor's grid with kerbals' health data (3 cells per kerbal)
+                {
+                    KerbalHealthStatus khs = KerbalHealthList[i];
+                    gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
+                    double ch = KerbalHealthStatus.HealthChangePerDay(khs.PCM);
+                    string trend = "~ ";
+                    if (ch > 0) trend = "↑ ";
+                    if (ch < 0) trend = "↓ ";
+                    gridContents[(i + 1) * colNum + 1].SetOptionText(trend + khs.HealthPercentage.ToString("F2") + "% (" + khs.Health.ToString("F2") + ")");
+                    gridContents[(i + 1) * colNum + 2].SetOptionText(khs.Condition.ToString());
+                    gridContents[(i + 1) * colNum + 3].SetOptionText(KSPUtil.PrintDateDeltaCompact(khs.TimeToNextCondition(), true, false));
+                }
+            }
+        }
+
+        public void UndisplayData()
+        {
+            if (monitorWindow != null) monitorWindow.Dismiss();
+       }
+
         public void OnDisable()
         {
             Log.Post("KerbalHealthScenario.OnDisable");
+            UndisplayData();
             GameEvents.onKerbalAdded.Remove(KerbalHealthList.Add);
             GameEvents.onKerbalRemoved.Remove(KerbalHealthList.Remove);
             ApplicationLauncher.Instance.RemoveModApplication(button);

@@ -164,7 +164,7 @@ namespace KerbalHealth
         public static double HealthChangePerDay(ProtoCrewMember pcm)
         {
             double change = 0;
-            //Log.Post(pcm.name + " is " + pcm.rosterStatus);
+            if (pcm == null) return 0;
             if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
             {
                 change += AssignedHealthChange;
