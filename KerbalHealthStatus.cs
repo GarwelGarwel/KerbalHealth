@@ -16,7 +16,7 @@ namespace KerbalHealth
         public static double DeathHealth { get; set; } = 0;  // Health % when kerbal dies
 
         public static double AssignedHealthChange { get; set; } = 0;  // Health change per day when kerbal is assigned
-        public static double LivingSpaceBaseChange { get; set; } = -20;  // Health change per day in a crammed vessel
+        public static double LivingSpaceBaseChange { get; set; } = -10;  // Health change per day in a crammed vessel
         public static double KSCHealthChange { get; set; } = 100;  // Health change per day when kerbal is at KSC (available)
 
         string name;
