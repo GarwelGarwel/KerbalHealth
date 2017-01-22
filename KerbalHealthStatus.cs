@@ -17,6 +17,7 @@ namespace KerbalHealth
 
         public static double AssignedHealthChange { get; set; } = 0;  // Health change per day when kerbal is assigned
         public static double LivingSpaceBaseChange { get; set; } = -10;  // Health change per day in a crammed vessel
+        public static double NotAloneChange { get; set; } = 2;
         public static double KSCHealthChange { get; set; } = 100;  // Health change per day when kerbal is at KSC (available)
 
         string name;
@@ -168,8 +169,8 @@ namespace KerbalHealth
             if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
             {
                 change += AssignedHealthChange;
-                //Log.Post(pcm.name + " has LivingFactor of " + GetLivingSpaceFactor(pcm));
                 change += LivingSpaceBaseChange * GetLivingSpaceFactor(pcm);
+                if (pcm.seat.vessel.GetCrewCount() > 1) change += NotAloneChange;
             }
             if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) change += KSCHealthChange;
             return change;
