@@ -7,18 +7,68 @@ namespace KerbalHealth
 {
     public class KerbalHealthStatus
     {
-        public static double MinHealth { get; set; } = 0;  // Min allowed value for health
-        public static double BaseHealth { get; set; } = 100;  // Base amount of health (for level 0 kerbal)
-        public static double HealthPerLevel { get; set; } = 10;  // Health increase per kerbal level
+        public static float MinHP
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP = value; }
+        }  // Min allowed value for health
 
-        public static double ExhaustionStartHealth { get; set; } = 0.20;  // Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
-        public static double ExhaustionEndHealth { get; set; } = 0.25;  // Health % when the kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
-        public static double DeathHealth { get; set; } = 0;  // Health % when the kerbal dies
+        public static float BaseMaxHP  // Base amount of health (for level 0 kerbal)
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP = value; }
+        }
 
-        public static double AssignedHealthChange { get; set; } = 0;  // Health change per day when the kerbal is assigned
-        public static double LivingSpaceBaseChange { get; set; } = -10;  // Health change per day in a crammed vessel
-        public static double NotAloneChange { get; set; } = 2;  // Health change per day when the kerbal has crewmates
-        public static double KSCHealthChange { get; set; } = 10;  // Health change per day when the kerbal is at KSC (available)
+        public static float HPPerLevel  // Health increase per kerbal level
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel = value; }
+        }
+
+        public static float ExhaustionStartHealth  // Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth = value; }
+        }
+
+        public static float ExhaustionEndHealth  // Health % when the kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth = value; }
+        }
+
+
+        public static float DeathHealth  // Health % when the kerbal dies
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
+        }
+
+
+        public static float AssignedFactor  // Health change per day when the kerbal is assigned
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor = value; }
+        }
+
+        public static float LivingSpaceBaseFactor  // Health change per day in a crammed vessel
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LivingSpaceBaseFactor; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LivingSpaceBaseFactor = value; }
+        }
+
+        public static float NotAloneFactor  // Health change per day when the kerbal has crewmates
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().NotAloneFactor; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().NotAloneFactor = value; }
+        }
+
+        public static float KSCFactor  // Health change per day when the kerbal is at KSC (available)
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor = value; }
+        }
+
 
         string name;
         public string Name
@@ -31,21 +81,21 @@ namespace KerbalHealth
             }
         }
 
-        protected double health;
-        public double Health
+        protected double hp;
+        public double HP
         {
-            get { return health; }
+            get { return hp; }
             set
             {
-                if (value < MinHealth) health = MinHealth;
-                else if (value > MaxHealth) health = MaxHealth;
-                else health = value;
+                if (value < MinHP) hp = MinHP;
+                else if (value > MaxHP) hp = MaxHP;
+                else hp = value;
             }
         }
 
-        public double HealthPercentage
+        public double Health
         {
-            get { return (Health - MinHealth) / (MaxHealth - MinHealth) * 100; }
+            get { return (HP - MinHP) / (MaxHP - MinHP) * 100; }
         }
 
         string trait = null;
@@ -115,10 +165,10 @@ namespace KerbalHealth
 
         public static double GetMaxHealth(ProtoCrewMember pcm)
         {
-            return BaseHealth + HealthPerLevel * pcm.experienceLevel;
+            return BaseMaxHP + HPPerLevel * pcm.experienceLevel;
         }
 
-        public double MaxHealth
+        public double MaxHP
         {
             get { return GetMaxHealth(PCM); }
         }
@@ -127,7 +177,7 @@ namespace KerbalHealth
         {
             double change = HealthChangePerDay(PCM, inEditor);
             if (change == 0) return double.NaN;
-            double res = (target - Health) / change;
+            double res = (target - HP) / change;
             if (res < 0) return double.NaN;
             return res * 21600;
         }
@@ -139,17 +189,17 @@ namespace KerbalHealth
                 switch (Condition)
                 {
                     case HealthCondition.OK:
-                        return TimeToValue(MaxHealth, inEditor);
+                        return TimeToValue(MaxHP, inEditor);
                     case HealthCondition.Exhausted:
-                        return TimeToValue(ExhaustionEndHealth * MaxHealth, inEditor);
+                        return TimeToValue(ExhaustionEndHealth * MaxHP, inEditor);
                 }
             }
             switch (Condition)
             {
                 case HealthCondition.OK:
-                    return TimeToValue(ExhaustionStartHealth * MaxHealth, inEditor);
+                    return TimeToValue(ExhaustionStartHealth * MaxHP, inEditor);
                 case HealthCondition.Exhausted:
-                    return TimeToValue(DeathHealth * MaxHealth, inEditor);
+                    return TimeToValue(DeathHealth * MaxHP, inEditor);
             }
             return double.NaN;
         }
@@ -170,31 +220,31 @@ namespace KerbalHealth
             if (pcm == null) return 0;
             if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || inEditor)
             {
-                change += AssignedHealthChange;
-                change += LivingSpaceBaseChange * GetCrewCount(pcm, inEditor) / GetCrewCapacity(pcm, inEditor);
-                if (GetCrewCount(pcm, inEditor) > 1) change += NotAloneChange;
+                change += AssignedFactor;
+                change += LivingSpaceBaseFactor * GetCrewCount(pcm, inEditor) / GetCrewCapacity(pcm, inEditor);
+                if (GetCrewCount(pcm, inEditor) > 1) change += NotAloneFactor;
             }
-            if (!inEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change += KSCHealthChange;
+            if (!inEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change += KSCFactor;
             return change;
         }
 
         public void Update(double interval)
         {
             Log.Post("Updating " + Name + "'s health.");
-            Health += HealthChangePerDay(PCM) / 21600 * interval;
-            if (Health <= DeathHealth * MaxHealth)
+            HP += HealthChangePerDay(PCM) / 21600 * interval;
+            if (HP <= DeathHealth * MaxHP)
             {
-                Log.Post(Name + " dies due to having " + Health + " health.");
+                Log.Post(Name + " dies due to having " + HP + " health.");
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
             }
-            if (Condition == HealthCondition.OK && Health <= ExhaustionStartHealth * MaxHealth)
+            if (Condition == HealthCondition.OK && HP <= ExhaustionStartHealth * MaxHP)
             {
                 Condition = HealthCondition.Exhausted;
                 ScreenMessages.PostScreenMessage(Name + " is exhausted!");
             }
-            if (Condition == HealthCondition.Exhausted && Health >= ExhaustionEndHealth * MaxHealth)
+            if (Condition == HealthCondition.Exhausted && HP >= ExhaustionEndHealth * MaxHP)
             {
                 Condition = HealthCondition.OK;
                 ScreenMessages.PostScreenMessage(Name + " has revived.");
@@ -207,7 +257,7 @@ namespace KerbalHealth
             {
                 ConfigNode n = new ConfigNode("KerbalHealthStatus");
                 n.AddValue("name", Name);
-                n.AddValue("health", Health);
+                n.AddValue("health", HP);
                 n.AddValue("condition", Condition);
                 if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
                 return n;
@@ -215,7 +265,7 @@ namespace KerbalHealth
             set
             {
                 Name = value.GetValue("name");
-                Health = Double.Parse(value.GetValue("health"));
+                HP = Double.Parse(value.GetValue("health"));
                 Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
                 if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
             }
@@ -236,13 +286,13 @@ namespace KerbalHealth
         public KerbalHealthStatus(string name)
         {
             Name = name;
-            Health = MaxHealth;
+            HP = MaxHP;
         }
 
         public KerbalHealthStatus(string name, double health)
         {
             Name = name;
-            Health = health;
+            HP = health;
         }
 
         public KerbalHealthStatus(ConfigNode node)

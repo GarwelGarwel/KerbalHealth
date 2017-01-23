@@ -10,7 +10,11 @@ namespace KerbalHealth
     {
         public static KerbalHealthList KerbalHealthList { get; set; } = new KerbalHealthList();
 
-        public static double UpdateInterval { get; set; } = 1;  // # of game seconds between updates
+        public static float UpdateInterval
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval = value; }
+        }  // # of game seconds between updates
         static double lastUpdated;  // UT at last health update
 
         ApplicationLauncherButton button;
@@ -95,7 +99,7 @@ namespace KerbalHealth
                     string trend = "~ ";
                     if (ch > 0) trend = "↑ ";
                     if (ch < 0) trend = "↓ ";
-                    gridContents[(i + 1) * colNum + 1].SetOptionText(trend + khs.HealthPercentage.ToString("F2") + "% (" + khs.Health.ToString("F2") + ")");
+                    gridContents[(i + 1) * colNum + 1].SetOptionText(trend + khs.Health.ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
                     gridContents[(i + 1) * colNum + 2].SetOptionText(khs.Condition.ToString());
                     gridContents[(i + 1) * colNum + 3].SetOptionText(KSPUtil.PrintDateDeltaCompact(khs.TimeToNextCondition(), true, false));
                 }
