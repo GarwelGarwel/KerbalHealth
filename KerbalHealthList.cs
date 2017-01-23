@@ -79,17 +79,24 @@ namespace KerbalHealth
             return (pcm != null) && ((pcm.type == ProtoCrewMember.KerbalType.Crew) || (pcm.type == ProtoCrewMember.KerbalType.Tourist)) && (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Dead);
         }
 
+        public KerbalHealthStatus Find(ProtoCrewMember pcm)
+        {
+            foreach (KerbalHealthStatus khs in this)
+                if (khs.Name == pcm.name) return khs;
+            return null;
+        }
+
         public bool Contains(ProtoCrewMember pcm)
         {
-            foreach (KerbalHealthStatus khi in this)
-                if (khi.Name == pcm.name) return true;
+            foreach (KerbalHealthStatus khs in this)
+                if (khs.Name == pcm.name) return true;
             return false;
         }
 
         public bool Contains(string name)
         {
-            foreach (KerbalHealthStatus khi in this)
-                if (khi.Name == name) return true;
+            foreach (KerbalHealthStatus khs in this)
+                if (khs.Name == name) return true;
             return false;
         }
     }
