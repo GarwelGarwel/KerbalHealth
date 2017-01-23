@@ -50,6 +50,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KerbalHealthEditorReport.cs" />
     <Compile Include="KerbalHealthStatus.cs" />
     <Compile Include="KerbalHealthList.cs" />
     <Compile Include="KerbalHealthScenario.cs" />

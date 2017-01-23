@@ -14,9 +14,9 @@ namespace KerbalHealth
         static double lastUpdated;  // UT at last health update
 
         ApplicationLauncherButton button;
-        PopupDialog monitorWindow;  // Health monitor window
+        PopupDialog monitorWindow;  // Health Monitor window
         DialogGUIGridLayout monitorGrid;  // Health Monitor grid
-        System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health monitor grid's labels
+        System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
         int colNum = 4;  // # of columns in Health Monitor
 
         public void Start()
@@ -53,7 +53,7 @@ namespace KerbalHealth
         {
             Log.Post("DisplayData");
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((KerbalHealthList.Count + 1) * colNum);
-            // Creating columns' titles
+            // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));
             gridContents.Add(new DialogGUILabel("Health", true));
             gridContents.Add(new DialogGUILabel("Condition", true));
@@ -70,7 +70,6 @@ namespace KerbalHealth
         {
             if (monitorWindow != null)
             {
-                //Log.Post("Updating monitor window.");
                 if (monitorGrid == null)
                 {
                     Log.Post("monitorGrid is null.", Log.LogLevel.Error);
@@ -87,8 +86,8 @@ namespace KerbalHealth
                     UndisplayData();
                     DisplayData();
                 }
-                //Log.Post("Filling the Health Monitor for " + KerbalHealthList.Count + " kerbals. HM has " + gridContents.Count + " cells.");
-                for (int i = 0; i < KerbalHealthList.Count; i++)  // Fill the Health Monitor's grid with kerbals' health data (3 cells per kerbal)
+                // Fill the Health Monitor's grid with kerbals' health data
+                for (int i = 0; i < KerbalHealthList.Count; i++)
                 {
                     KerbalHealthStatus khs = KerbalHealthList[i];
                     gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
@@ -114,7 +113,8 @@ namespace KerbalHealth
             UndisplayData();
             GameEvents.onKerbalAdded.Remove(KerbalHealthList.Add);
             GameEvents.onKerbalRemoved.Remove(KerbalHealthList.Remove);
-            ApplicationLauncher.Instance.RemoveModApplication(button);
+            if (ApplicationLauncher.Instance != null)
+                ApplicationLauncher.Instance.RemoveModApplication(button);
             Log.Post("KerbalHealthScenario.OnDisable finished.");
         }
 
