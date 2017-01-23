@@ -11,14 +11,14 @@ namespace KerbalHealth
         public static double BaseHealth { get; set; } = 100;  // Base amount of health (for level 0 kerbal)
         public static double HealthPerLevel { get; set; } = 10;  // Health increase per kerbal level
 
-        public static double ExhaustionStartHealth { get; set; } = 0.20;  // Health % when a kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
-        public static double ExhaustionEndHealth { get; set; } = 0.25;  // Health % when a kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
-        public static double DeathHealth { get; set; } = 0;  // Health % when kerbal dies
+        public static double ExhaustionStartHealth { get; set; } = 0.20;  // Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
+        public static double ExhaustionEndHealth { get; set; } = 0.25;  // Health % when the kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
+        public static double DeathHealth { get; set; } = 0;  // Health % when the kerbal dies
 
-        public static double AssignedHealthChange { get; set; } = 0;  // Health change per day when kerbal is assigned
+        public static double AssignedHealthChange { get; set; } = 0;  // Health change per day when the kerbal is assigned
         public static double LivingSpaceBaseChange { get; set; } = -10;  // Health change per day in a crammed vessel
-        public static double NotAloneChange { get; set; } = 2;
-        public static double KSCHealthChange { get; set; } = 100;  // Health change per day when kerbal is at KSC (available)
+        public static double NotAloneChange { get; set; } = 2;  // Health change per day when the kerbal has crewmates
+        public static double KSCHealthChange { get; set; } = 10;  // Health change per day when the kerbal is at KSC (available)
 
         string name;
         public string Name
