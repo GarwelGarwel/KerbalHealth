@@ -123,56 +123,58 @@ namespace KerbalHealth
             get { return GetMaxHealth(PCM); }
         }
 
-        public double TimeToValue(double target)
+        public double TimeToValue(double target, bool inEditor = false)
         {
-            double change = HealthChangePerDay(PCM);
+            double change = HealthChangePerDay(PCM, inEditor);
             if (change == 0) return double.NaN;
             double res = (target - Health) / change;
             if (res < 0) return double.NaN;
             return res * 21600;
         }
 
-        public double TimeToNextCondition()
+        public double TimeToNextCondition(bool inEditor = false)
         {
-            if (HealthChangePerDay(PCM) > 0)
+            if (HealthChangePerDay(PCM, inEditor) > 0)
             {
                 switch (Condition)
                 {
                     case HealthCondition.OK:
-                        return TimeToValue(MaxHealth);
+                        return TimeToValue(MaxHealth, inEditor);
                     case HealthCondition.Exhausted:
-                        return TimeToValue(ExhaustionEndHealth * MaxHealth);
+                        return TimeToValue(ExhaustionEndHealth * MaxHealth, inEditor);
                 }
             }
             switch (Condition)
             {
                 case HealthCondition.OK:
-                    return TimeToValue(ExhaustionStartHealth * MaxHealth);
+                    return TimeToValue(ExhaustionStartHealth * MaxHealth, inEditor);
                 case HealthCondition.Exhausted:
-                    return TimeToValue(DeathHealth * MaxHealth);
+                    return TimeToValue(DeathHealth * MaxHealth, inEditor);
             }
             return double.NaN;
         }
 
-        static double GetLivingSpaceFactor(ProtoCrewMember pcm)
+        static int GetCrewCount(ProtoCrewMember pcm, bool inEditor = false)
         {
-            if (pcm?.seat?.vessel == null) return 1;
-            int capacity = pcm.seat.vessel.GetCrewCapacity();
-            if (capacity == 0) return 1;
-            return (double) pcm.seat.vessel.GetCrewCount() / capacity;
+            return inEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
         }
 
-        public static double HealthChangePerDay(ProtoCrewMember pcm)
+        static int GetCrewCapacity(ProtoCrewMember pcm, bool inEditor = false)
+        {
+            return inEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
+        }
+
+        public static double HealthChangePerDay(ProtoCrewMember pcm, bool inEditor = false)
         {
             double change = 0;
             if (pcm == null) return 0;
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || inEditor)
             {
                 change += AssignedHealthChange;
-                change += LivingSpaceBaseChange * GetLivingSpaceFactor(pcm);
-                if (pcm.seat.vessel.GetCrewCount() > 1) change += NotAloneChange;
+                change += LivingSpaceBaseChange * GetCrewCount(pcm, inEditor) / GetCrewCapacity(pcm, inEditor);
+                if (GetCrewCount(pcm, inEditor) > 1) change += NotAloneChange;
             }
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) change += KSCHealthChange;
+            if (!inEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change += KSCHealthChange;
             return change;
         }
 
