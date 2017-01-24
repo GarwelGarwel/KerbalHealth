@@ -7,70 +7,15 @@ namespace KerbalHealth
 {
     public class KerbalHealthStatus
     {
-        public static float MinHP
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP = value; }
-        }  // Min allowed value for health
-
-        public static float BaseMaxHP  // Base amount of health (for level 0 kerbal)
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP = value; }
-        }
-
-        public static float HPPerLevel  // Health increase per kerbal level
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel = value; }
-        }
-
-        public static float ExhaustionStartHealth  // Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth = value; }
-        }
-
-        public static float ExhaustionEndHealth  // Health % when the kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth = value; }
-        }
-
-
-        public static float DeathHealth  // Health % when the kerbal dies
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
-        }
-
-
-        public static float AssignedFactor  // Health change per day when the kerbal is assigned
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor = value; }
-        }
-
-        public static float LivingSpaceBaseFactor  // Health change per day in a crammed vessel
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LivingSpaceBaseFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LivingSpaceBaseFactor = value; }
-        }
-
-        public static float NotAloneFactor  // Health change per day when the kerbal has crewmates
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().NotAloneFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().NotAloneFactor = value; }
-        }
-
-        public static float KSCFactor  // Health change per day when the kerbal is at KSC (available)
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor = value; }
-        }
-
+        public enum HealthCondition { OK, Exhausted }  // conditions
 
         string name;
+        double hp;
+        double lastHPChange;  // HP change per day due to vessel-wide and part-wide factors (updated by ModuleKerbalHealth)
+        HealthCondition condition = HealthCondition.OK;
+        string trait = null;
+        bool onEva = false;  // True if kerbal is on EVA
+
         public string Name
         {
             get { return name; }
@@ -81,38 +26,25 @@ namespace KerbalHealth
             }
         }
 
-        protected double hp;
         public double HP
         {
             get { return hp; }
             set
             {
-                if (value < MinHP) hp = MinHP;
+                if (value < Core.MinHP) hp = Core.MinHP;
                 else if (value > MaxHP) hp = MaxHP;
                 else hp = value;
             }
         }
 
-        public double Health
+        public double Health { get { return (HP - Core.MinHP) / (MaxHP - Core.MinHP); } }  // % of health relative to MaxHealth
+
+        public double LastHPChange
         {
-            get { return (HP - MinHP) / (MaxHP - MinHP) * 100; }
+            get { return lastHPChange; }
+            set { lastHPChange = value; }
         }
 
-        string trait = null;
-        string Trait
-        {
-            get
-            {
-                return trait ?? PCM.trait;
-            }
-            set
-            {
-                trait = value;
-            }
-        }
-
-        public enum HealthCondition { OK, Exhausted }
-        HealthCondition condition = HealthCondition.OK;
         public HealthCondition Condition
         {
             get { return condition; }
@@ -134,6 +66,18 @@ namespace KerbalHealth
                 }
                 condition = value;
             }
+        }
+
+        string Trait
+        {
+            get { return trait ?? PCM.trait; }
+            set { trait = value; }
+        }
+
+        public bool IsOnEVA
+        {
+            get { return onEva; }
+            set { onEva = value; }
         }
 
         ProtoCrewMember pcmCached;
@@ -163,17 +107,17 @@ namespace KerbalHealth
             }
         }
 
-        public static double GetMaxHealth(ProtoCrewMember pcm)
+        public static double GetMaxHP(ProtoCrewMember pcm)
         {
-            return BaseMaxHP + HPPerLevel * pcm.experienceLevel;
+            return Core.BaseMaxHP + Core.HPPerLevel * pcm.experienceLevel;
         }
 
         public double MaxHP
         {
-            get { return GetMaxHealth(PCM); }
+            get { return GetMaxHP(PCM); }
         }
 
-        public double TimeToValue(double target, bool inEditor = false)
+        public double TimeToValue(double target, bool inEditor)
         {
             double change = HealthChangePerDay(PCM, inEditor);
             if (change == 0) return double.NaN;
@@ -191,60 +135,91 @@ namespace KerbalHealth
                     case HealthCondition.OK:
                         return TimeToValue(MaxHP, inEditor);
                     case HealthCondition.Exhausted:
-                        return TimeToValue(ExhaustionEndHealth * MaxHP, inEditor);
+                        return TimeToValue(Core.ExhaustionEndHealth * MaxHP, inEditor);
                 }
             }
             switch (Condition)
             {
                 case HealthCondition.OK:
-                    return TimeToValue(ExhaustionStartHealth * MaxHP, inEditor);
+                    return TimeToValue(Core.ExhaustionStartHealth * MaxHP, inEditor);
                 case HealthCondition.Exhausted:
-                    return TimeToValue(DeathHealth * MaxHP, inEditor);
+                    return TimeToValue(Core.DeathHealth * MaxHP, inEditor);
             }
             return double.NaN;
         }
 
-        static int GetCrewCount(ProtoCrewMember pcm, bool inEditor = false)
+        static int GetCrewCount(ProtoCrewMember pcm, bool inEditor)
         {
             return inEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
         }
 
-        static int GetCrewCapacity(ProtoCrewMember pcm, bool inEditor = false)
+        static int GetCrewCapacity(ProtoCrewMember pcm, bool inEditor)
         {
             return inEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
         }
 
-        public static double HealthChangePerDay(ProtoCrewMember pcm, bool inEditor = false)
+        static bool isKerbalLoaded(ProtoCrewMember pcm)
+        { return pcm?.seat?.vessel != null; }
+
+        public static double HealthChangePerDay(ProtoCrewMember pcm, bool inEditor)
         {
             double change = 0;
             if (pcm == null) return 0;
-            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || inEditor)
+            KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
+            if (khs == null)
             {
-                change += AssignedFactor;
-                change += LivingSpaceBaseFactor * GetCrewCount(pcm, inEditor) / GetCrewCapacity(pcm, inEditor);
-                if (GetCrewCount(pcm, inEditor) > 1) change += NotAloneFactor;
+                Log.Post("Error: " + pcm.name + " not found in KerbalHealthList during update!", Log.LogLevel.Error);
+                return 0;
             }
-            if (!inEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change += KSCFactor;
+            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && isKerbalLoaded(pcm)) || inEditor || khs.IsOnEVA)
+            {
+                if (isKerbalLoaded(pcm)) khs.IsOnEVA = false;
+                change += Core.AssignedFactor;
+                change += Core.LivingSpaceBaseFactor * GetCrewCount(pcm, inEditor) / GetCrewCapacity(pcm, inEditor);
+                if (!khs.IsOnEVA)
+                {
+                    if (GetCrewCount(pcm, inEditor) > 1) change += Core.NotAloneFactor;
+                    if (inEditor)
+                        foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
+                        {
+                            ModuleKerbalHealth mkh = p.PartInfo.partPrefab.FindModuleImplementing<ModuleKerbalHealth>();
+                            //Log.Post(p.PartInfo.name + " has " + (mkh == null ? "no " : "") + " ModuleKerbalHealth and crew: " + p.GetPartCrew());
+                            if (ModuleKerbalHealth.IsModuleApplicable(p, pcm)) change += mkh.hpChangePerDay;
+                        }
+                    else foreach (Part p in pcm.seat.vessel.Parts)
+                        {
+                            ModuleKerbalHealth mkh = p.FindModuleImplementing<ModuleKerbalHealth>();
+                            if (ModuleKerbalHealth.IsModuleApplicable(mkh, pcm)) change += mkh.hpChangePerDay;
+                        }
+                }
+                khs.LastHPChange = change;
+            }
+            else if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !isKerbalLoaded(pcm))
+            {
+                //Log.Post(pcm.name + " is assigned, but not loaded. Seat: " + pcm?.seat + " (id " + pcm?.seatIdx + "). Using last cached HP change: " + khs.LastHPChange);
+                change += khs.LastHPChange;
+            }
+            else if (!inEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change += Core.KSCFactor;
             return change;
         }
 
         public void Update(double interval)
         {
             Log.Post("Updating " + Name + "'s health.");
-            HP += HealthChangePerDay(PCM) / 21600 * interval;
-            if (HP <= DeathHealth * MaxHP)
+            HP += HealthChangePerDay(PCM, false) / 21600 * interval;
+            if (HP <= Core.DeathHealth * MaxHP)
             {
                 Log.Post(Name + " dies due to having " + HP + " health.");
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
             }
-            if (Condition == HealthCondition.OK && HP <= ExhaustionStartHealth * MaxHP)
+            if (Condition == HealthCondition.OK && HP <= Core.ExhaustionStartHealth * MaxHP)
             {
                 Condition = HealthCondition.Exhausted;
                 ScreenMessages.PostScreenMessage(Name + " is exhausted!");
             }
-            if (Condition == HealthCondition.Exhausted && HP >= ExhaustionEndHealth * MaxHP)
+            if (Condition == HealthCondition.Exhausted && HP >= Core.ExhaustionEndHealth * MaxHP)
             {
                 Condition = HealthCondition.OK;
                 ScreenMessages.PostScreenMessage(Name + " has revived.");
@@ -260,6 +235,8 @@ namespace KerbalHealth
                 n.AddValue("health", HP);
                 n.AddValue("condition", Condition);
                 if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
+                if (LastHPChange != 0) n.AddValue("lastHPChange", LastHPChange);
+                if (IsOnEVA) n.AddValue("onEva", true);
                 return n;
             }
             set
@@ -268,6 +245,10 @@ namespace KerbalHealth
                 HP = Double.Parse(value.GetValue("health"));
                 Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
                 if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
+                try { LastHPChange = double.Parse(value.GetValue("lastHPChange")); }
+                catch (Exception) { LastHPChange = 0; }
+                try { IsOnEVA = bool.Parse(value.GetValue("onEva")); }
+                catch (Exception) { IsOnEVA = false; }
             }
         }
 

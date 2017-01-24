@@ -33,5 +33,8 @@ namespace KerbalHealth
 
         [GameParameters.CustomFloatParameterUI("Death Level", toolTip = "Health level when kerbals die. Make negative to disable", minValue = -0.01f, maxValue = 1, asPercentage = true, stepCount = 101)]
         public float DeathHealth = 0;
+
+        [GameParameters.CustomParameterUI("Debug Mode", toolTip = "Controls amount of logging")]
+        public bool debugMode = true;
     }
 }

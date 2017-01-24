@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("KerbalHealth")]
-[assembly: AssemblyDescription("[WIP] KSP mod that adds kerbals' health mechanics.")]
+[assembly: AssemblyDescription("KSP mod that adds kerbals' health mechanics")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("KerbalHealth")]

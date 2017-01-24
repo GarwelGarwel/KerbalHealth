@@ -23,7 +23,7 @@ namespace KerbalHealth
         public void Add(ProtoCrewMember pcm)
         {
             Log.Post("Trying to add " + pcm.name + " (" + pcm.type + ", " + pcm.rosterStatus + ").");
-            if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHealth(pcm));
+            if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
         }
 
         public void RegisterKerbals()

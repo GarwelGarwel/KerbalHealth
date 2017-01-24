@@ -50,7 +50,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core.cs" />
     <Compile Include="FactorsSettings.cs" />
+    <Compile Include="ModuleKerbalHealth.cs" />
     <Compile Include="KerbalHealthEditorReport.cs" />
     <Compile Include="KerbalHealthStatus.cs" />
     <Compile Include="KerbalHealthList.cs" />

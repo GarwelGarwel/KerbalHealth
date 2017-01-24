@@ -32,7 +32,7 @@ namespace KerbalHealth
                 Log.Post("Ship is empty. Let's get outta here!", Log.LogLevel.Warning);
                 return;
             }
-            gridContents = new System.Collections.Generic.List<DialogGUIBase>((KerbalHealthScenario.KerbalHealthList.Count + 1) * colNum);
+            gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));
             gridContents.Add(new DialogGUILabel("HP/day", true));
@@ -76,8 +76,8 @@ namespace KerbalHealth
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    gridContents[(i + 1) * colNum + 1].SetOptionText(KerbalHealthStatus.HealthChangePerDay(pcm, true).ToString("F0"));
-                    gridContents[(i + 1) * colNum + 2].SetOptionText(KSPUtil.PrintDateDeltaCompact(KerbalHealthScenario.KerbalHealthList.Find(pcm).TimeToNextCondition(true), true, false));
+                    gridContents[(i + 1) * colNum + 1].SetOptionText(KerbalHealthStatus.HealthChangePerDay(pcm, true).ToString("F1"));
+                    gridContents[(i + 1) * colNum + 2].SetOptionText(KSPUtil.PrintDateDeltaCompact(Core.KerbalHealthList.Find(pcm).TimeToNextCondition(true), true, false));
                     i++;
                 }
             }
