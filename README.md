@@ -1,6 +1,6 @@
 # KerbalHealth
 
-**Design goals
+**Design goals**
 
 - Increase KSP's realism, challenge, and fun by introducing health and related concepts
 - Encourage the use of more sophisticated vessels, especially for long-haul flights and long-term habitation (no more 10-year mission to Eeloo in a Mk1 pod!)
@@ -12,7 +12,7 @@ The mod is currently in beta. It has all main systems in place, but will continu
 
 I will appreciate your bug reports (include output_log.txt) and feature suggestions here or on Github.
 
-**Features as of 0.4.0 (beta)
+**Features as of 0.4.0 (beta)**
 
 - Every kerbal, including Tourists, has Health Points (HP).
 - HP increase with kerbals' level. A 5-level kerbal is 50% "healthier" than a newbie.
@@ -27,13 +27,13 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Health Report in Editor helps design comfy and healthy crafts.
 - All of these settings are easily changed in-game or with ModuleManager patches.
 
-**Next objectives
+**Next objectives**
 
 - Improve UI by making Health Monitor (in KSC and in flight) and Health Report (in editor) - *DONE*
 - Add more factors influencing health (e.g. SOI, Kerbin low altitude, zero g, high g, EVA, loneliness, etc.) - *PARTIALLY DONE*
 - Add configuration options (through Difficulty Settings or, initially, cfg files) - *DONE*
 
-**Future features
+**Future features**
 
 - Add random health events
 - Add integration with major mods (parts packs, life support, etc.)
@@ -42,6 +42,6 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Add new mechanics: infectious diseases, medics, medical supplies, quarantine, etc.
 - Add API for collaboration with other mods
 
-**Requirements
+**Requirements**
 
 - ModuleManager
