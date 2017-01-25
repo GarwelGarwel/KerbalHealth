@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace KerbalHealth
 {
@@ -75,6 +76,24 @@ namespace KerbalHealth
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor; }
             set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor = value; }
+        }
+
+        public static bool IsInEditor
+        { get { return HighLogic.LoadedSceneIsEditor; } }
+
+        public static string ParseUT(double time)
+        {
+            if (double.IsNaN(time) || (time == 0)) return "N/A";
+            return KSPUtil.PrintDateDeltaCompact(time, true, false);
+        }
+
+        public enum LogLevel { None, Error, Warning, Debug };
+        public static LogLevel Level { get; set; } = LogLevel.Debug;
+
+        public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
+        {
+            if (messageLevel <= Level)
+                Debug.Log("[KerbalHealth] " + Time.realtimeSinceStartup + ": " + message);
         }
     }
 }

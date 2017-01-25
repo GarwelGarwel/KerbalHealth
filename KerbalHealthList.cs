@@ -9,10 +9,10 @@ namespace KerbalHealth
     {
         public void Add(string name, double health = -1)
         {
-            Log.Post("Registering " + name + " with " + health + " health.");
+            Core.Log("Registering " + name + " with " + health + " health.");
             if (Contains(name))
             {
-                Log.Post("Kerbal already registered.", Log.LogLevel.Warning);
+                Core.Log("Kerbal already registered.", Core.LogLevel.Warning);
                 return;
             }
             KerbalHealthStatus khs;
@@ -22,30 +22,30 @@ namespace KerbalHealth
 
         public void Add(ProtoCrewMember pcm)
         {
-            Log.Post("Trying to add " + pcm.name + " (" + pcm.type + ", " + pcm.rosterStatus + ").");
+            Core.Log("Trying to add " + pcm.name + " (" + pcm.type + ", " + pcm.rosterStatus + ").");
             if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
         }
 
         public void RegisterKerbals()
         {
-            Log.Post("Registering kerbals...");
+            Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Log.Post("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.");
+            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.");
             foreach (ProtoCrewMember pcm in kerbalRoster.Kerbals(ProtoCrewMember.KerbalType.Crew))
                 Add(pcm);
-            Log.Post("" + Count + " kerbal(s) registered.");
+            Core.Log("" + Count + " kerbal(s) registered.");
         }
 
         public bool Remove(string name)
         {
-            Log.Post("Unregistering " + name + ".");
+            Core.Log("Unregistering " + name + ".");
             foreach (KerbalHealthStatus khs in this)
                 if (khs.Name == name)
                 {
                     Remove(khs);
                     return true;
                 }
-            Log.Post("Failed to remove " + name + "!", Log.LogLevel.Error);
+            Core.Log("Failed to remove " + name + "!", Core.LogLevel.Error);
             return false;
         }
 
@@ -63,8 +63,8 @@ namespace KerbalHealth
                 if (IsKerbalTrackable(pcm)) khs.Update(interval);
                 else
                 {
-                    if (pcm != null) Log.Post(khs.Name + " (" + pcm.type + ", " + pcm.rosterStatus + ") is not trackable anymore. Removing.");
-                    else Log.Post(khs.Name + " is not trackable anymore. Removing.");
+                    if (pcm != null) Core.Log(khs.Name + " (" + pcm.type + ", " + pcm.rosterStatus + ") is not trackable anymore. Removing.");
+                    else Core.Log(khs.Name + " is not trackable anymore. Removing.");
                     RemoveAt(i);
                     i--;
                 }

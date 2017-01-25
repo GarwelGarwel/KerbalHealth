@@ -17,25 +17,25 @@ namespace KerbalHealth
 
         public void Start()
         {
-            Log.Post("KerbalHealthEditorReport.Start");
+            Core.Log("KerbalHealthEditorReport.Start");
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
             button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
-            Log.Post("KerbalHealthEditorReport.Start finished.");
+            Core.Log("KerbalHealthEditorReport.Start finished.");
         }
 
         public void DisplayData()
         {
-            Log.Post("KerbalHealthEditorReport.DisplayData");
+            Core.Log("KerbalHealthEditorReport.DisplayData");
             if ((ShipConstruction.ShipManifest == null) || (!ShipConstruction.ShipManifest.HasAnyCrew()))
             {
-                Log.Post("Ship is empty. Let's get outta here!", Log.LogLevel.Warning);
+                Core.Log("Ship is empty. Let's get outta here!", Core.LogLevel.Warning);
                 return;
             }
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));
-            gridContents.Add(new DialogGUILabel("HP/day", true));
+            gridContents.Add(new DialogGUILabel("Trend", true));
             gridContents.Add(new DialogGUILabel("Time Left", true));
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
@@ -56,17 +56,17 @@ namespace KerbalHealth
             {
                 if (reportGrid == null)
                 {
-                    Log.Post("reportGrid is null.", Log.LogLevel.Error);
+                    Core.Log("reportGrid is null.", Core.LogLevel.Error);
                     return;
                 }
                 if (gridContents == null)
                 {
-                    Log.Post("gridContents is null.", Log.LogLevel.Error);
+                    Core.Log("gridContents is null.", Core.LogLevel.Error);
                     return;
                 }
                 if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
                 {
-                    Log.Post("Kerbals' number has changed. Recreating the Health Report window.");
+                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.");
                     UndisplayData();
                     DisplayData();
                 }
@@ -76,8 +76,15 @@ namespace KerbalHealth
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    gridContents[(i + 1) * colNum + 1].SetOptionText(KerbalHealthStatus.HealthChangePerDay(pcm, true).ToString("F1"));
-                    gridContents[(i + 1) * colNum + 2].SetOptionText(KSPUtil.PrintDateDeltaCompact(Core.KerbalHealthList.Find(pcm).TimeToNextCondition(true), true, false));
+                    KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
+                    double b = khs.GetBalanceHP();
+                    string s = "";
+                    if (b > 0) s = "→" + b.ToString("F0") + " HP (" + (b / khs.MaxHP * 100).ToString("F0") + "%)";
+                    else s = KerbalHealthStatus.HealthChangePerDay(pcm).ToString("F1") + " HP/day";
+                    gridContents[(i + 1) * colNum + 1].SetOptionText(s);
+                    if (b > khs.NextConditionHP()) s = "—";
+                    else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
+                    gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
             }
@@ -85,11 +92,11 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
-            Log.Post("KerbalHealthEditorReport.OnDisable");
+            Core.Log("KerbalHealthEditorReport.OnDisable");
             UndisplayData();
             if (ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(button);
-            Log.Post("KerbalHealthEditorReport.OnDisable finished.");
+            Core.Log("KerbalHealthEditorReport.OnDisable finished.");
         }
     }
 }

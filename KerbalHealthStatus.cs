@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace KerbalHealth
 {
@@ -11,7 +11,8 @@ namespace KerbalHealth
 
         string name;
         double hp;
-        double lastHPChange;  // HP change per day due to vessel-wide and part-wide factors (updated by ModuleKerbalHealth)
+        double lastChange;  // Cached HP change per day (for unloaded vessels)
+        double lastMarginalPositiveChange, lastMarginalNegativeChange;  // Cached marginal HP change (in %)
         HealthCondition condition = HealthCondition.OK;
         string trait = null;
         bool onEva = false;  // True if kerbal is on EVA
@@ -39,10 +40,22 @@ namespace KerbalHealth
 
         public double Health { get { return (HP - Core.MinHP) / (MaxHP - Core.MinHP); } }  // % of health relative to MaxHealth
 
-        public double LastHPChange
+        public double LastChange
         {
-            get { return lastHPChange; }
-            set { lastHPChange = value; }
+            get { return lastChange; }
+            set { lastChange = value; }
+        }
+
+        public double LastMarginalPositiveChange
+        {
+            get { return lastMarginalPositiveChange; }
+            set { lastMarginalPositiveChange = value; }
+        }
+
+        public double LastMarginalNegativeChange
+        {
+            get { return lastMarginalNegativeChange; }
+            set { lastMarginalNegativeChange = value; }
         }
 
         public HealthCondition Condition
@@ -54,12 +67,12 @@ namespace KerbalHealth
                 switch (value)
                 {
                     case HealthCondition.OK:
-                        Log.Post("Reviving " + Name + " as " + Trait + "...");
+                        Core.Log("Reviving " + Name + " as " + Trait + "...");
                         PCM.type = ProtoCrewMember.KerbalType.Crew;
                         PCM.trait = Trait;
                         break;
                     case HealthCondition.Exhausted:
-                        Log.Post(Name + " (" + Trait + ") is exhausted.");
+                        Core.Log(Name + " (" + Trait + ") is exhausted.");
                         Trait = PCM.trait;
                         PCM.type = ProtoCrewMember.KerbalType.Tourist;
                         break;
@@ -117,99 +130,134 @@ namespace KerbalHealth
             get { return GetMaxHP(PCM); }
         }
 
-        public double TimeToValue(double target, bool inEditor)
+        public double TimeToValue(double target)
         {
-            double change = HealthChangePerDay(PCM, inEditor);
+            double change = HealthChangePerDay(PCM);
             if (change == 0) return double.NaN;
             double res = (target - HP) / change;
             if (res < 0) return double.NaN;
             return res * 21600;
         }
 
-        public double TimeToNextCondition(bool inEditor = false)
+        public double NextConditionHP()
         {
-            if (HealthChangePerDay(PCM, inEditor) > 0)
+            if (HealthChangePerDay(PCM) > 0)
             {
                 switch (Condition)
                 {
                     case HealthCondition.OK:
-                        return TimeToValue(MaxHP, inEditor);
+                        return MaxHP;
                     case HealthCondition.Exhausted:
-                        return TimeToValue(Core.ExhaustionEndHealth * MaxHP, inEditor);
+                        return Core.ExhaustionEndHealth * MaxHP;
                 }
             }
             switch (Condition)
             {
                 case HealthCondition.OK:
-                    return TimeToValue(Core.ExhaustionStartHealth * MaxHP, inEditor);
+                    return Core.ExhaustionStartHealth * MaxHP;
                 case HealthCondition.Exhausted:
-                    return TimeToValue(Core.DeathHealth * MaxHP, inEditor);
+                    return Core.DeathHealth * MaxHP;
             }
             return double.NaN;
         }
 
-        static int GetCrewCount(ProtoCrewMember pcm, bool inEditor)
+        public double TimeToNextCondition()
         {
-            return inEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
+            return TimeToValue(NextConditionHP());
         }
 
-        static int GetCrewCapacity(ProtoCrewMember pcm, bool inEditor)
+        // Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
+        public double GetBalanceHP()
         {
-            return inEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
+            if (LastMarginalPositiveChange <= LastMarginalNegativeChange) return 0;
+            return (MaxHP * LastMarginalPositiveChange + LastChange * 100) / (LastMarginalPositiveChange - LastMarginalNegativeChange);
+        }
+
+        static int GetCrewCount(ProtoCrewMember pcm)
+        {
+            return Core.IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
+        }
+
+        static int GetCrewCapacity(ProtoCrewMember pcm)
+        {
+            return Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
         }
 
         static bool isKerbalLoaded(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel != null; }
 
-        public static double HealthChangePerDay(ProtoCrewMember pcm, bool inEditor)
+        double MarginalChange
+        {
+            get
+            {
+                return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100);
+            }
+        }
+
+        public static double HealthChangePerDay(ProtoCrewMember pcm)
         {
             double change = 0;
             if (pcm == null) return 0;
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             if (khs == null)
             {
-                Log.Post("Error: " + pcm.name + " not found in KerbalHealthList during update!", Log.LogLevel.Error);
+                Core.Log("Error: " + pcm.name + " not found in KerbalHealthList during update!", Core.LogLevel.Error);
                 return 0;
             }
-            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && isKerbalLoaded(pcm)) || inEditor || khs.IsOnEVA)
+            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && isKerbalLoaded(pcm)) || Core.IsInEditor || khs.IsOnEVA)
             {
                 if (isKerbalLoaded(pcm)) khs.IsOnEVA = false;
+                khs.LastMarginalPositiveChange = khs.LastMarginalNegativeChange = 0;
                 change += Core.AssignedFactor;
-                change += Core.LivingSpaceBaseFactor * GetCrewCount(pcm, inEditor) / GetCrewCapacity(pcm, inEditor);
+                change += Core.LivingSpaceBaseFactor * GetCrewCount(pcm) / GetCrewCapacity(pcm);
                 if (!khs.IsOnEVA)
                 {
-                    if (GetCrewCount(pcm, inEditor) > 1) change += Core.NotAloneFactor;
-                    if (inEditor)
+                    if (GetCrewCount(pcm) > 1) change += Core.NotAloneFactor;
+                    if (Core.IsInEditor)
                         foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
                         {
                             ModuleKerbalHealth mkh = p.PartInfo.partPrefab.FindModuleImplementing<ModuleKerbalHealth>();
-                            //Log.Post(p.PartInfo.name + " has " + (mkh == null ? "no " : "") + " ModuleKerbalHealth and crew: " + p.GetPartCrew());
-                            if (ModuleKerbalHealth.IsModuleApplicable(p, pcm)) change += mkh.hpChangePerDay;
+                            if (ModuleKerbalHealth.IsModuleApplicable(p, pcm))
+                            {
+                                change += mkh.hpChangePerDay;
+                                if (mkh.hpMarginalChangePerDay > 0)
+                                    khs.LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
+                                else if (mkh.hpMarginalChangePerDay < 0)
+                                    khs.LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
+                            }
                         }
                     else foreach (Part p in pcm.seat.vessel.Parts)
                         {
                             ModuleKerbalHealth mkh = p.FindModuleImplementing<ModuleKerbalHealth>();
-                            if (ModuleKerbalHealth.IsModuleApplicable(mkh, pcm)) change += mkh.hpChangePerDay;
+                            if (ModuleKerbalHealth.IsModuleApplicable(mkh, pcm))
+                            {
+                                change += mkh.hpChangePerDay;
+                                if (mkh.hpMarginalChangePerDay > 0)
+                                    khs.LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
+                                else if (mkh.hpMarginalChangePerDay < 0)
+                                    khs.LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
+                            }
                         }
                 }
-                khs.LastHPChange = change;
+                khs.LastChange = change;
             }
             else if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !isKerbalLoaded(pcm))
             {
-                //Log.Post(pcm.name + " is assigned, but not loaded. Seat: " + pcm?.seat + " (id " + pcm?.seatIdx + "). Using last cached HP change: " + khs.LastHPChange);
-                change += khs.LastHPChange;
+                //Core.Log(pcm.name + " is assigned, but not loaded. Seat: " + pcm?.seat + " (id " + pcm?.seatIdx + "). Using last cached HP change: " + khs.LastHPChange);
+                change = khs.LastChange;
             }
-            else if (!inEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change += Core.KSCFactor;
-            return change;
+            else if (!Core.IsInEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change = Core.KSCFactor;
+            Core.Log("Marginal change: +" + khs.LastMarginalPositiveChange + "%, -" + khs.LastMarginalPositiveChange + "%.");
+            return change + khs.MarginalChange;
         }
 
         public void Update(double interval)
         {
-            Log.Post("Updating " + Name + "'s health.");
-            HP += HealthChangePerDay(PCM, false) / 21600 * interval;
+            Core.Log("Updating " + Name + "'s health.");
+            HP += HealthChangePerDay(PCM) / 21600 * interval;
             if (HP <= Core.DeathHealth * MaxHP)
             {
-                Log.Post(Name + " dies due to having " + HP + " health.");
+                Core.Log(Name + " dies due to having " + HP + " health.");
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
@@ -235,7 +283,10 @@ namespace KerbalHealth
                 n.AddValue("health", HP);
                 n.AddValue("condition", Condition);
                 if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
-                if (LastHPChange != 0) n.AddValue("lastHPChange", LastHPChange);
+                if (LastChange != 0) n.AddValue("lastChange", LastChange);
+                Core.Log(Name + "'s last marginal changes were: +" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%.");
+                if (LastMarginalPositiveChange != 0) n.AddValue("lastMarginalPositiveChange", LastMarginalPositiveChange);
+                if (LastMarginalNegativeChange != 0) n.AddValue("lastMarginalNegativeChange", LastMarginalNegativeChange);
                 if (IsOnEVA) n.AddValue("onEva", true);
                 return n;
             }
@@ -245,8 +296,13 @@ namespace KerbalHealth
                 HP = Double.Parse(value.GetValue("health"));
                 Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
                 if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
-                try { LastHPChange = double.Parse(value.GetValue("lastHPChange")); }
-                catch (Exception) { LastHPChange = 0; }
+                try { LastChange = double.Parse(value.GetValue("lastChange")); }
+                catch (Exception) { LastChange = 0; }
+                try { LastMarginalPositiveChange = double.Parse(value.GetValue("lastMarginalPositiveChange")); }
+                catch (Exception) { LastMarginalPositiveChange = 0; }
+                try { LastMarginalNegativeChange = double.Parse(value.GetValue("lastMarginalNegativeChange")); }
+                catch (Exception) { LastMarginalNegativeChange = 0; }
+                Core.Log(Name + "'s loaded last marginal changes are: +" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%.");
                 try { IsOnEVA = bool.Parse(value.GetValue("onEva")); }
                 catch (Exception) { IsOnEVA = false; }
             }
