@@ -223,7 +223,7 @@ namespace KerbalHealth
                 change += Core.LivingSpaceBaseFactor * GetCrewCount(pcm) / GetCrewCapacity(pcm);
                 if (!khs.IsOnEVA)
                 {
-                    if ((GetCrewCount(pcm) > 1) || pcm.isBadass) change += Core.NotAloneFactor;
+                    if ((GetCrewCount(pcm) <= 1) && !pcm.isBadass) change += Core.LonelinessFactor;
                     if (Core.IsInEditor)
                         foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) khs.ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
                     else

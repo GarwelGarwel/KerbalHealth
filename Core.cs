@@ -53,6 +53,7 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
         }
 
+        public enum Factors { Assigned, LivingSpace, Loneliness, KSC }
 
         public static float AssignedFactor  // Health change per day when the kerbal is assigned
         {
@@ -66,10 +67,10 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LivingSpaceBaseFactor = value; }
         }
 
-        public static float NotAloneFactor  // Health change per day when the kerbal has crewmates
+        public static float LonelinessFactor  // Health change per day when the kerbal has crewmates
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().NotAloneFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().NotAloneFactor = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor = value; }
         }
 
         public static float KSCFactor  // Health change per day when the kerbal is at KSC (available)
