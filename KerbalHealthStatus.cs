@@ -187,10 +187,28 @@ namespace KerbalHealth
         { return pcm?.seat?.vessel != null; }
 
         double MarginalChange
+        { get { return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100); } }
+
+        void ProcessPart(Part part, ProtoCrewMember[] crew, ref double change)
         {
-            get
+            int i = 0;
+            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
-                return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100);
+                //Core.Log("Processing MKH #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " of " + part.name + "...");
+                if (mkh.IsModuleActive() && (!mkh.partCrewOnly || (crew.IndexOf(PCM) >= 0)))
+                {
+                    change += mkh.hpChangePerDay;
+                    if (mkh.hpMarginalChangePerDay > 0)
+                        LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
+                    else if (mkh.hpMarginalChangePerDay < 0)
+                        LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
+                }
+                //else
+                //{
+                //    string s = "Module not applicable. alwaysActive: " + mkh.alwaysActive + "; isActive = " + mkh.isActive + "; partCrewOnly = " + mkh.partCrewOnly + "; kerbal index = " + crew.IndexOf(PCM) + "\nCrew: ";
+                //    foreach (ProtoCrewMember pcm in crew) s += pcm.name + ", ";
+                //    Core.Log(s);
+                //}
             }
         }
 
@@ -214,30 +232,9 @@ namespace KerbalHealth
                 {
                     if ((GetCrewCount(pcm) > 1) || pcm.isBadass) change += Core.NotAloneFactor;
                     if (Core.IsInEditor)
-                        foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
-                        {
-                            ModuleKerbalHealth mkh = p.PartInfo.partPrefab.FindModuleImplementing<ModuleKerbalHealth>();
-                            if (ModuleKerbalHealth.IsModuleApplicable(p, pcm))
-                            {
-                                change += mkh.hpChangePerDay;
-                                if (mkh.hpMarginalChangePerDay > 0)
-                                    khs.LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
-                                else if (mkh.hpMarginalChangePerDay < 0)
-                                    khs.LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
-                            }
-                        }
-                    else foreach (Part p in pcm.seat.vessel.Parts)
-                        {
-                            ModuleKerbalHealth mkh = p.FindModuleImplementing<ModuleKerbalHealth>();
-                            if (ModuleKerbalHealth.IsModuleApplicable(mkh, pcm))
-                            {
-                                change += mkh.hpChangePerDay;
-                                if (mkh.hpMarginalChangePerDay > 0)
-                                    khs.LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
-                                else if (mkh.hpMarginalChangePerDay < 0)
-                                    khs.LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
-                            }
-                        }
+                        foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) khs.ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
+                    else
+                        foreach (Part p in pcm.seat.vessel.Parts) khs.ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
                 }
                 khs.LastChange = change;
             }
@@ -247,7 +244,7 @@ namespace KerbalHealth
                 change = khs.LastChange;
             }
             else if (!Core.IsInEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) change = Core.KSCFactor;
-            Core.Log("Marginal change: +" + khs.LastMarginalPositiveChange + "%, -" + khs.LastMarginalPositiveChange + "%.");
+            //Core.Log("Marginal change: +" + khs.LastMarginalPositiveChange + "%, -" + khs.LastMarginalNegativeChange + "%.");
             return change + khs.MarginalChange;
         }
 

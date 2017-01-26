@@ -29,22 +29,11 @@ namespace KerbalHealth
 
         double lastUpdated;
 
-        public bool IsModuleActive()
-        { return alwaysActive || isActive; }
+        public bool IsModuleActive
+        { get { return alwaysActive || isActive; } }
 
         public static bool IsModuleActive(ModuleKerbalHealth mkh)
-        { return (mkh != null) && mkh.IsModuleActive(); }
-
-        public static bool IsModuleApplicable(PartCrewManifest part, ProtoCrewMember pcm)
-        {
-            ModuleKerbalHealth mkh = part?.PartInfo?.partPrefab?.FindModuleImplementing<ModuleKerbalHealth>();
-            return IsModuleActive(mkh) && (!mkh.partCrewOnly || part.Contains(pcm));
-        }
-
-        public static bool IsModuleApplicable(ModuleKerbalHealth mkh, ProtoCrewMember pcm)
-        {
-            return IsModuleActive(mkh) && (!mkh.partCrewOnly || mkh.part.protoModuleCrew.Contains(pcm));
-        }
+        { return (mkh != null) && mkh.IsModuleActive; }
 
         public int AffectedCrewCount
         {
@@ -81,9 +70,9 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor) return;
             double time = Planetarium.GetUniversalTime();
-            if (IsModuleActive() && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)) && (TimeWarp.CurrentRate == 1))
+            if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)) && (TimeWarp.CurrentRate == 1))
             {
-                Core.Log(AffectedCrewCount + " crew affected by this part.");
+                //Core.Log(AffectedCrewCount + " crew affected by this part.");
                 double ec = (ecConsumption + ecConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;
                 if ((ec2 = vessel.RequestResource(part, PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id, ec, false)) * 2 < ec)
                 {
@@ -92,7 +81,7 @@ namespace KerbalHealth
                     isActive = false;
                 }
             }
-            else Core.Log("Module is active: " + IsModuleActive() + "\nEC consumption: " + ecConsumption + "\nEC consumption per kerbal: " + ecConsumptionPerKerbal + "\nTime warp: " + TimeWarp.CurrentRate);
+            //else Core.Log("Module is active: " + IsModuleActive() + "\nEC consumption: " + ecConsumption + "\nEC consumption per kerbal: " + ecConsumptionPerKerbal + "\nTime warp: " + TimeWarp.CurrentRate);
             lastUpdated = time;
         }
 
@@ -109,7 +98,7 @@ namespace KerbalHealth
             if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
             if (partCrewOnly) res += "\nAffects only part crew"; else res += "\nAffects entire vessel";
             if (ecConsumption != 0) res += "\nElectric Charge: " + ecConsumption.ToString("F1") + "/sec.";
-            if (ecConsumptionPerKerbal != 0) res += "\nElectric Charge per Kerbal: " + ecConsumptionPerKerbal.ToString("F1") + "/sec.";
+            if (ecConsumptionPerKerbal != 0) res += "\nEC per Kerbal: " + ecConsumptionPerKerbal.ToString("F1") + "/sec.";
             return res;
         }
     }
