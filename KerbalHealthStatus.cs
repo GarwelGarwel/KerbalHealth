@@ -191,11 +191,10 @@ namespace KerbalHealth
 
         void ProcessPart(Part part, ProtoCrewMember[] crew, ref double change)
         {
-            int i = 0;
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
                 //Core.Log("Processing MKH #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " of " + part.name + "...");
-                if (mkh.IsModuleActive() && (!mkh.partCrewOnly || (crew.IndexOf(PCM) >= 0)))
+                if (mkh.IsModuleActive && (!mkh.partCrewOnly || (crew.IndexOf(PCM) >= 0)))
                 {
                     change += mkh.hpChangePerDay;
                     if (mkh.hpMarginalChangePerDay > 0)
@@ -203,12 +202,6 @@ namespace KerbalHealth
                     else if (mkh.hpMarginalChangePerDay < 0)
                         LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
                 }
-                //else
-                //{
-                //    string s = "Module not applicable. alwaysActive: " + mkh.alwaysActive + "; isActive = " + mkh.isActive + "; partCrewOnly = " + mkh.partCrewOnly + "; kerbal index = " + crew.IndexOf(PCM) + "\nCrew: ";
-                //    foreach (ProtoCrewMember pcm in crew) s += pcm.name + ", ";
-                //    Core.Log(s);
-                //}
             }
         }
 

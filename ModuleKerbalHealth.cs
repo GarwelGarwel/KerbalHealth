@@ -32,9 +32,6 @@ namespace KerbalHealth
         public bool IsModuleActive
         { get { return alwaysActive || isActive; } }
 
-        public static bool IsModuleActive(ModuleKerbalHealth mkh)
-        { return (mkh != null) && mkh.IsModuleActive; }
-
         public int AffectedCrewCount
         {
             get
