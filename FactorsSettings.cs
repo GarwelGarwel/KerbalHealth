@@ -16,8 +16,8 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -50, maxValue = 50, stepCount = 101)]
         public float AssignedFactor = 0;
 
-        [GameParameters.CustomFloatParameterUI("Living Space", toolTip = "HP change per day in a crammed vessel", minValue = -50, maxValue = 50, stepCount = 101)]
-        public float LivingSpaceBaseFactor = -7;
+        [GameParameters.CustomFloatParameterUI("Overpopulation", toolTip = "HP change per day in a crammed vessel", minValue = -50, maxValue = 50, stepCount = 101)]
+        public float OverpopulationBaseFactor = -7;
 
         [GameParameters.CustomFloatParameterUI("Loneliness", toolTip = "HP change per day when the kerbal has no crewmates", minValue = -50, maxValue = 50, stepCount = 101)]
         public float LonelinessFactor = -1;
