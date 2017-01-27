@@ -27,7 +27,31 @@ namespace KerbalHealth
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
+        [KSPField]
+        public string multiplyFactor = "";  // Name of factor whose effect is multiplied
+
+        [KSPField]
+        public float multiplier = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
+
+        [KSPField]
+        public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty
+
         double lastUpdated;
+
+        public Core.Factors MultiplyFactor
+        {
+            get
+            {
+                Core.Factors res;
+                try { res = (Core.Factors)Enum.Parse(typeof(Core.Factors), multiplyFactor); }
+                catch (Exception) { res = Core.Factors.All; }
+                return res;
+            }
+            set
+            {
+                multiplyFactor = value.ToString();
+            }
+        }
 
         public bool IsModuleActive
         { get { return alwaysActive || isActive; } }
@@ -91,9 +115,11 @@ namespace KerbalHealth
         public override string GetInfo()
         {
             string res = "KerbalHealth Module";
+            if (partCrewOnly) res += "\nAffects only part crew"; else res += "\nAffects entire vessel";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
             if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
-            if (partCrewOnly) res += "\nAffects only part crew"; else res += "\nAffects entire vessel";
+            if (multiplier != 1) res += "\n" + (multiplier > 0 ? "" : "+") + ((multiplier - 1) * 100).ToString("F0") + "% to " + MultiplyFactor;
+            if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (ecConsumption != 0) res += "\nElectric Charge: " + ecConsumption.ToString("F1") + "/sec.";
             if (ecConsumptionPerKerbal != 0) res += "\nEC per Kerbal: " + ecConsumptionPerKerbal.ToString("F1") + "/sec.";
             return res;

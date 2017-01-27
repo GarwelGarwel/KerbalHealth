@@ -46,14 +46,13 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth = value; }
         }
 
-
         public static float DeathHealth  // Health % when the kerbal dies
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth; }
             set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
         }
 
-        public enum Factors { Assigned, LivingSpace, Loneliness, KSC }
+        public enum Factors { All, Assigned, LivingSpace, Loneliness, KSC }
 
         public static float AssignedFactor  // Health change per day when the kerbal is assigned
         {
@@ -88,8 +87,11 @@ namespace KerbalHealth
             return KSPUtil.PrintDateDeltaCompact(time, true, false);
         }
 
-        public enum LogLevel { None, Error, Warning, Debug };
-        public static LogLevel Level { get; set; } = LogLevel.Debug;
+        public enum LogLevel { None, Error, Important, Debug };
+        public static LogLevel Level
+        {
+            get { if (HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().debugMode) return LogLevel.Debug; else return LogLevel.Important; }
+        }
 
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         {

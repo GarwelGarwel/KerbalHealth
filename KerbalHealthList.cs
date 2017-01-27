@@ -7,16 +7,17 @@ namespace KerbalHealth
 {
     public class KerbalHealthList : List<KerbalHealthStatus>
     {
-        public void Add(string name, double health = -1)
+        public void Add(string name, double health = double.NaN)
         {
             Core.Log("Registering " + name + " with " + health + " health.");
             if (Contains(name))
             {
-                Core.Log("Kerbal already registered.", Core.LogLevel.Warning);
+                Core.Log(name + " already registered.", Core.LogLevel.Important);
                 return;
             }
             KerbalHealthStatus khs;
-            if (health == -1) khs = new KerbalHealth.KerbalHealthStatus(name); else khs = new KerbalHealth.KerbalHealthStatus(name, health);
+            if (double.IsNaN(health)) khs = new KerbalHealth.KerbalHealthStatus(name);
+            else khs = new KerbalHealth.KerbalHealthStatus(name, health);
             Add(khs);
         }
 
@@ -30,15 +31,14 @@ namespace KerbalHealth
         {
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.");
-            foreach (ProtoCrewMember pcm in kerbalRoster.Kerbals(ProtoCrewMember.KerbalType.Crew))
-                Add(pcm);
-            Core.Log("" + Count + " kerbal(s) registered.");
+            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.", Core.LogLevel.Important);
+            foreach (ProtoCrewMember pcm in kerbalRoster.Kerbals(ProtoCrewMember.KerbalType.Crew)) Add(pcm);
+            Core.Log("" + Count + " kerbal(s) registered.", Core.LogLevel.Important);
         }
 
         public bool Remove(string name)
         {
-            Core.Log("Unregistering " + name + ".");
+            Core.Log("Unregistering " + name + ".", Core.LogLevel.Important);
             foreach (KerbalHealthStatus khs in this)
                 if (khs.Name == name)
                 {
@@ -50,9 +50,7 @@ namespace KerbalHealth
         }
 
         public void Remove(ProtoCrewMember pcm)
-        {
-            Remove(pcm.name);
-        }
+        { Remove(pcm.name); }
 
         public void Update(double interval)
         {
@@ -81,23 +79,19 @@ namespace KerbalHealth
 
         public KerbalHealthStatus Find(ProtoCrewMember pcm)
         {
-            foreach (KerbalHealthStatus khs in this)
-                if (khs.Name == pcm.name) return khs;
+            foreach (KerbalHealthStatus khs in this) if (khs.Name == pcm.name) return khs;
             return null;
-        }
-
-        public bool Contains(ProtoCrewMember pcm)
-        {
-            foreach (KerbalHealthStatus khs in this)
-                if (khs.Name == pcm.name) return true;
-            return false;
         }
 
         public bool Contains(string name)
         {
-            foreach (KerbalHealthStatus khs in this)
-                if (khs.Name == name) return true;
+            foreach (KerbalHealthStatus khs in this) if (khs.Name == name) return true;
             return false;
+        }
+
+        public bool Contains(ProtoCrewMember pcm)
+        {
+            return Contains(pcm.name);
         }
     }
 }

@@ -18,22 +18,22 @@ namespace KerbalHealth
 
         public void Start()
         {
-            Core.Log("KerbalHealth " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
+            Core.Log("KerbalHealth " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, Core.LogLevel.Important);
             Core.KerbalHealthList.RegisterKerbals();
             GameEvents.onKerbalAdded.Add(Core.KerbalHealthList.Add);
             GameEvents.onKerbalRemoved.Add(Core.KerbalHealthList.Remove);
             GameEvents.onCrewOnEva.Add(OnKerbalOnEva);
-            Core.Log("Registering toolbar button...");
+            Core.Log("Registering toolbar button...", Core.LogLevel.Important);
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
             button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData , null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             lastUpdated = Planetarium.GetUniversalTime();
-            Core.Log("KerbalHealthScenario.Start finished.");
+            Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
         public void OnKerbalOnEva(GameEvents.FromToAction<Part, Part> action)
         {
-            Core.Log(action.to.protoModuleCrew[0].name + " went on EVA from " + action.from.name + " to " + action.to.name);
+            Core.Log(action.to.protoModuleCrew[0].name + " went on EVA from " + action.from.name + ".", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(action.to.protoModuleCrew[0]).IsOnEVA = true;
         }
 
@@ -42,9 +42,11 @@ namespace KerbalHealth
             double timePassed = Planetarium.GetUniversalTime() - lastUpdated;
             if (forced || (timePassed >= Core.UpdateInterval))
             {
-                Core.Log("UT is " + Planetarium.GetUniversalTime() + ". Last updated at " + lastUpdated + ". Updating for " + timePassed + " seconds.");
+                float t = Time.time;
+                Core.Log("UT is " + Planetarium.GetUniversalTime() + ". Updating for " + timePassed + " seconds.");
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = Planetarium.GetUniversalTime();
+                Core.Log("KerbalHealthScenario.UpdateKerbals took " + Time.fixedDeltaTime * 1000 + " ms. Frame rate is " + (1 / Time.deltaTime) + " FPS.");
             }
         }
 
@@ -55,7 +57,7 @@ namespace KerbalHealth
 
         public void DisplayData()  // Called when the AppLauncher button is enabled
         {
-            Core.Log("DisplayData");
+            Core.Log("DisplayData", Core.LogLevel.Important);
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));
@@ -63,8 +65,7 @@ namespace KerbalHealth
             gridContents.Add(new DialogGUILabel("Condition", true));
             gridContents.Add(new DialogGUILabel("Time Left", true));
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
-            for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++)  
-                gridContents.Add(new DialogGUILabel("", true));
+            for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
             monitorGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
             Update();
             monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, 500, monitorGrid), false, HighLogic.UISkin, false);
@@ -86,7 +87,7 @@ namespace KerbalHealth
                 }
                 if (gridContents.Count != (Core.KerbalHealthList.Count + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
                 {
-                    Core.Log("Kerbals' number has changed. Recreating the Health Monitor window.");
+                    Core.Log("Kerbals' number has changed. Recreating the Health Monitor window.", Core.LogLevel.Important);
                     UndisplayData();
                     DisplayData();
                 }
@@ -117,19 +118,19 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
-            Core.Log("KerbalHealthScenario.OnDisable");
+            Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
             UndisplayData();
             GameEvents.onKerbalAdded.Remove(Core.KerbalHealthList.Add);
             GameEvents.onKerbalRemoved.Remove(Core.KerbalHealthList.Remove);
             GameEvents.onCrewOnEva.Remove(OnKerbalOnEva);
             if (ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(button);
-            Core.Log("KerbalHealthScenario.OnDisable finished.");
+            Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
         }
 
         public override void OnSave(ConfigNode node)
         {
-            Core.Log("KerbalHealthScenario.OnSave");
+            Core.Log("KerbalHealthScenario.OnSave", Core.LogLevel.Important);
             UpdateKerbals(true);
             int i = 0;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList)
@@ -138,24 +139,22 @@ namespace KerbalHealth
                 node.AddNode(khs.ConfigNode);
                 i++;
             }
-            Core.Log("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.");
+            Core.Log("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.", Core.LogLevel.Important);
         }
 
         public override void OnLoad(ConfigNode node)
         {
-            Core.Log("KerbalHealthScenario.OnLoad");
+            Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             Core.KerbalHealthList.Clear();
             int i = 0;
             foreach (ConfigNode n in node.GetNodes())
-            {
                 if (n.name == "KerbalHealthStatus")
                 {
                     Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
                     i++;
                 }
-            }
             lastUpdated = Planetarium.GetUniversalTime();
-            Core.Log("" + i + " kerbal(s) loaded.");
+            Core.Log("" + i + " kerbal(s) loaded.", Core.LogLevel.Important);
         }
     }
 }
