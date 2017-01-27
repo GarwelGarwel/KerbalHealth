@@ -13,16 +13,16 @@ namespace KerbalHealth
         public override string Section { get { return "KerbalHealth"; } }
         public override int SectionOrder { get { return 2; } }
 
-        [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -100, maxValue = 100, stepCount = 201)]
+        [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -50, maxValue = 50, stepCount = 101)]
         public float AssignedFactor = 0;
 
-        [GameParameters.CustomFloatParameterUI("Living Space", toolTip = "HP change per day in a crammed vessel", minValue = -100, maxValue = 100, stepCount = 201)]
+        [GameParameters.CustomFloatParameterUI("Living Space", toolTip = "HP change per day in a crammed vessel", minValue = -50, maxValue = 50, stepCount = 101)]
         public float LivingSpaceBaseFactor = -7;
 
-        [GameParameters.CustomFloatParameterUI("Loneliness", toolTip = "HP change per day when the kerbal has no crewmates", minValue = -100, maxValue = 100, stepCount = 201)]
+        [GameParameters.CustomFloatParameterUI("Loneliness", toolTip = "HP change per day when the kerbal has no crewmates", minValue = -50, maxValue = 50, stepCount = 101)]
         public float LonelinessFactor = -1;
 
-        [GameParameters.CustomFloatParameterUI("At KSC", toolTip = "HP change per day when the kerbal is at KSC (available)", minValue = -100, maxValue = 100, stepCount = 201)]
+        [GameParameters.CustomFloatParameterUI("At KSC", toolTip = "HP change per day when the kerbal is at KSC (available)", minValue = -50, maxValue = 50, stepCount = 101)]
         public float KSCFactor = 5;
     }
 }
