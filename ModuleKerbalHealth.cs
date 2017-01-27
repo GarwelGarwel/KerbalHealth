@@ -28,7 +28,7 @@ namespace KerbalHealth
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
         [KSPField]
-        public string multiplyFactor = "";  // Name of factor whose effect is multiplied
+        public string multiplyFactor = "All";  // Name of factor whose effect is multiplied
 
         [KSPField]
         public float multiplier = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
