@@ -38,19 +38,10 @@ namespace KerbalHealth
 
         double lastUpdated;
 
-        public Core.Factors MultiplyFactor
+        public HealthFactor MultiplyFactor
         {
-            get
-            {
-                Core.Factors res;
-                try { res = (Core.Factors)Enum.Parse(typeof(Core.Factors), multiplyFactor); }
-                catch (Exception) { res = Core.Factors.All; }
-                return res;
-            }
-            set
-            {
-                multiplyFactor = value.ToString();
-            }
+            get { return Core.FindFactor(multiplyFactor); }
+            set { multiplyFactor = value.Id; }
         }
 
         public bool IsModuleActive
@@ -93,7 +84,7 @@ namespace KerbalHealth
             double time = Planetarium.GetUniversalTime();
             if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)) && (TimeWarp.CurrentRate == 1))
             {
-                //Core.Log(AffectedCrewCount + " crew affected by this part.");
+                Core.Log(AffectedCrewCount + " crew affected by this part.");
                 double ec = (ecConsumption + ecConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;
                 if ((ec2 = vessel.RequestResource(part, PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id, ec, false)) * 2 < ec)
                 {
@@ -102,7 +93,6 @@ namespace KerbalHealth
                     isActive = false;
                 }
             }
-            //else Core.Log("Module is active: " + IsModuleActive() + "\nEC consumption: " + ecConsumption + "\nEC consumption per kerbal: " + ecConsumptionPerKerbal + "\nTime warp: " + TimeWarp.CurrentRate);
             lastUpdated = time;
         }
 
@@ -118,7 +108,7 @@ namespace KerbalHealth
             if (partCrewOnly) res += "\nAffects only part crew"; else res += "\nAffects entire vessel";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
             if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
-            if (multiplier != 1) res += "\n" + (multiplier > 0 ? "" : "+") + ((multiplier - 1) * 100).ToString("F0") + "% to " + MultiplyFactor;
+            if (multiplier != 1) res += "\n" + (multiplier > 0 ? "" : "+") + ((multiplier - 1) * 100).ToString("F0") + "% to " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (ecConsumption != 0) res += "\nElectric Charge: " + ecConsumption.ToString("F1") + "/sec.";
             if (ecConsumptionPerKerbal != 0) res += "\nEC per Kerbal: " + ecConsumptionPerKerbal.ToString("F1") + "/sec.";

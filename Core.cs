@@ -10,6 +10,30 @@ namespace KerbalHealth
     {
         public static KerbalHealthList KerbalHealthList { get; set; } = new KerbalHealthList();
 
+        static List<HealthFactor> factors = new List<HealthFactor>() {
+            new AssignedFactor(),
+            new OverpopulationFactor(),
+            new LonelinessFactor(),
+            new MicrogravityFactor(),
+            new KSCFactor()
+        };
+
+        public static List<HealthFactor> Factors
+        {
+            get { return factors; }
+            set { factors = value; }
+        }
+
+        public static void AddFactor(HealthFactor f)
+        { Factors.Add(f); }
+
+        public static HealthFactor FindFactor(string id)
+        {
+            foreach (HealthFactor f in Factors)
+                if (f.Id == id) return f;
+            return null;
+        }
+
         public static float UpdateInterval  // # of game seconds between updates
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval; }
@@ -52,38 +76,6 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
         }
 
-        public enum Factors { All, Assigned, Overpopulation, Loneliness, Microgravity, KSC }
-
-        public static float AssignedFactor  // Health change per day when the kerbal is assigned
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor = value; }
-        }
-
-        public static float OverpopulationBaseFactor  // Health change per day in a crammed vessel
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().OverpopulationBaseFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().OverpopulationBaseFactor = value; }
-        }
-
-        public static float LonelinessFactor  // Health change per day when the kerbal has crewmates
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor = value; }
-        }
-
-        public static float Microgravity  // Health change per day when in orbit/sub-orbital flight
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().Microgravity; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().Microgravity = value; }
-        }
-
-        public static float KSCFactor  // Health change per day when the kerbal is at KSC (available)
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor = value; }
-        }
-
         public static bool IsInEditor
         { get { return HighLogic.LoadedSceneIsEditor; } }
 
@@ -91,6 +83,16 @@ namespace KerbalHealth
         {
             if (double.IsNaN(time) || (time == 0)) return "N/A";
             return KSPUtil.PrintDateDeltaCompact(time, true, false);
+        }
+
+        public static int GetCrewCount(ProtoCrewMember pcm)
+        {
+            return IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
+        }
+
+        public static int GetCrewCapacity(ProtoCrewMember pcm)
+        {
+            return IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
         }
 
         public enum LogLevel { None, Error, Important, Debug };

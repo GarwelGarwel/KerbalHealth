@@ -10,6 +10,7 @@ namespace KerbalHealth
     class KerbalHealthEditorReport : MonoBehaviour
     {
         ApplicationLauncherButton button;
+        bool dirty = false;
         PopupDialog reportWindow;  // Health Report window
         DialogGUIGridLayout reportGrid;  // Health Report grid
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
@@ -18,6 +19,9 @@ namespace KerbalHealth
         public void Start()
         {
             Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
+            GameEvents.onEditorShipModified.Add(Invalidate);
+            GameEvents.onEditorPodDeleted.Add(Invalidate);
+            GameEvents.onEditorScreenChange.Add(Invalidate);
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
             button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
@@ -41,7 +45,7 @@ namespace KerbalHealth
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));
             reportGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
-            Update();
+            dirty = true;
             reportWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Report", HighLogic.UISkin, 300, reportGrid), false, HighLogic.UISkin, false);
         }
 
@@ -52,7 +56,7 @@ namespace KerbalHealth
 
         public void Update()
         {
-            if (reportWindow != null)
+            if ((reportWindow != null) && dirty)
             {
                 if (reportGrid == null)
                 {
@@ -76,19 +80,30 @@ namespace KerbalHealth
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
+                    KerbalHealthStatus khs = new KerbalHealthStatus(pcm.name);
+                    double ch = khs.HealthChangePerDay();
                     double b = khs.GetBalanceHP();
                     string s = "";
                     if (b > 0) s = "→" + b.ToString("F0") + " HP (" + (b / khs.MaxHP * 100).ToString("F0") + "%)";
-                    else s = KerbalHealthStatus.HealthChangePerDay(pcm).ToString("F1") + " HP/day";
+                    else s = ch.ToString("F1") + " HP/day";
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((khs.LastMarginalPositiveChange > khs.LastMarginalNegativeChange) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
+                dirty = false;
             }
         }
+
+        public void Invalidate()
+        { dirty = true; }
+
+        public void Invalidate(ShipConstruct c)
+        { Invalidate(); }
+
+        public void Invalidate(EditorScreen s)
+        { Invalidate(); }
 
         public void OnDisable()
         {

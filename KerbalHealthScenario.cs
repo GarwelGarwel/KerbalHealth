@@ -11,6 +11,7 @@ namespace KerbalHealth
         static double lastUpdated;  // UT at last health update
 
         ApplicationLauncherButton button;
+        bool dirty = false;
         PopupDialog monitorWindow;  // Health Monitor window
         DialogGUIGridLayout monitorGrid;  // Health Monitor grid
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
@@ -18,7 +19,8 @@ namespace KerbalHealth
 
         public void Start()
         {
-            Core.Log("KerbalHealth " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version, Core.LogLevel.Important);
+            Core.Log("KerbalHealth.Start", Core.LogLevel.Important);
+            Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
             GameEvents.onKerbalAdded.Add(Core.KerbalHealthList.Add);
             GameEvents.onKerbalRemoved.Add(Core.KerbalHealthList.Remove);
@@ -40,13 +42,14 @@ namespace KerbalHealth
         void UpdateKerbals(bool forced = false)
         {
             double timePassed = Planetarium.GetUniversalTime() - lastUpdated;
-            if (forced || (timePassed >= Core.UpdateInterval))
+            if (forced || (timePassed >= Core.UpdateInterval * TimeWarp.CurrentRate))
             {
                 float t = Time.time;
                 Core.Log("UT is " + Planetarium.GetUniversalTime() + ". Updating for " + timePassed + " seconds.");
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = Planetarium.GetUniversalTime();
                 Core.Log("KerbalHealthScenario.UpdateKerbals took " + Time.fixedDeltaTime * 1000 + " ms. Frame rate is " + (1 / Time.deltaTime) + " FPS.");
+                dirty = true;
             }
         }
 
@@ -67,13 +70,13 @@ namespace KerbalHealth
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
             monitorGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
-            Update();
+            dirty = true;
             monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, 500, monitorGrid), false, HighLogic.UISkin, false);
         }
 
         public void Update()
         {
-            if (monitorWindow != null)
+            if ((monitorWindow != null) && dirty)
             {
                 if (monitorGrid == null)
                 {
@@ -96,7 +99,7 @@ namespace KerbalHealth
                 {
                     KerbalHealthStatus khs = Core.KerbalHealthList[i];
                     gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
-                    double ch = KerbalHealthStatus.HealthChangePerDay(khs.PCM);
+                    double ch = khs.HealthChangePerDay();
                     string trend = "~ ";
                     if (ch > 0) trend = "↑ ";
                     if (ch < 0) trend = "↓ ";
@@ -108,6 +111,7 @@ namespace KerbalHealth
                     else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 3].SetOptionText(s);
                 }
+                dirty = false;
             }
         }
 
