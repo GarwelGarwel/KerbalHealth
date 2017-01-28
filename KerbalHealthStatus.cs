@@ -266,6 +266,8 @@ namespace KerbalHealth
                 }
                 change += Core.AssignedFactor * khs.Multiplier(Core.Factors.Assigned);
                 change += Core.OverpopulationBaseFactor * GetCrewCount(pcm) / GetCrewCapacity(pcm) * khs.Multiplier(Core.Factors.Overpopulation);
+                if (Core.IsInEditor || (pcm.KerbalRef.InVessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
+                    change += Core.Microgravity * khs.Multiplier(Core.Factors.Microgravity);
                 khs.LastChange = change;
             }
             else if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !isKerbalLoaded(pcm)) change = khs.LastChange;

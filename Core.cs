@@ -52,7 +52,7 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
         }
 
-        public enum Factors { All, Assigned, Overpopulation, Loneliness, KSC }
+        public enum Factors { All, Assigned, Overpopulation, Loneliness, Microgravity, KSC }
 
         public static float AssignedFactor  // Health change per day when the kerbal is assigned
         {
@@ -70,6 +70,12 @@ namespace KerbalHealth
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor; }
             set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor = value; }
+        }
+
+        public static float Microgravity  // Health change per day when in orbit/sub-orbital flight
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().Microgravity; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().Microgravity = value; }
         }
 
         public static float KSCFactor  // Health change per day when the kerbal is at KSC (available)
