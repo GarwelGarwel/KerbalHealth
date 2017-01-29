@@ -24,7 +24,7 @@ namespace KerbalHealth
         [KSPField]
         public bool alwaysActive = false;  // Is the module's effect (and consumption) always active or togglable in-flight
 
-        [KSPField(isPersistant = true)]
+        [KSPField(isPersistant = true, guiActive = true, guiName = "Health Module Active")]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
         [KSPField]
@@ -78,6 +78,7 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart (" + state + ")");
             base.OnStart(state);
+            if (alwaysActive) isActive = true;
             lastUpdated = Planetarium.GetUniversalTime();
         }
 
@@ -92,26 +93,34 @@ namespace KerbalHealth
                 if ((ec2 = vessel.RequestResource(part, PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id, ec, false)) * 2 < ec)
                 {
                     Core.Log("Module shut down due to lack of EC (" + ec + " needed, " + ec2 + " provided).");
-                    ScreenMessages.PostScreenMessage("Kerbal Health Module shut down due to lack of EC.");
+                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name +" shut down due to lack of EC.");
                     isActive = false;
                 }
             }
             lastUpdated = time;
         }
 
-        [KSPEvent(active = true, guiActive = true, name = "OnToggleActive", guiName = "Health Module")]
+        [KSPAction(guiName = "Toggle Health Module")]
+        public void ActionToggleActive()
+        {
+            OnToggleActive();
+        }
+
+        [KSPEvent(active = true, guiActive = true, name = "OnToggleActive", guiName = "Toggle Health Module")]
         public void OnToggleActive()
         {
-            isActive = !isActive;
+            if (alwaysActive) isActive = true;
+            else isActive = !isActive;
         }
 
         public override string GetInfo()
         {
             string res = "KerbalHealth Module";
-            if (partCrewOnly) res += "\nAffects only part crew"; else res += "\nAffects entire vessel";
+            if (partCrewOnly) res += "\nAffects only part crew"; //else res += "\nAffects entire vessel";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
             if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
-            if (multiplier != 1) res += "\n" + (multiplier > 0 ? "" : "+") + ((multiplier - 1) * 100).ToString("F0") + "% to " + multiplyFactor;
+            if (multiplier != 1) //res += "\n" + (multiplier > 0 ? "" : "+") + ((multiplier - 1) * 100).ToString("F0") + "% to " + multiplyFactor;
+                res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (ecConsumption != 0) res += "\nElectric Charge: " + ecConsumption.ToString("F1") + "/sec.";
             if (ecConsumptionPerKerbal != 0) res += "\nEC per Kerbal: " + ecConsumptionPerKerbal.ToString("F1") + "/sec.";
