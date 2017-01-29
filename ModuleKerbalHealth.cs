@@ -24,7 +24,7 @@ namespace KerbalHealth
         [KSPField]
         public bool alwaysActive = false;  // Is the module's effect (and consumption) always active or togglable in-flight
 
-        [KSPField(isPersistant = true, guiActive = true, guiName = "Health Module Active")]
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Health Module Active")]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
         [KSPField]
@@ -102,11 +102,9 @@ namespace KerbalHealth
 
         [KSPAction(guiName = "Toggle Health Module")]
         public void ActionToggleActive()
-        {
-            OnToggleActive();
-        }
+        { OnToggleActive(); }
 
-        [KSPEvent(active = true, guiActive = true, name = "OnToggleActive", guiName = "Toggle Health Module")]
+        [KSPEvent(name = "OnToggleActive", active = true, guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
         public void OnToggleActive()
         {
             if (alwaysActive) isActive = true;

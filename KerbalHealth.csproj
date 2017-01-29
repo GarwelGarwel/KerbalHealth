@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="KerbalHealth.version" />
+    <None Include="KHMKS.cfg" />
     <None Include="KHStock.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
