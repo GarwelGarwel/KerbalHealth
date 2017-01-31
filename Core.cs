@@ -14,6 +14,7 @@ namespace KerbalHealth
             new AssignedFactor(),
             new OverpopulationFactor(),
             new LonelinessFactor(),
+            new ConnectedFactor(),
             new MicrogravityFactor(),
             new KSCFactor()
         };
@@ -82,7 +83,8 @@ namespace KerbalHealth
         public static string ParseUT(double time)
         {
             if (double.IsNaN(time) || (time == 0)) return "N/A";
-            return KSPUtil.PrintDateDeltaCompact(time, true, false);
+            if (time < 21600 * 100) return KSPUtil.PrintDateDeltaCompact(time, true, false);
+            else return KSPUtil.PrintDateDeltaCompact(time, false, false);
         }
 
         public static int GetCrewCount(ProtoCrewMember pcm)
@@ -94,6 +96,12 @@ namespace KerbalHealth
         {
             return IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
         }
+
+        public static bool IsKerbalLoaded(ProtoCrewMember pcm)
+        { return pcm?.seat?.vessel != null; }
+
+        public static Vessel KerbalVessel(ProtoCrewMember pcm)
+        { return pcm?.seat?.vessel; }
 
         public enum LogLevel { None, Error, Important, Debug };
         public static LogLevel Level

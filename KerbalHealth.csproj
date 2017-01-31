@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssignedFactor.cs" />
+    <Compile Include="ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="FactorsSettings.cs" />
     <Compile Include="HealthFactor.cs" />

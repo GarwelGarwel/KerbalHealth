@@ -41,6 +41,7 @@ namespace KerbalHealth
 
         void UpdateKerbals(bool forced = false)
         {
+            Core.Log("KerbalHealthScenario.UpdateKerbals(" + forced + ")");
             double timePassed = Planetarium.GetUniversalTime() - lastUpdated;
             if (forced || (timePassed >= Core.UpdateInterval * TimeWarp.CurrentRate))
             {
@@ -54,9 +55,7 @@ namespace KerbalHealth
         }
 
         public void FixedUpdate()
-        {
-            UpdateKerbals();
-        }
+        { UpdateKerbals(); }
 
         public void DisplayData()  // Called when the AppLauncher button is enabled
         {
@@ -118,7 +117,7 @@ namespace KerbalHealth
         public void UndisplayData()
         {
             if (monitorWindow != null) monitorWindow.Dismiss();
-       }
+        }
 
         public void OnDisable()
         {

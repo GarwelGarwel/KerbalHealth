@@ -18,7 +18,7 @@ namespace KerbalHealth
         bool onEva = false;  // True if kerbal is on EVA
 
         // These dictionaries are used to calculate factor modifiers
-        Dictionary<string, double> fmBonusSums, fmFreeMultipliers;
+        Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>();
         double minMultiplier, maxMultiplier;
 
         public string Name
@@ -36,6 +36,7 @@ namespace KerbalHealth
             get { return hp; }
             set
             {
+                //Core.Log("KerbalHealthStatus.HP.set");
                 if (value < Core.MinHP) hp = Core.MinHP;
                 else if (value > MaxHP) hp = MaxHP;
                 else hp = value;
@@ -67,6 +68,7 @@ namespace KerbalHealth
             get { return condition; }
             set
             {
+                //Core.Log("KerbalHealthStatus.Condition.set");
                 if (value == condition) return;
                 switch (value)
                 {
@@ -102,7 +104,8 @@ namespace KerbalHealth
         {
             get
             {
-                //if (pcmCached != null) return pcmCached;
+                //Core.Log("KerbalHealthStatus.HP.set");
+                if (pcmCached != null) return pcmCached;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
                     if (pcm.name == Name)
                     {
@@ -166,9 +169,7 @@ namespace KerbalHealth
         }
 
         public double TimeToNextCondition()
-        {
-            return TimeToValue(NextConditionHP());
-        }
+        { return TimeToValue(NextConditionHP()); }
 
         // Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
         public double GetBalanceHP()
@@ -178,9 +179,6 @@ namespace KerbalHealth
             if (LastMarginalPositiveChange <= LastMarginalNegativeChange) return 0;
             return (MaxHP * LastMarginalPositiveChange + LastChange * 100) / (LastMarginalPositiveChange - LastMarginalNegativeChange);
         }
-
-        static bool IsKerbalLoaded(ProtoCrewMember pcm)
-        { return pcm?.seat?.vessel != null; }
 
         double MarginalChange
         { get { return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100); } }
@@ -220,8 +218,7 @@ namespace KerbalHealth
             double res = 1 - fmBonusSums[factorId] / Core.GetCrewCount(PCM);
             if (res < 1) res = Math.Max(res, minMultiplier); else res = Math.Min(res, maxMultiplier);
             Core.Log("Multiplier for " + factorId + " for " + Name + " is " + res + " (bonus sum: " + fmBonusSums[factorId] + "; free multiplier: " + fmFreeMultipliers[factorId] + "; multipliers: " + minMultiplier + ".." + maxMultiplier + ")");
-            if (factorId == "All") return res * fmFreeMultipliers[factorId];
-            return res * fmFreeMultipliers[factorId] * Multiplier("All");
+            return res * fmFreeMultipliers[factorId];
         }
 
         public double HealthChangePerDay()
@@ -234,10 +231,17 @@ namespace KerbalHealth
                 return 0;
             }
 
+            if (Core.IsKerbalLoaded(pcm) && IsOnEVA)
+            {
+                Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
+                IsOnEVA = false;
+            }
+
+            //if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) Tooltip = "";
             LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
-            fmBonusSums = new Dictionary<string, double>();
+            fmBonusSums.Clear();
             fmBonusSums.Add("All", 0);
-            fmFreeMultipliers = new Dictionary<string, double>();
+            fmFreeMultipliers.Clear();
             fmFreeMultipliers.Add("All", 1);
             foreach (HealthFactor f in Core.Factors)
             {
@@ -246,41 +250,40 @@ namespace KerbalHealth
             }
             minMultiplier = maxMultiplier = 1;
 
-            if (IsKerbalLoaded(pcm) && IsOnEVA)
-            {
-                Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
-                IsOnEVA = false;
-            }
-
             // Processing parts
-            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && IsKerbalLoaded(pcm)) || Core.IsInEditor)
-            {
-                if (!IsOnEVA)
+            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && Core.IsKerbalLoaded(pcm)) || Core.IsInEditor)
                     if (Core.IsInEditor)
                         foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
                     else
                         foreach (Part p in pcm.seat.vessel.Parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
-            }
 
-            if (IsKerbalLoaded(pcm) || IsOnEVA) LastChange = 0;
+            if (Core.IsKerbalLoaded(pcm) || IsOnEVA) LastChange = 0;
 
             // Processing all factors
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + pcm.name + "...");
             foreach (HealthFactor f in Core.Factors)
             {
-                if (f.LoadedOnly && !(Core.IsInEditor || IsKerbalLoaded(pcm) || IsOnEVA))
+                if (f.LoadedOnly && !(Core.IsInEditor || Core.IsKerbalLoaded(pcm) || IsOnEVA))
                 {
-                    Core.Log(f.Id + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
+                    Core.Log(f.Id + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
                     continue;
                 }
-                double c = f.ChangePerDay(pcm) * Multiplier(f.Id);
+                double m = Multiplier(f.Id) * Multiplier("All");
+                double c = f.ChangePerDay(pcm) * m;
                 change += c;
-                if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) LastChange += c;
+                if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
+                {
+                    LastChange += c;
+                    //Tooltip += "\n" + f.Name + ": " + (c > 0 ? "+" : "") + c.ToString("F1") + (m != 1 ? (" (@" + m.ToString("F2") + "x)") : "");
+                }
                 Core.Log(f.Id + "'s effect on " + pcm.name + " is " + c + " HP/day.");
             }
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !IsKerbalLoaded(pcm)) change = LastChange;
-            Core.Log("Marginal change: +" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%.");
-            return change + MarginalChange;
+            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm)) change = LastChange;
+            double mc = MarginalChange;
+            //if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
+            //    Tooltip += "\nMarginal Change: " + (mc > 0 ? "+" : "") + mc.ToString("F1") + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%)";
+            Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
+            return change + mc;
         }
 
         public void Update(double interval)
