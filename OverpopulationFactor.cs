@@ -11,7 +11,7 @@ namespace KerbalHealth
         { get { return "Overpopulation"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().OverpopulationBaseFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().OverpopulationBaseFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         { return BaseChangePerDay * Core.GetCrewCount(pcm) / Core.GetCrewCapacity(pcm); }

@@ -11,7 +11,7 @@ namespace KerbalHealth
         { get { return "Microgravity"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().MicrogravityFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().MicrogravityFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

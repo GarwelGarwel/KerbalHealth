@@ -11,7 +11,7 @@ namespace KerbalHealth
         { get { return "Home"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().HomeFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().HomeFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

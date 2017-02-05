@@ -39,44 +39,44 @@ namespace KerbalHealth
 
         public static float UpdateInterval  // # of game seconds between updates
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval = value; }
         }
 
         public static float MinHP  // Min allowed value for health
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP = value; }
         }
 
         public static float BaseMaxHP  // Base amount of health (for level 0 kerbal)
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP = value; }
         }
 
         public static float HPPerLevel  // Health increase per kerbal level
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel = value; }
         }
 
         public static float ExhaustionStartHealth  // Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth = value; }
         }
 
         public static float ExhaustionEndHealth  // Health % when the kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth = value; }
         }
 
         public static float DeathHealth  // Health % when the kerbal dies
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth = value; }
         }
 
         public static bool IsInEditor
@@ -108,7 +108,7 @@ namespace KerbalHealth
         public enum LogLevel { None, Error, Important, Debug };
         public static LogLevel Level
         {
-            get { if (HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().debugMode) return LogLevel.Debug; else return LogLevel.Important; }
+            get { if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().debugMode) return LogLevel.Debug; else return LogLevel.Important; }
         }
 
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)

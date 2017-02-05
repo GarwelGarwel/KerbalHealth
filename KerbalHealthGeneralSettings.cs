@@ -5,7 +5,7 @@ using System.Text;
 
 namespace KerbalHealth
 {
-    class GeneralSettings : GameParameters.CustomParameterNode
+    class KerbalHealthGeneralSettings : GameParameters.CustomParameterNode
     {
         public override string Title { get { return "General Settings"; } }
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }

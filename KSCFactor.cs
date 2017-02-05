@@ -21,7 +21,7 @@ namespace KerbalHealth
         //{ get { return base.ValidScenes ^ GameScenes.EDITOR; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().KSCFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCFactor; } }
         
         public override double ChangePerDay(ProtoCrewMember pcm)
         { return (!Core.IsInEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) ? BaseChangePerDay : 0; }

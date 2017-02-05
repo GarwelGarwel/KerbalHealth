@@ -11,7 +11,7 @@ namespace KerbalHealth
         { get { return "EVA"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().EVAFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().EVAFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
