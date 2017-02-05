@@ -68,6 +68,7 @@
     <Compile Include="KerbalHealthList.cs" />
     <Compile Include="KerbalHealthScenario.cs" />
     <Compile Include="OverpopulationFactor.cs" />
+    <Compile Include="PanicAttackEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GeneralSettings.cs" />
   </ItemGroup>

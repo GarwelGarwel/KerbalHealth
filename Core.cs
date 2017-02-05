@@ -105,15 +105,15 @@ namespace KerbalHealth
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel; }
 
-        public enum LogLevel { None, Error, Important, Debug };
-        public static LogLevel Level
+        public enum LogLevels { None, Error, Important, Debug };
+        public static LogLevels LogLevel
         {
-            get { if (HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().debugMode) return LogLevel.Debug; else return LogLevel.Important; }
+            get { if (HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().debugMode) return LogLevels.Debug; else return LogLevels.Important; }
         }
 
-        public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
+        public static void Log(string message, LogLevels messageLevel = LogLevels.Debug)
         {
-            if (messageLevel <= Level)
+            if (messageLevel <= LogLevel)
                 Debug.Log("[KerbalHealth] " + Time.realtimeSinceStartup + ": " + message);
         }
     }

@@ -12,7 +12,7 @@ namespace KerbalHealth
             Core.Log("Registering " + name + " with " + health + " health.");
             if (Contains(name))
             {
-                Core.Log(name + " already registered.", Core.LogLevel.Important);
+                Core.Log(name + " already registered.", Core.LogLevels.Important);
                 return;
             }
             KerbalHealthStatus khs;
@@ -31,21 +31,21 @@ namespace KerbalHealth
         {
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.", Core.LogLevel.Important);
+            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.", Core.LogLevels.Important);
             foreach (ProtoCrewMember pcm in kerbalRoster.Kerbals(ProtoCrewMember.KerbalType.Crew)) Add(pcm);
-            Core.Log("" + Count + " kerbal(s) registered.", Core.LogLevel.Important);
+            Core.Log("" + Count + " kerbal(s) registered.", Core.LogLevels.Important);
         }
 
         public bool Remove(string name)
         {
-            Core.Log("Unregistering " + name + ".", Core.LogLevel.Important);
+            Core.Log("Unregistering " + name + ".", Core.LogLevels.Important);
             foreach (KerbalHealthStatus khs in this)
                 if (khs.Name == name)
                 {
                     Remove(khs);
                     return true;
                 }
-            Core.Log("Failed to remove " + name + "!", Core.LogLevel.Error);
+            Core.Log("Failed to remove " + name + "!", Core.LogLevels.Error);
             return false;
         }
 
@@ -74,7 +74,7 @@ namespace KerbalHealth
 
         bool IsKerbalTrackable(ProtoCrewMember pcm)
         {
-            return (pcm != null) && ((pcm.type == ProtoCrewMember.KerbalType.Crew) || (pcm.type == ProtoCrewMember.KerbalType.Tourist)) && (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Dead);
+            return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
         }
 
         public KerbalHealthStatus Find(ProtoCrewMember pcm)

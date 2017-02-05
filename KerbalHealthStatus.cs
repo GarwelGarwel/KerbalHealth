@@ -73,12 +73,12 @@ namespace KerbalHealth
                 switch (value)
                 {
                     case HealthCondition.OK:
-                        Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
+                        Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevels.Important);
                         PCM.type = ProtoCrewMember.KerbalType.Crew;
                         PCM.trait = Trait;
                         break;
                     case HealthCondition.Exhausted:
-                        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
+                        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevels.Important);
                         Trait = PCM.trait;
                         PCM.type = ProtoCrewMember.KerbalType.Tourist;
                         break;
@@ -233,7 +233,7 @@ namespace KerbalHealth
 
             if (Core.IsKerbalLoaded(pcm) && IsOnEVA)
             {
-                Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
+                Core.Log(Name + " is back from EVA.", Core.LogLevels.Important);
                 IsOnEVA = false;
             }
 
@@ -292,7 +292,7 @@ namespace KerbalHealth
             HP += HealthChangePerDay() / 21600 * interval;
             if (HP <= Core.DeathHealth * MaxHP)
             {
-                Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
+                Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevels.Important);
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 ScreenMessages.PostScreenMessage(Name + " dies of poor health!");

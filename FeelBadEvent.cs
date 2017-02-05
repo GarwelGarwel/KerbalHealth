@@ -5,7 +5,7 @@ using System.Text;
 
 namespace KerbalHealth
 {
-    class FeelBadEvent : Event
+    public class FeelBadEvent : Event
     {
         public override string Name
         { get { return "FeelBad"; } }
@@ -19,9 +19,15 @@ namespace KerbalHealth
         public override double ChancePerDay(KerbalHealthStatus khs)
         { return 0.01; }
 
+        static double minDamage = 0, maxDamage = 20;
+        double Damage(double x)
+        {
+            return minDamage + (maxDamage - minDamage) * x;
+        }
+
         public override void Run(KerbalHealthStatus khs)
         {
-            khs.HP -= rand.NextDouble() * 10;
+            khs.HP -= Damage(rand.NextDouble());
         }
     }
 }

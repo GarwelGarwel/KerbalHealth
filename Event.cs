@@ -33,6 +33,7 @@ namespace KerbalHealth
         {
             if (Condition(khs) && (rand.NextDouble() < ChancePerDay(khs)))
             {
+                Core.Log(Name + " event has fired.");
                 string msg = Message(khs);
                 if (msg != null) ScreenMessages.PostScreenMessage(msg);
                 Run(khs);

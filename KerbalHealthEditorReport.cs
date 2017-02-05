@@ -18,14 +18,14 @@ namespace KerbalHealth
 
         public void Start()
         {
-            Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.Start", Core.LogLevels.Important);
             GameEvents.onEditorShipModified.Add(Invalidate);
             GameEvents.onEditorPodDeleted.Add(Invalidate);
             GameEvents.onEditorScreenChange.Add(Invalidate);
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
             button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
-            Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevels.Important);
         }
 
         public void DisplayData()
@@ -33,7 +33,7 @@ namespace KerbalHealth
             Core.Log("KerbalHealthEditorReport.DisplayData");
             if ((ShipConstruction.ShipManifest == null) || (!ShipConstruction.ShipManifest.HasAnyCrew()))
             {
-                Core.Log("Ship is empty. Let's get outta here!", Core.LogLevel.Important);
+                Core.Log("Ship is empty. Let's get outta here!", Core.LogLevels.Important);
                 return;
             }
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
@@ -60,17 +60,17 @@ namespace KerbalHealth
             {
                 if (reportGrid == null)
                 {
-                    Core.Log("reportGrid is null.", Core.LogLevel.Error);
+                    Core.Log("reportGrid is null.", Core.LogLevels.Error);
                     return;
                 }
                 if (gridContents == null)
                 {
-                    Core.Log("gridContents is null.", Core.LogLevel.Error);
+                    Core.Log("gridContents is null.", Core.LogLevels.Error);
                     return;
                 }
                 if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
                 {
-                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.", Core.LogLevel.Important);
+                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.", Core.LogLevels.Important);
                     UndisplayData();
                     DisplayData();
                 }
@@ -107,11 +107,11 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
-            Core.Log("KerbalHealthEditorReport.OnDisable", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable", Core.LogLevels.Important);
             UndisplayData();
             if (ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(button);
-            Core.Log("KerbalHealthEditorReport.OnDisable finished.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable finished.", Core.LogLevels.Important);
         }
     }
 }
