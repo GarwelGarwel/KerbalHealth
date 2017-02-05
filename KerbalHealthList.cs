@@ -32,7 +32,7 @@ namespace KerbalHealth
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.", Core.LogLevel.Important);
-            foreach (ProtoCrewMember pcm in kerbalRoster.Kerbals(ProtoCrewMember.KerbalType.Crew)) Add(pcm);
+            foreach (ProtoCrewMember pcm in kerbalRoster.Crew.Concat(kerbalRoster.Tourist)) Add(pcm);
             Core.Log("" + Count + " kerbal(s) registered.", Core.LogLevel.Important);
         }
 
@@ -74,7 +74,7 @@ namespace KerbalHealth
 
         bool IsKerbalTrackable(ProtoCrewMember pcm)
         {
-            return (pcm != null) && ((pcm.type == ProtoCrewMember.KerbalType.Crew) || (pcm.type == ProtoCrewMember.KerbalType.Tourist)) && (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Dead);
+            return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
         }
 
         public KerbalHealthStatus Find(ProtoCrewMember pcm)
