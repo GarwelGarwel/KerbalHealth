@@ -68,12 +68,12 @@ namespace KerbalHealth
             get { return condition; }
             set
             {
-                //Core.Log("KerbalHealthStatus.Condition.set");
                 if (value == condition) return;
                 switch (value)
                 {
                     case HealthCondition.OK:
                         Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
+                        if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
                         PCM.type = ProtoCrewMember.KerbalType.Crew;
                         PCM.trait = Trait;
                         break;
@@ -104,7 +104,6 @@ namespace KerbalHealth
         {
             get
             {
-                //Core.Log("KerbalHealthStatus.HP.set");
                 if (pcmCached != null) return pcmCached;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
                     if (pcm.name == Name)
