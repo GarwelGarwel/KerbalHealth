@@ -11,8 +11,8 @@ namespace KerbalHealth
     {
         ApplicationLauncherButton button;
         bool dirty = false;
+        Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
         PopupDialog reportWindow;  // Health Report window
-        DialogGUIGridLayout reportGrid;  // Health Report grid
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         int colNum = 3;  // # of columns in Health Report
 
@@ -44,25 +44,24 @@ namespace KerbalHealth
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));
-            reportGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
             dirty = true;
-            reportWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Report", HighLogic.UISkin, 300, reportGrid), false, HighLogic.UISkin, false);
+            reportWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Report", HighLogic.UISkin, reportPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
         }
 
         public void UndisplayData()
         {
-            if (reportWindow != null) reportWindow.Dismiss();
+            if (reportWindow != null)
+            {
+                Vector3 v = reportWindow.RTrf.position;
+                reportPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 300, 50);
+                reportWindow.Dismiss();
+            }
         }
 
         public void Update()
         {
             if ((reportWindow != null) && dirty)
             {
-                if (reportGrid == null)
-                {
-                    Core.Log("reportGrid is null.", Core.LogLevel.Error);
-                    return;
-                }
                 if (gridContents == null)
                 {
                     Core.Log("gridContents is null.", Core.LogLevel.Error);

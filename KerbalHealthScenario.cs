@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
@@ -12,8 +12,8 @@ namespace KerbalHealth
 
         ApplicationLauncherButton button;
         bool dirty = false;
+        Rect monitorPosition = new Rect(0.5f, 0.5f, 500, 50);
         PopupDialog monitorWindow;  // Health Monitor window
-        DialogGUIGridLayout monitorGrid;  // Health Monitor grid
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
         int colNum = 4;  // # of columns in Health Monitor
 
@@ -41,7 +41,6 @@ namespace KerbalHealth
 
         void UpdateKerbals(bool forced = false)
         {
-            Core.Log("KerbalHealthScenario.UpdateKerbals(" + forced + ")");
             double timePassed = Planetarium.GetUniversalTime() - lastUpdated;
             if (forced || (timePassed >= Core.UpdateInterval * TimeWarp.CurrentRate))
             {
@@ -68,23 +67,17 @@ namespace KerbalHealth
             gridContents.Add(new DialogGUILabel("Time Left", true));
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
-            monitorGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
             dirty = true;
-            monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, 500, monitorGrid), false, HighLogic.UISkin, false);
+            monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
         }
 
         public void Update()
         {
             if ((monitorWindow != null) && dirty)
             {
-                if (monitorGrid == null)
-                {
-                    Core.Log("monitorGrid is null.", Core.LogLevel.Error);
-                    return;
-                }
                 if (gridContents == null)
                 {
-                    Core.Log("gridContents is null.", Core.LogLevel.Error);
+                    Core.Log("KerbalHealthScenario.gridContents is null.", Core.LogLevel.Error);
                     return;
                 }
                 if (gridContents.Count != (Core.KerbalHealthList.Count + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
@@ -97,11 +90,11 @@ namespace KerbalHealth
                 for (int i = 0; i < Core.KerbalHealthList.Count; i++)
                 {
                     KerbalHealthStatus khs = Core.KerbalHealthList[i];
-                    gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
                     double ch = khs.HealthChangePerDay();
                     string trend = "~ ";
                     if (ch > 0) trend = "↑ ";
                     if (ch < 0) trend = "↓ ";
+                    gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
                     gridContents[(i + 1) * colNum + 1].SetOptionText(trend + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
                     gridContents[(i + 1) * colNum + 2].SetOptionText(khs.Condition.ToString());
                     double b = khs.GetBalanceHP();
@@ -116,7 +109,12 @@ namespace KerbalHealth
 
         public void UndisplayData()
         {
-            if (monitorWindow != null) monitorWindow.Dismiss();
+            if (monitorWindow != null)
+            {
+                Vector3 v = monitorWindow.RTrf.position;
+                monitorPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 500, 50);
+                monitorWindow.Dismiss();
+            }
         }
 
         public void OnDisable()
