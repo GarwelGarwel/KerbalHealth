@@ -20,7 +20,7 @@ namespace KerbalHealth
                 Core.Log("Microgravity factor always on in Editor.");
                 return BaseChangePerDay;
             }
-            if ((pcm.KerbalRef.InVessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
+            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && (pcm.KerbalRef.InVessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
             {
                 Core.Log("Microgravity is on due to being in " + pcm.KerbalRef.InVessel.situation);
                 return BaseChangePerDay;

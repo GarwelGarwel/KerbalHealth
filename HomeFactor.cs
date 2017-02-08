@@ -20,7 +20,12 @@ namespace KerbalHealth
                 Core.Log("Home factor is always off in Editor.");
                 return 0;
             }
-            if (((pcm.KerbalRef.InVessel.mainBody.name == "Kerbin") || (pcm.KerbalRef.InVessel.mainBody.name == "Earth")) && (pcm.KerbalRef.InVessel.altitude < 25000))
+            if (Core.KerbalHealthList.Find(pcm).IsOnEVA)
+            {
+                Core.Log(pcm.name + " is on EVA, " + Id + " factor is unapplicable.");
+                return 0;
+            }
+            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && ((pcm.KerbalRef.InVessel.mainBody.name == "Kerbin") || (pcm.KerbalRef.InVessel.mainBody.name == "Earth")) && (pcm.KerbalRef.InVessel.altitude < 25000))
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
