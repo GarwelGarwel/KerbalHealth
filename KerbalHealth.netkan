@@ -15,6 +15,6 @@
 	    "suggests": [
         { "name": "KSP-AVC" },
         { "name": "USI-LS" },
-		{ "name": "UKS" }
+		    { "name": "UKS" }
     ]
 }
