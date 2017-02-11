@@ -5,7 +5,7 @@ using KSP.UI.Screens;
 
 namespace KerbalHealth
 {
-    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.FLIGHT)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT)]
     public class KerbalHealthScenario : ScenarioModule
     {
         static double lastUpdated;  // UT at last health update
