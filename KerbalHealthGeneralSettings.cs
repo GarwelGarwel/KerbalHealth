@@ -10,7 +10,7 @@ namespace KerbalHealth
         public override string Title { get { return "General Settings"; } }
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
         public override bool HasPresets { get { return false; } }
-        public override string Section { get { return "KerbalHealth"; } }
+        public override string Section { get { return "Kerbal Health"; } }
         public override int SectionOrder { get { return 1; } }
 
         [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
