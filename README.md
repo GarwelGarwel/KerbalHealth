@@ -8,11 +8,11 @@
 - Keep the mod as flexible as possible, including configuration options and integration with other mods
 - Avoid micromanagement as much as possible
 
-The mod is currently in beta. It has most main systems in place, but will continue to change and to grow. It requires testing and balancing. Future changes can be backward-incompatible, so be careful using it in your main playthrough. This is my first attempt to mod KSP and I'm not even a professional programmer, so you've been warned.
+The mod looks stable enough for me to use in my own main playthrough, but a beta is still a beta. Some things may be poorly balanced; some changes may be backward-incompatible; some bugs are certainly out there. So you've been warned.
 
 I will appreciate your bug reports (include output_log.txt) and feature suggestions.
 
-**Features as of 0.4.4 (beta)**
+**Features as of 0.4.5 (beta)**
 
 - Every kerbal, including Tourists, has Health Points (HP).
 - Maximum HP increase with kerbals' level. A 5-level kerbal is 50% "healthier" than a newbie.
@@ -54,14 +54,15 @@ As you see, this mechanics may allow some kerbals to stay relatively healthy for
 
 **Next objectives**
 
-- Add integration with major mods (parts packs, life support, etc.)
-- Add more health conditions
-- Add random health events
+- More informative UI (Health Monitor and Health Report)
+- Random health events (nervous breakdowns, illnesses, etc.)
+- Support patches for Kerbalism, KPBS, etc.
 
 **Future features**
 
-- Add new mechanics: infectious diseases, medics, medical supplies, quarantine, etc.
-- Add API for collaboration with other mods
+- More health conditions
+- New mechanics: infectious diseases, medics, medical supplies, quarantine, etc.
+- API for collaboration with other mods
 
 **Requirements**
 
