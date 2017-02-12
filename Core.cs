@@ -12,7 +12,7 @@ namespace KerbalHealth
 
         static List<HealthFactor> factors = new List<HealthFactor>() {
             new AssignedFactor(),
-            new OverpopulationFactor(),
+            new CrowdedFactor(),
             new LonelinessFactor(),
             new MicrogravityFactor(),
             new EVAFactor(),
@@ -91,12 +91,18 @@ namespace KerbalHealth
 
         public static int GetCrewCount(ProtoCrewMember pcm)
         {
-            return IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
+            if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
+            Vessel v = pcm?.KerbalRef?.InVessel;
+            if (v == null) return 0;
+            return v.GetCrewCount();
         }
 
         public static int GetCrewCapacity(ProtoCrewMember pcm)
         {
-            return IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
+            if (IsInEditor) return ShipConstruction.ShipManifest.GetAllCrew(true).Count;
+            Vessel v = pcm?.KerbalRef?.InVessel;
+            if ((v == null) || (v.GetCrewCapacity() < 1)) return 1;
+            return v.GetCrewCapacity();
         }
 
         public static bool IsKerbalLoaded(ProtoCrewMember pcm)
