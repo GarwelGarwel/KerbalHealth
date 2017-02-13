@@ -1,4 +1,4 @@
-# KerbalHealth
+# Kerbal Health
 
 **Design goals**
 
@@ -12,7 +12,7 @@ The mod looks stable enough for me to use in my own main playthrough, but a beta
 
 I will appreciate your bug reports (include output_log.txt) and feature suggestions.
 
-**Features as of 0.4.5 (beta)**
+**Features as of 0.4.6 (beta)**
 
 - Every kerbal, including Tourists, has Health Points (HP).
 - Maximum HP increase with kerbals' level. A 5-level kerbal is 50% "healthier" than a newbie.
@@ -28,7 +28,7 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 **Health factors**
 
 - Assigned (kerbal is on a mission): -0.5 HP/day
-- Overpopulation (scaled in proportion to crew/capacity ratio): -6 HP/day for a full vessel
+- Crowded (effect scaled in proportion to crew/capacity ratio): -6 HP/day for a full vessel
 - Loneliness (only 1 kerbal on the vessel, badass kerbals immune): -1 HP/day
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
 - EVA: -50 HP/day (don't abandon your kerbals outside for long!)
@@ -46,6 +46,10 @@ The Cupola (as well as some advanced mod parts) provides so-called marginal heal
 
 As you see, this mechanics may allow some kerbals to stay relatively healthy for an unlimited time. It may look cheaty, but the point is that: (1) there should be a way to design long-term missions without spamming crew space, (2) it requires a lot of heavy parts and therefore still difficult, (3) the balanced health level is usually far from 100% and may fall lower if circumstances change (e.g., new crew arrives and fills the station), (4) these bonuses require a lot of EC.
 
+**Requirements**
+
+- ModuleManager
+
 **Supported mods**
 
 - [KSP-AVC](http://ksp-avc.cybutek.net)
@@ -61,9 +65,6 @@ As you see, this mechanics may allow some kerbals to stay relatively healthy for
 **Future features**
 
 - More health conditions
-- New mechanics: infectious diseases, medics, medical supplies, quarantine, etc.
+- More factors (e.g. radiation)
+- New mechanics: injuries, infectious diseases, medics, medical supplies, quarantine, etc.
 - API for collaboration with other mods
-
-**Requirements**
-
-- ModuleManager
