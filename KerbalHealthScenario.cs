@@ -22,8 +22,6 @@ namespace KerbalHealth
             Core.Log("KerbalHealth.Start", Core.LogLevel.Important);
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
-            GameEvents.onKerbalAdded.Add(Core.KerbalHealthList.Add);
-            GameEvents.onKerbalRemoved.Add(Core.KerbalHealthList.Remove);
             GameEvents.onCrewOnEva.Add(OnKerbalOnEva);
             Core.Log("Registering toolbar button...", Core.LogLevel.Important);
             Texture2D icon = new Texture2D(38, 38);
@@ -121,8 +119,6 @@ namespace KerbalHealth
         {
             Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
             UndisplayData();
-            GameEvents.onKerbalAdded.Remove(Core.KerbalHealthList.Add);
-            GameEvents.onKerbalRemoved.Remove(Core.KerbalHealthList.Remove);
             GameEvents.onCrewOnEva.Remove(OnKerbalOnEva);
             if (ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(button);

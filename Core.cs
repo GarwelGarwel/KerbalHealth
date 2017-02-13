@@ -93,7 +93,7 @@ namespace KerbalHealth
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
             Vessel v = pcm?.KerbalRef?.InVessel;
-            if (v == null) return 0;
+            if (v == null) return 1;
             return v.GetCrewCount();
         }
 

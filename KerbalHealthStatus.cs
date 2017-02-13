@@ -230,13 +230,12 @@ namespace KerbalHealth
                 return 0;
             }
 
-            if (Core.IsKerbalLoaded(pcm) && IsOnEVA)
+            if (IsOnEVA && (Core.IsKerbalLoaded(pcm) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)))
             {
                 Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
                 IsOnEVA = false;
             }
 
-            //if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) Tooltip = "";
             LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
             fmBonusSums.Clear();
             fmBonusSums.Add("All", 0);
@@ -270,17 +269,11 @@ namespace KerbalHealth
                 double m = Multiplier(f.Id) * Multiplier("All");
                 double c = f.ChangePerDay(pcm) * m;
                 change += c;
-                if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
-                {
-                    LastChange += c;
-                    //Tooltip += "\n" + f.Name + ": " + (c > 0 ? "+" : "") + c.ToString("F1") + (m != 1 ? (" (@" + m.ToString("F2") + "x)") : "");
-                }
+                if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) LastChange += c;
                 Core.Log(f.Id + "'s effect on " + pcm.name + " is " + c + " HP/day.");
             }
             if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm)) change = LastChange;
             double mc = MarginalChange;
-            //if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
-            //    Tooltip += "\nMarginal Change: " + (mc > 0 ? "+" : "") + mc.ToString("F1") + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%)";
             Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
             return change + mc;
         }
