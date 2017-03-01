@@ -120,7 +120,7 @@ namespace KerbalHealth
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         {
             if (messageLevel <= Level)
-                Debug.Log("[KerbalHealth] " + Time.realtimeSinceStartup + ": " + message);
+                Debug.Log("[KerbalHealth] " + message);
         }
     }
 }
