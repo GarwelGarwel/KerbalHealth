@@ -272,9 +272,14 @@ namespace KerbalHealth
                 if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) LastChange += c;
                 Core.Log(f.Id + "'s effect on " + pcm.name + " is " + c + " HP/day.");
             }
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm)) change = LastChange;
+            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm))
+            {
+                Core.Log("Cached health change: " + LastChange);
+                change = LastChange;
+            }
             double mc = MarginalChange;
             Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
+            Core.Log("Total change: " + change + mc);
             return change + mc;
         }
 

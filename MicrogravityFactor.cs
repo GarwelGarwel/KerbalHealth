@@ -30,18 +30,19 @@ namespace KerbalHealth
                 Core.Log(pcm.name + " not found in KerbalHealthList. The list has " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
                 return 0;
             }
-            if (pcm.KerbalRef == null)
-                Core.Log("MicrogravityFactor.ChangePerDay: pcm.KerbalRef is null for " + pcm.name + "!", Core.LogLevel.Important);
-            else if (pcm.KerbalRef.InVessel == null)
-                Core.Log("MicrogravityFactor.ChangePerDay: pcm.KerbalRef.InVessel is null for " + pcm.name + ", he/she is " + (Core.KerbalHealthList.Find(pcm).IsOnEVA ? "" : "NOT") + " on EVA!", Core.KerbalHealthList.Find(pcm).IsOnEVA ? Core.LogLevel.Debug : Core.LogLevel.Error);
-            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && (pcm.KerbalRef.InVessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
+            if (pcm.seat?.vessel == null)
             {
-                Core.Log("Microgravity is on due to being in " + pcm.KerbalRef.InVessel.situation);
+                Core.Log("MicrogravityFactor.ChangePerDay: pcm.seat.vessel is null for " + pcm.name + "! EVA is " + Core.KerbalHealthList.Find(pcm).IsOnEVA, Core.LogLevel.Important);
+                return 0;
+            }
+            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && (pcm.seat.vessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
+            {
+                Core.Log("Microgravity is on due to being in a " + pcm.seat.vessel.situation + " situation.");
                 return BaseChangePerDay;
             }
             if (pcm.geeForce < 0.1)
             {
-                Core.Log("Microgravity is on due to g = " + pcm.geeForce);
+                Core.Log("Microgravity is on due to g = " + pcm.geeForce.ToString("F2"));
                 return BaseChangePerDay;
             }
             Core.Log("Microgravity is off, g = " + pcm.geeForce);

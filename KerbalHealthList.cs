@@ -9,12 +9,11 @@ namespace KerbalHealth
     {
         public void Add(string name, double health = double.NaN)
         {
-            Core.Log("Registering " + name + " with " + health + " health.");
             if (Contains(name))
             {
-                Core.Log(name + " already registered.", Core.LogLevel.Important);
+                Core.Log(name + " already registered.");
                 return;
-            }
+            } else Core.Log("Registering " + name + " with " + health + " health.", Core.LogLevel.Important);
             KerbalHealthStatus khs;
             if (double.IsNaN(health)) khs = new KerbalHealth.KerbalHealthStatus(name);
             else khs = new KerbalHealth.KerbalHealthStatus(name, health);
@@ -25,9 +24,11 @@ namespace KerbalHealth
         {
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.", Core.LogLevel.Important);
-            foreach (ProtoCrewMember pcm in kerbalRoster.Crew.Concat(kerbalRoster.Tourist)) if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
-            Core.Log("" + Count + " kerbal(s) registered.", Core.LogLevel.Important);
+            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + " crew, " + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
+            foreach (ProtoCrewMember pcm in kerbalRoster.Crew.Concat(kerbalRoster.Tourist))
+                if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
+                else Core.Log(pcm?.name + " is not trackable (" + (pcm == null ? "is null" : ("status: " + pcm.rosterStatus)) + ").");
+            Core.Log("" + Count + " kerbal(s) processed.", Core.LogLevel.Important);
         }
 
         public void Update(double interval)
@@ -45,7 +46,8 @@ namespace KerbalHealth
                     i--;
                 }
             }
-            if (HighLogic.fetch.currentGame.CrewRoster.GetAssignedCrewCount() + HighLogic.fetch.currentGame.CrewRoster.GetAvailableCrewCount() != Count) RegisterKerbals();
+            //if (HighLogic.fetch.currentGame.CrewRoster.GetAssignedCrewCount() + HighLogic.fetch.currentGame.CrewRoster.GetAvailableCrewCount() != Count) RegisterKerbals();
+            if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }
 
         bool IsKerbalTrackable(ProtoCrewMember pcm)

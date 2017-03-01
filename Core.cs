@@ -92,7 +92,7 @@ namespace KerbalHealth
         public static int GetCrewCount(ProtoCrewMember pcm)
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
-            Vessel v = pcm?.KerbalRef?.InVessel;
+            Vessel v = pcm?.seat?.vessel;
             if (v == null) return 1;
             return v.GetCrewCount();
         }
@@ -100,7 +100,7 @@ namespace KerbalHealth
         public static int GetCrewCapacity(ProtoCrewMember pcm)
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.GetAllCrew(true).Count;
-            Vessel v = pcm?.KerbalRef?.InVessel;
+            Vessel v = pcm?.seat?.vessel;
             if ((v == null) || (v.GetCrewCapacity() < 1)) return 1;
             return v.GetCrewCapacity();
         }
