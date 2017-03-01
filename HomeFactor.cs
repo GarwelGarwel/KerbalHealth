@@ -30,7 +30,7 @@ namespace KerbalHealth
                 Core.Log(pcm.name + " is on EVA, " + Id + " factor is unapplicable.");
                 return 0;
             }
-            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && ((pcm.seat?.vessel.mainBody.name == "Kerbin") || (pcm.seat?.vessel.mainBody.name == "Earth")) && (pcm.seat?.vessel.altitude < 25000))
+            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && ((pcm.seat?.vessel.mainBody.name == "Kerbin") || (pcm.seat?.vessel.mainBody.name == "Earth")) && (pcm.seat?.vessel.altitude < 70000))
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
