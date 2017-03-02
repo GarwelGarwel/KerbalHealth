@@ -46,7 +46,6 @@ namespace KerbalHealth
                     i--;
                 }
             }
-            //if (HighLogic.fetch.currentGame.CrewRoster.GetAssignedCrewCount() + HighLogic.fetch.currentGame.CrewRoster.GetAvailableCrewCount() != Count) RegisterKerbals();
             if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }
 
@@ -54,6 +53,7 @@ namespace KerbalHealth
         {
             foreach (KerbalHealthStatus khs in this)
             {
+                if (!IsKerbalTrackable(khs.PCM)) continue;
                 Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevel.Important);
                 foreach (Event e in Core.Events) e.Process(khs);
             }
