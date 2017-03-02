@@ -5,13 +5,13 @@ using System.Text;
 
 namespace KerbalHealth
 {
-    public class OverpopulationFactor : HealthFactor
+    public class CrowdedFactor : HealthFactor
     {
         public override string Id
-        { get { return "Overpopulation"; } }
+        { get { return "Crowded"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().OverpopulationBaseFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         { return BaseChangePerDay * Core.GetCrewCount(pcm) / Core.GetCrewCapacity(pcm); }

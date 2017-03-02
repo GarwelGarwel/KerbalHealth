@@ -12,7 +12,7 @@ namespace KerbalHealth
 
         static List<HealthFactor> factors = new List<HealthFactor>() {
             new AssignedFactor(),
-            new OverpopulationFactor(),
+            new CrowdedFactor(),
             new LonelinessFactor(),
             new MicrogravityFactor(),
             new EVAFactor(),
@@ -27,6 +27,9 @@ namespace KerbalHealth
             set { factors = value; }
         }
 
+        public static void AddFactor(HealthFactor f)
+        { Factors.Add(f); }
+
         public static HealthFactor FindFactor(string id)
         {
             foreach (HealthFactor f in Factors)
@@ -34,58 +37,46 @@ namespace KerbalHealth
             return null;
         }
 
-        static List<Event> events = new List<Event>()
-        {
-            new FeelBadEvent(),
-            new PanicAttackEvent()
-        };
-
-        public static List<Event> Events
-        {
-            get { return events; }
-            set { events = value; }
-        }
-
         public static float UpdateInterval  // # of game seconds between updates
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().UpdateInterval = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval = value; }
         }
 
         public static float MinHP  // Min allowed value for health
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().MinHP = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP = value; }
         }
 
         public static float BaseMaxHP  // Base amount of health (for level 0 kerbal)
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().BaseMaxHP = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP = value; }
         }
 
         public static float HPPerLevel  // Health increase per kerbal level
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().HPPerLevel = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel = value; }
         }
 
         public static float ExhaustionStartHealth  // Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= ExhaustionEndHealth
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionStartHealth = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth = value; }
         }
 
         public static float ExhaustionEndHealth  // Health % when the kerbal leaves exhausted state (i.e. becomes Crew again). Must be >= ExhaustionStartHealth
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().ExhaustionEndHealth = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth = value; }
         }
 
         public static float DeathHealth  // Health % when the kerbal dies
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().DeathHealth = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth = value; }
         }
 
         public static bool IsInEditor
@@ -100,12 +91,18 @@ namespace KerbalHealth
 
         public static int GetCrewCount(ProtoCrewMember pcm)
         {
-            return IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm?.seat?.vessel.GetCrewCount() ?? 1);
+            if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
+            Vessel v = pcm?.seat?.vessel;
+            if (v == null) return 1;
+            return v.GetCrewCount();
         }
 
         public static int GetCrewCapacity(ProtoCrewMember pcm)
         {
-            return IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm?.seat?.vessel.GetCrewCapacity() ?? 1);
+            if (IsInEditor) return ShipConstruction.ShipManifest.GetAllCrew(true).Count;
+            Vessel v = pcm?.seat?.vessel;
+            if ((v == null) || (v.GetCrewCapacity() < 1)) return 1;
+            return v.GetCrewCapacity();
         }
 
         public static bool IsKerbalLoaded(ProtoCrewMember pcm)
@@ -114,18 +111,16 @@ namespace KerbalHealth
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel; }
 
-        public static System.Random rand = new System.Random();
-
-        public enum LogLevels { None, Error, Important, Debug };
-        public static LogLevels LogLevel
+        public enum LogLevel { None, Error, Important, Debug };
+        public static LogLevel Level
         {
-            get { if (HighLogic.CurrentGame.Parameters.CustomParams<GeneralSettings>().debugMode) return LogLevels.Debug; else return LogLevels.Important; }
+            get { if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().debugMode) return LogLevel.Debug; else return LogLevel.Important; }
         }
 
-        public static void Log(string message, LogLevels messageLevel = LogLevels.Debug)
+        public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         {
-            if (messageLevel <= LogLevel)
-                Debug.Log("[KerbalHealth] " + Time.realtimeSinceStartup + ": " + message);
+            if (messageLevel <= Level)
+                Debug.Log("[KerbalHealth] " + message);
         }
     }
 }

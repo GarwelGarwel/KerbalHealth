@@ -11,7 +11,7 @@ namespace KerbalHealth
         { get { return "Loneliness"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().LonelinessFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().LonelinessFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         { if ((Core.GetCrewCount(pcm) <= 1) && !pcm.isBadass) return BaseChangePerDay; else return 0; }

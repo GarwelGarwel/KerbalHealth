@@ -68,17 +68,17 @@ namespace KerbalHealth
             get { return condition; }
             set
             {
-                //Core.Log("KerbalHealthStatus.Condition.set");
                 if (value == condition) return;
                 switch (value)
                 {
                     case HealthCondition.OK:
-                        Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevels.Important);
+                        Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
+                        if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
                         PCM.type = ProtoCrewMember.KerbalType.Crew;
                         PCM.trait = Trait;
                         break;
                     case HealthCondition.Exhausted:
-                        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevels.Important);
+                        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
                         Trait = PCM.trait;
                         PCM.type = ProtoCrewMember.KerbalType.Tourist;
                         break;
@@ -104,7 +104,6 @@ namespace KerbalHealth
         {
             get
             {
-                //Core.Log("KerbalHealthStatus.HP.set");
                 if (pcmCached != null) return pcmCached;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
                     if (pcm.name == Name)
@@ -231,13 +230,12 @@ namespace KerbalHealth
                 return 0;
             }
 
-            if (Core.IsKerbalLoaded(pcm) && IsOnEVA)
+            if (IsOnEVA && (Core.IsKerbalLoaded(pcm) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)))
             {
-                Core.Log(Name + " is back from EVA.", Core.LogLevels.Important);
+                Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
                 IsOnEVA = false;
             }
 
-            //if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) Tooltip = "";
             LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
             fmBonusSums.Clear();
             fmBonusSums.Add("All", 0);
@@ -271,18 +269,17 @@ namespace KerbalHealth
                 double m = Multiplier(f.Id) * Multiplier("All");
                 double c = f.ChangePerDay(pcm) * m;
                 change += c;
-                if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
-                {
-                    LastChange += c;
-                    //Tooltip += "\n" + f.Name + ": " + (c > 0 ? "+" : "") + c.ToString("F1") + (m != 1 ? (" (@" + m.ToString("F2") + "x)") : "");
-                }
+                if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) LastChange += c;
                 Core.Log(f.Id + "'s effect on " + pcm.name + " is " + c + " HP/day.");
             }
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm)) change = LastChange;
+            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm))
+            {
+                Core.Log("Cached health change: " + LastChange);
+                change = LastChange;
+            }
             double mc = MarginalChange;
-            //if (IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
-            //    Tooltip += "\nMarginal Change: " + (mc > 0 ? "+" : "") + mc.ToString("F1") + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%)";
             Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
+            Core.Log("Total change: " + change + mc);
             return change + mc;
         }
 
@@ -292,7 +289,7 @@ namespace KerbalHealth
             HP += HealthChangePerDay() / 21600 * interval;
             if (HP <= Core.DeathHealth * MaxHP)
             {
-                Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevels.Important);
+                Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 ScreenMessages.PostScreenMessage(Name + " dies of poor health!");

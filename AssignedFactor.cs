@@ -14,7 +14,7 @@ namespace KerbalHealth
         { get { return "Assigned"; } }
 
         public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<FactorsSettings>().AssignedFactor; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().AssignedFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

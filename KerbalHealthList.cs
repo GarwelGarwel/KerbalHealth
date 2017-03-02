@@ -9,48 +9,27 @@ namespace KerbalHealth
     {
         public void Add(string name, double health = double.NaN)
         {
-            Core.Log("Registering " + name + " with " + health + " health.");
             if (Contains(name))
             {
-                Core.Log(name + " already registered.", Core.LogLevels.Important);
+                Core.Log(name + " already registered.");
                 return;
-            }
+            } else Core.Log("Registering " + name + " with " + health + " health.", Core.LogLevel.Important);
             KerbalHealthStatus khs;
             if (double.IsNaN(health)) khs = new KerbalHealth.KerbalHealthStatus(name);
             else khs = new KerbalHealth.KerbalHealthStatus(name, health);
             Add(khs);
         }
 
-        public void Add(ProtoCrewMember pcm)
-        {
-            Core.Log("Trying to add " + pcm.name + " (" + pcm.type + ", " + pcm.rosterStatus + ").");
-            if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
-        }
-
         public void RegisterKerbals()
         {
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.GetActiveCrewCount() + " active, " + kerbalRoster.GetAssignedCrewCount() + " assigned, " + kerbalRoster.GetAvailableCrewCount() + " available.", Core.LogLevels.Important);
-            foreach (ProtoCrewMember pcm in kerbalRoster.Kerbals(ProtoCrewMember.KerbalType.Crew)) Add(pcm);
-            Core.Log("" + Count + " kerbal(s) registered.", Core.LogLevels.Important);
+            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + " crew, " + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
+            foreach (ProtoCrewMember pcm in kerbalRoster.Crew.Concat(kerbalRoster.Tourist))
+                if (IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
+                else Core.Log(pcm?.name + " is not trackable (" + (pcm == null ? "is null" : ("status: " + pcm.rosterStatus)) + ").");
+            Core.Log("" + Count + " kerbal(s) processed.", Core.LogLevel.Important);
         }
-
-        public bool Remove(string name)
-        {
-            Core.Log("Unregistering " + name + ".", Core.LogLevels.Important);
-            foreach (KerbalHealthStatus khs in this)
-                if (khs.Name == name)
-                {
-                    Remove(khs);
-                    return true;
-                }
-            Core.Log("Failed to remove " + name + "!", Core.LogLevels.Error);
-            return false;
-        }
-
-        public void Remove(ProtoCrewMember pcm)
-        { Remove(pcm.name); }
 
         public void Update(double interval)
         {
@@ -66,19 +45,9 @@ namespace KerbalHealth
                     RemoveAt(i);
                     i--;
                 }
-
             }
-            if (HighLogic.fetch.currentGame.CrewRoster.GetAssignedCrewCount() + HighLogic.fetch.currentGame.CrewRoster.GetAvailableCrewCount() != Count)
-                RegisterKerbals();
-        }
-
-        public void ProcessEvents()
-        {
-            foreach (KerbalHealthStatus khs in this)
-            {
-                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevels.Important);
-                foreach (Event e in Core.Events) e.Process(khs);
-            }
+            //if (HighLogic.fetch.currentGame.CrewRoster.GetAssignedCrewCount() + HighLogic.fetch.currentGame.CrewRoster.GetAvailableCrewCount() != Count) RegisterKerbals();
+            if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }
 
         bool IsKerbalTrackable(ProtoCrewMember pcm)
@@ -96,11 +65,6 @@ namespace KerbalHealth
         {
             foreach (KerbalHealthStatus khs in this) if (khs.Name == name) return true;
             return false;
-        }
-
-        public bool Contains(ProtoCrewMember pcm)
-        {
-            return Contains(pcm.name);
         }
     }
 }

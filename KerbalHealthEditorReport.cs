@@ -11,21 +11,21 @@ namespace KerbalHealth
     {
         ApplicationLauncherButton button;
         bool dirty = false;
+        Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
         PopupDialog reportWindow;  // Health Report window
-        DialogGUIGridLayout reportGrid;  // Health Report grid
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         int colNum = 3;  // # of columns in Health Report
 
         public void Start()
         {
-            Core.Log("KerbalHealthEditorReport.Start", Core.LogLevels.Important);
+            Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
             GameEvents.onEditorShipModified.Add(Invalidate);
             GameEvents.onEditorPodDeleted.Add(Invalidate);
             GameEvents.onEditorScreenChange.Add(Invalidate);
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
             button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
-            Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevels.Important);
+            Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevel.Important);
         }
 
         public void DisplayData()
@@ -33,7 +33,7 @@ namespace KerbalHealth
             Core.Log("KerbalHealthEditorReport.DisplayData");
             if ((ShipConstruction.ShipManifest == null) || (!ShipConstruction.ShipManifest.HasAnyCrew()))
             {
-                Core.Log("Ship is empty. Let's get outta here!", Core.LogLevels.Important);
+                Core.Log("Ship is empty. Let's get outta here!", Core.LogLevel.Important);
                 return;
             }
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
@@ -44,33 +44,32 @@ namespace KerbalHealth
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));
-            reportGrid = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray());
             dirty = true;
-            reportWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Report", HighLogic.UISkin, 300, reportGrid), false, HighLogic.UISkin, false);
+            reportWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Report", HighLogic.UISkin, reportPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
         }
 
         public void UndisplayData()
         {
-            if (reportWindow != null) reportWindow.Dismiss();
+            if (reportWindow != null)
+            {
+                Vector3 v = reportWindow.RTrf.position;
+                reportPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 300, 50);
+                reportWindow.Dismiss();
+            }
         }
 
         public void Update()
         {
             if ((reportWindow != null) && dirty)
             {
-                if (reportGrid == null)
-                {
-                    Core.Log("reportGrid is null.", Core.LogLevels.Error);
-                    return;
-                }
                 if (gridContents == null)
                 {
-                    Core.Log("gridContents is null.", Core.LogLevels.Error);
+                    Core.Log("gridContents is null.", Core.LogLevel.Error);
                     return;
                 }
                 if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
                 {
-                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.", Core.LogLevels.Important);
+                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.", Core.LogLevel.Important);
                     UndisplayData();
                     DisplayData();
                 }
@@ -107,11 +106,11 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
-            Core.Log("KerbalHealthEditorReport.OnDisable", Core.LogLevels.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable", Core.LogLevel.Important);
             UndisplayData();
             if (ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(button);
-            Core.Log("KerbalHealthEditorReport.OnDisable finished.", Core.LogLevels.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable finished.", Core.LogLevel.Important);
         }
     }
 }
