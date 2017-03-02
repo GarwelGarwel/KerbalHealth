@@ -17,7 +17,7 @@ namespace KerbalHealth
         { return true; }
 
         public override double ChancePerDay(KerbalHealthStatus khs)
-        { return 0.01; }
+        { return 0.1; }
 
         static double minDamage = 0, maxDamage = 20;
         double Damage(double x)
@@ -27,7 +27,7 @@ namespace KerbalHealth
 
         public override void Run(KerbalHealthStatus khs)
         {
-            khs.HP -= Damage(rand.NextDouble());
+            khs.HP -= Damage(Core.rand.NextDouble());
         }
     }
 }

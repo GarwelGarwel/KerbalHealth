@@ -27,14 +27,23 @@ namespace KerbalHealth
             set { factors = value; }
         }
 
-        public static void AddFactor(HealthFactor f)
-        { Factors.Add(f); }
-
         public static HealthFactor FindFactor(string id)
         {
             foreach (HealthFactor f in Factors)
                 if (f.Id == id) return f;
             return null;
+        }
+
+        static List<Event> events = new List<Event>()
+        {
+            new FeelBadEvent(),
+            new PanicAttackEvent()
+        };
+
+        public static List<Event> Events
+        {
+            get { return events; }
+            set { events = value; }
         }
 
         public static float UpdateInterval  // # of game seconds between updates
@@ -104,6 +113,8 @@ namespace KerbalHealth
 
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel; }
+
+        public static System.Random rand = new System.Random();
 
         public enum LogLevels { None, Error, Important, Debug };
         public static LogLevels LogLevel

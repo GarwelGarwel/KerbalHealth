@@ -7,8 +7,6 @@ namespace KerbalHealth
 {
     public abstract class Event
     {
-        protected static Random rand = new Random();
-
         // Returns system name of the event
         public abstract string Name { get; }
 
@@ -31,9 +29,9 @@ namespace KerbalHealth
         // Check condition and chance, run the event and display the message. To be called once a day.
         public void Process(KerbalHealthStatus khs)
         {
-            if (Condition(khs) && (rand.NextDouble() < ChancePerDay(khs)))
+            if (Condition(khs) && (Core.rand.NextDouble() < ChancePerDay(khs)))
             {
-                Core.Log(Name + " event has fired.");
+                Core.Log(Name + " event has fired for" + khs.Name + ".", Core.LogLevels.Important);
                 string msg = Message(khs);
                 if (msg != null) ScreenMessages.PostScreenMessage(msg);
                 Run(khs);

@@ -21,7 +21,7 @@ namespace KerbalHealth
             return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && (khs.Condition == KerbalHealthStatus.HealthCondition.OK) && (khs.Health < 0.5);
         }
 
-        static double avgChancePerDay = 0.001;
+        static double avgChancePerDay = 0.1;
         public override double ChancePerDay(KerbalHealthStatus khs)
         {
             return avgChancePerDay * (0.5 - khs.Health) / 0.5 * (1 - khs.PCM.courage);
