@@ -50,6 +50,15 @@ namespace KerbalHealth
             if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }
 
+        public void ProcessEvents()
+        {
+            foreach (KerbalHealthStatus khs in this)
+            {
+                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevels.Important);
+                foreach (Event e in Core.Events) e.Process(khs);
+            }
+        }
+
         bool IsKerbalTrackable(ProtoCrewMember pcm)
         {
             return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
