@@ -30,7 +30,7 @@ namespace KerbalHealth
             button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData , null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
-            Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevels.Important);
+            Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
         public void OnKerbalOnEva(GameEvents.FromToAction<Part, Part> action)
@@ -56,7 +56,7 @@ namespace KerbalHealth
                 {
                     Core.KerbalHealthList.ProcessEvents();
                     nextEventTime += GetNextEventInterval();
-                    Core.Log("Next event processing is scheduled at UT " + nextEventTime, Core.LogLevels.Important);
+                    Core.Log("Next event processing is scheduled at UT " + nextEventTime, Core.LogLevel.Important);
                 }
                 dirty = true;
             }
@@ -156,7 +156,7 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             Core.KerbalHealthList.Clear();
             int i = 0;
-            nextEventTime = Double.Parse(node.GetValue("nextEventTime"));
+            nextEventTime = double.Parse(node.GetValue("nextEventTime"));
             foreach (ConfigNode n in node.GetNodes())
                 if (n.name == "KerbalHealthStatus")
                 {

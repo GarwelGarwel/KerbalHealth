@@ -30,12 +30,12 @@ namespace KerbalHealth
                 Core.Log(pcm.name + " not found in KerbalHealthList. The list has " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
                 return 0;
             }
-            if (pcm.seat?.vessel == null)
+            if (Core.KerbalVessel(pcm) == null)
             {
                 Core.Log("MicrogravityFactor.ChangePerDay: pcm.seat.vessel is null for " + pcm.name + "! EVA is " + Core.KerbalHealthList.Find(pcm).IsOnEVA, Core.LogLevel.Important);
                 return 0;
             }
-            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && (pcm.seat.vessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
+            if ((Core.KerbalVessel(pcm).situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
             {
                 Core.Log("Microgravity is on due to being in a " + pcm.seat.vessel.situation + " situation.");
                 return BaseChangePerDay;

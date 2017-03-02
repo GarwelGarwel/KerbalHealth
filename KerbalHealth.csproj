@@ -53,6 +53,8 @@
     <Compile Include="AssignedFactor.cs" />
     <Compile Include="ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
+    <Compile Include="Event.cs" />
+    <Compile Include="FeelBadEvent.cs" />
     <Compile Include="KerbalHealthFactorsSettings.cs" />
     <Compile Include="HealthFactor.cs" />
     <Compile Include="EVAFactor.cs" />
@@ -66,6 +68,7 @@
     <Compile Include="KerbalHealthList.cs" />
     <Compile Include="KerbalHealthScenario.cs" />
     <Compile Include="CrowdedFactor.cs" />
+    <Compile Include="PanicAttackEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KerbalHealthGeneralSettings.cs" />
   </ItemGroup>

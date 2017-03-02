@@ -54,16 +54,7 @@ namespace KerbalHealth
         {
             foreach (KerbalHealthStatus khs in this)
             {
-                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevels.Important);
-                foreach (Event e in Core.Events) e.Process(khs);
-            }
-        }
-
-        public void ProcessEvents()
-        {
-            foreach (KerbalHealthStatus khs in this)
-            {
-                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevels.Important);
+                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevel.Important);
                 foreach (Event e in Core.Events) e.Process(khs);
             }
         }
