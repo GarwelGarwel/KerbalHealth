@@ -7,6 +7,13 @@ namespace KerbalHealth
 {
     public abstract class Event
     {
+        // How to notify the user about the event
+        protected enum NotificationType { Silent, ScreenMessage, GameMessage };
+        protected virtual NotificationType Notification { get { return NotificationType.GameMessage; } }
+
+        // Whether to stop timewrap the game on event
+        protected virtual bool UnwarpTime { get { return true; } }
+
         // Returns system name of the event
         public abstract string Name { get; }
 
@@ -31,9 +38,16 @@ namespace KerbalHealth
         {
             if (Condition(khs) && (Core.rand.NextDouble() < ChancePerDay(khs)))
             {
-                Core.Log(Name + " event has fired for" + khs.Name + ".", Core.LogLevel.Important);
+                Core.Log(Name + " event has fired for " + khs.Name + ".", Core.LogLevel.Important);
                 string msg = Message(khs);
-                if (msg != null) ScreenMessages.PostScreenMessage(msg);
+                if (msg != null)
+                    switch (Notification)
+                    {
+                        case NotificationType.ScreenMessage: ScreenMessages.PostScreenMessage(msg); break;
+                        case NotificationType.GameMessage: KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT)); break;
+                        case NotificationType.Silent: break;
+                    }
+                if (UnwarpTime) TimeWarp.SetRate(0, false);
                 Run(khs);
             }
         }
