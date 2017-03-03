@@ -12,7 +12,7 @@ The mod looks stable enough for me to use in my own main playthrough, but a beta
 
 I will appreciate your bug reports (include output_log.txt) and feature suggestions.
 
-**Features as of 0.4.7 (beta)**
+**Features as of 0.5.0 (beta)**
 
 - Every kerbal, including Tourists, has Health Points (HP).
 - Maximum HP increase with kerbals' level. A 5-level kerbal is 50% "healthier" than a newbie.
@@ -20,6 +20,7 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Kerbals need time to recuperate at the KSC between flights to restore full health.
 - If a kerbal's health goes under 20%, he/she is exhausted and becomes a tourist. They will go back to work when health rises to 25%.
 - If a kerbal's health falls to 0, he/she dies!
+- Random events (e.g. sudden health reduction or a panic attack) can occasionally occur to kerbals under certain conditions: expect the unexpected!
 - Health Monitor lets you check on all your kerbals in KSC and in flight.
 - Health Report in Editor helps design comfy and healthy craft.
 - Compatibility patches support MKS and USI-LS patches.
@@ -46,6 +47,14 @@ The Cupola (as well as some advanced mod parts) provides so-called marginal heal
 
 As you see, this mechanics may allow some kerbals to stay relatively healthy for an unlimited time. It may look cheaty, but the point is that: (1) there should be a way to design long-term missions without spamming crew space, (2) it requires a lot of heavy parts and therefore still difficult, (3) the balanced health level is usually far from 100% and may fall lower if circumstances change (e.g., new crew arrives and fills the station), (4) these bonuses require a lot of EC.
 
+**Random events**
+
+Kerbals' organisms, like ours own, are not always predictable. Sometimes, very rarely, you may see random events that can impact your whole mission. Now you need to prepare for contingencies like real space programs do. You may completely disable or fine-tune the event system in settings.
+
+- Feeling Bad: your kerbals loses a random percentage of their current health (20 to 50%). It happens very rarely (every 10,000 days on average) though, but becomes an important factor for very long missions.
+
+- Panic Attack: if your kerbal's health falls below 50% and he/she is on a mission, they may epxerience a panic attack and become uncontrollable for up to 3 hours. This event's probability depends on the health (the lower, the more likely) and courage (the lower, again, the more likely) of the kerbal, but on average happens once every 1,000 days.
+
 **Requirements**
 
 - ModuleManager
@@ -53,18 +62,19 @@ As you see, this mechanics may allow some kerbals to stay relatively healthy for
 **Supported mods**
 
 - [KSP-AVC](http://ksp-avc.cybutek.net)
+- [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [MKS](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 
 **Next objectives**
 
 - More informative UI (Health Monitor and Health Report)
-- Random health events (nervous breakdowns, illnesses, etc.)
 - Support patches for Kerbalism, KPBS, etc.
 
 **Future features**
 
 - More health conditions
+- More health events
 - More factors (e.g. radiation)
 - New mechanics: injuries, infectious diseases, medics, medical supplies, quarantine, etc.
 - API for collaboration with other mods
