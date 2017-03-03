@@ -32,9 +32,9 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Crowded (effect scaled in proportion to crew/capacity ratio): -6 HP/day for a full vessel
 - Loneliness (only 1 kerbal on the vessel, badass kerbals immune): -1 HP/day
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
-- EVA: -50 HP/day (don't abandon your kerbals outside for long!)
+- EVA: -30 HP/day (don't abandon your kerbals outside for long!)
 - Connected (having a working CommNet to home): +0.5 HP/day
-- Home (at Kerbin at altitude of under 25 km): +1 HP/day
+- Home (at Kerbin at altitude of under 25 km): +5 HP/day
 - KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
 
 Certain parts (Hitchhiker, crew cabin, and the Cupola) can reduce the effect of a health factor (Overpopulation in this case) allowing for much longer and healthier flights. It requires EC though. Hab rings (e.g. in MKS) can help overcome microgravity issues for long-term stations and interplanetary missions. You can patch any part to change (reduce or increase) any factor.
