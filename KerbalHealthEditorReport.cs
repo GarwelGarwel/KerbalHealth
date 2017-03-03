@@ -9,7 +9,8 @@ namespace KerbalHealth
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
     class KerbalHealthEditorReport : MonoBehaviour
     {
-        ApplicationLauncherButton button;
+        ApplicationLauncherButton appLauncherButton;
+        IButton toolbarButton;
         bool dirty = false;
         Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
         PopupDialog reportWindow;  // Health Report window
@@ -23,9 +24,21 @@ namespace KerbalHealth
             GameEvents.onEditorShipModified.Add(Invalidate);
             GameEvents.onEditorPodDeleted.Add(Invalidate);
             GameEvents.onEditorScreenChange.Add(Invalidate);
-            Texture2D icon = new Texture2D(38, 38);
-            icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-            button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
+            {
+                Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
+                toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthReport");
+                toolbarButton.Text = "Kerbal Health Report";
+                toolbarButton.TexturePath = "KerbalHealth/toolbar";
+                toolbarButton.OnClick += (e) => { if (reportWindow == null) DisplayData(); else UndisplayData(); };
+            }
+            else
+            {
+                Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
+                Texture2D icon = new Texture2D(38, 38);
+                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
+                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            }
             Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevel.Important);
         }
 
@@ -61,7 +74,11 @@ namespace KerbalHealth
 
         public void Update()
         {
-            if (!Core.ModEnabled) return;
+            if (!Core.ModEnabled)
+            {
+                if (reportWindow != null) reportWindow.Dismiss();
+                return;
+            }
             if ((reportWindow != null) && dirty)
             {
                 if (gridContents == null)
@@ -110,8 +127,9 @@ namespace KerbalHealth
         {
             Core.Log("KerbalHealthEditorReport.OnDisable", Core.LogLevel.Important);
             UndisplayData();
-            if (ApplicationLauncher.Instance != null)
-                ApplicationLauncher.Instance.RemoveModApplication(button);
+            if (toolbarButton != null) toolbarButton.Destroy();
+            if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
+                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
             Core.Log("KerbalHealthEditorReport.OnDisable finished.", Core.LogLevel.Important);
         }
     }

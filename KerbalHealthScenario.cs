@@ -11,7 +11,8 @@ namespace KerbalHealth
         static double lastUpdated;  // UT at last health update
         static double nextEventTime;  // UT when (or after) next event check occurs
 
-        ApplicationLauncherButton button;
+        ApplicationLauncherButton appLauncherButton;
+        IButton toolbarButton;
         bool dirty = false;
         Rect monitorPosition = new Rect(0.5f, 0.5f, 500, 50);
         PopupDialog monitorWindow;  // Health Monitor window
@@ -24,17 +25,28 @@ namespace KerbalHealth
             Core.Log("KerbalHealth.Start", Core.LogLevel.Important);
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
-            GameEvents.onCrewOnEva.Add(OnKerbalOnEva);
-            Core.Log("Registering toolbar button...", Core.LogLevel.Important);
-            Texture2D icon = new Texture2D(38, 38);
-            icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-            button = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData , null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            GameEvents.onCrewOnEva.Add(OnKerbalEva);
+            if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
+            {
+                Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
+                toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthMonitor");
+                toolbarButton.Text = "Kerbal Health Monitor";
+                toolbarButton.TexturePath = "KerbalHealth/toolbar";
+                toolbarButton.OnClick += (e) => { if (monitorWindow == null) DisplayData(); else UndisplayData(); };
+            }
+            else
+            {
+                Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
+                Texture2D icon = new Texture2D(38, 38);
+                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
+                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            }
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
-        public void OnKerbalOnEva(GameEvents.FromToAction<Part, Part> action)
+        public void OnKerbalEva(GameEvents.FromToAction<Part, Part> action)
         {
             if (!Core.ModEnabled) return;
             Core.Log(action.to.protoModuleCrew[0].name + " went on EVA from " + action.from.name + ".", Core.LogLevel.Important);
@@ -83,9 +95,23 @@ namespace KerbalHealth
             monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
         }
 
+        public void UndisplayData()
+        {
+            if (monitorWindow != null)
+            {
+                Vector3 v = monitorWindow.RTrf.position;
+                monitorPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 500, 50);
+                monitorWindow.Dismiss();
+            }
+        }
+
         public void Update()
         {
-            if (!Core.ModEnabled) return;
+            if (!Core.ModEnabled)
+            {
+                if (monitorWindow != null) monitorWindow.Dismiss();
+                return;
+            }
             if ((monitorWindow != null) && dirty)
             {
                 if (gridContents == null)
@@ -120,23 +146,14 @@ namespace KerbalHealth
             }
         }
 
-        public void UndisplayData()
-        {
-            if (monitorWindow != null)
-            {
-                Vector3 v = monitorWindow.RTrf.position;
-                monitorPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 500, 50);
-                monitorWindow.Dismiss();
-            }
-        }
-
         public void OnDisable()
         {
             Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
             UndisplayData();
-            GameEvents.onCrewOnEva.Remove(OnKerbalOnEva);
-            if (ApplicationLauncher.Instance != null)
-                ApplicationLauncher.Instance.RemoveModApplication(button);
+            GameEvents.onCrewOnEva.Remove(OnKerbalEva);
+            if (toolbarButton != null) toolbarButton.Destroy();
+            if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
+                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
             Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
         }
 

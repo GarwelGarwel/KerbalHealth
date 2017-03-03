@@ -58,6 +58,12 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem = value; }
         }
 
+        public static bool UseBlizzysToolbar  // Use Blizzy's Toolbar mod instead of stock app launcher
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useBlizzysToolbar; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useBlizzysToolbar = value; }
+        }
+
         public static float UpdateInterval  // # of game seconds between updates
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval; }
