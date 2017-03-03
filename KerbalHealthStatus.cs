@@ -292,17 +292,20 @@ namespace KerbalHealth
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
-                ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
+                if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " dies of poor health!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+                else ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
             }
             if (Condition == HealthCondition.OK && HP <= Core.ExhaustionStartHealth * MaxHP)
             {
                 Condition = HealthCondition.Exhausted;
-                ScreenMessages.PostScreenMessage(Name + " is exhausted!");
+                if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " is exhausted!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+                else ScreenMessages.PostScreenMessage(Name + " is exhausted!");
             }
             if (Condition == HealthCondition.Exhausted && HP >= Core.ExhaustionEndHealth * MaxHP)
             {
                 Condition = HealthCondition.OK;
-                ScreenMessages.PostScreenMessage(Name + " has revived.");
+                if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " has revived!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+                else ScreenMessages.PostScreenMessage(Name + " has revived.");
             }
         }
 

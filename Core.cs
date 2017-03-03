@@ -52,6 +52,12 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled = value; }
         }
 
+        public static bool UseMessageSystem  // Use message system as opposed to displaying screen messages
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem = value; }
+        }
+
         public static float UpdateInterval  // # of game seconds between updates
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval; }

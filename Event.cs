@@ -9,7 +9,14 @@ namespace KerbalHealth
     {
         // How to notify the user about the event
         protected enum NotificationType { Silent, ScreenMessage, GameMessage };
-        protected virtual NotificationType Notification { get { return NotificationType.GameMessage; } }
+        protected virtual NotificationType Notification
+        {
+            get
+            {
+                if (Core.UseMessageSystem) return NotificationType.GameMessage;
+                else return NotificationType.ScreenMessage;
+            }
+        }
 
         // Whether to stop timewrap the game on event
         protected virtual bool UnwarpTime { get { return khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned; } }

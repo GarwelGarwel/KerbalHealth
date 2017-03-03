@@ -16,6 +16,9 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
         public bool modEnabled = true;
 
+        [GameParameters.CustomParameterUI("Use Message System", toolTip = "Post alerts about important health events as opposed to displaying screen messages")]
+        public bool useMessageSystem = true;
+
         [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
         public float UpdateInterval = 1;
 
