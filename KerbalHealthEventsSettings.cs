@@ -16,16 +16,16 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("Events Enabled", toolTip = "If checked, random health events can happen")]
         public bool EventsEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("Feeling Bad chance", toolTip = "Average chance per day of Feeling Bad event happening", minValue = 0, maxValue = 1, stepCount = 11, logBase = 0.001f)]
+        [GameParameters.CustomFloatParameterUI("Feeling Bad chance", toolTip = "Average chance per day of Feeling Bad event happening", minValue = 0, maxValue = 0.0002f, displayFormat = "F5", stepCount = 21)]
         public float FeelBadChance = 0.0001f;
 
-        [GameParameters.CustomFloatParameterUI("Feeling Bad min damage", toolTip = "Min % of HP lost in a Feeling Bad event", minValue = 0, maxValue = 1, asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Feeling Bad min damage", toolTip = "Min % of HP lost in a Feeling Bad event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float FeelBadMinDamage = 0.2f;
 
-        [GameParameters.CustomFloatParameterUI("Feeling Bad max damage", toolTip = "Max % of HP lost in a Feeling Bad event", minValue = 0, maxValue = 1, asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Feeling Bad max damage", toolTip = "Max % of HP lost in a Feeling Bad event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float FeelBadMaxDamage = 0.5f;
 
-        [GameParameters.CustomFloatParameterUI("Panic Attack chance", toolTip = "Average chance per day of a Panic Attack", minValue = 0, maxValue = 1, stepCount = 11, logBase = 0.001f)]
+        [GameParameters.CustomFloatParameterUI("Panic Attack chance", toolTip = "Average chance per day of a Panic Attack", minValue = 0, maxValue = 0.002f, displayFormat = "F4", stepCount = 21)]
         public float PanicAttackChance = 0.001f;
 
         [GameParameters.CustomFloatParameterUI("Panic Attack max duration", toolTip = "Maximum duration of a Panic Attack in seconds", minValue = 0, maxValue = 6 * 3600, stepCount = 7)]
