@@ -13,6 +13,9 @@ namespace KerbalHealth
         public override string Section { get { return "Kerbal Health"; } }
         public override int SectionOrder { get { return 1; } }
 
+        [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
+        public bool modEnabled = true;
+
         [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
         public float UpdateInterval = 1;
 

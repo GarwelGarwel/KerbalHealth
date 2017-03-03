@@ -18,6 +18,7 @@ namespace KerbalHealth
 
         public void Start()
         {
+            if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
             GameEvents.onEditorShipModified.Add(Invalidate);
             GameEvents.onEditorPodDeleted.Add(Invalidate);
@@ -60,6 +61,7 @@ namespace KerbalHealth
 
         public void Update()
         {
+            if (!Core.ModEnabled) return;
             if ((reportWindow != null) && dirty)
             {
                 if (gridContents == null)

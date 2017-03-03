@@ -20,6 +20,7 @@ namespace KerbalHealth
 
         public void Start()
         {
+            if (!Core.ModEnabled) return;
             Core.Log("KerbalHealth.Start", Core.LogLevel.Important);
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
@@ -35,6 +36,7 @@ namespace KerbalHealth
 
         public void OnKerbalOnEva(GameEvents.FromToAction<Part, Part> action)
         {
+            if (!Core.ModEnabled) return;
             Core.Log(action.to.protoModuleCrew[0].name + " went on EVA from " + action.from.name + ".", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(action.to.protoModuleCrew[0]).IsOnEVA = true;
         }
@@ -64,7 +66,7 @@ namespace KerbalHealth
         }
 
         public void FixedUpdate()
-        { UpdateKerbals(); }
+        { if (Core.ModEnabled) UpdateKerbals(); }
 
         public void DisplayData()  // Called when the AppLauncher button is enabled
         {
@@ -83,6 +85,7 @@ namespace KerbalHealth
 
         public void Update()
         {
+            if (!Core.ModEnabled) return;
             if ((monitorWindow != null) && dirty)
             {
                 if (gridContents == null)
@@ -139,6 +142,7 @@ namespace KerbalHealth
 
         public override void OnSave(ConfigNode node)
         {
+            if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnSave", Core.LogLevel.Important);
             UpdateKerbals(true);
             int i = 0;
@@ -154,6 +158,7 @@ namespace KerbalHealth
 
         public override void OnLoad(ConfigNode node)
         {
+            if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             Core.KerbalHealthList.Clear();
             int i = 0;

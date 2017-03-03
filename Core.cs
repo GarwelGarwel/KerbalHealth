@@ -46,6 +46,12 @@ namespace KerbalHealth
             set { events = value; }
         }
 
+        public static bool ModEnabled  // Kerbal Health active or not
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled = value; }
+        }
+
         public static float UpdateInterval  // # of game seconds between updates
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval; }
