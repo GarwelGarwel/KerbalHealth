@@ -243,8 +243,8 @@ namespace KerbalHealth
             fmFreeMultipliers.Add("All", 1);
             foreach (HealthFactor f in Core.Factors)
             {
-                fmBonusSums.Add(f.Id, 0);
-                fmFreeMultipliers.Add(f.Id, 1);
+                fmBonusSums.Add(f.Name, 0);
+                fmFreeMultipliers.Add(f.Name, 1);
             }
             minMultiplier = maxMultiplier = 1;
 
@@ -263,23 +263,23 @@ namespace KerbalHealth
             {
                 if (f.LoadedOnly && !(Core.IsInEditor || Core.IsKerbalLoaded(pcm) || IsOnEVA))
                 {
-                    Core.Log(f.Id + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
+                    Core.Log(f.Name + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
                     continue;
                 }
-                double m = Multiplier(f.Id) * Multiplier("All");
+                double m = Multiplier(f.Name) * Multiplier("All");
                 double c = f.ChangePerDay(pcm) * m;
                 change += c;
                 if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) LastChange += c;
-                Core.Log(f.Id + "'s effect on " + pcm.name + " is " + c + " HP/day.");
+                Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
             }
             if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm))
             {
-                Core.Log("Cached health change: " + LastChange);
+                Core.Log("Cached health change: " + LastChange + " HP/day.");
                 change = LastChange;
             }
             double mc = MarginalChange;
             Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
-            Core.Log("Total change: " + change + mc);
+            Core.Log("Total change: " + (change + mc) + " HP/day.");
             return change + mc;
         }
 

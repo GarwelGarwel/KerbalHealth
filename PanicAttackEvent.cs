@@ -11,26 +11,28 @@ namespace KerbalHealth
         public override string Name
         { get { return "PanicAttack"; } }
 
-        public override string Message(KerbalHealthStatus khs)
+        public override string Message()
         {
             return khs.Name + " is having a panic attack!";
         }
 
-        public override bool Condition(KerbalHealthStatus khs)
+        public override bool Condition()
         {
-            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && (khs.Condition == KerbalHealthStatus.HealthCondition.OK) && (khs.Health < 0.5);
+            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && (khs.Condition == KerbalHealthStatus.HealthCondition.OK) && (khs.Health < Core.ExhaustionStartHealth + 0.5);
         }
 
-        static double avgChancePerDay = 0.1;
-        public override double ChancePerDay(KerbalHealthStatus khs)
+        public override double ChancePerDay()
         {
-            return avgChancePerDay * (0.5 - khs.Health) / 0.5 * (1 - khs.PCM.courage);
+            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackChance * 4 * (1 + (Core.ExhaustionStartHealth - khs.Health) * 2) * (1 - khs.PCM.courage); 
         }
 
-        public override void Run(KerbalHealthStatus khs)
+        // Make inactive for up to 3 hours
+        double inactionTime;
+        public override void Run()
         {
-            //Core.Log(khs.Name + " is having a panic attack and is being disabled for 1 hour from " + KSPUtil.PrintTimeCompact(Planetarium.GetUniversalTime(), true));
-            khs.PCM.SetInactive(3600);
+            inactionTime = Core.rand.NextDouble() * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackMaxDuration;
+            Core.Log(khs.Name + " will be inactive for " + inactionTime + " seconds.");
+            khs.PCM.SetInactive(inactionTime);
         }
     }
 }

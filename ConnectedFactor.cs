@@ -7,7 +7,7 @@ namespace KerbalHealth
 {
     public class ConnectedFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "Connected"; } }
 
         public override double BaseChangePerDay

@@ -7,10 +7,10 @@ namespace KerbalHealth
 {
     public class KSCFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "KSC"; } }
 
-        public override string Name
+        public override string Title
         { get { return "KSC"; } }
 
         public override bool LoadedOnly

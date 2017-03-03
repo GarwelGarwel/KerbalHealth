@@ -12,7 +12,7 @@ namespace KerbalHealth
         protected virtual NotificationType Notification { get { return NotificationType.GameMessage; } }
 
         // Whether to stop timewrap the game on event
-        protected virtual bool UnwarpTime { get { return true; } }
+        protected virtual bool UnwarpTime { get { return khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned; } }
 
         // Returns system name of the event
         public abstract string Name { get; }
@@ -22,24 +22,25 @@ namespace KerbalHealth
         { get { return Name; } }
 
         // Returns the on-screen message when the event happens (null if no message)
-        public abstract string Message(KerbalHealthStatus khs);
+        public abstract string Message();
 
         // Returns true if the event can happen to this kerbal at the moment
-        public abstract bool Condition(KerbalHealthStatus khs);
+        public abstract bool Condition();
 
         // Returns chance (0 to 1) of the event happening per day
-        public abstract double ChancePerDay(KerbalHealthStatus khs);
+        public abstract double ChancePerDay();
 
         // Affects the kerbal's health
-        public abstract void Run(KerbalHealthStatus khs);
+        public abstract void Run();
 
         // Check condition and chance, run the event and display the message. To be called once a day.
-        public void Process(KerbalHealthStatus khs)
+        public void Process(KerbalHealthStatus status)
         {
-            if (Condition(khs) && (Core.rand.NextDouble() < ChancePerDay(khs)))
+            khs = status;
+            if (Condition() && (Core.rand.NextDouble() < ChancePerDay()))
             {
                 Core.Log(Name + " event has fired for " + khs.Name + ".", Core.LogLevel.Important);
-                string msg = Message(khs);
+                string msg = Message();
                 if (msg != null)
                     switch (Notification)
                     {
@@ -48,8 +49,17 @@ namespace KerbalHealth
                         case NotificationType.Silent: break;
                     }
                 if (UnwarpTime) TimeWarp.SetRate(0, false);
-                Run(khs);
+                Run();
             }
         }
+
+        protected KerbalHealthStatus khs;
+
+        //public Event() { }
+
+        //public Event(KerbalHealthStatus khs)
+        //{
+        //    this.khs = khs;
+        //}
     }
 }

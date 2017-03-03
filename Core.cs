@@ -30,7 +30,7 @@ namespace KerbalHealth
         public static HealthFactor FindFactor(string id)
         {
             foreach (HealthFactor f in Factors)
-                if (f.Id == id) return f;
+                if (f.Name == id) return f;
             return null;
         }
 
@@ -86,6 +86,12 @@ namespace KerbalHealth
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth; }
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth = value; }
+        }
+
+        public static bool EventsEnabled  // Random events can happen
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled = value; }
         }
 
         public static bool IsInEditor

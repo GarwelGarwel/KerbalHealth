@@ -52,12 +52,13 @@ namespace KerbalHealth
                 bool processEvents = Planetarium.GetUniversalTime() >= nextEventTime;
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = Planetarium.GetUniversalTime();
-                while (Planetarium.GetUniversalTime() >= nextEventTime)  // Can take several turns of event processing at high time warp
-                {
-                    Core.KerbalHealthList.ProcessEvents();
-                    nextEventTime += GetNextEventInterval();
-                    Core.Log("Next event processing is scheduled at UT " + nextEventTime, Core.LogLevel.Important);
-                }
+                if (Core.EventsEnabled)
+                    while (Planetarium.GetUniversalTime() >= nextEventTime)  // Can take several turns of event processing at high time warp
+                    {
+                        Core.KerbalHealthList.ProcessEvents();
+                        nextEventTime += GetNextEventInterval();
+                        Core.Log("Next event processing is scheduled at UT " + nextEventTime, Core.LogLevel.Important);
+                    }
                 dirty = true;
             }
         }
@@ -156,7 +157,8 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             Core.KerbalHealthList.Clear();
             int i = 0;
-            nextEventTime = double.Parse(node.GetValue("nextEventTime"));
+            if (node.HasValue("nextEventTime")) nextEventTime = double.Parse(node.GetValue("nextEventTime"));
+            else nextEventTime = Planetarium.GetUniversalTime() + GetNextEventInterval();
             foreach (ConfigNode n in node.GetNodes())
                 if (n.name == "KerbalHealthStatus")
                 {

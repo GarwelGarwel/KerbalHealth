@@ -7,7 +7,7 @@ namespace KerbalHealth
 {
     class LonelinessFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "Loneliness"; } }
 
         public override double BaseChangePerDay

@@ -7,7 +7,7 @@ namespace KerbalHealth
 {
     public class CrowdedFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "Crowded"; } }
 
         public override double BaseChangePerDay

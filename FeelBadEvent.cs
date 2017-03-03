@@ -10,24 +10,36 @@ namespace KerbalHealth
         public override string Name
         { get { return "FeelBad"; } }
 
-        public override string Message(KerbalHealthStatus khs)
+        public override string Message()
         { return khs.Name + " is suddenly feeling bad."; }
 
-        public override bool Condition(KerbalHealthStatus khs)
+        public override bool Condition()
         { return true; }
 
-        public override double ChancePerDay(KerbalHealthStatus khs)
-        { return 0.1; }
+        public override double ChancePerDay()
+        { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().FeelBadChance; }
 
-        static double minDamage = 0, maxDamage = 20;
-        double Damage(double x)
+        float MinDamage
         {
-            return minDamage + (maxDamage - minDamage) * x;
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().FeelBadMinDamage; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().FeelBadMinDamage = value; }
         }
 
-        public override void Run(KerbalHealthStatus khs)
+        float MaxDamage
         {
-            khs.HP -= Damage(Core.rand.NextDouble());
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().FeelBadMaxDamage; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().FeelBadMaxDamage = value; }
+        }
+
+        //static double minDamage = 0.2, maxDamage = 0.5;  // Fraction of health that the kerbal loses
+        double Damage(double x)
+        {
+            return 1 - MinDamage - (MaxDamage - MinDamage) * x;
+        }
+
+        public override void Run()
+        {
+            khs.HP *= Damage(Core.rand.NextDouble());
         }
     }
 }

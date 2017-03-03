@@ -41,7 +41,7 @@ namespace KerbalHealth
         public HealthFactor MultiplyFactor
         {
             get { return Core.FindFactor(multiplyFactor); }
-            set { multiplyFactor = value.Id; }
+            set { multiplyFactor = value.Name; }
         }
 
         public bool IsModuleActive

@@ -7,7 +7,7 @@ namespace KerbalHealth
 {
     class HomeFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "Home"; } }
 
         public override double BaseChangePerDay
@@ -27,15 +27,15 @@ namespace KerbalHealth
             }
             if (Core.KerbalHealthList.Find(pcm).IsOnEVA)
             {
-                Core.Log(pcm.name + " is on EVA, " + Id + " factor is unapplicable.");
+                Core.Log(pcm.name + " is on EVA, " + Name + " factor is unapplicable.");
                 return 0;
             }
-            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && ((pcm.seat?.vessel.mainBody.name == "Kerbin") || (pcm.seat?.vessel.mainBody.name == "Earth")) && (pcm.seat?.vessel.altitude < 70000))
+            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && ((Core.KerbalVessel(pcm).mainBody.name == "Kerbin") || (Core.KerbalVessel(pcm).mainBody.name == "Earth")) && (Core.KerbalVessel(pcm).altitude < 70000))
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
             }
-            Core.Log("Home factor is off. Main body: " + pcm.seat?.vessel.mainBody.name + "; altitude: " + pcm.seat?.vessel.altitude + ".");
+            Core.Log("Home factor is off. Main body: " + Core.KerbalVessel(pcm).mainBody.name + "; altitude: " + Core.KerbalVessel(pcm).altitude + ".");
             return 0;
         }
     }

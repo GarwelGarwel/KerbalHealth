@@ -7,18 +7,16 @@ namespace KerbalHealth
 {
     public class AssignedFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "Assigned"; } }
 
-        public override string Name
+        public override string Title
         { get { return "Assigned"; } }
 
         public override double BaseChangePerDay
         { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().AssignedFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
-        {
-            return Core.IsInEditor || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? BaseChangePerDay : 0;
-        }
+        { return Core.IsInEditor || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? BaseChangePerDay : 0; }
     }
 }

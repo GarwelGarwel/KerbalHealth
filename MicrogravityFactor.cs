@@ -7,7 +7,7 @@ namespace KerbalHealth
 {
     class MicrogravityFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "Microgravity"; } }
 
         public override double BaseChangePerDay

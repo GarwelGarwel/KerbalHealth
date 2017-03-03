@@ -7,7 +7,7 @@ namespace KerbalHealth
 {
     class EVAFactor : HealthFactor
     {
-        public override string Id
+        public override string Name
         { get { return "EVA"; } }
 
         public override double BaseChangePerDay

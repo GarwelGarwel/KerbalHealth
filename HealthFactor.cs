@@ -8,9 +8,9 @@ namespace KerbalHealth
 {
     public abstract class HealthFactor
     {
-        abstract public string Id { get; }
+        abstract public string Name { get; }
 
-        virtual public string Name { get { return Id; } }
+        virtual public string Title { get { return Name; } }
 
         // Should only be checked for loaded kerbals
         virtual public bool LoadedOnly { get { return true; } }
@@ -20,8 +20,5 @@ namespace KerbalHealth
 
         // Returns actual factor's HP change per day for a given kerbal, before factor multipliers
         abstract public double ChangePerDay(ProtoCrewMember pcm);
-
-        public HealthFactor()
-        { }
     }
 }
