@@ -68,7 +68,8 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 **Conflicts & Incompatibilities**
 
-- USI-LS and other life support mods, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then rutn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
+- Any mod (including USI-LS), which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then rutn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
+- It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - Renaming kerbals may cause issues and is not recommended.
 - Deep Freeze is not supported at the moment: your kerbals can die of health issues even when frozen. This will be fixed in a future release.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved when RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors.
