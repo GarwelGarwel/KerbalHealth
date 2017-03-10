@@ -31,7 +31,6 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().FeelBadMaxDamage = value; }
         }
 
-        //static double minDamage = 0.2, maxDamage = 0.5;  // Fraction of health that the kerbal loses
         double Damage(double x)
         {
             return 1 - MinDamage - (MaxDamage - MinDamage) * x;

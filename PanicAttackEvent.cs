@@ -18,12 +18,12 @@ namespace KerbalHealth
 
         public override bool Condition()
         {
-            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && (khs.Condition == KerbalHealthStatus.HealthCondition.OK) && (khs.Health < Core.ExhaustionStartHealth + 0.5);
+            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && (khs.Condition == KerbalHealthStatus.HealthCondition.OK);
         }
 
         public override double ChancePerDay()
         {
-            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackChance * 4 * (1 + (Core.ExhaustionStartHealth - khs.Health) * 2) * (1 - khs.PCM.courage); 
+            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackChance * (1 - (khs.Health - Core.ExhaustionStartHealth) / (1 - Core.ExhaustionStartHealth)) * (1 - khs.PCM.courage); 
         }
 
         // Make inactive for up to 3 hours
