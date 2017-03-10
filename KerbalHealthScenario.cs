@@ -14,10 +14,10 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         bool dirty = false;
-        Rect monitorPosition = new Rect(0.5f, 0.5f, 500, 50);
+        const int colNum = 5;  // # of columns in Health Monitor
+        Rect monitorPosition = new Rect(0.5f, 0.5f, colNum * 120, 50);
         PopupDialog monitorWindow;  // Health Monitor window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
-        int colNum = 4;  // # of columns in Health Monitor
 
         public void Start()
         {
@@ -63,7 +63,11 @@ namespace KerbalHealth
             if (forced || (timePassed >= Core.UpdateInterval * TimeWarp.CurrentRate))
             {
                 Core.Log("UT is " + Planetarium.GetUniversalTime() + ". Updating for " + timePassed + " seconds.");
-                bool processEvents = Planetarium.GetUniversalTime() >= nextEventTime;
+                if (!DFWrapper.InstanceExists)
+                {
+                    Core.Log("Initializing DFWrapper...");
+                    DFWrapper.InitDFWrapper();
+                }
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = Planetarium.GetUniversalTime();
                 if (Core.EventsEnabled)
@@ -86,8 +90,9 @@ namespace KerbalHealth
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));
-            gridContents.Add(new DialogGUILabel("Health", true));
             gridContents.Add(new DialogGUILabel("Condition", true));
+            gridContents.Add(new DialogGUILabel("Health", true));
+            gridContents.Add(new DialogGUILabel("Change", true));
             gridContents.Add(new DialogGUILabel("Time Left", true));
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
@@ -100,7 +105,7 @@ namespace KerbalHealth
             if (monitorWindow != null)
             {
                 Vector3 v = monitorWindow.RTrf.position;
-                monitorPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 500, 50);
+                monitorPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, colNum * 120, 50);
                 monitorWindow.Dismiss();
             }
         }
@@ -129,18 +134,16 @@ namespace KerbalHealth
                 for (int i = 0; i < Core.KerbalHealthList.Count; i++)
                 {
                     KerbalHealthStatus khs = Core.KerbalHealthList[i];
-                    double ch = khs.HealthChangePerDay();
-                    string trend = "~ ";
-                    if (ch > 0) trend = "↑ ";
-                    if (ch < 0) trend = "↓ ";
+                    double ch = khs.LastChangeTotal;
                     gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
-                    gridContents[(i + 1) * colNum + 1].SetOptionText(trend + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
-                    gridContents[(i + 1) * colNum + 2].SetOptionText(khs.Condition.ToString());
+                    gridContents[(i + 1) * colNum + 1].SetOptionText(khs.Condition.ToString());
+                    gridContents[(i + 1) * colNum + 2].SetOptionText((100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
+                    gridContents[(i + 1) * colNum + 3].SetOptionText((khs.Health >= 1) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
                     double b = khs.GetBalanceHP();
                     string s = "";
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
-                    gridContents[(i + 1) * colNum + 3].SetOptionText(s);
+                    gridContents[(i + 1) * colNum + 4].SetOptionText(s);
                 }
                 dirty = false;
             }

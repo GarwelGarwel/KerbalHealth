@@ -38,13 +38,14 @@ namespace KerbalHealth
                 KerbalHealthStatus khs = this[i];
                 ProtoCrewMember pcm = khs.PCM;
                 if (IsKerbalTrackable(pcm)) khs.Update(interval);
-                else
+                else if (!Core.IsKerbalFrozen(khs.Name)) 
                 {
-                    if (pcm != null) Core.Log(khs.Name + " (" + pcm.type + ", " + pcm.rosterStatus + ") is not trackable anymore. Removing.");
-                    else Core.Log(khs.Name + " is not trackable anymore. Removing.");
+                    Core.Log(khs.Name + " is not trackable anymore. Removing.");
+                    Core.Log("DFWrapper is " + (DFWrapper.APIReady ? ("ready. " + DFWrapper.DeepFreezeAPI.FrozenKerbalsList.Count + " items in FrozenKerbalsList.") : "not ready."));
                     RemoveAt(i);
                     i--;
                 }
+                else Core.Log(khs.Name + " is frozen, skipping update.");
             }
             if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }

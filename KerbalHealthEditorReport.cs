@@ -92,9 +92,9 @@ namespace KerbalHealth
                     UndisplayData();
                     DisplayData();
                 }
-                 // Fill the Health Report's grid with kerbals' health data
-               int i = 0;
-                foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))  
+                // Fill the Health Report's grid with kerbals' health data
+                int i = 0;
+                foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);

@@ -11,8 +11,8 @@ namespace KerbalHealth
 
         string name;
         double hp;
-        double lastChange;  // Cached HP change per day (for unloaded vessels)
-        double lastMarginalPositiveChange, lastMarginalNegativeChange;  // Cached marginal HP change (in %)
+        double lastChange = 0;  // Cached HP change per day (for unloaded vessels)
+        double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         HealthCondition condition = HealthCondition.OK;
         string trait = null;
         bool onEva = false;  // True if kerbal is on EVA
@@ -36,7 +36,6 @@ namespace KerbalHealth
             get { return hp; }
             set
             {
-                //Core.Log("KerbalHealthStatus.HP.set");
                 if (value < Core.MinHP) hp = Core.MinHP;
                 else if (value > MaxHP) hp = MaxHP;
                 else hp = value;
@@ -62,6 +61,12 @@ namespace KerbalHealth
             get { return lastMarginalNegativeChange; }
             set { lastMarginalNegativeChange = value; }
         }
+
+        public double MarginalChange
+        { get { return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100); } }
+
+        public double LastChangeTotal
+        { get { return LastChange + MarginalChange; } }
 
         public HealthCondition Condition
         {
@@ -179,9 +184,6 @@ namespace KerbalHealth
             return (MaxHP * LastMarginalPositiveChange + LastChange * 100) / (LastMarginalPositiveChange - LastMarginalNegativeChange);
         }
 
-        double MarginalChange
-        { get { return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100); } }
-
         bool IsInCrew(ProtoCrewMember[] crew)
         {
             foreach (ProtoCrewMember pcm in crew) if (pcm?.name == Name) return true;
@@ -249,43 +251,45 @@ namespace KerbalHealth
             minMultiplier = maxMultiplier = 1;
 
             // Processing parts
-            if ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && Core.IsKerbalLoaded(pcm)) || Core.IsInEditor)
-                    if (Core.IsInEditor)
-                        foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
-                    else
-                        foreach (Part p in pcm.seat.vessel.Parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && Core.IsKerbalLoaded(pcm))
+                foreach (Part p in Core.KerbalVessel(pcm).Parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+            else if (Core.IsInEditor)
+                foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
 
-            if (Core.IsKerbalLoaded(pcm) || IsOnEVA) LastChange = 0;
-
-            // Processing all factors
-            Core.Log("Processing all the " + Core.Factors.Count + " factors for " + pcm.name + "...");
-            foreach (HealthFactor f in Core.Factors)
+            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
             {
-                if (f.LoadedOnly && !(Core.IsInEditor || Core.IsKerbalLoaded(pcm) || IsOnEVA))
+                Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
+                LastChange = 0;
+                foreach (HealthFactor f in Core.Factors)
                 {
-                    Core.Log(f.Name + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
-                    continue;
+                    if (f.LoadedOnly && !(Core.IsInEditor || Core.IsKerbalLoaded(pcm) || IsOnEVA))
+                    {
+                        Core.Log(f.Name + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
+                        continue;
+                    }
+                    double c = f.ChangePerDay(pcm) * Multiplier(f.Name) * Multiplier("All");
+                    Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
+                    LastChange += c;
                 }
-                double m = Multiplier(f.Name) * Multiplier("All");
-                double c = f.ChangePerDay(pcm) * m;
-                change += c;
-                if (Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor) LastChange += c;
-                Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
-            }
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && !Core.IsKerbalLoaded(pcm))
-            {
-                Core.Log("Cached health change: " + LastChange + " HP/day.");
-                change = LastChange;
             }
             double mc = MarginalChange;
             Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
-            Core.Log("Total change: " + (change + mc) + " HP/day.");
-            return change + mc;
+            Core.Log("Total change: " + (LastChange + mc) + " HP/day.");
+            return LastChange + mc;
         }
 
         public void Update(double interval)
         {
             Core.Log("Updating " + Name + "'s health.");
+            //if (DFWrapper.APIReady && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(Name))
+            //{
+            //    Core.Log(Name + " is frozen with DeepFreeze; health will not be updated.");
+            //    DFWrapper.KerbalInfo dfki;
+            //    DFWrapper.DeepFreezeAPI.FrozenKerbals.TryGetValue(Name, out dfki);
+            //    if (dfki == null) Core.Log("However, kerbal " + Name + " couldn't be retrieved from FrozenKerbals.");
+            //    else Core.Log(Name + "'s rosters status: " + dfki.status + "; type: " + dfki.type);
+            //    return;
+            //}
             HP += HealthChangePerDay() / 21600 * interval;
             if (HP <= Core.DeathHealth * MaxHP)
             {
@@ -342,14 +346,10 @@ namespace KerbalHealth
         }
 
         public override bool Equals(object obj)
-        {
-            return ((KerbalHealthStatus)obj).Name.Equals(Name);
-        }
+        { return ((KerbalHealthStatus)obj).Name.Equals(Name); }
 
         public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+        { return base.GetHashCode(); }
 
         public KerbalHealthStatus() { }
 
@@ -366,8 +366,6 @@ namespace KerbalHealth
         }
 
         public KerbalHealthStatus(ConfigNode node)
-        {
-            ConfigNode = node;
-        }
+        { ConfigNode = node; }
     }
 }

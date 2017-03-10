@@ -86,14 +86,15 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor) return;
             double time = Planetarium.GetUniversalTime();
-            if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)) && (TimeWarp.CurrentRate == 1))
+            if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)))
+            //if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)) && (TimeWarp.CurrentRate == 1))
             {
                 Core.Log(AffectedCrewCount + " crew affected by this part.");
                 double ec = (ecConsumption + ecConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;
                 if ((ec2 = vessel.RequestResource(part, PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id, ec, false)) * 2 < ec)
                 {
                     Core.Log("Module shut down due to lack of EC (" + ec + " needed, " + ec2 + " provided).");
-                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name +" shut down due to lack of EC.");
+                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name + " shut down due to lack of EC.");
                     isActive = false;
                 }
             }
@@ -114,10 +115,10 @@ namespace KerbalHealth
         public override string GetInfo()
         {
             string res = "KerbalHealth Module";
-            if (partCrewOnly) res += "\nAffects only part crew"; //else res += "\nAffects entire vessel";
+            if (partCrewOnly) res += "\nAffects only part crew";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
             if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
-            if (multiplier != 1) //res += "\n" + (multiplier > 0 ? "" : "+") + ((multiplier - 1) * 100).ToString("F0") + "% to " + multiplyFactor;
+            if (multiplier != 1) 
                 res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (ecConsumption != 0) res += "\nElectric Charge: " + ecConsumption.ToString("F1") + "/sec.";

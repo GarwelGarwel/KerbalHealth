@@ -141,6 +141,15 @@ namespace KerbalHealth
         public static bool IsKerbalLoaded(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel != null; }
 
+        public static bool IsKerbalFrozen(string name)
+        {
+            //if (!DFWrapper.APIReady) return false;
+            //foreach (KeyValuePair<string, DFWrapper.KerbalInfo> el in DFWrapper.DeepFreezeAPI.FrozenKerbalsList)
+            //    if (el.Key == name) return true;
+            return false;
+        }
+
+
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel; }
 
