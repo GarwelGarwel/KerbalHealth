@@ -32,9 +32,9 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Crowded (effect scaled in proportion to crew/capacity ratio): -6 HP/day for a full vessel
 - Loneliness (only 1 kerbal on the vessel, badass kerbals immune): -1 HP/day
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
-- EVA: -50 HP/day (don't abandon your kerbals outside for long!)
+- EVA: -30 HP/day (don't abandon your kerbals outside for long!)
 - Connected (having a working CommNet to home): +0.5 HP/day
-- Home (at Kerbin at altitude of under 25 km): +1 HP/day
+- Home (at Kerbin at altitude of under 25 km): +5 HP/day
 - KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
 
 Certain parts (Hitchhiker, crew cabin, and the Cupola) can reduce the effect of a health factor (Overpopulation in this case) allowing for much longer and healthier flights. It requires EC though. Hab rings (e.g. in MKS) can help overcome microgravity issues for long-term stations and interplanetary missions. You can patch any part to change (reduce or increase) any factor.
@@ -65,6 +65,14 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 - [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [MKS](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
+
+**Conflicts & Incompatibilities**
+
+- Any mod (including USI-LS), which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then rutn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
+- It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
+- Renaming kerbals may cause issues and is not recommended.
+- Deep Freeze is not supported at the moment: your kerbals can die of health issues even when frozen. This will be fixed in a future release.
+- RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved when RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors.
 
 **Next objectives**
 
