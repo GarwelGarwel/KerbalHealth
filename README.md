@@ -12,7 +12,7 @@ The mod looks stable enough for me to use in my own main playthrough, but a beta
 
 I will appreciate your bug reports (include output_log.txt) and feature suggestions.
 
-**Features as of 0.5.0 (beta)**
+**Features as of 0.5.1 (beta)**
 
 - Every kerbal, including Tourists, has Health Points (HP).
 - Maximum HP increase with kerbals' level. A 5-level kerbal is 50% "healthier" than a newbie.
@@ -34,7 +34,7 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
 - EVA: -30 HP/day (don't abandon your kerbals outside for long!)
 - Connected (having a working CommNet to home): +0.5 HP/day
-- Home (at Kerbin at altitude of under 25 km): +5 HP/day
+- Home (at Kerbin at altitude of under 70 km): +5 HP/day
 - KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
 
 Certain parts (Hitchhiker, crew cabin, and the Cupola) can reduce the effect of a health factor (Overpopulation in this case) allowing for much longer and healthier flights. It requires EC though. Hab rings (e.g. in MKS) can help overcome microgravity issues for long-term stations and interplanetary missions. You can patch any part to change (reduce or increase) any factor.
@@ -51,9 +51,9 @@ As you see, this mechanics may allow some kerbals to stay relatively healthy for
 
 Kerbals' organisms, like ours own, are not always predictable. Sometimes, very rarely, you may see random events that can impact your whole mission. Now you need to prepare for contingencies like real space programs do. You may completely disable or fine-tune the event system in settings.
 
-- Feeling Bad: your kerbals loses a random percentage of their current health (20 to 50%). It happens very rarely (every 10,000 days on average) though, but becomes an important factor for very long missions.
+- Feeling Bad: your kerbals loses a random percentage of their current health (20 to 50%). It happens very rarely (every 1,000 days on average) though, but becomes an important factor for very long missions.
 
-- Panic Attack: if your kerbal's health falls below 50% and he/she is on a mission, they may epxerience a panic attack and become uncontrollable for up to 3 hours. This event's probability depends on the health (the lower, the more likely) and courage (the lower, again, the more likely) of the kerbal, but on average happens once every 1,000 days.
+- Panic Attack: when your kerbal's is on a mission, he/she may epxerience a panic attack and become uncontrollable for up to 3 hours. This event's probability depends on the health (the lower, the more likely) and courage (the lower, again, the more likely) of the kerbal, the default maximum chance is once per 100 days.
 
 **Requirements**
 
@@ -71,13 +71,13 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 - Any mod (including USI-LS), which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then rutn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - Renaming kerbals may cause issues and is not recommended.
-- Deep Freeze is not supported at the moment: your kerbals can die of health issues even when frozen. This will be fixed in a future release.
+- Deep Freeze is not supported at the moment: your kerbals can die of health issues even when frozen. There are issues in DeepFreeze API that prevent me from integrating it, but hopefullly they will be fixed. I can make a quick temporary fix if for it if somebody asks really nicely.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved when RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors.
 
 **Next objectives**
 
 - More informative UI (Health Monitor and Health Report)
-- Support patches for Kerbalism, KPBS, etc.
+- Support patches for DeepFreeze, Kerbalism, KPBS, etc.
 
 **Future features**
 
