@@ -92,7 +92,7 @@ namespace KerbalHealth
             gridContents.Add(new DialogGUILabel("Name", true));
             gridContents.Add(new DialogGUILabel("Condition", true));
             gridContents.Add(new DialogGUILabel("Health", true));
-            gridContents.Add(new DialogGUILabel("Change", true));
+            gridContents.Add(new DialogGUILabel("Change/day", true));
             gridContents.Add(new DialogGUILabel("Time Left", true));
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
