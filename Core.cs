@@ -29,8 +29,7 @@ namespace KerbalHealth
 
         public static HealthFactor FindFactor(string id)
         {
-            foreach (HealthFactor f in Factors)
-                if (f.Name == id) return f;
+            foreach (HealthFactor f in Factors) if (f.Name == id) return f;
             return null;
         }
 
@@ -149,7 +148,6 @@ namespace KerbalHealth
             return false;
         }
 
-
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         { return pcm?.seat?.vessel; }
 
@@ -158,13 +156,14 @@ namespace KerbalHealth
         public enum LogLevel { None, Error, Important, Debug };
         public static LogLevel Level
         {
-            get { if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().debugMode) return LogLevel.Debug; else return LogLevel.Important; }
+            get
+            {
+                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().debugMode) return LogLevel.Debug;
+                else return LogLevel.Important;
+            }
         }
 
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
-        {
-            if (messageLevel <= Level)
-                Debug.Log("[KerbalHealth] " + message);
-        }
+        { if (messageLevel <= Level) Debug.Log("[KerbalHealth] " + message); }
     }
 }
