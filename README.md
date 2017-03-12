@@ -12,7 +12,7 @@ The mod looks stable enough for me to use in my own main playthrough, but a beta
 
 I will appreciate your bug reports (include output_log.txt) and feature suggestions.
 
-**Features as of 0.5.1 (beta)**
+**Features**
 
 - Every kerbal, including Tourists, has Health Points (HP).
 - Maximum HP increase with kerbals' level. A 5-level kerbal is 50% "healthier" than a newbie.
