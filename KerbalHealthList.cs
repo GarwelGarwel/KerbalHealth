@@ -41,7 +41,7 @@ namespace KerbalHealth
                 else if (!Core.IsKerbalFrozen(khs.Name)) 
                 {
                     Core.Log(khs.Name + " is not trackable anymore. Removing.");
-                    Core.Log("DFWrapper is " + (DFWrapper.APIReady ? ("ready. " + DFWrapper.DeepFreezeAPI.FrozenKerbalsList.Count + " items in FrozenKerbalsList.") : "not ready."));
+                    //Core.Log("DFWrapper is " + (DFWrapper.APIReady ? ("ready. " + DFWrapper.DeepFreezeAPI.FrozenKerbalsList.Count + " items in FrozenKerbalsList.") : "not ready."));
                     RemoveAt(i);
                     i--;
                 }
