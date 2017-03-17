@@ -132,14 +132,10 @@ namespace KerbalHealth
         }
 
         public static double GetMaxHP(ProtoCrewMember pcm)
-        {
-            return Core.BaseMaxHP + Core.HPPerLevel * pcm.experienceLevel;
-        }
+        { return Core.BaseMaxHP + Core.HPPerLevel * pcm.experienceLevel; }
 
         public double MaxHP
-        {
-            get { return GetMaxHP(PCM); }
-        }
+        { get { return GetMaxHP(PCM); } }
 
         public double TimeToValue(double target)
         {
@@ -350,8 +346,6 @@ namespace KerbalHealth
 
         public override int GetHashCode()
         { return base.GetHashCode(); }
-
-        public KerbalHealthStatus() { }
 
         public KerbalHealthStatus(string name)
         {

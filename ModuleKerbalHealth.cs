@@ -87,7 +87,6 @@ namespace KerbalHealth
             if (Core.IsInEditor || !Core.ModEnabled) return;
             double time = Planetarium.GetUniversalTime();
             if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)))
-            //if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)) && (TimeWarp.CurrentRate == 1))
             {
                 Core.Log(AffectedCrewCount + " crew affected by this part.");
                 double ec = (ecConsumption + ecConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;

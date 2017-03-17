@@ -117,28 +117,27 @@ namespace KerbalHealth
         public static string ParseUT(double time)
         {
             if (double.IsNaN(time) || (time == 0)) return "N/A";
-            if (time < 21600 * 100) return KSPUtil.PrintDateDeltaCompact(time, true, false);
-            else return KSPUtil.PrintDateDeltaCompact(time, false, false);
+            return KSPUtil.PrintDateDeltaCompact(time, time < 21600 * 10, false);
         }
 
         public static int GetCrewCount(ProtoCrewMember pcm)
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
-            Vessel v = pcm?.seat?.vessel;
-            if (v == null) return 1;
-            return v.GetCrewCount();
+            //Vessel v = pcm?.seat?.vessel;
+            //if (v == null) return 1;
+            return IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1;
         }
 
         public static int GetCrewCapacity(ProtoCrewMember pcm)
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.GetAllCrew(true).Count;
-            Vessel v = pcm?.seat?.vessel;
-            if ((v == null) || (v.GetCrewCapacity() < 1)) return 1;
-            return v.GetCrewCapacity();
+            //Vessel v = pcm?.seat?.vessel;
+            //if ((v == null) || (v.GetCrewCapacity() < 1)) return 1;
+            return IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1;
         }
 
         public static bool IsKerbalLoaded(ProtoCrewMember pcm)
-        { return pcm?.seat?.vessel != null; }
+        { return KerbalVessel(pcm) != null; }
 
         public static bool IsKerbalFrozen(string name)
         {
