@@ -59,23 +59,25 @@ namespace KerbalHealth
 
         void UpdateKerbals(bool forced = false)
         {
-            double timePassed = Planetarium.GetUniversalTime() - lastUpdated;
+            double time = Planetarium.GetUniversalTime();
+            double timePassed = time - lastUpdated;
             if (forced || (timePassed >= Core.UpdateInterval * TimeWarp.CurrentRate))
             {
-                Core.Log("UT is " + Planetarium.GetUniversalTime() + ". Updating for " + timePassed + " seconds.");
-                if (!DFWrapper.InstanceExists)
-                {
-                    Core.Log("Initializing DFWrapper...");
-                    DFWrapper.InitDFWrapper();
-                }
+                Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
+                //if (!DFWrapper.InstanceExists)
+                //{
+                //    Core.Log("Initializing DFWrapper...");
+                //    DFWrapper.InitDFWrapper();
+                //}
                 Core.KerbalHealthList.Update(timePassed);
-                lastUpdated = Planetarium.GetUniversalTime();
+                lastUpdated = time;
                 if (Core.EventsEnabled)
-                    while (Planetarium.GetUniversalTime() >= nextEventTime)  // Can take several turns of event processing at high time warp
+                    while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
                     {
+                        Core.Log("Processing events...");
                         Core.KerbalHealthList.ProcessEvents();
                         nextEventTime += GetNextEventInterval();
-                        Core.Log("Next event processing is scheduled at UT " + nextEventTime, Core.LogLevel.Important);
+                        Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                     }
                 dirty = true;
             }
@@ -97,7 +99,7 @@ namespace KerbalHealth
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
             dirty = true;
-            monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
+            monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
         }
 
         public void UndisplayData()

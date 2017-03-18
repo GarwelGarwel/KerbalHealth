@@ -54,7 +54,7 @@ namespace KerbalHealth
             foreach (KerbalHealthStatus khs in this)
             {
                 if (!IsKerbalTrackable(khs.PCM)) continue;
-                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...", Core.LogLevel.Important);
+                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...");
                 foreach (Event e in Core.Events) e.Process(khs);
             }
         }

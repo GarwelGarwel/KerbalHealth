@@ -11,6 +11,7 @@ namespace KerbalHealth
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
         public override bool HasPresets { get { return false; } }
         public override string Section { get { return "Kerbal Health"; } }
+        public override string DisplaySection { get { return Section; } }
         public override int SectionOrder { get { return 2; } }
 
         [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
