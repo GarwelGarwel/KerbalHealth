@@ -26,6 +26,8 @@ namespace KerbalHealth
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
+            //GameEvents.onHideUI.Add(UndisplayData);  // TODO: Test F2 hiding/showing UI & uncomment this if it doesn't work
+            //GameEvents.onShowUI.Add(DisplayData);
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
@@ -61,7 +63,7 @@ namespace KerbalHealth
         {
             double time = Planetarium.GetUniversalTime();
             double timePassed = time - lastUpdated;
-            if (forced || (timePassed >= Core.UpdateInterval * TimeWarp.CurrentRate))
+            if (forced || ((timePassed >= Core.UpdateInterval) && (timePassed >= Core.MinUpdateInterval * TimeWarp.CurrentRate)))
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
                 //if (!DFWrapper.InstanceExists)

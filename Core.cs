@@ -69,6 +69,12 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval = value; }
         }
 
+        public static float MinUpdateInterval
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinUpdateInterval; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinUpdateInterval = value; }
+        }
+
         public static float MinHP  // Min allowed value for health
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP; }
@@ -123,16 +129,12 @@ namespace KerbalHealth
         public static int GetCrewCount(ProtoCrewMember pcm)
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
-            //Vessel v = pcm?.seat?.vessel;
-            //if (v == null) return 1;
             return IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1;
         }
 
         public static int GetCrewCapacity(ProtoCrewMember pcm)
         {
             if (IsInEditor) return ShipConstruction.ShipManifest.GetAllCrew(true).Count;
-            //Vessel v = pcm?.seat?.vessel;
-            //if ((v == null) || (v.GetCrewCapacity() < 1)) return 1;
             return IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1;
         }
 

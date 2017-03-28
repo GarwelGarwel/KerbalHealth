@@ -23,8 +23,11 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
         public bool useBlizzysToolbar = true;
 
-        [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
-        public float UpdateInterval = 1;
+        [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of GAME seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
+        public float UpdateInterval = 10;
+
+        [GameParameters.CustomFloatParameterUI("Minimum Update Interval", toolTip = "Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval", minValue = 0.04f, maxValue = 60)]
+        public float MinUpdateInterval = 1;
 
         //[GameParameters.CustomFloatParameterUI("Min HP", toolTip = "Minimum number of Health Points", minValue = -100, maxValue = 0)]
         public float MinHP = 0;
