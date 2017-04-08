@@ -10,10 +10,11 @@ namespace KerbalHealth
     {
         abstract public string Name { get; }
 
+        // Display name of the factor
         virtual public string Title { get { return Name; } }
 
-        // Should only be checked for loaded kerbals
-        virtual public bool LoadedOnly { get { return true; } }
+        // This factor can/should be cached for unloaded kerbals
+        virtual public bool Cachable { get { return true; } }
 
         // Returns factor's HP change per day as set in the Settings (use FactorSettings.[factorName])
         abstract public double BaseChangePerDay { get; }

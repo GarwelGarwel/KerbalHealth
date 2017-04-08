@@ -13,7 +13,7 @@ namespace KerbalHealth
         public override string Title
         { get { return "KSC"; } }
 
-        public override bool LoadedOnly
+        public override bool Cachable
         { get { return false; } }
 
         // Not available in editor

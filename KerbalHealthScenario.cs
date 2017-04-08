@@ -53,13 +53,14 @@ namespace KerbalHealth
             if (!Core.ModEnabled) return;
             Core.Log(action.to.protoModuleCrew[0].name + " went on EVA from " + action.from.name + ".", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(action.to.protoModuleCrew[0]).IsOnEVA = true;
+            UpdateKerbals(true);
         }
 
         // Next event update is scheduled after a random period of time, between 0 and 2 days
         double GetNextEventInterval()
         { return Core.rand.NextDouble() * 21600 * 2; }
 
-        void UpdateKerbals(bool forced = false)
+        void UpdateKerbals(bool forced)
         {
             double time = Planetarium.GetUniversalTime();
             double timePassed = time - lastUpdated;
@@ -86,11 +87,12 @@ namespace KerbalHealth
         }
 
         public void FixedUpdate()
-        { if (Core.ModEnabled) UpdateKerbals(); }
+        { if (Core.ModEnabled) UpdateKerbals(false); }
 
         public void DisplayData()  // Called when the AppLauncher button is enabled
         {
             Core.Log("DisplayData", Core.LogLevel.Important);
+            UpdateKerbals(true);
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));

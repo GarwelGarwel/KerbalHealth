@@ -25,6 +25,11 @@ namespace KerbalHealth
                 Core.Log("Home factor is always off in Editor.");
                 return 0;
             }
+            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            {
+                Core.Log("Home factor is off when kerbal is not assigned.");
+                return 0;
+            }
             if (Core.KerbalHealthList.Find(pcm).IsOnEVA)
             {
                 Core.Log(pcm.name + " is on EVA, " + Name + " factor is unapplicable.");

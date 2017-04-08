@@ -11,7 +11,7 @@ namespace KerbalHealth
 
         string name;
         double hp;
-        double lastChange = 0;  // Cached HP change per day (for unloaded vessels)
+        double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         HealthCondition condition = HealthCondition.OK;
         string trait = null;
@@ -43,6 +43,12 @@ namespace KerbalHealth
         }
 
         public double Health { get { return (HP - Core.MinHP) / (MaxHP - Core.MinHP); } }  // % of health relative to MaxHealth
+        
+        double CachedChange
+        {
+            get { return cachedChange; }
+            set { cachedChange = value; }
+        }
 
         public double LastChange
         {
@@ -139,16 +145,16 @@ namespace KerbalHealth
 
         public double TimeToValue(double target)
         {
-            double change = HealthChangePerDay();
-            if (change == 0) return double.NaN;
-            double res = (target - HP) / change;
+            //double change = HealthChangePerDay();
+            if (LastChangeTotal == 0) return double.NaN;
+            double res = (target - HP) / LastChangeTotal;
             if (res < 0) return double.NaN;
             return res * 21600;
         }
 
         public double NextConditionHP()
         {
-            if (HealthChangePerDay() > 0)
+            if (LastChangeTotal > 0)
             {
                 switch (Condition)
                 {
@@ -228,7 +234,7 @@ namespace KerbalHealth
                 return 0;
             }
 
-            if (IsOnEVA && (Core.IsKerbalLoaded(pcm) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)))
+            if (IsOnEVA && ((pcm.seat != null) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)))
             {
                 Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
                 IsOnEVA = false;
@@ -247,31 +253,34 @@ namespace KerbalHealth
             minMultiplier = maxMultiplier = 1;
 
             // Processing parts
-            if (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && Core.IsKerbalLoaded(pcm))
+            if (Core.IsKerbalLoaded(pcm))
                 foreach (Part p in Core.KerbalVessel(pcm).Parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
             else if (Core.IsInEditor)
                 foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
 
-            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
+            //if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
+            LastChange = 0;
+            bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
+            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = 0; else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
+            Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
+            foreach (HealthFactor f in Core.Factors)
             {
-                Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
-                LastChange = 0;
-                foreach (HealthFactor f in Core.Factors)
+                if (f.Cachable && !recalculateCache)
                 {
-                    if (f.LoadedOnly && !(Core.IsInEditor || Core.IsKerbalLoaded(pcm) || IsOnEVA))
-                    {
-                        Core.Log(f.Name + " does not affect " + pcm.name + " (" + (Core.IsInEditor ? "" : "not ") + "in editor, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "in vessel, " + (IsOnEVA ? "" : "not ") + "on EVA).");
-                        continue;
-                    }
-                    double c = f.ChangePerDay(pcm) * Multiplier(f.Name) * Multiplier("All");
-                    Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
-                    LastChange += c;
+                    Core.Log(f.Name + " is not recalculated for " + pcm.name + " (" + HighLogic.LoadedScene + " scene, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "loaded, " + (IsOnEVA ? "" : "not ") + "on EVA).");
+                    continue;
                 }
+                double c = f.ChangePerDay(pcm) * Multiplier(f.Name) * Multiplier("All");
+                Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
+                if (f.Cachable) CachedChange += c;
+                else LastChange += c;
             }
+            LastChange += CachedChange;
+
             double mc = MarginalChange;
-            Core.Log("Marginal change: " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
-            Core.Log("Total change: " + (LastChange + mc) + " HP/day.");
-            return LastChange + mc;
+            Core.Log("Marginal change for " + pcm.name + ": " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
+            Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
+            return LastChangeTotal;
         }
 
         public void Update(double interval)
@@ -318,7 +327,7 @@ namespace KerbalHealth
                 n.AddValue("health", HP);
                 n.AddValue("condition", Condition);
                 if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
-                if (LastChange != 0) n.AddValue("lastChange", LastChange);
+                if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
                 if (LastMarginalPositiveChange != 0) n.AddValue("lastMarginalPositiveChange", LastMarginalPositiveChange);
                 if (LastMarginalNegativeChange != 0) n.AddValue("lastMarginalNegativeChange", LastMarginalNegativeChange);
                 if (IsOnEVA) n.AddValue("onEva", true);
@@ -330,8 +339,8 @@ namespace KerbalHealth
                 HP = Double.Parse(value.GetValue("health"));
                 Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
                 if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
-                try { LastChange = double.Parse(value.GetValue("lastChange")); }
-                catch (Exception) { LastChange = 0; }
+                try { CachedChange = double.Parse(value.GetValue("cachedChange")); }
+                catch (Exception) { CachedChange = 0; }
                 try { LastMarginalPositiveChange = double.Parse(value.GetValue("lastMarginalPositiveChange")); }
                 catch (Exception) { LastMarginalPositiveChange = 0; }
                 try { LastMarginalNegativeChange = double.Parse(value.GetValue("lastMarginalNegativeChange")); }

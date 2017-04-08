@@ -123,7 +123,7 @@ namespace KerbalHealth
         public static string ParseUT(double time)
         {
             if (double.IsNaN(time) || (time == 0)) return "N/A";
-            return KSPUtil.PrintDateDeltaCompact(time, time < 21600 * 10, false);
+            return KSPUtil.PrintDateDeltaCompact(time, time < 21600 * 100, false);
         }
 
         public static int GetCrewCount(ProtoCrewMember pcm)
@@ -139,7 +139,7 @@ namespace KerbalHealth
         }
 
         public static bool IsKerbalLoaded(ProtoCrewMember pcm)
-        { return KerbalVessel(pcm) != null; }
+        { return (pcm?.seat?.vessel != null) || (KerbalVessel(pcm)?.loaded ?? false); }
 
         public static bool IsKerbalFrozen(string name)
         {
@@ -150,7 +150,17 @@ namespace KerbalHealth
         }
 
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
-        { return pcm?.seat?.vessel; }
+        {
+            foreach (Vessel v in FlightGlobals.Vessels)
+                foreach (ProtoCrewMember k in v.GetVesselCrew())
+                    if (k == pcm)
+                    {
+                        Log(pcm.name + " is found in vessel " + v.name);
+                        return v;
+                    }
+            Log(pcm.name + " not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Error);
+            return null;
+        }
 
         public static System.Random rand = new System.Random();
 
