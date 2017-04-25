@@ -16,8 +16,8 @@ namespace KerbalHealth
             new LonelinessFactor(),
             new MicrogravityFactor(),
             new EVAFactor(),
-            new ConnectedFactor(),
             new SicknessFactor(),
+            new ConnectedFactor(),
             new HomeFactor(),
             new KSCFactor()
         };
