@@ -74,6 +74,7 @@
     <Compile Include="PanicAttackEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KerbalHealthGeneralSettings.cs" />
+    <Compile Include="SicknessFactor.cs" />
     <Compile Include="ToolbarWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
