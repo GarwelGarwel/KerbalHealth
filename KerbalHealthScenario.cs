@@ -26,8 +26,6 @@ namespace KerbalHealth
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
-            //GameEvents.onHideUI.Add(UndisplayData);  // TODO: Test F2 hiding/showing UI & uncomment this if it doesn't work
-            //GameEvents.onShowUI.Add(DisplayData);
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
@@ -142,7 +140,7 @@ namespace KerbalHealth
                     KerbalHealthStatus khs = Core.KerbalHealthList[i];
                     double ch = khs.LastChangeTotal;
                     gridContents[(i + 1) * colNum].SetOptionText(khs.Name);
-                    gridContents[(i + 1) * colNum + 1].SetOptionText(khs.Condition.ToString());
+                    gridContents[(i + 1) * colNum + 1].SetOptionText(khs.ConditionString);
                     gridContents[(i + 1) * colNum + 2].SetOptionText((100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
                     gridContents[(i + 1) * colNum + 3].SetOptionText((khs.Health >= 1) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
                     double b = khs.GetBalanceHP();
@@ -190,8 +188,8 @@ namespace KerbalHealth
             int i = 0;
             if (node.HasValue("nextEventTime")) nextEventTime = double.Parse(node.GetValue("nextEventTime"));
             else nextEventTime = Planetarium.GetUniversalTime() + GetNextEventInterval();
-            foreach (ConfigNode n in node.GetNodes())
-                if (n.name == "KerbalHealthStatus")
+            foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
+                //if (n.name == "KerbalHealthStatus")
                 {
                     Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
                     i++;

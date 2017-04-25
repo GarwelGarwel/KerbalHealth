@@ -7,13 +7,14 @@ namespace KerbalHealth
 {
     public class KerbalHealthStatus
     {
-        public enum HealthCondition { OK, Exhausted }  // conditions
+        //public enum HealthCondition { OK, Exhausted }  // conditions
 
         string name;
         double hp;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
-        HealthCondition condition = HealthCondition.OK;
+        //HealthCondition condition = HealthCondition.OK;
+        List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
         bool onEva = false;  // True if kerbal is on EVA
 
@@ -43,7 +44,7 @@ namespace KerbalHealth
         }
 
         public double Health { get { return (HP - Core.MinHP) / (MaxHP - Core.MinHP); } }  // % of health relative to MaxHealth
-        
+
         double CachedChange
         {
             get { return cachedChange; }
@@ -74,27 +75,85 @@ namespace KerbalHealth
         public double LastChangeTotal
         { get { return LastChange + MarginalChange; } }
 
-        public HealthCondition Condition
+        public List<HealthCondition> Conditions
         {
-            get { return condition; }
-            set
+            get { return conditions; }
+            set { conditions = value; }
+        }
+
+        public HealthCondition GetCondition(string condition)
+        {
+            foreach (HealthCondition hc in Conditions)
+                if (hc.Name == condition) return hc;
+            return null;
+        }
+
+        public bool HasCondition(string condition)
+        { return GetCondition(condition) != null; }
+
+        public void AddCondition(HealthCondition condition, bool additive = false)
+        {
+            Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
+            if (!additive && HasCondition(condition.Name)) return;
+            Conditions.Add(condition);
+            switch (condition.Name)
             {
-                if (value == condition) return;
-                switch (value)
+                case "OK":
+                    Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
+                    if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
+                    PCM.type = ProtoCrewMember.KerbalType.Crew;
+                    PCM.trait = Trait;
+                    break;
+                case "Exhausted":
+                    Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
+                    Trait = PCM.trait;
+                    PCM.type = ProtoCrewMember.KerbalType.Tourist;
+                    break;
+            }
+            Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
+        }
+
+        public void RemoveCondition(string condition, bool removeAll = false)
+        {
+            bool found = false;
+            Core.Log("Removing " + condition + " condition from " + Name + "...");
+            foreach (HealthCondition hc in Conditions)
+                if (hc.Name == condition)
                 {
-                    case HealthCondition.OK:
-                        Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
+                    found = true;
+                    Conditions.Remove(hc);
+                    if (!removeAll) break;
+                }
+            if (found)
+            {
+                Core.Log(condition + " condition removed from " + Name + ".", Core.LogLevel.Important);
+                switch (condition)
+                {
+                    case "Exhausted":
                         if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
                         PCM.type = ProtoCrewMember.KerbalType.Crew;
                         PCM.trait = Trait;
                         break;
-                    case HealthCondition.Exhausted:
-                        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
-                        Trait = PCM.trait;
-                        PCM.type = ProtoCrewMember.KerbalType.Tourist;
-                        break;
                 }
-                condition = value;
+            }
+        }
+
+        /// <summary>
+        /// Returns a comma-separated list of visible conditions or "OK" if there are no visible conditions
+        /// </summary>
+        public string ConditionString
+        {
+            get
+            {
+                string res = "";
+                foreach (HealthCondition hc in Conditions)
+                    if (hc.IsVisible)
+                    {
+                        if (res != "") res += ", ";
+                        res += hc.Title;
+                    }
+                if (res == "") res = "OK";
+                return res;
             }
         }
 
@@ -155,22 +214,29 @@ namespace KerbalHealth
         public double NextConditionHP()
         {
             if (LastChangeTotal > 0)
-            {
-                switch (Condition)
-                {
-                    case HealthCondition.OK:
-                        return MaxHP;
-                    case HealthCondition.Exhausted:
-                        return Core.ExhaustionEndHealth * MaxHP;
-                }
-            }
-            switch (Condition)
-            {
-                case HealthCondition.OK:
-                    return Core.ExhaustionStartHealth * MaxHP;
-                case HealthCondition.Exhausted:
+            //{
+                if (HasCondition("Exhausted"))
+                    return Core.ExhaustionEndHealth * MaxHP;
+                else return MaxHP;
+                //switch (Condition)
+                //{
+                //    case HealthCondition.OK:
+                //        return MaxHP;
+                //    case HealthCondition.Exhausted:
+                //        return Core.ExhaustionEndHealth * MaxHP;
+                //}
+            //}
+            if (LastChangeTotal < 0)
+                if (HasCondition("Exhausted"))
                     return Core.DeathHealth * MaxHP;
-            }
+                else return Core.ExhaustionStartHealth * MaxHP;
+            //switch (Condition)
+            //{
+            //    case HealthCondition.OK:
+            //        return Core.ExhaustionStartHealth * MaxHP;
+            //    case HealthCondition.Exhausted:
+            //        return Core.DeathHealth * MaxHP;
+            //}
             return double.NaN;
         }
 
@@ -304,18 +370,34 @@ namespace KerbalHealth
                 if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " dies of poor health!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
                 else ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
             }
-            if (Condition == HealthCondition.OK && HP <= Core.ExhaustionStartHealth * MaxHP)
+            if (HasCondition("Exhausted"))
             {
-                Condition = HealthCondition.Exhausted;
+                if (HP >= Core.ExhaustionEndHealth * MaxHP)
+                {
+                    RemoveCondition("Exhausted");
+                    if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " is no longer exhausted!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+                    else ScreenMessages.PostScreenMessage(Name + " is no longer exhausted.");
+                }
+            }
+            else
+            if (HP <= Core.ExhaustionStartHealth * MaxHP)
+            {
+                AddCondition(new HealthCondition("Exhausted"));
                 if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " is exhausted!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
                 else ScreenMessages.PostScreenMessage(Name + " is exhausted!");
             }
-            if (Condition == HealthCondition.Exhausted && HP >= Core.ExhaustionEndHealth * MaxHP)
-            {
-                Condition = HealthCondition.OK;
-                if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " has revived!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
-                else ScreenMessages.PostScreenMessage(Name + " has revived.");
-            }
+            //if (Condition == HealthCondition.OK && HP <= Core.ExhaustionStartHealth * MaxHP)
+            //{
+            //    Condition = HealthCondition.Exhausted;
+            //    if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " is exhausted!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+            //    else ScreenMessages.PostScreenMessage(Name + " is exhausted!");
+            //}
+            //if (Condition == HealthCondition.Exhausted && HP >= Core.ExhaustionEndHealth * MaxHP)
+            //{
+            //    Condition = HealthCondition.OK;
+            //    if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " has revived!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+            //    else ScreenMessages.PostScreenMessage(Name + " has revived.");
+            //}
         }
 
         public ConfigNode ConfigNode
@@ -325,8 +407,11 @@ namespace KerbalHealth
                 ConfigNode n = new ConfigNode("KerbalHealthStatus");
                 n.AddValue("name", Name);
                 n.AddValue("health", HP);
-                n.AddValue("condition", Condition);
-                if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
+                foreach (HealthCondition hc in Conditions)
+                    n.AddNode(hc.ConfigNode);
+                if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
+                //n.AddValue("condition", Condition);
+                //if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
                 if (LastMarginalPositiveChange != 0) n.AddValue("lastMarginalPositiveChange", LastMarginalPositiveChange);
                 if (LastMarginalNegativeChange != 0) n.AddValue("lastMarginalNegativeChange", LastMarginalNegativeChange);
@@ -337,8 +422,10 @@ namespace KerbalHealth
             {
                 Name = value.GetValue("name");
                 HP = Double.Parse(value.GetValue("health"));
-                Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
-                if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
+                foreach (ConfigNode n in value.GetNodes("HealthCondition"))
+                    AddCondition(new HealthCondition(n));
+                //Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
+                //if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
                 try { CachedChange = double.Parse(value.GetValue("cachedChange")); }
                 catch (Exception) { CachedChange = 0; }
                 try { LastMarginalPositiveChange = double.Parse(value.GetValue("lastMarginalPositiveChange")); }
