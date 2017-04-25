@@ -55,7 +55,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="DFWrapper.cs" />
     <Compile Include="Event.cs" />
-    <Compile Include="FeelBadEvent.cs" />
+    <Compile Include="AccidentEvent.cs" />
     <Compile Include="GetSickEvent.cs" />
     <Compile Include="HealSicknessEvent.cs" />
     <Compile Include="HealthCondition.cs" />

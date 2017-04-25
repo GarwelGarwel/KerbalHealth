@@ -36,7 +36,7 @@ namespace KerbalHealth
 
         static List<Event> events = new List<Event>()
         {
-            new FeelBadEvent(),
+            new AccidentEvent(),
             new PanicAttackEvent(),
             new GetSickEvent(),
             new HealSicknessEvent()

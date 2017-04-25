@@ -17,14 +17,14 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("Events Enabled", toolTip = "If checked, random health events can happen")]
         public bool EventsEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("Feeling Bad chance", toolTip = "Chance per day of Feeling Bad event happening", minValue = 0, maxValue = 0.002f, displayFormat = "F4", stepCount = 21)]
-        public float FeelBadChance = 0.001f;
+        [GameParameters.CustomFloatParameterUI("Accident chance", toolTip = "Chance per day of an Accident happening", minValue = 0, maxValue = 0.002f, displayFormat = "F4", stepCount = 21)]
+        public float AccidentChance = 0.001f;
 
-        [GameParameters.CustomFloatParameterUI("Feeling Bad min damage", toolTip = "Min % of HP lost in a Feeling Bad event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
-        public float FeelBadMinDamage = 0.2f;
+        [GameParameters.CustomFloatParameterUI("Accident min damage", toolTip = "Min % of HP lost in an Accident event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float AccidentMinDamage = 0.2f;
 
-        [GameParameters.CustomFloatParameterUI("Feeling Bad max damage", toolTip = "Max % of HP lost in a Feeling Bad event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
-        public float FeelBadMaxDamage = 0.5f;
+        [GameParameters.CustomFloatParameterUI("Accident max damage", toolTip = "Max % of HP lost in an Accident event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float AccidentMaxDamage = 0.5f;
 
         [GameParameters.CustomFloatParameterUI("Panic Attack chance", toolTip = "Max chance per day of a Panic Attack", minValue = 0, maxValue = 0.02f, displayFormat = "F3", stepCount = 21)]
         public float PanicAttackChance = 0.01f;
