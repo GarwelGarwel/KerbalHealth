@@ -5,14 +5,14 @@ using System.Text;
 
 namespace KerbalHealth
 {
-    public class HealSicknessEvent : Event
+    public class CureEvent : Event
     {
         public override string Name
-        { get { return "HealSickness"; } }
+        { get { return "Cure"; } }
 
         public override string Message()
         {
-            return khs.Name + " has healed " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!";
+            return khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!";
         }
 
         public override bool Condition()
@@ -22,7 +22,7 @@ namespace KerbalHealth
 
         public override double ChancePerDay()
         {
-            return 0.1;  // TODO: make chance depend on presence of medics/medbays
+            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().CureChance;  // TODO: make chance depend on presence of scientists/medics/medbays
         }
 
         public override void Run()

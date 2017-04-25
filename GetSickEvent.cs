@@ -19,7 +19,7 @@ namespace KerbalHealth
 
         public override double ChancePerDay()
         {
-            return 0.01;  // TODO: make chance depend on kerbal's crewmates
+            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().GetSickChance;  // TODO: make chance depend on kerbal's crewmates
         }
 
         public override void Run()

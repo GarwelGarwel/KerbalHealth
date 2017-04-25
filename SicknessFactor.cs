@@ -11,7 +11,7 @@ namespace KerbalHealth
         { get { return "Sickness"; } }
 
         public override double BaseChangePerDay
-        { get { return -5; } }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().SicknessFactor; } }
 
         public override bool Cachable
         { get { return false; } }

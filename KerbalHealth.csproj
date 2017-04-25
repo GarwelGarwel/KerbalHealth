@@ -57,7 +57,7 @@
     <Compile Include="Event.cs" />
     <Compile Include="AccidentEvent.cs" />
     <Compile Include="GetSickEvent.cs" />
-    <Compile Include="HealSicknessEvent.cs" />
+    <Compile Include="CureEvent.cs" />
     <Compile Include="HealthCondition.cs" />
     <Compile Include="KerbalHealthEventsSettings.cs" />
     <Compile Include="KerbalHealthFactorsSettings.cs" />

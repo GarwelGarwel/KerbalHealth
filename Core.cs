@@ -39,7 +39,7 @@ namespace KerbalHealth
             new AccidentEvent(),
             new PanicAttackEvent(),
             new GetSickEvent(),
-            new HealSicknessEvent()
+            new CureEvent()
         };
 
         public static List<Event> Events
