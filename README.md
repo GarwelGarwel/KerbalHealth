@@ -76,13 +76,13 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 **Next objectives**
 
+- Sickness and other health conditions and events
 - More informative UI (Health Monitor and Health Report)
 - Support patches for DeepFreeze, Kerbalism, KPBS, etc.
 
 **Future features**
 
-- More health conditions
-- More health events
 - More factors (e.g. radiation)
 - New mechanics: injuries, infectious diseases, medics, medical supplies, quarantine, etc.
+- More health events
 - API for collaboration with other mods
