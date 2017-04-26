@@ -16,10 +16,13 @@ namespace KerbalHealth
         public bool partCrewOnly = false;  // Does the module affect health of only crew in this part or the entire vessel?
 
         [KSPField]
-        public float ecConsumption = 0;  // Flat EC consumption (units per second)
+        public string resource = "ElectricCharge";  // Determines, which resource is consumed by the module
 
         [KSPField]
-        public float ecConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
+        public float resourceConsumption = 0;  // Flat EC consumption (units per second)
+
+        [KSPField]
+        public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
 
         [KSPField]
         public bool alwaysActive = false;  // Is the module's effect (and consumption) always active or togglable in-flight
@@ -70,7 +73,7 @@ namespace KerbalHealth
 
         public List<PartResourceDefinition> GetConsumedResources()
         {
-            if (ecConsumption != 0) return new List<PartResourceDefinition>() { PartResourceLibrary.Instance.GetDefinition("ElectricCharge") };
+            if (resourceConsumption != 0) return new List<PartResourceDefinition>() { PartResourceLibrary.Instance.GetDefinition(resource) };
             else return new List<PartResourceDefinition>();
         }
 
@@ -86,10 +89,10 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor || !Core.ModEnabled) return;
             double time = Planetarium.GetUniversalTime();
-            if (IsModuleActive && ((ecConsumption != 0) || (ecConsumptionPerKerbal != 0)))
+            if (IsModuleActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
                 Core.Log(AffectedCrewCount + " crew affected by this part.");
-                double ec = (ecConsumption + ecConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;
+                double ec = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;
                 if ((ec2 = vessel.RequestResource(part, PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id, ec, false)) * 2 < ec)
                 {
                     Core.Log("Module shut down due to lack of EC (" + ec + " needed, " + ec2 + " provided).");
@@ -120,8 +123,8 @@ namespace KerbalHealth
             if (multiplier != 1) 
                 res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
-            if (ecConsumption != 0) res += "\nElectric Charge: " + ecConsumption.ToString("F1") + "/sec.";
-            if (ecConsumptionPerKerbal != 0) res += "\nEC per Kerbal: " + ecConsumptionPerKerbal.ToString("F1") + "/sec.";
+            if (resourceConsumption != 0) res += "\n" + resource + ": " + resourceConsumption.ToString("F1") + "/sec.";
+            if (resourceConsumptionPerKerbal != 0) res += "\n" + resource + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
             return res;
         }
     }
