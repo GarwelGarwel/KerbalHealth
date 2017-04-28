@@ -32,7 +32,7 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("Panic Attack max duration", toolTip = "Maximum duration of a Panic Attack in seconds", minValue = 0, maxValue = 6 * 3600, stepCount = 7)]
         public float PanicAttackMaxDuration = 3 * 3600;
 
-        [GameParameters.CustomFloatParameterUI("Getting sick chance", toolTip = "Chance per day of a kerbal getting sick", minValue = 0, maxValue = 0.02f, displayFormat = "F3", stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Sickness chance", toolTip = "Chance per day of a kerbal getting sick", minValue = 0, maxValue = 0.02f, displayFormat = "F3", stepCount = 21)]
         public float GetSickChance = 0.01f;
 
         [GameParameters.CustomFloatParameterUI("Cure chance", toolTip = "Base chance per day of a sickness cured", minValue = 0, maxValue = 0.3f, displayFormat = "F2", stepCount = 21)]

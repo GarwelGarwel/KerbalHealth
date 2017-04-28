@@ -144,6 +144,11 @@ namespace KerbalHealth
         public static bool IsKerbalLoaded(ProtoCrewMember pcm)
         { return (pcm?.seat?.vessel != null) || (KerbalVessel(pcm)?.loaded ?? false); }
 
+        public static bool IsKerbalTrackable(ProtoCrewMember pcm)
+        {
+            return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
+        }
+
         public static bool IsKerbalFrozen(string name)
         {
             //if (!DFWrapper.APIReady) return false;

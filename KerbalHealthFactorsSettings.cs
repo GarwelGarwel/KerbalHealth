@@ -18,7 +18,7 @@ namespace KerbalHealth
         public float AssignedFactor = -0.5f;
 
         [GameParameters.CustomFloatParameterUI("Crowded", toolTip = "HP change per day in a crowded vessel", minValue = -50, maxValue = 0, stepCount = 51)]
-        public float CrowdedBaseFactor = -6;
+        public float CrowdedBaseFactor = -5;
 
         [GameParameters.CustomFloatParameterUI("Loneliness", toolTip = "HP change per day when the kerbal has no crewmates", minValue = -50, maxValue = 0, stepCount = 51)]
         public float LonelinessFactor = -1;
@@ -29,7 +29,7 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("EVA", toolTip = "HP change per day when on EVA", minValue = -100, maxValue = 0, stepCount = 51)]
         public float EVAFactor = -30;
 
-        [GameParameters.CustomFloatParameterUI("Sickness", toolTip = "Base HP change per day when a kerbal is sick", minValue = -20, maxValue = 0, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Sickness", toolTip = "Base HP change per day when a kerbal is sick", minValue = -50, maxValue = 0, stepCount = 51)]
         public float SicknessFactor = -5;
 
         [GameParameters.CustomFloatParameterUI("Connected", toolTip = "HP change per day when connected to Kerbin", minValue = 0, maxValue = 20, displayFormat = "F1", stepCount = 41)]
