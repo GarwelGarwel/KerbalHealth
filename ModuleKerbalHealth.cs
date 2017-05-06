@@ -73,8 +73,14 @@ namespace KerbalHealth
 
         public List<PartResourceDefinition> GetConsumedResources()
         {
-            if (resourceConsumption != 0) return new List<PartResourceDefinition>() { PartResourceLibrary.Instance.GetDefinition(resource) };
+            if (resourceConsumption != 0) return new List<PartResourceDefinition>() { resourceDefinition };
             else return new List<PartResourceDefinition>();
+        }
+
+        PartResourceDefinition resourceDefinition
+        {
+            get { return PartResourceLibrary.Instance.GetDefinition(resource); }
+            set { resource = value?.name; }
         }
 
         public override void OnStart(StartState state)
@@ -92,11 +98,11 @@ namespace KerbalHealth
             if (IsModuleActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
                 Core.Log(AffectedCrewCount + " crew affected by this part.");
-                double ec = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), ec2;
-                if ((ec2 = vessel.RequestResource(part, PartResourceLibrary.Instance.GetDefinition("ElectricCharge").id, ec, false)) * 2 < ec)
+                double res = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), res2;
+                if ((res2 = vessel.RequestResource(part, resourceDefinition.id, res, false)) * 2 < res)
                 {
-                    Core.Log("Module shut down due to lack of EC (" + ec + " needed, " + ec2 + " provided).");
-                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name + " shut down due to lack of EC.");
+                    Core.Log("Module shut down due to lack of " + resource + " (" + res + " needed, " + res2 + " provided).");
+                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name + " shut down due to lack of " + resourceDefinition.name + ".");
                     isActive = false;
                 }
             }
@@ -109,10 +115,7 @@ namespace KerbalHealth
 
         [KSPEvent(name = "OnToggleActive", active = true, guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
         public void OnToggleActive()
-        {
-            if (alwaysActive) isActive = true;
-            else isActive = !isActive;
-        }
+        { isActive = alwaysActive || !isActive; }
 
         public override string GetInfo()
         {
@@ -123,8 +126,8 @@ namespace KerbalHealth
             if (multiplier != 1) 
                 res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
-            if (resourceConsumption != 0) res += "\n" + resource + ": " + resourceConsumption.ToString("F1") + "/sec.";
-            if (resourceConsumptionPerKerbal != 0) res += "\n" + resource + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
+            if (resourceConsumption != 0) res += "\n" + resourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
+            if (resourceConsumptionPerKerbal != 0) res += "\n" + resourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
             return res;
         }
     }
