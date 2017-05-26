@@ -25,9 +25,9 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Whether to stop timewarp the game on event. By default, stops timewarp only for assigned (active) kerbals
+        /// Whether to stop timewarp the game on event. By default, stops timewarp only for assigned (active) kerbals and for non-silent events
         /// </summary>
-        protected virtual bool UnwarpTime { get { return khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned; } }
+        protected virtual bool UnwarpTime { get { return (Notification != NotificationType.Silent) && (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned); } }
 
         /// <summary>
         /// Returns system name of the event
@@ -44,7 +44,8 @@ namespace KerbalHealth
         /// Returns the message text when the event happens (null if no message)
         /// </summary>
         /// <returns></returns>
-        public abstract string Message();
+        public virtual string Message()
+        { return Title + " event has happened to " + khs.Name + "."; }
 
         /// <summary>
         /// Returns true if the event can happen to this kerbal at the moment
