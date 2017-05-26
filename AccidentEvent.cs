@@ -32,13 +32,9 @@ namespace KerbalHealth
         }
 
         double Damage(double x)
-        {
-            return 1 - MinDamage - (MaxDamage - MinDamage) * x;
-        }
+        { return 1 - MinDamage - (MaxDamage - MinDamage) * x; }
 
-        public override void Run()
-        {
-            khs.HP *= Damage(Core.rand.NextDouble());
-        }
+        protected override void Run()
+        { khs.HP *= Damage(Core.rand.NextDouble()); }
     }
 }

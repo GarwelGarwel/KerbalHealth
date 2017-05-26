@@ -18,7 +18,7 @@ namespace KerbalHealth
 
         public override bool Condition()
         {
-            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && (khs.Condition == KerbalHealthStatus.HealthCondition.OK);
+            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && !khs.HasCondition("Exhausted");
         }
 
         public override double ChancePerDay()
@@ -28,7 +28,7 @@ namespace KerbalHealth
 
         // Make inactive for up to 3 hours
         double inactionTime;
-        public override void Run()
+        protected override void Run()
         {
             inactionTime = Core.rand.NextDouble() * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackMaxDuration;
             Core.Log(khs.Name + " will be inactive for " + inactionTime + " seconds.");
