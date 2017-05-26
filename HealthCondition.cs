@@ -41,7 +41,7 @@ namespace KerbalHealth
             set { visible = value; }
         }
 
-        public ConfigNode ConfigNode
+        public virtual ConfigNode ConfigNode
         {
             get
             {
@@ -59,15 +59,6 @@ namespace KerbalHealth
             }
         }
 
-        //public HealthCondition(string name)
-        //{ Name = name; }
-
-        //public HealthCondition(string name, string title)
-        //{
-        //    Name = name;
-        //    Title = title;
-        //}
-
         public HealthCondition(ConfigNode n)
         { ConfigNode = n; }
 
@@ -75,6 +66,12 @@ namespace KerbalHealth
         {
             Name = name;
             Title = title;
+            IsVisible = isVisible;
+        }
+
+        public HealthCondition(string name, bool isVisible)
+        {
+            Name = name;
             IsVisible = isVisible;
         }
     }

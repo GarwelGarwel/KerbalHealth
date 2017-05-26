@@ -17,7 +17,11 @@ namespace KerbalHealth
         { return true; }
 
         public override double ChancePerDay()
-        { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentChance; }
+        {
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod > 0)
+                return 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod;
+            else return 0;
+        }
 
         float MinDamage
         {

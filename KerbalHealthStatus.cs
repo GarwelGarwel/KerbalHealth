@@ -10,13 +10,10 @@ namespace KerbalHealth
     /// </summary>
     public class KerbalHealthStatus
     {
-        //public enum HealthCondition { OK, Exhausted }  // conditions
-
         string name;
         double hp;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
-        //HealthCondition condition = HealthCondition.OK;
         List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
         bool onEva = false;  // True if kerbal is on EVA

@@ -23,14 +23,16 @@ namespace KerbalHealth
 
         public override double ChancePerDay()
         {
-            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackChance * (1 - (khs.Health - Core.ExhaustionStartHealth) / (1 - Core.ExhaustionStartHealth)) * (1 - khs.PCM.courage); 
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackPeriod > 0)
+                return 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackPeriod * (1 - (khs.Health - Core.ExhaustionStartHealth) / (1 - Core.ExhaustionStartHealth)) * (1 - khs.PCM.courage);
+            else return 0;
         }
 
-        // Make inactive for up to 3 hours
+        // Make temporarily inactive
         double inactionTime;
         protected override void Run()
         {
-            inactionTime = Core.rand.NextDouble() * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackMaxDuration;
+            inactionTime = Core.rand.NextDouble() * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackMaxDuration * 3600;
             Core.Log(khs.Name + " will be inactive for " + inactionTime + " seconds.");
             khs.PCM.SetInactive(inactionTime);
         }
