@@ -30,12 +30,7 @@ namespace KerbalHealth
                 Core.Log("Home factor is off when kerbal is not assigned.");
                 return 0;
             }
-            if (Core.KerbalHealthList.Find(pcm).IsOnEVA)
-            {
-                Core.Log(pcm.name + " is on EVA, " + Name + " factor is unapplicable.");
-                return 0;
-            }
-            if (!Core.KerbalHealthList.Find(pcm).IsOnEVA && ((Core.KerbalVessel(pcm).mainBody.name == "Kerbin") || (Core.KerbalVessel(pcm).mainBody.name == "Earth")) && (Core.KerbalVessel(pcm).altitude < 70000))
+            if (((Core.KerbalVessel(pcm).mainBody.name == "Kerbin") || (Core.KerbalVessel(pcm).mainBody.name == "Earth")) && (Core.KerbalVessel(pcm).altitude < 18000))
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
