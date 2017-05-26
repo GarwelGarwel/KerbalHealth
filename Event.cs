@@ -5,9 +5,15 @@ using System.Text;
 
 namespace KerbalHealth
 {
+    /// <summary>
+    /// Random health event class. To add a new event, extend this class and add it to Core.Events
+    /// </summary>
     public abstract class Event
     {
-        // How to notify the user about the event
+        // 
+        /// <summary>
+        /// How to notify the user about the event. Values: Silent - no notification at all; ScreenMessage - a brief message displayed on screen; GameMessage - a message icon using the in-game message system.
+        /// </summary>
         protected enum NotificationType { Silent, ScreenMessage, GameMessage };
         protected virtual NotificationType Notification
         {
@@ -18,29 +24,49 @@ namespace KerbalHealth
             }
         }
 
-        // Whether to stop timewrap the game on event
+        /// <summary>
+        /// Whether to stop timewarp the game on event. By default, stops timewarp only for assigned (active) kerbals
+        /// </summary>
         protected virtual bool UnwarpTime { get { return khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned; } }
 
-        // Returns system name of the event
+        /// <summary>
+        /// Returns system name of the event
+        /// </summary>
         public abstract string Name { get; }
 
-        // Returns human-readable title of the event
+        /// <summary>
+        /// Returns human-readable title of the event. Same as Name by default
+        /// </summary>
         public virtual string Title
         { get { return Name; } }
 
-        // Returns the on-screen message when the event happens (null if no message)
+        /// <summary>
+        /// Returns the message text when the event happens (null if no message)
+        /// </summary>
+        /// <returns></returns>
         public abstract string Message();
 
-        // Returns true if the event can happen to this kerbal at the moment
+        /// <summary>
+        /// Returns true if the event can happen to this kerbal at the moment
+        /// </summary>
+        /// <returns></returns>
         public abstract bool Condition();
 
-        // Returns chance (0 to 1) of the event happening per day
+        /// <summary>
+        /// Returns chance (0 to 1) of the event happening per day
+        /// </summary>
+        /// <returns></returns>
         public abstract double ChancePerDay();
 
-        // Affects the kerbal's health
-        public abstract void Run();
+        /// <summary>
+        /// Applies the event's effects to the current kerbal
+        /// </summary>
+        protected abstract void Run();
 
-        // Check condition and chance, run the event and display the message. To be called once a day.
+        /// <summary>
+        /// Checks condition and chance, runs the event and displays the message (if applicable). To be called once a day for every event class, for every kerbal
+        /// </summary>
+        /// <param name="status">Kerbal to process the event for</param>
         public void Process(KerbalHealthStatus status)
         {
             khs = status;
@@ -61,12 +87,5 @@ namespace KerbalHealth
         }
 
         protected KerbalHealthStatus khs;
-
-        //public Event() { }
-
-        //public Event(KerbalHealthStatus khs)
-        //{
-        //    this.khs = khs;
-        //}
     }
 }

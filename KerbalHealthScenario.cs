@@ -5,6 +5,9 @@ using KSP.UI.Screens;
 
 namespace KerbalHealth
 {
+    /// <summary>
+    /// Main class for processing kerbals' health and health changes
+    /// </summary>
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT)]
     public class KerbalHealthScenario : ScenarioModule
     {
@@ -46,6 +49,10 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
+        /// <summary>
+        /// Marks the kerbal as being on EVA, to apply EVA-only effects
+        /// </summary>
+        /// <param name="action"></param>
         public void OnKerbalEva(GameEvents.FromToAction<Part, Part> action)
         {
             if (!Core.ModEnabled) return;
@@ -54,7 +61,10 @@ namespace KerbalHealth
             UpdateKerbals(true);
         }
 
-        // Next event update is scheduled after a random period of time, between 0 and 2 days
+        /// <summary>
+        /// Next event update is scheduled after a random period of time, between 0 and 2 days
+        /// </summary>
+        /// <returns></returns>
         double GetNextEventInterval()
         { return Core.rand.NextDouble() * 21600 * 2; }
 
@@ -87,7 +97,10 @@ namespace KerbalHealth
         public void FixedUpdate()
         { if (Core.ModEnabled) UpdateKerbals(false); }
 
-        public void DisplayData()  // Called when the AppLauncher button is enabled
+        /// <summary>
+        /// Shows Health monitor when the AppLauncher button is enabled
+        /// </summary>
+        public void DisplayData()
         {
             Core.Log("DisplayData", Core.LogLevel.Important);
             UpdateKerbals(true);
@@ -104,6 +117,9 @@ namespace KerbalHealth
             monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
         }
 
+        /// <summary>
+        /// Hides the Health Monitor window
+        /// </summary>
         public void UndisplayData()
         {
             if (monitorWindow != null)
@@ -189,7 +205,6 @@ namespace KerbalHealth
             if (node.HasValue("nextEventTime")) nextEventTime = double.Parse(node.GetValue("nextEventTime"));
             else nextEventTime = Planetarium.GetUniversalTime() + GetNextEventInterval();
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
-                //if (n.name == "KerbalHealthStatus")
                 {
                     Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
                     i++;

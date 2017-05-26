@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace KerbalHealth
 {
+    /// <summary>
+    /// Contains data about a kerbal's health
+    /// </summary>
     public class KerbalHealthStatus
     {
         //public enum HealthCondition { OK, Exhausted }  // conditions
@@ -22,6 +25,9 @@ namespace KerbalHealth
         Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>();
         double minMultiplier, maxMultiplier;
 
+        /// <summary>
+        /// Kerbal's name
+        /// </summary>
         public string Name
         {
             get { return name; }
@@ -32,6 +38,9 @@ namespace KerbalHealth
             }
         }
 
+        /// <summary>
+        /// Kerbal's health points
+        /// </summary>
         public double HP
         {
             get { return hp; }
@@ -43,7 +52,10 @@ namespace KerbalHealth
             }
         }
 
-        public double Health { get { return (HP - Core.MinHP) / (MaxHP - Core.MinHP); } }  // % of health relative to MaxHealth
+        /// <summary>
+        /// Returns kerbal's HP relative to MaxHealth (0 to 1)
+        /// </summary>
+        public double Health { get { return (HP - Core.MinHP) / (MaxHP - Core.MinHP); } }
 
         double CachedChange
         {
@@ -51,36 +63,59 @@ namespace KerbalHealth
             set { cachedChange = value; }
         }
 
+        /// <summary>
+        /// HP change per day rate in the latest update. Only includes factors, not marginal change
+        /// </summary>
         public double LastChange
         {
             get { return lastChange; }
             set { lastChange = value; }
         }
 
+        /// <summary>
+        /// Marginal change in the latest update (positive only)
+        /// </summary>
         public double LastMarginalPositiveChange
         {
             get { return lastMarginalPositiveChange; }
             set { lastMarginalPositiveChange = value; }
         }
 
+        /// <summary>
+        /// Marginal change in the latest update (negative only)
+        /// </summary>
         public double LastMarginalNegativeChange
         {
             get { return lastMarginalNegativeChange; }
             set { lastMarginalNegativeChange = value; }
         }
 
+        /// <summary>
+        /// HP change due to marginal effects
+        /// </summary>
         public double MarginalChange
         { get { return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - (HP - Core.MinHP) * (LastMarginalNegativeChange / 100); } }
 
+        /// <summary>
+        /// Total HP change per day rate in the latest update
+        /// </summary>
         public double LastChangeTotal
         { get { return LastChange + MarginalChange; } }
 
+        /// <summary>
+        /// Returns a list of all active health conditions for the kerbal
+        /// </summary>
         public List<HealthCondition> Conditions
         {
             get { return conditions; }
             set { conditions = value; }
         }
 
+        /// <summary>
+        /// Returns the condition with a given name, if present (null otherwise)
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <returns></returns>
         public HealthCondition GetCondition(string condition)
         {
             foreach (HealthCondition hc in Conditions)
@@ -88,9 +123,19 @@ namespace KerbalHealth
             return null;
         }
 
+        /// <summary>
+        /// Returns true if a given condition exists for the kerbal
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <returns></returns>
         public bool HasCondition(string condition)
         { return GetCondition(condition) != null; }
 
+        /// <summary>
+        /// Adds a new health condition
+        /// </summary>
+        /// <param name="condition">Condition to add</param>
+        /// <param name="additive">If true, the condition will be added even if it already exists (false by default)</param>
         public void AddCondition(HealthCondition condition, bool additive = false)
         {
             Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
@@ -113,6 +158,11 @@ namespace KerbalHealth
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
         }
 
+        /// <summary>
+        /// Removes a condition with from the kerbal
+        /// </summary>
+        /// <param name="condition">Name of condition to remove</param>
+        /// <param name="removeAll">If true, all conditions with the same name will be removed. Makes sense for additive conditions. Default is false</param>
         public void RemoveCondition(string condition, bool removeAll = false)
         {
             bool found = false;
@@ -157,12 +207,18 @@ namespace KerbalHealth
             }
         }
 
+        /// <summary>
+        /// Returns saved kerbal's trait or current trait if nothing is saved
+        /// </summary>
         string Trait
         {
             get { return trait ?? PCM.trait; }
             set { trait = value; }
         }
 
+        /// <summary>
+        /// Returns true if the kerbal is marked as being on EVA
+        /// </summary>
         public bool IsOnEVA
         {
             get { return onEva; }
@@ -170,6 +226,9 @@ namespace KerbalHealth
         }
 
         ProtoCrewMember pcmCached;
+        /// <summary>
+        /// Returns ProtoCrewMember for the kerbal
+        /// </summary>
         public ProtoCrewMember PCM
         {
             get
@@ -196,21 +255,37 @@ namespace KerbalHealth
             }
         }
 
+        /// <summary>
+        /// Returns the max number of HP for the kerbal
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
         public static double GetMaxHP(ProtoCrewMember pcm)
         { return Core.BaseMaxHP + Core.HPPerLevel * pcm.experienceLevel; }
 
+        /// <summary>
+        /// Returns the max number of HP for the kerbal
+        /// </summary>
         public double MaxHP
         { get { return GetMaxHP(PCM); } }
 
+        /// <summary>
+        /// How many seconds left until HP reaches the given level, at the current HP change rate
+        /// </summary>
+        /// <param name="target">Target HP level</param>
+        /// <returns></returns>
         public double TimeToValue(double target)
         {
-            //double change = HealthChangePerDay();
             if (LastChangeTotal == 0) return double.NaN;
             double res = (target - HP) / LastChangeTotal;
             if (res < 0) return double.NaN;
             return res * 21600;
         }
 
+        /// <summary>
+        /// Returns HP number for the next condition (OK, Exhausted or death)
+        /// </summary>
+        /// <returns></returns>
         public double NextConditionHP()
         {
             if (LastChangeTotal > 0)
@@ -240,10 +315,17 @@ namespace KerbalHealth
             return double.NaN;
         }
 
+        /// <summary>
+        /// Returns number of seconds until the next condition is reached
+        /// </summary>
+        /// <returns></returns>
         public double TimeToNextCondition()
         { return TimeToValue(NextConditionHP()); }
 
-        // Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
+        /// <summary>
+        /// Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
+        /// </summary>
+        /// <returns></returns>
         public double GetBalanceHP()
         {
             Core.Log(Name + "'s last change: " + LastChange + ", MPC: " + LastMarginalPositiveChange + "%, MNC: " + LastMarginalNegativeChange + "%.");
@@ -252,12 +334,23 @@ namespace KerbalHealth
             return (MaxHP * LastMarginalPositiveChange + LastChange * 100) / (LastMarginalPositiveChange - LastMarginalNegativeChange);
         }
 
+        /// <summary>
+        /// Returns true if the kerbal is member of an array of ProtoCrewMembers
+        /// </summary>
+        /// <param name="crew"></param>
+        /// <returns></returns>
         bool IsInCrew(ProtoCrewMember[] crew)
         {
             foreach (ProtoCrewMember pcm in crew) if (pcm?.name == Name) return true;
             return false;
         }
 
+        /// <summary>
+        /// Checks a part for ist effects on the kerbal
+        /// </summary>
+        /// <param name="part"></param>
+        /// <param name="crew"></param>
+        /// <param name="change"></param>
         void ProcessPart(Part part, ProtoCrewMember[] crew, ref double change)
         {
             int i = 0;
@@ -290,6 +383,10 @@ namespace KerbalHealth
             return res * fmFreeMultipliers[factorId];
         }
 
+        /// <summary>
+        /// Returns effective HP change rate per day
+        /// </summary>
+        /// <returns></returns>
         public double HealthChangePerDay()
         {
             double change = 0;
@@ -349,6 +446,10 @@ namespace KerbalHealth
             return LastChangeTotal;
         }
 
+        /// <summary>
+        /// Updates kerbal's HP and status
+        /// </summary>
+        /// <param name="interval">Number of seconds since the last update</param>
         public void Update(double interval)
         {
             Core.Log("Updating " + Name + "'s health.");
@@ -424,6 +525,7 @@ namespace KerbalHealth
                 HP = Double.Parse(value.GetValue("health"));
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
+                if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
                 //Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
                 //if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
                 try { CachedChange = double.Parse(value.GetValue("cachedChange")); }
@@ -441,7 +543,7 @@ namespace KerbalHealth
         { return ((KerbalHealthStatus)obj).Name.Equals(Name); }
 
         public override int GetHashCode()
-        { return base.GetHashCode(); }
+        { return ConfigNode.GetHashCode(); }
 
         public KerbalHealthStatus(string name)
         {
