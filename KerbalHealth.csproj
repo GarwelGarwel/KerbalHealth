@@ -56,6 +56,7 @@
     <Compile Include="DFWrapper.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="AccidentEvent.cs" />
+    <Compile Include="GetInfectedEvent.cs" />
     <Compile Include="GetSickEvent.cs" />
     <Compile Include="CureEvent.cs" />
     <Compile Include="HealthCondition.cs" />
@@ -66,6 +67,7 @@
     <Compile Include="KSCFactor.cs" />
     <Compile Include="LonelinessFactor.cs" />
     <Compile Include="HomeFactor.cs" />
+    <Compile Include="LoseImmunityEvent.cs" />
     <Compile Include="MicrogravityFactor.cs" />
     <Compile Include="ModuleKerbalHealth.cs" />
     <Compile Include="KerbalHealthEditorReport.cs" />

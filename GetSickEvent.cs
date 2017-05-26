@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace KerbalHealth
 {
@@ -13,18 +10,17 @@ namespace KerbalHealth
         public override string Message()
         { return khs.Name + " has fallen sick."; }
 
-        // Cannot become sick twice
         public override bool Condition()
-        { return !khs.HasCondition("Sick"); }
+        { return khs.HasCondition("Infected"); }
 
         public override double ChancePerDay()
-        {
-            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().GetSickChance;  // TODO: make chance depend on kerbal's crewmates
-        }
+        { return Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().IncubationDuration, 1); }
 
         protected override void Run()
         {
-            khs.AddCondition(new KerbalHealth.HealthCondition("Sick"));
+            Core.Log("Adding sickness to " + khs.Name + "...");
+            khs.RemoveCondition("Infected");
+            khs.AddCondition(new HealthCondition("Sick"));
         }
     }
 }

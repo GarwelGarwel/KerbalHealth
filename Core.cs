@@ -50,8 +50,10 @@ namespace KerbalHealth
         {
             new AccidentEvent(),
             new PanicAttackEvent(),
+            new CureEvent(),
             new GetSickEvent(),
-            new CureEvent()
+            new GetInfectedEvent(),
+            new LoseImmunityEvent()
         };
 
         /// <summary>
@@ -252,14 +254,12 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         {
+            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return null;
             foreach (Vessel v in FlightGlobals.Vessels)
                 foreach (ProtoCrewMember k in v.GetVesselCrew())
                     if (k == pcm)
-                    {
-                        Log(pcm.name + " is found in vessel " + v.name);
                         return v;
-                    }
-            Log(pcm.name + " not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Error);
+            Log(pcm.name + " is Assigned, but was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Error);
             return null;
         }
 
