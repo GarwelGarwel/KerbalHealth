@@ -119,7 +119,6 @@ namespace KerbalHealth
 
         public override string GetInfo()
         {
-            if (!Core.ModEnabled) return base.GetInfo();
             string res = "KerbalHealth Module";
             if (partCrewOnly) res += "\nAffects only part crew";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
