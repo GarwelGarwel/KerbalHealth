@@ -20,7 +20,7 @@ namespace KerbalHealth
         {
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             if (khs == null) return 0;
-            if (khs.HasCondition("Sickness"))
+            if (khs.HasCondition("Sick"))
                 return BaseChangePerDay;
             return 0;
         }

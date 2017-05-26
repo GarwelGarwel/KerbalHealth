@@ -11,23 +11,16 @@ namespace KerbalHealth
         { get { return "Cure"; } }
 
         public override string Message()
-        {
-            return khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!";
-        }
+        { return khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!"; }
 
         public override bool Condition()
-        {
-            return khs.HasCondition("Sickness");
-        }
+        { return khs.HasCondition("Sick"); }
 
+        // TODO: make chance depend on presence of scientists/medics/medbays
         public override double ChancePerDay()
-        {
-            return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().CureChance;  // TODO: make chance depend on presence of scientists/medics/medbays
-        }
+        { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().CureChance; }
 
-        public override void Run()
-        {
-            khs.RemoveCondition("Sickness");
-        }
+        protected override void Run()
+        { khs.RemoveCondition("Sick"); }
     }
 }

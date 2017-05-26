@@ -15,16 +15,16 @@ namespace KerbalHealth
 
         // Cannot become sick twice
         public override bool Condition()
-        { return !khs.HasCondition("Sickness"); }
+        { return !khs.HasCondition("Sick"); }
 
         public override double ChancePerDay()
         {
             return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().GetSickChance;  // TODO: make chance depend on kerbal's crewmates
         }
 
-        public override void Run()
+        protected override void Run()
         {
-            khs.AddCondition(new KerbalHealth.HealthCondition("Sickness"));
+            khs.AddCondition(new KerbalHealth.HealthCondition("Sick"));
         }
     }
 }
