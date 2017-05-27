@@ -37,7 +37,8 @@ namespace KerbalHealth
             foreach (ProtoCrewMember pcm in Core.KerbalVessel(khs.PCM).GetVesselCrew())
             {
                 if (Core.KerbalHealthList.Find(pcm).HasCondition("Sick")) sickCrew++;
-                if ((pcm.trait == "Scientist") || (pcm.trait == "Medic")) doctorsCrew++;
+                if (pcm.trait == "Scientist") doctorsCrew++;
+                if (pcm.trait == "Medic") doctorsCrew += 2;
             }
             Core.Log(khs.Name + "'s vessel has " + sickCrew + " sick crew members, " + doctorsCrew + " doctors.");
             chance = 1 - (1 - chance) * (1 - Math.Min((double) doctorsCrew / sickCrew, 1) / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration);
