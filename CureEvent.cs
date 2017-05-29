@@ -34,7 +34,11 @@ namespace KerbalHealth
             if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration <= 0)
                 return chance;
             int sickCrew = 0, doctorsCrew = 0;
-            foreach (ProtoCrewMember pcm in Core.KerbalVessel(khs.PCM).GetVesselCrew())
+            IEnumerable<ProtoCrewMember> kerbalsList;
+            if (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                kerbalsList = HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.KerbalType.Crew, ProtoCrewMember.RosterStatus.Available);
+            else kerbalsList = Core.KerbalVessel(khs.PCM).GetVesselCrew();
+            foreach (ProtoCrewMember pcm in kerbalsList)
             {
                 if (Core.KerbalHealthList.Find(pcm).HasCondition("Sick")) sickCrew++;
                 if (pcm.trait == "Scientist") doctorsCrew++;
