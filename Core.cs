@@ -111,18 +111,6 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Min allowed value for health
-        /// </summary>
-        /// <remarks>
-        /// Currently hard-coded to be 0
-        /// </remarks>
-        public static float MinHP
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinHP = value; }
-        }
-
-        /// <summary>
         /// Base amount of health points (for level 0 kerbal)
         /// </summary>
         public static float BaseMaxHP
@@ -141,6 +129,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Will kerbals die upon reaching negative health?
+        /// </summary>
+        public static bool DeathEnabled
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().deathEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().deathEnabled = value; }
+        }
+
+        /// <summary>
         /// Health % when the kerbal becomes exhausted (i.e. a Tourist). Must be <= <see cref="ExhaustionEndHealth"/>.
         /// </summary>
         public static float ExhaustionStartHealth
@@ -156,15 +153,6 @@ namespace KerbalHealth
         {
             get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth; }
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth = value; }
-        }
-
-        /// <summary>
-        /// Health % when the kerbal dies
-        /// </summary>
-        public static float DeathHealth
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathHealth = value; }
         }
 
         /// <summary>
