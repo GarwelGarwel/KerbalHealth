@@ -178,7 +178,7 @@ namespace KerbalHealth
         public static string ParseUT(double time)
         {
             if (double.IsNaN(time) || (time == 0)) return "N/A";
-            return KSPUtil.PrintDateDeltaCompact(time, time < 21600 * 100, false);
+            return KSPUtil.PrintDateDeltaCompact(time, time < KSPUtil.dateTimeFormatter.Day * 100, false);
         }
 
         /// <summary>

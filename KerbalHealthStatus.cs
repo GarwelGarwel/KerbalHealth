@@ -276,7 +276,7 @@ namespace KerbalHealth
             if (LastChangeTotal == 0) return double.NaN;
             double res = (target - HP) / LastChangeTotal;
             if (res < 0) return double.NaN;
-            return res * 21600;
+            return res * KSPUtil.dateTimeFormatter.Day;
         }
 
         /// <summary>
@@ -441,7 +441,7 @@ namespace KerbalHealth
             //    else Core.Log(Name + "'s rosters status: " + dfki.status + "; type: " + dfki.type);
             //    return;
             //}
-            HP += HealthChangePerDay() / 21600 * interval;
+            HP += HealthChangePerDay() / KSPUtil.dateTimeFormatter.Day * interval;
             if ((HP <= 0) && Core.DeathEnabled)
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);

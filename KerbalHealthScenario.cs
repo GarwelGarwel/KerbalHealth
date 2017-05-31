@@ -66,7 +66,7 @@ namespace KerbalHealth
         /// </summary>
         /// <returns></returns>
         double GetNextEventInterval()
-        { return Core.rand.NextDouble() * 21600 * 2; }
+        { return Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2; }
 
         void UpdateKerbals(bool forced)
         {
