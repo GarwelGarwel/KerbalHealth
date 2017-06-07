@@ -286,12 +286,28 @@ namespace KerbalHealth
         public double NextConditionHP()
         {
             if (LastChangeTotal > 0)
+            //{
                 if (HasCondition("Exhausted"))
                     return Core.ExhaustionEndHealth * MaxHP;
                 else return MaxHP;
+                //switch (Condition)
+                //{
+                //    case HealthCondition.OK:
+                //        return MaxHP;
+                //    case HealthCondition.Exhausted:
+                //        return Core.ExhaustionEndHealth * MaxHP;
+                //}
+            //}
             if (LastChangeTotal < 0)
                 if (HasCondition("Exhausted")) return 0;
                 else return Core.ExhaustionStartHealth * MaxHP;
+            //switch (Condition)
+            //{
+            //    case HealthCondition.OK:
+            //        return Core.ExhaustionStartHealth * MaxHP;
+            //    case HealthCondition.Exhausted:
+            //        return Core.DeathHealth * MaxHP;
+            //}
             return double.NaN;
         }
 
@@ -401,6 +417,7 @@ namespace KerbalHealth
             else if (Core.IsInEditor)
                 foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
 
+            //if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
             LastChange = 0;
             bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
             if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = 0; else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
@@ -445,6 +462,9 @@ namespace KerbalHealth
             if ((HP <= 0) && Core.DeathEnabled)
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
+                //if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
+                //if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) Core.KerbalVessel(PCM).RemoveCrew(PCM);
+                //PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 PCM.Die();
                 if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " dies of poor health!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
                 else ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
