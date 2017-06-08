@@ -251,6 +251,23 @@ namespace KerbalHealth
             return null;
         }
 
+        public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
+        {
+            if (useMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+            else ScreenMessages.PostScreenMessage(msg);
+            if (unwarpTime) TimeWarp.SetRate(0, false, useMessageSystem);
+        }
+
+        public static void ShowMessage(string msg, bool unwarpTime)
+        {
+            ShowMessage(msg, UseMessageSystem, unwarpTime);
+        }
+
+        public static void ShowMessage(string msg, ProtoCrewMember pcm)
+        {
+            ShowMessage(msg, UseMessageSystem, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
+        }
+
         /// <summary>
         /// Mod-wide random number generator
         /// </summary>

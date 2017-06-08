@@ -10,14 +10,8 @@ namespace KerbalHealth
         public override string Name
         { get { return "Cure"; } }
 
-        protected override NotificationType Notification
-        {
-            get
-            {
-                if (khs.HasCondition("Infected")) return NotificationType.Silent;
-                return base.Notification;
-            }
-        }
+        protected override bool IsSilent
+        { get { return khs.HasCondition("Infected"); } }
 
         public override string Message()
         { return khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!"; }

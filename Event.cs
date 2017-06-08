@@ -10,24 +10,11 @@ namespace KerbalHealth
     /// </summary>
     public abstract class Event
     {
-        // 
         /// <summary>
-        /// How to notify the user about the event. Values: Silent - no notification at all; ScreenMessage - a brief message displayed on screen; GameMessage - a message icon using the in-game message system.
+        /// Tells whether to skip notification about the event
         /// </summary>
-        protected enum NotificationType { Silent, ScreenMessage, GameMessage };
-        protected virtual NotificationType Notification
-        {
-            get
-            {
-                if (Core.UseMessageSystem) return NotificationType.GameMessage;
-                else return NotificationType.ScreenMessage;
-            }
-        }
-
-        /// <summary>
-        /// Whether to stop timewarp the game on event. By default, stops timewarp only for assigned (active) kerbals and for non-silent events
-        /// </summary>
-        protected virtual bool UnwarpTime { get { return (Notification != NotificationType.Silent) && (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned); } }
+        protected virtual bool IsSilent
+        { get { return false; } }
 
         /// <summary>
         /// Returns system name of the event
@@ -75,14 +62,7 @@ namespace KerbalHealth
             {
                 Core.Log(Name + " event has fired for " + khs.Name + ".", Core.LogLevel.Important);
                 string msg = Message();
-                if (msg != null)
-                    switch (Notification)
-                    {
-                        case NotificationType.ScreenMessage: ScreenMessages.PostScreenMessage(msg); break;
-                        case NotificationType.GameMessage: KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT)); break;
-                        case NotificationType.Silent: break;
-                    }
-                if (UnwarpTime) TimeWarp.SetRate(0, false);
+                if ((msg != null) && !IsSilent) Core.ShowMessage(msg, khs.PCM);
                 Run();
             }
         }

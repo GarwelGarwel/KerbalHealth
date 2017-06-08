@@ -10,8 +10,8 @@ namespace KerbalHealth
         public override string Name
         { get { return "LoseImmunity"; } }
 
-        protected override NotificationType Notification
-        { get { return NotificationType.Silent; } }
+        protected override bool IsSilent
+        { get { return true; } }
 
         public override bool Condition()
         { return khs.HasCondition("Immune"); }
