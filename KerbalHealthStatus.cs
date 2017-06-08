@@ -462,10 +462,8 @@ namespace KerbalHealth
             if ((HP <= 0) && Core.DeathEnabled)
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
-                //if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
-                //if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) Core.KerbalVessel(PCM).RemoveCrew(PCM);
-                //PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
-                PCM.Die();
+                if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
+                PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;                
                 if (Core.UseMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", Name + " dies of poor health!", KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
                 else ScreenMessages.PostScreenMessage(Name + " dies of poor health!");
             }

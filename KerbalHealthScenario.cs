@@ -25,7 +25,7 @@ namespace KerbalHealth
         public void Start()
         {
             if (!Core.ModEnabled) return;
-            Core.Log("KerbalHealth.Start", Core.LogLevel.Important);
+            Core.Log("KerbalHealthScenario.Start", Core.LogLevel.Important);
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
@@ -102,7 +102,7 @@ namespace KerbalHealth
         /// </summary>
         public void DisplayData()
         {
-            Core.Log("DisplayData", Core.LogLevel.Important);
+            Core.Log("KerbalHealthScenario.DisplayData", Core.LogLevel.Important);
             UpdateKerbals(true);
             gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
@@ -205,10 +205,10 @@ namespace KerbalHealth
             if (node.HasValue("nextEventTime")) nextEventTime = double.Parse(node.GetValue("nextEventTime"));
             else nextEventTime = Planetarium.GetUniversalTime() + GetNextEventInterval();
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
-                {
-                    Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
-                    i++;
-                }
+            {
+                Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
+                i++;
+            }
             lastUpdated = Planetarium.GetUniversalTime();
             Core.Log("" + i + " kerbal(s) loaded.", Core.LogLevel.Important);
         }

@@ -236,7 +236,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns <see cref="Vessel"/> the kerbal is in or null if no vessel found (error) 
+        /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
