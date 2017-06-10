@@ -18,9 +18,8 @@ namespace KerbalHealth
         string trait = null;
         bool onEva = false;  // True if kerbal is on EVA
 
-        // These dictionaries are used to calculate factor modifiers
-        Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>();
-        double minMultiplier, maxMultiplier;
+        // These dictionaries are used to calculate factor modifiers from part modules
+        Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
 
         /// <summary>
         /// Kerbal's name
@@ -326,7 +325,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Checks a part for ist effects on the kerbal
+        /// Checks a part for its effects on the kerbal
         /// </summary>
         /// <param name="part"></param>
         /// <param name="crew"></param>
@@ -343,13 +342,14 @@ namespace KerbalHealth
                     if (mkh.hpMarginalChangePerDay > 0) LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
                     else if (mkh.hpMarginalChangePerDay < 0) LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
                     // Processing factor multiplier
-                    if (mkh.multiplier != 1)
+                    if ((mkh.multiplier != 1) && (mkh.MultiplyFactor != null))
                     {
                         if (mkh.crewCap > 0) fmBonusSums[mkh.multiplyFactor] += (1 - mkh.multiplier) * Math.Min(mkh.crewCap, mkh.AffectedCrewCount);
-                        else fmFreeMultipliers[mkh.multiplyFactor] *= mkh.multiplier;
-                        if (mkh.multiplier > 1) maxMultiplier = Math.Max(maxMultiplier, mkh.multiplier);
-                        else minMultiplier = Math.Min(minMultiplier, mkh.multiplier);
+                        else fmFreeMultipliers[mkh.MultiplyFactor.Name] *= mkh.multiplier;
+                        if (mkh.multiplier > 1) maxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(maxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
+                        else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
+                    Core.Log("HP change after this module: " + change + "." + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
                 }
                 else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
             }
@@ -358,8 +358,8 @@ namespace KerbalHealth
         double Multiplier(string factorId)
         {
             double res = 1 - fmBonusSums[factorId] / Core.GetCrewCount(PCM);
-            if (res < 1) res = Math.Max(res, minMultiplier); else res = Math.Min(res, maxMultiplier);
-            Core.Log("Multiplier for " + factorId + " for " + Name + " is " + res + " (bonus sum: " + fmBonusSums[factorId] + "; free multiplier: " + fmFreeMultipliers[factorId] + "; multipliers: " + minMultiplier + ".." + maxMultiplier + ")");
+            if (res < 1) res = Math.Max(res, minMultipliers[factorId]); else res = Math.Min(res, maxMultipliers[factorId]);
+            Core.Log("Multiplier for " + factorId + " for " + Name + " is " + res + " (bonus sum: " + fmBonusSums[factorId] + "; free multiplier: " + fmFreeMultipliers[factorId] + "; multipliers: " + minMultipliers[factorId] + ".." + maxMultipliers[factorId] + ")");
             return res * fmFreeMultipliers[factorId];
         }
 
@@ -388,12 +388,17 @@ namespace KerbalHealth
             fmBonusSums.Add("All", 0);
             fmFreeMultipliers.Clear();
             fmFreeMultipliers.Add("All", 1);
+            minMultipliers.Clear();
+            minMultipliers.Add("All", 1);
+            maxMultipliers.Clear();
+            maxMultipliers.Add("All", 1);
             foreach (HealthFactor f in Core.Factors)
             {
                 fmBonusSums.Add(f.Name, 0);
                 fmFreeMultipliers.Add(f.Name, 1);
+                minMultipliers.Add(f.Name, 1);
+                maxMultipliers.Add(f.Name, 1);
             }
-            minMultiplier = maxMultiplier = 1;
 
             // Processing parts
             if (Core.IsKerbalLoaded(pcm))
@@ -401,10 +406,10 @@ namespace KerbalHealth
             else if (Core.IsInEditor)
                 foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
 
-            //if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || Core.IsKerbalLoaded(pcm) || IsOnEVA || Core.IsInEditor)
             LastChange = 0;
             bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
-            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = 0; else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
+            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = 0;
+            else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
             foreach (HealthFactor f in Core.Factors)
             {
@@ -476,8 +481,6 @@ namespace KerbalHealth
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
-                //n.AddValue("condition", Condition);
-                //if (Condition == HealthCondition.Exhausted) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
                 if (LastMarginalPositiveChange != 0) n.AddValue("lastMarginalPositiveChange", LastMarginalPositiveChange);
                 if (LastMarginalNegativeChange != 0) n.AddValue("lastMarginalNegativeChange", LastMarginalNegativeChange);
@@ -491,8 +494,6 @@ namespace KerbalHealth
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
                 if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
-                //Condition = (KerbalHealthStatus.HealthCondition)Enum.Parse(typeof(HealthCondition), value.GetValue("condition"));
-                //if (Condition == HealthCondition.Exhausted) Trait = value.GetValue("trait");
                 try { CachedChange = double.Parse(value.GetValue("cachedChange")); }
                 catch (Exception) { CachedChange = 0; }
                 try { LastMarginalPositiveChange = double.Parse(value.GetValue("lastMarginalPositiveChange")); }
@@ -507,8 +508,7 @@ namespace KerbalHealth
         public override bool Equals(object obj)
         { return ((KerbalHealthStatus)obj).Name.Equals(Name); }
 
-        public override int GetHashCode()
-        { return ConfigNode.GetHashCode(); }
+        public override int GetHashCode() { return ConfigNode.GetHashCode(); }
 
         public KerbalHealthStatus(string name)
         {
@@ -522,7 +522,6 @@ namespace KerbalHealth
             HP = health;
         }
 
-        public KerbalHealthStatus(ConfigNode node)
-        { ConfigNode = node; }
+        public KerbalHealthStatus(ConfigNode node) { ConfigNode = node; }
     }
 }
