@@ -338,6 +338,7 @@ namespace KerbalHealth
                 Core.Log("Processing MKH #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " of " + part.name + "...\nCrew has " + crew.Length + " members.");
                 if (mkh.IsModuleActive && (!mkh.partCrewOnly || IsInCrew(crew)))
                 {
+                    Core.Log("Module is active. mkh.isActive = " + mkh.isActive + ". mkh.alwaysActive = " + mkh.alwaysActive);
                     change += mkh.hpChangePerDay;
                     if (mkh.hpMarginalChangePerDay > 0) LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
                     else if (mkh.hpMarginalChangePerDay < 0) LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
@@ -403,7 +404,7 @@ namespace KerbalHealth
             // Processing parts
             if (Core.IsKerbalLoaded(pcm))
                 foreach (Part p in Core.KerbalVessel(pcm).Parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
-            else if (Core.IsInEditor)
+            else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
                 foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
 
             LastChange = 0;

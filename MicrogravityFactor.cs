@@ -15,11 +15,7 @@ namespace KerbalHealth
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (Core.IsInEditor)
-            {
-                Core.Log("Microgravity factor always on in Editor.");
-                return BaseChangePerDay;
-            }
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
             if (pcm == null)
             {
                 Core.Log("MicrogravityFactor.ChangePerDay: pcm is null!", Core.LogLevel.Error);

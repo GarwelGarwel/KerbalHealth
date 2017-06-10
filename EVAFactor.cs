@@ -10,16 +10,14 @@ namespace KerbalHealth
         public override string Name
         { get { return "EVA"; } }
 
+        public override void ResetEnabledInEditor() { SetEnabledInEditor (false); }
+
         public override double BaseChangePerDay
         { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().EVAFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (Core.IsInEditor)
-            {
-                Core.Log("EVA factor is always off in Editor.");
-                return 0;
-            }
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
             if (Core.KerbalHealthList.Find(pcm).IsOnEVA)
             {
                 Core.Log("EVA factor is on.");

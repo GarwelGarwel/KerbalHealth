@@ -16,8 +16,11 @@ namespace KerbalHealth
         public override bool Cachable
         { get { return false; } }
 
+        public override void ResetEnabledInEditor() { SetEnabledInEditor(false); }
+
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             if (khs == null) return 0;
             if (khs.HasCondition("Sick"))

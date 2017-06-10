@@ -14,6 +14,9 @@ namespace KerbalHealth
         { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConnectedFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
-        { return (Core.IsInEditor || (Core.IsKerbalLoaded(pcm) && Core.KerbalVessel(pcm).Connection.IsConnectedHome)) ? BaseChangePerDay : 0; }
+        {
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
+            return (Core.IsKerbalLoaded(pcm) && Core.KerbalVessel(pcm).Connection.IsConnectedHome) ? BaseChangePerDay : 0;
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace KerbalHealth
         public float multiplier = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
 
         [KSPField]
-        public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty
+        public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
 
         double lastUpdated;
 

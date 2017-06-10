@@ -17,6 +17,9 @@ namespace KerbalHealth
         { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().AssignedFactor; } }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
-        { return Core.IsInEditor || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? BaseChangePerDay : 0; }
+        {
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
+            return (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? BaseChangePerDay : 0;
+        }
     }
 }

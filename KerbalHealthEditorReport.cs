@@ -16,14 +16,15 @@ namespace KerbalHealth
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         int colNum = 3;  // # of columns in Health Report
+        static bool healthModulesEnabled = true;
 
         public void Start()
         {
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
-            GameEvents.onEditorShipModified.Add(Invalidate);
+            GameEvents.onEditorShipModified.Add(delegate(ShipConstruct sc) { Invalidate(); });
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(Invalidate);
+            GameEvents.onEditorScreenChange.Add(delegate(EditorScreen s) { Invalidate(); });
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
@@ -50,7 +51,7 @@ namespace KerbalHealth
                 Core.Log("Ship is empty. Let's get outta here!", Core.LogLevel.Important);
                 return;
             }
-            gridContents = new System.Collections.Generic.List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
+            gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
             // Creating column titles
             gridContents.Add(new DialogGUILabel("Name", true));
             gridContents.Add(new DialogGUILabel("Trend", true));
@@ -58,8 +59,53 @@ namespace KerbalHealth
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));
-            dirty = true;
-            reportWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Report", "", "Health Report", HighLogic.UISkin, reportPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
+
+            // Preparing factors checklist
+            List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
+            foreach (HealthFactor f in Core.Factors)
+                checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, delegate(bool state)
+                {
+                    f.SetEnabledInEditor(state);
+                    Invalidate();
+                }));
+            checklist.Add(new DialogGUIToggle(true, "Health modules", OnHealthModulesSelected));
+
+            reportWindow = PopupDialog.SpawnPopupDialog(
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new MultiOptionDialog(
+                    "Health Report",
+                    "",
+                    "Health Report",
+                    HighLogic.UISkin,
+                    reportPosition,
+                    new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
+                    new DialogGUIHorizontalLayout(
+                        new DialogGUILabel("", true),
+                        new DialogGUILabel("Factors", true),
+                        new DialogGUIButton("Reset", OnResetButtonSelected, false)),
+                    new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(140, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
+                false, 
+                HighLogic.UISkin, 
+                false);
+            Invalidate();
+        }
+
+        public void OnHealthModulesSelected(bool state)
+        {
+            healthModulesEnabled = state;
+            Invalidate();
+        }
+
+        public static bool HealthModulesEnabled
+        { get { return healthModulesEnabled; } }
+
+        public void OnResetButtonSelected()
+        {
+            foreach (HealthFactor f in Core.Factors)
+                f.ResetEnabledInEditor();
+            healthModulesEnabled = true;
+            Invalidate();
         }
 
         public void UndisplayData()
@@ -116,12 +162,6 @@ namespace KerbalHealth
 
         public void Invalidate()
         { dirty = true; }
-
-        public void Invalidate(ShipConstruct c)
-        { Invalidate(); }
-
-        public void Invalidate(EditorScreen s)
-        { Invalidate(); }
 
         public void OnDisable()
         {

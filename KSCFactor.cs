@@ -16,14 +16,15 @@ namespace KerbalHealth
         public override bool Cachable
         { get { return false; } }
 
-        // Not available in editor
-        //public override GameScenes ValidScenes
-        //{ get { return base.ValidScenes ^ GameScenes.EDITOR; } }
+        public override void ResetEnabledInEditor() { SetEnabledInEditor(false); }
 
         public override double BaseChangePerDay
         { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCFactor; } }
         
         public override double ChangePerDay(ProtoCrewMember pcm)
-        { return (!Core.IsInEditor && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) ? BaseChangePerDay : 0; }
+        {
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
+            return (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) ? BaseChangePerDay : 0;
+        }
     }
 }
