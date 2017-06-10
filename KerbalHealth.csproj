@@ -87,6 +87,7 @@
   <ItemGroup>
     <None Include="KerbalHealth.netkan" />
     <None Include="KerbalHealth.version" />
+    <None Include="KHKPBS.cfg" />
     <None Include="KHMKS.cfg" />
     <None Include="KHStock.cfg" />
     <None Include="KHUSILS.cfg" />

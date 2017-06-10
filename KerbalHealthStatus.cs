@@ -453,6 +453,9 @@ namespace KerbalHealth
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
+                if (IsOnEVA && (Core.KerbalVessel(PCM) == FlightGlobals.ActiveVessel))
+                    FlightGlobals.SetActiveVessel(FlightGlobals.FindNearestControllableVessel(FlightGlobals.ActiveVessel));
+                Core.KerbalVessel(PCM).CrewListSetDirty();
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Core.ShowMessage(Name + " has died of poor health!", true);
             }
