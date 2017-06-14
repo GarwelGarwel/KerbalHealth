@@ -468,7 +468,7 @@ namespace KerbalHealth
                 }
             }
             else
-            if (HP <= Core.ExhaustionStartHealth * MaxHP)
+            if (HP < Core.ExhaustionStartHealth * MaxHP)
             {
                 AddCondition(new HealthCondition("Exhausted"));
                 Core.ShowMessage(Name + " is exhausted!", PCM);
