@@ -16,6 +16,7 @@
         { "name": "KSP-AVC" },
         { "name": "Toolbar" },
         { "name": "USI-LS" },
-		    { "name": "UKS" }
+        { "name": "UKS" },
+        { "name": "KerbalPlanetaryBaseSystems"}
     ]
 }
