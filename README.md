@@ -23,7 +23,8 @@ I will appreciate your bug reports (include output_log.txt) and feature suggesti
 - Kerbals can unexpectedly fall sick, have health accidents or panic attacks: prepare for contingences!
 - Health Monitor lets you check on all your kerbals in KSC and in flight.
 - Health Report in Editor helps design comfy and healthy craft.
-- Compatibility patches support MKS and USI-LS mods.
+- A configurable low health alert will warn you when you are about to lose a kerbal.
+- Compatibility patches support a range of parts mods (see below).
 - All of these settings are easily changed or disabled in-game and with ModuleManager patches.
 
 **Health factors**
@@ -72,6 +73,8 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 - [MKS](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
+- [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
+- [B9 Aerospace](https://github.com/blowfishpro/B9-Aerospace)
 
 **Conflicts & Incompatibilities**
 
