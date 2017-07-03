@@ -71,6 +71,7 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 - [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [MKS](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
+- [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 
 **Conflicts & Incompatibilities**
 
@@ -82,9 +83,8 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 **Next objectives**
 
-- More complex/realistic mechanics for sickness (infections, medics, different diseases, etc.)
-- More informative UI (Health Monitor and Health Report)
-- Support patches for DeepFreeze, Kerbalism, KPBS, etc.
+- More informative UI (Health Monitor)
+- Support patches for DeepFreeze, Kerbalism, etc.
 
 **Future features**
 
