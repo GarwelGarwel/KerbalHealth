@@ -21,7 +21,7 @@ namespace KerbalHealth
         public bool useMessageSystem = true;
 
         [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
-        public bool useBlizzysToolbar = true;
+        public bool UseBlizzysToolbar = true;
 
         [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of GAME seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
         public float UpdateInterval = 10;
@@ -35,16 +35,19 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("HP per Level", toolTip = "Health Points increase per level (star) of a kerbal", minValue = 0, maxValue = 50, stepCount = 51)]
         public float HPPerLevel = 10;
 
-        [GameParameters.CustomParameterUI("Death Enabled", toolTip = "Allow kerbals to die of poor health")]
-        public bool deathEnabled = true;
+        [GameParameters.CustomFloatParameterUI("Low Health Alert", toolTip = "Health level when a low health alert is shown", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float LowHealthAlert = 0.3f;
 
-        [GameParameters.CustomFloatParameterUI("Exhaustion Start", toolTip = "Health level when kerbals turn Exhausted (becomes Tourist)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomParameterUI("Death Enabled", toolTip = "Allow kerbals to die of poor health")]
+        public bool DeathEnabled = true;
+
+        [GameParameters.CustomFloatParameterUI("Exhaustion Start Health", toolTip = "Health level when kerbals turn Exhausted (becomes Tourist)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float ExhaustionStartHealth = 0.2f;
 
-        [GameParameters.CustomFloatParameterUI("Exhaustion End Level", toolTip = "Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Exhaustion End Health", toolTip = "Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float ExhaustionEndHealth = 0.25f;
 
         [GameParameters.CustomParameterUI("Debug Mode", toolTip = "Controls amount of logging")]
-        public bool debugMode = false;
+        public bool DebugMode = false;
     }
 }

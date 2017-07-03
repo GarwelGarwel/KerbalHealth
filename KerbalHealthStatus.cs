@@ -17,6 +17,7 @@ namespace KerbalHealth
         List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
         bool onEva = false;  // True if kerbal is on EVA
+        bool warned = true;  // True if a warning has already been displayed for this kerbal
 
         // These dictionaries are used to calculate factor modifiers from part modules
         Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
@@ -45,6 +46,12 @@ namespace KerbalHealth
                 if (value < 0) hp = 0;
                 else if (value > MaxHP) hp = MaxHP;
                 else hp = value;
+                if (!warned && Health < Core.LowHealthAlert)
+                {
+                    Core.ShowMessage(Name + "'s health is dangerously low!", true);
+                    warned = true;
+                }
+                else if (warned && Health >= Core.LowHealthAlert) warned = false;
             }
         }
 
@@ -219,6 +226,12 @@ namespace KerbalHealth
         {
             get { return onEva; }
             set { onEva = value; }
+        }
+
+        public bool IsWarned
+        {
+            get { return warned; }
+            set { warned = value; }
         }
 
         ProtoCrewMember pcmCached;

@@ -88,8 +88,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool UseBlizzysToolbar
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useBlizzysToolbar; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useBlizzysToolbar = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar = value; }
         }
 
         /// <summary>
@@ -129,12 +129,21 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Health level when a low health alert is shown
+        /// </summary>
+        public static float LowHealthAlert
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LowHealthAlert; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LowHealthAlert = value; }
+        }
+
+        /// <summary>
         /// Will kerbals die upon reaching negative health?
         /// </summary>
         public static bool DeathEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().deathEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().deathEnabled = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathEnabled = value; }
         }
 
         /// <summary>
@@ -291,7 +300,7 @@ namespace KerbalHealth
         {
             get
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().debugMode) return LogLevel.Debug;
+                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DebugMode) return LogLevel.Debug;
                 else return LogLevel.Important;
             }
         }
