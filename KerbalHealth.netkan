@@ -17,6 +17,8 @@
         { "name": "Toolbar" },
         { "name": "USI-LS" },
         { "name": "UKS" },
-        { "name": "KerbalPlanetaryBaseSystems"}
+        { "name": "KerbalPlanetaryBaseSystems" },
+        { "name": "FASA" },
+        { "name": "B9" }
     ]
 }
