@@ -17,11 +17,6 @@ namespace KerbalHealth
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (pcm == null)
-            {
-                Core.Log("HomeFactor.ChangePerDay: pcm is null!", Core.LogLevel.Error);
-                return 0;
-            }
             if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
             if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
