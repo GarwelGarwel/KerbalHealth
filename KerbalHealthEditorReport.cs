@@ -31,6 +31,7 @@ namespace KerbalHealth
                 toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthReport");
                 toolbarButton.Text = "Kerbal Health Report";
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
+                toolbarButton.ToolTip = "Kerbal Health";
                 toolbarButton.OnClick += (e) => { if (reportWindow == null) DisplayData(); else UndisplayData(); };
             }
             else
@@ -148,7 +149,7 @@ namespace KerbalHealth
                     double ch = khs.HealthChangePerDay();
                     double b = khs.GetBalanceHP();
                     string s = "";
-                    if (b > 0) s = "→" + b.ToString("F0") + " HP (" + (b / khs.MaxHP * 100).ToString("F0") + "%)";
+                    if (b > 0) s = "-> " + b.ToString("F0") + " HP (" + (b / khs.MaxHP * 100).ToString("F0") + "%)";
                     else s = ch.ToString("F1") + " HP/day";
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     if (b > khs.NextConditionHP()) s = "—";

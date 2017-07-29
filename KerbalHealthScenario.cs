@@ -35,6 +35,7 @@ namespace KerbalHealth
                 toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthMonitor");
                 toolbarButton.Text = "Kerbal Health Monitor";
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
+                toolbarButton.ToolTip = "Kerbal Health";
                 toolbarButton.OnClick += (e) => { if (monitorWindow == null) DisplayData(); else UndisplayData(); };
             }
             else
