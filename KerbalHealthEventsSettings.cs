@@ -32,7 +32,10 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("Max Panic Attack Duration", toolTip = "Maximum duration of a Panic Attack in hours", minValue = 0, maxValue = 6, stepCount = 7)]
         public float PanicAttackMaxDuration = 3;
 
-        [GameParameters.CustomFloatParameterUI("Avg. KSC Sickness Period", toolTip = "Average # of days before a kerbal gets sick while in KSC. 0 to disable", minValue = 0, maxValue = 500, stepCount = 26)]
+        [GameParameters.CustomParameterUI("Sickness Enabled", toolTip = "If checked, kebals can become sick and infect each other")]
+        public bool SicknessEnabled = true;
+
+        [GameParameters.CustomFloatParameterUI("Avg. KSC Sickness Period", toolTip = "Average # of days before a kerbal gets sick while in KSC", minValue = 1, maxValue = 500, stepCount = 26)]
         public float KSCGetSickPeriod = 100;
 
         [GameParameters.CustomFloatParameterUI("Avg. Contagion Period", toolTip = "Average # of days before a kerbal gets infected by another sick kerbal. 0 to disable contagion", minValue = 0, maxValue = 20, stepCount = 21)]

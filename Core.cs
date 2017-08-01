@@ -174,6 +174,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Sickness-related events can fire, Sickness factor affects kerbals
+        /// </summary>
+        public static bool SicknessEnabled
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled = value; }
+        }
+
+        /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
         /// </summary>
         public static bool IsInEditor

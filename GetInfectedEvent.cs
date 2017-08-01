@@ -14,12 +14,13 @@ namespace KerbalHealth
         { get { return true; } }
 
         public override bool Condition()
-        { return !khs.HasCondition("Infected") && !khs.HasCondition("Sick") && !khs.HasCondition("Immune"); }
+        { return Core.SicknessEnabled && !khs.HasCondition("Infected") && !khs.HasCondition("Sick") && !khs.HasCondition("Immune"); }
 
         public override double ChancePerDay()
         {
             if (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
                 return 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().KSCGetSickPeriod;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ContagionPeriod <= 0) return 0;
             Core.Log("Counting infected crewmates for " + khs.Name + "...");
             int sickCrewmates = 0;
             foreach (ProtoCrewMember pcm in Core.KerbalVessel(khs.PCM).GetVesselCrew())

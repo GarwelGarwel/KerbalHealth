@@ -14,7 +14,7 @@ namespace KerbalHealth
         { get { return true; } }
 
         public override bool Condition()
-        { return khs.HasCondition("Immune"); }
+        { return Core.SicknessEnabled && khs.HasCondition("Immune"); }
 
         public override double ChancePerDay()
         { return Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ImmunityDuration, 1); }

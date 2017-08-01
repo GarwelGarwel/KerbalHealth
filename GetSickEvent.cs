@@ -11,7 +11,7 @@ namespace KerbalHealth
         { return khs.Name + " has fallen sick."; }
 
         public override bool Condition()
-        { return khs.HasCondition("Infected"); }
+        { return Core.SicknessEnabled && khs.HasCondition("Infected"); }
 
         public override double ChancePerDay()
         { return Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().IncubationDuration, 1); }

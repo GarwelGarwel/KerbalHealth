@@ -17,7 +17,7 @@ namespace KerbalHealth
         { return khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!"; }
 
         public override bool Condition()
-        { return khs.HasCondition("Sick"); }
+        { return Core.SicknessEnabled && khs.HasCondition("Sick"); }
 
         public override double ChancePerDay()
         {
