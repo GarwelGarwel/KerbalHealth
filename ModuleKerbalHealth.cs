@@ -97,7 +97,7 @@ namespace KerbalHealth
             double time = Planetarium.GetUniversalTime();
             if (IsModuleActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
-                Core.Log(AffectedCrewCount + " crew affected by this part.");
+                Core.Log(AffectedCrewCount + " crew affected by this part + " + part.name + ".");
                 double res = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), res2;
                 if ((res2 = vessel.RequestResource(part, resourceDefinition.id, res, false)) * 2 < res)
                 {

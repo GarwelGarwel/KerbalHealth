@@ -397,7 +397,6 @@ namespace KerbalHealth
                 IsOnEVA = false;
             }
 
-            LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
             fmBonusSums.Clear();
             fmBonusSums.Add("All", 0);
             fmFreeMultipliers.Clear();
@@ -416,9 +415,17 @@ namespace KerbalHealth
 
             // Processing parts
             if (Core.IsKerbalLoaded(pcm))
-                foreach (Part p in Core.KerbalVessel(pcm).Parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+            {
+                LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
+                foreach (Part p in Core.KerbalVessel(pcm).Parts)
+                    ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+            }
             else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
-                foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests) ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
+            {
+                LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
+                foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
+                    ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
+            }
 
             LastChange = 0;
             bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
@@ -440,7 +447,7 @@ namespace KerbalHealth
             LastChange += CachedChange;
 
             double mc = MarginalChange;
-            Core.Log("Marginal change for " + pcm.name + ": " + mc + "(+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
+            Core.Log("Marginal change for " + pcm.name + ": " + mc + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
             Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
             return LastChangeTotal;
         }
