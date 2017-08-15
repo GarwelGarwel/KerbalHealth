@@ -9,13 +9,33 @@ namespace KerbalHealth
     {
         public override string Title { get { return "Health Events"; } }
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
-        public override bool HasPresets { get { return false; } }
+        public override bool HasPresets { get { return true; } }
         public override string Section { get { return "Kerbal Health"; } }
         public override string DisplaySection { get { return Section; } }
         public override int SectionOrder { get { return 3; } }
 
+        public override void SetDifficultyPreset(GameParameters.Preset preset)
+        {
+            switch (preset)
+            {
+                case GameParameters.Preset.Easy:
+                case GameParameters.Preset.Normal:
+                    EventsEnabled = false;
+                    SicknessEnabled = false;
+                    break;
+                case GameParameters.Preset.Moderate:
+                    EventsEnabled = true;
+                    SicknessEnabled = false;
+                    break;
+                case GameParameters.Preset.Hard:
+                    EventsEnabled = true;
+                    SicknessEnabled = true;
+                    break;
+            }
+        }
+
         [GameParameters.CustomParameterUI("Events Enabled", toolTip = "If checked, random health events can happen")]
-        public bool EventsEnabled = true;
+        public bool EventsEnabled = false;
 
         [GameParameters.CustomFloatParameterUI("Avg. Time between Accidents", toolTip = "Average # of days between health accidents happening to a kerbal. 0 to disable accidents", minValue = 0, maxValue = 2000, stepCount = 41)]
         public float AccidentPeriod = 1000;
@@ -33,7 +53,7 @@ namespace KerbalHealth
         public float PanicAttackMaxDuration = 3;
 
         [GameParameters.CustomParameterUI("Sickness Enabled", toolTip = "If checked, kebals can become sick and infect each other")]
-        public bool SicknessEnabled = true;
+        public bool SicknessEnabled = false;
 
         [GameParameters.CustomFloatParameterUI("Avg. KSC Sickness Period", toolTip = "Average # of days before a kerbal gets sick while in KSC", minValue = 1, maxValue = 500, stepCount = 26)]
         public float KSCGetSickPeriod = 100;

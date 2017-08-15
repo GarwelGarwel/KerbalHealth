@@ -9,10 +9,33 @@ namespace KerbalHealth
     {
         public override string Title { get { return "General Settings"; } }
         public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
-        public override bool HasPresets { get { return false; } }
+        public override bool HasPresets { get { return true; } }
         public override string Section { get { return "Kerbal Health"; } }
         public override string DisplaySection { get { return Section; } }
         public override int SectionOrder { get { return 1; } }
+
+        public override void SetDifficultyPreset(GameParameters.Preset preset)
+        {
+            switch (preset)
+            {
+                case GameParameters.Preset.Easy:
+                    DeathEnabled = false;
+                    ExhaustionStartHealth = 0.1f;
+                    ExhaustionEndHealth = 0.15f;
+                    break;
+                case GameParameters.Preset.Normal:
+                    DeathEnabled = false;
+                    ExhaustionStartHealth = 0.2f;
+                    ExhaustionEndHealth = 0.25f;
+                    break;
+                case GameParameters.Preset.Moderate:
+                case GameParameters.Preset.Hard:
+                    DeathEnabled = true;
+                    ExhaustionStartHealth = 0.2f;
+                    ExhaustionEndHealth = 0.25f;
+                    break;
+            }
+        }
 
         [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
         public bool modEnabled = true;
