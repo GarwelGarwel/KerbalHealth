@@ -182,6 +182,11 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled = value; }
         }
 
+        public static bool RadiationEnabled
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
         /// </summary>
@@ -269,6 +274,22 @@ namespace KerbalHealth
             return null;
         }
 
+        public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
+        {
+            double res;
+            try { res = Double.Parse(n.GetValue(key)); }
+            catch (Exception) { res = defaultValue; }
+            return res;
+        }
+
+        public static bool GetBool(ConfigNode n, string key, bool defaultValue = false)
+        {
+            bool res;
+            try { res = Boolean.Parse(n.GetValue(key)); }
+            catch (Exception) { res = defaultValue; }
+            return res;
+        }
+
         public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
         {
             if (useMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
@@ -277,14 +298,10 @@ namespace KerbalHealth
         }
 
         public static void ShowMessage(string msg, bool unwarpTime)
-        {
-            ShowMessage(msg, UseMessageSystem, unwarpTime);
-        }
+        { ShowMessage(msg, UseMessageSystem, unwarpTime); }
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
-        {
-            ShowMessage(msg, UseMessageSystem, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
-        }
+        { ShowMessage(msg, UseMessageSystem, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned); }
 
         /// <summary>
         /// Mod-wide random number generator

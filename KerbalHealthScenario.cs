@@ -47,7 +47,7 @@ namespace KerbalHealth
             }
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
-            Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthScenario.Start finished.");
         }
 
         /// <summary>
@@ -116,6 +116,8 @@ namespace KerbalHealth
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
             dirty = true;
             monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
+            foreach (KerbalHealthStatus khs in Core.KerbalHealthList)
+                ScreenMessages.PostScreenMessage(khs.Name + ": " + khs.Dose + " bananas, " + khs.Radiation + " bananas/day.");
         }
 
         /// <summary>

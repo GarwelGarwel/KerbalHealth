@@ -11,7 +11,9 @@ namespace KerbalHealth
     public class KerbalHealthStatus
     {
         string name;
+        double maxHPModifier = 0;  // How many HP are added (or subtracted) to maximum HP
         double hp;
+        double dose = 0, radiation = 0, absorption = 1;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
@@ -59,6 +61,123 @@ namespace KerbalHealth
         /// Returns kerbal's HP relative to MaxHealth (0 to 1)
         /// </summary>
         public double Health { get { return HP / MaxHP; } }
+
+        /// <summary>
+        /// Health points added to (or subtracted from) kerbal's max HP
+        /// </summary>
+        public double MaxHPModifier
+        {
+            get { return maxHPModifier; }
+            set { maxHPModifier = value; }
+        }
+
+        /// <summary>
+        /// Lifetime absorbed dose of ionizing radiation, in banana equivalent doses (BEDs, 1 BED = 1e-7 Sv)
+        /// </summary>
+        public double Dose
+        {
+            get { return dose; }
+            set { dose = value; }
+        }
+
+        /// <summary>
+        /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
+        /// </summary>
+        public double RadiationMaxHPModifier
+        { get { return Core.RadiationEnabled ? 1 - Dose * 2.5e-8 : 1; } }
+
+        /// <summary>
+        /// Level of background radiation absorbed by the body, in bananas per day
+        /// </summary>
+        public double Radiation
+        {
+            get { return radiation; }
+            set { radiation = value; }
+        }
+
+        public double Absorption
+        {
+            get { return absorption; }
+            set { absorption = value; }
+        }
+
+        static double kscRadiation = 0.0005;  // How much cosmic radiation reaches KSC
+        static double landedRadiationQ = 0.05;  // How much cosmic radiation reaches planetary surface (not including atmosphere effect)
+        static double atmoRadiationQ = 0.01;  // How much cosmic radiation atmosphere lets through, multiplies with planetLandedRadiationQ
+        static double flyingRadiationQ = 0.003;
+        static double inSpaceLowRadiationQ = 0.1;
+        static double inSpaceHighRadiationQ = 0.5;
+
+        static double solarRadiation = 10000;  // Sun radiation level at the home planet's orbit
+        static double galacticRadiation = 10000;  // Galactic cosmic rays level
+
+        static double Sqr(double x)
+        { return x * x; }
+
+        static double GetSolarRadiationAtDistance(double distance)
+        { return solarRadiation * Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
+
+        static bool IsPlanet(CelestialBody body)
+        { return body?.orbit?.referenceBody == Sun.Instance.sun; }
+
+        static CelestialBody GetPlanet(CelestialBody body)
+        { return ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody); }
+
+        public double GetCurrentRadiation()
+        {
+            double cosmicRadiationQ = 1, distanceToSun = 0;
+            if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            {
+                cosmicRadiationQ = kscRadiation;
+                distanceToSun = FlightGlobals.GetHomeBody().orbit.radius;
+            }
+            else
+            {
+                Vessel v = Core.KerbalVessel(PCM);
+                Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
+                if (v.mainBody != Sun.Instance.sun)
+                {
+                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
+                    if (IsPlanet(v.mainBody))
+                    {
+                        //Core.Log(v.mainBody.bodyName + " is a planet.");
+                        switch (v.situation)
+                        {
+                            case Vessel.Situations.PRELAUNCH:
+                            case Vessel.Situations.LANDED:
+                            case Vessel.Situations.SPLASHED:
+                                cosmicRadiationQ *= landedRadiationQ;
+                                break;
+                            case Vessel.Situations.FLYING:
+                                cosmicRadiationQ *= flyingRadiationQ;
+                                break;
+                            default:
+                                if (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold) cosmicRadiationQ *= inSpaceLowRadiationQ;
+                                else cosmicRadiationQ *= inSpaceHighRadiationQ;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        //Core.Log(v.mainBody.bodyName + " is a moon.");
+                        cosmicRadiationQ *= inSpaceHighRadiationQ;
+                    }
+                    if (v.mainBody.atmosphere && ((v.situation == Vessel.Situations.PRELAUNCH) || (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)))
+                        cosmicRadiationQ *= atmoRadiationQ;
+                }
+                else
+                {
+                    //Core.Log(Name + " is in interplanetary space.");
+                    distanceToSun = v.altitude + Sun.Instance.sun.Radius;
+                }
+            }
+            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationQ);
+            Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
+            Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
+            Core.Log("Nominal Galactic Radiation = " + galacticRadiation);
+            Absorption = IsOnEVA ? 10 : 1;
+            return Absorption * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation);
+        }
 
         double CachedChange
         {
@@ -228,6 +347,9 @@ namespace KerbalHealth
             set { onEva = value; }
         }
 
+        /// <summary>
+        /// Returns true if a low health alarm has been shown for the kerbal
+        /// </summary>
         public bool IsWarned
         {
             get { return warned; }
@@ -265,7 +387,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns the max number of HP for the kerbal
+        /// Returns the max number of HP for the kerbal (not including the modifier)
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
@@ -273,10 +395,10 @@ namespace KerbalHealth
         { return Core.BaseMaxHP + Core.HPPerLevel * pcm.experienceLevel; }
 
         /// <summary>
-        /// Returns the max number of HP for the kerbal
+        /// Returns the max number of HP for the kerbal (including the modifier)
         /// </summary>
         public double MaxHP
-        { get { return GetMaxHP(PCM); } }
+        { get { return (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier; } }
 
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
@@ -479,6 +601,12 @@ namespace KerbalHealth
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
                 Core.ShowMessage(Name + " has died of poor health!", true);
             }
+            if (Core.RadiationEnabled)
+            {
+                Radiation = GetCurrentRadiation();
+                Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
+                Core.Log(Name + "'s radiation level is " + Radiation + " BED/day. Total accumulated dose is " + Dose + " BED.");
+            }
             if (HasCondition("Exhausted"))
             {
                 if (HP >= Core.ExhaustionEndHealth * MaxHP)
@@ -502,6 +630,10 @@ namespace KerbalHealth
                 ConfigNode n = new ConfigNode("KerbalHealthStatus");
                 n.AddValue("name", Name);
                 n.AddValue("health", HP);
+                if (MaxHPModifier != 0) n.AddValue("maxHPModifier", MaxHPModifier);
+                    n.AddValue("dose", Dose);
+                    n.AddValue("radiation", Radiation);
+                n.AddValue("absorption", Absorption);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
@@ -514,18 +646,18 @@ namespace KerbalHealth
             set
             {
                 Name = value.GetValue("name");
-                HP = Double.Parse(value.GetValue("health"));
+                HP = Core.GetDouble(value, "health", MaxHP);
+                MaxHPModifier = Core.GetDouble(value, "maxHPModifier");
+                Dose = Core.GetDouble(value, "dose");
+                Radiation = Core.GetDouble(value, "radiation");
+                Absorption = Core.GetDouble(value, "absorption", 1);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
                 if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
-                try { CachedChange = double.Parse(value.GetValue("cachedChange")); }
-                catch (Exception) { CachedChange = 0; }
-                try { LastMarginalPositiveChange = double.Parse(value.GetValue("lastMarginalPositiveChange")); }
-                catch (Exception) { LastMarginalPositiveChange = 0; }
-                try { LastMarginalNegativeChange = double.Parse(value.GetValue("lastMarginalNegativeChange")); }
-                catch (Exception) { LastMarginalNegativeChange = 0; }
-                try { IsOnEVA = bool.Parse(value.GetValue("onEva")); }
-                catch (Exception) { IsOnEVA = false; }
+                CachedChange = Core.GetDouble(value, "cachedChange");
+                LastMarginalPositiveChange = Core.GetDouble(value, "lastMarginalPositiveChange");
+                LastMarginalNegativeChange = Core.GetDouble(value, "lastMarginalNegativeChange");
+                IsOnEVA = Core.GetBool(value, "onEva");
             }
         }
 
