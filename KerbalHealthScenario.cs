@@ -166,7 +166,7 @@ namespace KerbalHealth
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 4].SetOptionText(s);
-                    gridContents[(i + 1) * colNum + 5].SetOptionText(khs.Dose.ToString("N0") + " (+" + khs.Radiation.ToString("F1") + "/day)");
+                    gridContents[(i + 1) * colNum + 5].SetOptionText(khs.Dose.ToString("N0") + " (+" + khs.Radiation.ToString("F0") + "/day)");
                 }
                 dirty = false;
             }
