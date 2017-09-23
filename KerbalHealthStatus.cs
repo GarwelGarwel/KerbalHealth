@@ -13,7 +13,7 @@ namespace KerbalHealth
         string name;
         double maxHPModifier = 0;  // How many HP are added (or subtracted) to maximum HP
         double hp;
-        double dose = 0, radiation = 0, absorption = 1;
+        double dose = 0, radiation = 0, exposure = 1;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
@@ -95,10 +95,10 @@ namespace KerbalHealth
             set { radiation = value; }
         }
 
-        public double Absorption
+        public double Exposure
         {
-            get { return absorption; }
-            set { absorption = value; }
+            get { return exposure; }
+            set { exposure = value; }
         }
 
         static double kscRadiation = 0.0005;  // How much cosmic radiation reaches KSC
@@ -107,7 +107,7 @@ namespace KerbalHealth
         static double flyingRadiationQ = 0.003;
         static double inSpaceLowRadiationQ = 0.1;
         static double inSpaceHighRadiationQ = 0.5;
-        static double evaAbsorption = 10;
+        static double evaExposure = 10;
 
         static double solarRadiation = 2000;  // Sun radiation level at the home planet's orbit
         static double galacticRadiation = 2000;  // Galactic cosmic rays level
@@ -162,8 +162,8 @@ namespace KerbalHealth
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + galacticRadiation);
-            Absorption = IsOnEVA ? evaAbsorption : 1;
-            return Absorption * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation);
+            Exposure = IsOnEVA ? evaExposure : 1;
+            return Exposure * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation);
         }
 
         double CachedChange
@@ -618,9 +618,9 @@ namespace KerbalHealth
                 n.AddValue("name", Name);
                 n.AddValue("health", HP);
                 if (MaxHPModifier != 0) n.AddValue("maxHPModifier", MaxHPModifier);
-                    n.AddValue("dose", Dose);
-                    n.AddValue("radiation", Radiation);
-                n.AddValue("absorption", Absorption);
+                n.AddValue("dose", Dose);
+                n.AddValue("radiation", Radiation);
+                n.AddValue("exposure", Exposure);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
@@ -637,7 +637,7 @@ namespace KerbalHealth
                 MaxHPModifier = Core.GetDouble(value, "maxHPModifier");
                 Dose = Core.GetDouble(value, "dose");
                 Radiation = Core.GetDouble(value, "radiation");
-                Absorption = Core.GetDouble(value, "absorption", 1);
+                Exposure = Core.GetDouble(value, "exposure", 1);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
                 if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
