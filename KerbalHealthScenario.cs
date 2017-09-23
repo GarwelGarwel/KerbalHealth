@@ -17,7 +17,7 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         bool dirty = false;
-        const int colNum = 5;  // # of columns in Health Monitor
+        const int colNum = 6;  // # of columns in Health Monitor
         Rect monitorPosition = new Rect(0.5f, 0.5f, colNum * 120, 50);
         PopupDialog monitorWindow;  // Health Monitor window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
@@ -112,12 +112,11 @@ namespace KerbalHealth
             gridContents.Add(new DialogGUILabel("Health", true));
             gridContents.Add(new DialogGUILabel("Change/day", true));
             gridContents.Add(new DialogGUILabel("Time Left", true));
+            gridContents.Add(new DialogGUILabel("Radiation", true));
             // Initializing Health Monitor's grid with empty labels, to be filled in Update()
             for (int i = 0; i < Core.KerbalHealthList.Count * colNum; i++) gridContents.Add(new DialogGUILabel("", true));
             dirty = true;
             monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(100, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray())), false, HighLogic.UISkin, false);
-            foreach (KerbalHealthStatus khs in Core.KerbalHealthList)
-                ScreenMessages.PostScreenMessage(khs.Name + ": " + khs.Dose + " bananas, " + khs.Radiation + " bananas/day.");
         }
 
         /// <summary>
@@ -167,6 +166,7 @@ namespace KerbalHealth
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 4].SetOptionText(s);
+                    gridContents[(i + 1) * colNum + 5].SetOptionText(khs.Dose.ToString("N0") + " (+" + khs.Radiation.ToString("F1") + "/day)");
                 }
                 dirty = false;
             }
@@ -205,8 +205,7 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             Core.KerbalHealthList.Clear();
             int i = 0;
-            if (node.HasValue("nextEventTime")) nextEventTime = double.Parse(node.GetValue("nextEventTime"));
-            else nextEventTime = Planetarium.GetUniversalTime() + GetNextEventInterval();
+            nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
             {
                 Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
