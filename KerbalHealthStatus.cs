@@ -84,7 +84,7 @@ namespace KerbalHealth
         /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
         /// </summary>
         public double RadiationMaxHPModifier
-        { get { return Core.RadiationEnabled ? 1 - Dose * 2.5e-8 : 1; } }
+        { get { return Core.RadiationEnabled ? 1 - Dose * 2.5e-8 * Core.RadiationEffect : 1; } }
 
         /// <summary>
         /// Level of background radiation absorbed by the body, in bananas per day
@@ -107,15 +107,13 @@ namespace KerbalHealth
         static double flyingRadiationQ = 0.003;
         static double inSpaceLowRadiationQ = 0.1;
         static double inSpaceHighRadiationQ = 0.5;
+        static double evaAbsorption = 10;
 
-        static double solarRadiation = 10000;  // Sun radiation level at the home planet's orbit
-        static double galacticRadiation = 10000;  // Galactic cosmic rays level
-
-        static double Sqr(double x)
-        { return x * x; }
+        static double solarRadiation = 2000;  // Sun radiation level at the home planet's orbit
+        static double galacticRadiation = 2000;  // Galactic cosmic rays level
 
         static double GetSolarRadiationAtDistance(double distance)
-        { return solarRadiation * Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
+        { return solarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
 
         static bool IsPlanet(CelestialBody body)
         { return body?.orbit?.referenceBody == Sun.Instance.sun; }
@@ -137,10 +135,8 @@ namespace KerbalHealth
                 Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
                 if (v.mainBody != Sun.Instance.sun)
                 {
-                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
+                    distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
                     if (IsPlanet(v.mainBody))
-                    {
-                        //Core.Log(v.mainBody.bodyName + " is a planet.");
                         switch (v.situation)
                         {
                             case Vessel.Situations.PRELAUNCH:
@@ -156,26 +152,17 @@ namespace KerbalHealth
                                 else cosmicRadiationQ *= inSpaceHighRadiationQ;
                                 break;
                         }
-                    }
-                    else
-                    {
-                        //Core.Log(v.mainBody.bodyName + " is a moon.");
-                        cosmicRadiationQ *= inSpaceHighRadiationQ;
-                    }
+                    else cosmicRadiationQ *= inSpaceHighRadiationQ;
                     if (v.mainBody.atmosphere && ((v.situation == Vessel.Situations.PRELAUNCH) || (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)))
                         cosmicRadiationQ *= atmoRadiationQ;
                 }
-                else
-                {
-                    //Core.Log(Name + " is in interplanetary space.");
-                    distanceToSun = v.altitude + Sun.Instance.sun.Radius;
-                }
+                else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
             }
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationQ);
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + galacticRadiation);
-            Absorption = IsOnEVA ? 10 : 1;
+            Absorption = IsOnEVA ? evaAbsorption : 1;
             return Absorption * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation);
         }
 

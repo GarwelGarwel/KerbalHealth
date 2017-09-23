@@ -182,9 +182,22 @@ namespace KerbalHealth
             set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled = value; }
         }
 
+        /// <summary>
+        /// Whether to run radiation-related parts of the code
+        /// </summary>
         public static bool RadiationEnabled
         {
-            get { return true; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEnabled = value; }
+        }
+
+        /// <summary>
+        /// Relative effect of radiation (default: -25% of max HP for 1e7 dose). 0 to disable effect
+        /// </summary>
+        public static float RadiationEffect
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEffect; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEffect = value; }
         }
 
         /// <summary>
@@ -289,6 +302,9 @@ namespace KerbalHealth
             catch (Exception) { res = defaultValue; }
             return res;
         }
+
+        public static double Sqr(double x)
+        { return x * x; }
 
         public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
         {
