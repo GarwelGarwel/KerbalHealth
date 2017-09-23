@@ -111,7 +111,6 @@ namespace KerbalHealth
         public static double GetExposure(double shielding, double crewCap)
         { return Math.Pow(2, -shielding / Math.Pow(crewCap, 2f / 3)); }
 
-        static double kscRadiation = 0.0005;  // How much cosmic radiation reaches KSC
         static double landedRadiationQ = 0.05;  // How much cosmic radiation reaches planetary surface (not including atmosphere effect)
         static double atmoRadiationQ = 0.01;  // How much cosmic radiation atmosphere lets through, multiplies with planetLandedRadiationQ
         static double flyingRadiationQ = 0.003;
@@ -133,41 +132,34 @@ namespace KerbalHealth
 
         public double GetCurrentRadiation()
         {
+            if ((PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) || !Core.RadiationEnabled) return 0;
             double cosmicRadiationQ = 1, distanceToSun = 0;
-            if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            Vessel v = Core.KerbalVessel(PCM);
+            Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
+            if (v.mainBody != Sun.Instance.sun)
             {
-                cosmicRadiationQ = kscRadiation;
-                distanceToSun = FlightGlobals.GetHomeBody().orbit.radius;
+                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
+                if (IsPlanet(v.mainBody))
+                    switch (v.situation)
+                    {
+                        case Vessel.Situations.PRELAUNCH:
+                        case Vessel.Situations.LANDED:
+                        case Vessel.Situations.SPLASHED:
+                            cosmicRadiationQ *= landedRadiationQ;
+                            break;
+                        case Vessel.Situations.FLYING:
+                            cosmicRadiationQ *= flyingRadiationQ;
+                            break;
+                        default:
+                            if (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold) cosmicRadiationQ *= inSpaceLowRadiationQ;
+                            else cosmicRadiationQ *= inSpaceHighRadiationQ;
+                            break;
+                    }
+                else cosmicRadiationQ *= inSpaceHighRadiationQ;
+                if (v.mainBody.atmosphere && ((v.situation == Vessel.Situations.PRELAUNCH) || (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)))
+                    cosmicRadiationQ *= atmoRadiationQ;
             }
-            else
-            {
-                Vessel v = Core.KerbalVessel(PCM);
-                Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
-                if (v.mainBody != Sun.Instance.sun)
-                {
-                    distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
-                    if (IsPlanet(v.mainBody))
-                        switch (v.situation)
-                        {
-                            case Vessel.Situations.PRELAUNCH:
-                            case Vessel.Situations.LANDED:
-                            case Vessel.Situations.SPLASHED:
-                                cosmicRadiationQ *= landedRadiationQ;
-                                break;
-                            case Vessel.Situations.FLYING:
-                                cosmicRadiationQ *= flyingRadiationQ;
-                                break;
-                            default:
-                                if (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold) cosmicRadiationQ *= inSpaceLowRadiationQ;
-                                else cosmicRadiationQ *= inSpaceHighRadiationQ;
-                                break;
-                        }
-                    else cosmicRadiationQ *= inSpaceHighRadiationQ;
-                    if (v.mainBody.atmosphere && ((v.situation == Vessel.Situations.PRELAUNCH) || (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)))
-                        cosmicRadiationQ *= atmoRadiationQ;
-                }
-                else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
-            }
+            else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationQ);
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
