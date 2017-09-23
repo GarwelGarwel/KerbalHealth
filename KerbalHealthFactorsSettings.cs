@@ -32,7 +32,7 @@ namespace KerbalHealth
                     AssignedFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
-                    EVAFactor = -15;
+                    EVAFactor = -5;
                     SicknessFactor = 0;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
@@ -42,7 +42,7 @@ namespace KerbalHealth
                     AssignedFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
-                    EVAFactor = -30;
+                    EVAFactor = -10;
                     SicknessFactor = 0;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
@@ -52,7 +52,7 @@ namespace KerbalHealth
                     AssignedFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
-                    EVAFactor = -30;
+                    EVAFactor = -10;
                     SicknessFactor = -5;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
@@ -74,7 +74,7 @@ namespace KerbalHealth
         public float MicrogravityFactor = -0.5f;
 
         [GameParameters.CustomFloatParameterUI("EVA", toolTip = "HP change per day when on EVA", minValue = -50, maxValue = 0, stepCount = 11)]
-        public float EVAFactor = -15;
+        public float EVAFactor = -10;
 
         [GameParameters.CustomFloatParameterUI("Sickness", toolTip = "HP change per day when a kerbal is sick", minValue = -20, maxValue = 0, stepCount = 21)]
         public float SicknessFactor = -5;
