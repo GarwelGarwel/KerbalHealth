@@ -13,7 +13,7 @@ namespace KerbalHealth
         string name;
         double maxHPModifier = 0;  // How many HP are added (or subtracted) to maximum HP
         double hp;
-        double dose = 0, radiation = 0, exposure = 1;
+        double dose = 0, radiation = 0, partsRadiation = 0, exposure = 1;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
@@ -130,7 +130,7 @@ namespace KerbalHealth
         static CelestialBody GetPlanet(CelestialBody body)
         { return ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody); }
 
-        public double GetCurrentRadiation()
+        public double GetCosmicRadiation()
         {
             if ((PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) || !Core.RadiationEnabled) return 0;
             double cosmicRadiationQ = 1, distanceToSun = 0;
@@ -165,7 +165,7 @@ namespace KerbalHealth
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + galacticRadiation);
             Core.Log("Exposure = " + Exposure);
-            return Exposure * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
+            return cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
         }
 
         double CachedChange
@@ -477,6 +477,8 @@ namespace KerbalHealth
                     Core.Log("HP change after this module: " + change + "." + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
                     shielding += mkh.shielding;
                     if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
+                    partsRadiation += mkh.radioactivity;
+                    if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
                 }
                 else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
             }
@@ -527,6 +529,11 @@ namespace KerbalHealth
             }
             shielding = 0;
 
+            LastChange = 0;
+            bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
+            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = partsRadiation = 0;
+            else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
+
             // Processing parts
             if (Core.IsKerbalLoaded(pcm))
             {
@@ -543,11 +550,6 @@ namespace KerbalHealth
                     ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
                 Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
             }
-
-            LastChange = 0;
-            bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
-            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = 0;
-            else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
             foreach (HealthFactor f in Core.Factors)
             {
@@ -597,7 +599,7 @@ namespace KerbalHealth
             }
             if (Core.RadiationEnabled)
             {
-                Radiation = GetCurrentRadiation();
+                Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " BED/day. Total accumulated dose is " + Dose + " BED.");
             }
@@ -626,8 +628,9 @@ namespace KerbalHealth
                 n.AddValue("health", HP);
                 if (MaxHPModifier != 0) n.AddValue("maxHPModifier", MaxHPModifier);
                 n.AddValue("dose", Dose);
-                n.AddValue("radiation", Radiation);
-                n.AddValue("exposure", Exposure);
+                if (Radiation != 0) n.AddValue("radiation", Radiation);
+                if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
+                if (Exposure != 1) n.AddValue("exposure", Exposure);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
@@ -644,6 +647,7 @@ namespace KerbalHealth
                 MaxHPModifier = Core.GetDouble(value, "maxHPModifier");
                 Dose = Core.GetDouble(value, "dose");
                 Radiation = Core.GetDouble(value, "radiation");
+                partsRadiation = Core.GetDouble(value, "partsRadiation");
                 Exposure = Core.GetDouble(value, "exposure", 1);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
