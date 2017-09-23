@@ -253,9 +253,7 @@ namespace KerbalHealth
         /// <param name="pcm"></param>
         /// <returns></returns>
         public static bool IsKerbalTrackable(ProtoCrewMember pcm)
-        {
-            return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
-        }
+        { return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)); }
 
         /// <summary>
         /// Returns true if kerbal is currently frozen with DeepFreeze
@@ -339,13 +337,7 @@ namespace KerbalHealth
         /// Current <see cref="LogLevel"/>: either Debug or Important
         /// </summary>
         public static LogLevel Level
-        {
-            get
-            {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DebugMode) return LogLevel.Debug;
-                else return LogLevel.Important;
-            }
-        }
+        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DebugMode ? LogLevel.Debug : LogLevel.Important; } }
 
         /// <summary>
         /// Write into output_log.txt

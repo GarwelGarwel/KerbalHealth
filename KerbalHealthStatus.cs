@@ -355,17 +355,9 @@ namespace KerbalHealth
             {
                 if (pcmCached != null) return pcmCached;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
-                    if (pcm.name == Name)
-                    {
-                        pcmCached = pcm;
-                        return pcm;
-                    }
+                    if (pcm.name == Name) return pcmCached = pcm;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Tourist)
-                    if (pcm.name == Name)
-                    {
-                        pcmCached = pcm;
-                        return pcm;
-                    }
+                    if (pcm.name == Name) return pcmCached = pcm;
                 return null;
             }
             set

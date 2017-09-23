@@ -164,7 +164,7 @@ namespace KerbalHealth
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    khs = Core.KerbalHealthList.Find(pcm).Clone(); //new KerbalHealthStatus(pcm.name);
+                    khs = Core.KerbalHealthList.Find(pcm).Clone();
                     khs.HP = khs.MaxHP;
                     double ch = khs.HealthChangePerDay();
                     double b = khs.GetBalanceHP();
