@@ -15,6 +15,7 @@ namespace KerbalHealth
         Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
+        DialogGUILabel shieldingLbl, exposureLbl;
         int colNum = 3;  // # of columns in Health Report
         static bool healthModulesEnabled = true;
 
@@ -82,6 +83,11 @@ namespace KerbalHealth
                     reportPosition,
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
+                        new DialogGUILabel("Shielding: ", false),
+                        shieldingLbl = new DialogGUILabel("N/A", true),
+                        new DialogGUILabel("Exposure: ", false),
+                        exposureLbl = new DialogGUILabel("N/A", true)),
+                    new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel("Factors", true),
                         new DialogGUIButton("Reset", OnResetButtonSelected, false)),
@@ -107,6 +113,18 @@ namespace KerbalHealth
                 f.ResetEnabledInEditor();
             healthModulesEnabled = true;
             Invalidate();
+        }
+
+        string GetShielding()
+        {
+            if (ShipConstruction.ShipManifest.CrewCount == 0) return "N/A";
+            return Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Shielding.ToString("F1");
+        }
+
+        string GetExposure()
+        {
+            if (ShipConstruction.ShipManifest.CrewCount == 0) return "N/A";
+            return Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Exposure.ToString("P1");
         }
 
         public void UndisplayData()
@@ -141,11 +159,13 @@ namespace KerbalHealth
                 }
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
+                KerbalHealthStatus khs = null;
                 foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    KerbalHealthStatus khs = new KerbalHealthStatus(pcm.name);
+                    khs = Core.KerbalHealthList.Find(pcm).Clone(); //new KerbalHealthStatus(pcm.name);
+                    khs.HP = khs.MaxHP;
                     double ch = khs.HealthChangePerDay();
                     double b = khs.GetBalanceHP();
                     string s = "";
@@ -157,6 +177,8 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
+                shieldingLbl.SetOptionText(khs.Shielding.ToString("F1"));
+                exposureLbl.SetOptionText(khs.Exposure.ToString("P1"));
                 dirty = false;
             }
         }

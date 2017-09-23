@@ -39,6 +39,9 @@ namespace KerbalHealth
         [KSPField]
         public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
 
+        [KSPField]
+        public float shielding = 0;  // Number of halving-thicknesses
+
         double lastUpdated;
 
         public HealthFactor MultiplyFactor
@@ -128,6 +131,7 @@ namespace KerbalHealth
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (resourceConsumption != 0) res += "\n" + resourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
             if (resourceConsumptionPerKerbal != 0) res += "\n" + resourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
+            if (shielding != 0) res += "\nShielding: " + shielding.ToString("F1") + " half-thicknesses";
             return res;
         }
     }

@@ -23,6 +23,7 @@ namespace KerbalHealth
 
         // These dictionaries are used to calculate factor modifiers from part modules
         Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
+        double shielding = 0;
 
         /// <summary>
         /// Kerbal's name
@@ -95,11 +96,20 @@ namespace KerbalHealth
             set { radiation = value; }
         }
 
+        public double Shielding
+        { get { return shielding; } }
+
+        /// <summary>
+        /// Proportion of radiation that gets absorbed by the kerbal
+        /// </summary>
         public double Exposure
         {
             get { return exposure; }
             set { exposure = value; }
         }
+
+        public static double GetExposure(double shielding, double crewCap)
+        { return Math.Pow(2, -shielding / Math.Pow(crewCap, 2f / 3)); }
 
         static double kscRadiation = 0.0005;  // How much cosmic radiation reaches KSC
         static double landedRadiationQ = 0.05;  // How much cosmic radiation reaches planetary surface (not including atmosphere effect)
@@ -109,8 +119,8 @@ namespace KerbalHealth
         static double inSpaceHighRadiationQ = 0.5;
         static double evaExposure = 10;
 
-        static double solarRadiation = 2000;  // Sun radiation level at the home planet's orbit
-        static double galacticRadiation = 2000;  // Galactic cosmic rays level
+        static double solarRadiation = 5000;  // Sun radiation level at the home planet's orbit
+        static double galacticRadiation = 5000;  // Galactic cosmic rays level
 
         static double GetSolarRadiationAtDistance(double distance)
         { return solarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
@@ -162,8 +172,8 @@ namespace KerbalHealth
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + galacticRadiation);
-            Exposure = IsOnEVA ? evaExposure : 1;
-            return Exposure * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation);
+            Core.Log("Exposure = " + Exposure);
+            return Exposure * cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
         }
 
         double CachedChange
@@ -473,6 +483,8 @@ namespace KerbalHealth
                         else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
                     Core.Log("HP change after this module: " + change + "." + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
+                    shielding += mkh.shielding;
+                    if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
                 }
                 else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
             }
@@ -521,6 +533,7 @@ namespace KerbalHealth
                 minMultipliers.Add(f.Name, 1);
                 maxMultipliers.Add(f.Name, 1);
             }
+            shielding = 0;
 
             // Processing parts
             if (Core.IsKerbalLoaded(pcm))
@@ -528,12 +541,15 @@ namespace KerbalHealth
                 LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
                 foreach (Part p in Core.KerbalVessel(pcm).Parts)
                     ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+                Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
+                if (IsOnEVA) Exposure *= evaExposure;
             }
             else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
             {
                 LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
                 foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
                     ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
+                Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
             }
 
             LastChange = 0;
@@ -554,10 +570,11 @@ namespace KerbalHealth
                 else LastChange += c;
             }
             LastChange += CachedChange;
-
             double mc = MarginalChange;
+
             Core.Log("Marginal change for " + pcm.name + ": " + mc + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
             Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
+            if (recalculateCache) Core.Log("Total shielding: " + shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
             return LastChangeTotal;
         }
 
@@ -582,8 +599,6 @@ namespace KerbalHealth
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
-                //if (IsOnEVA && (Core.KerbalVessel(PCM) == FlightGlobals.ActiveVessel))
-                //    FlightGlobals.SetActiveVessel(FlightGlobals.FindNearestControllableVessel(FlightGlobals.ActiveVessel));
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
                 Core.ShowMessage(Name + " has died of poor health!", true);
@@ -652,6 +667,9 @@ namespace KerbalHealth
         { return ((KerbalHealthStatus)obj).Name.Equals(Name); }
 
         public override int GetHashCode() { return ConfigNode.GetHashCode(); }
+
+        public KerbalHealthStatus Clone()
+        { return (KerbalHealthStatus)this.MemberwiseClone(); }
 
         public KerbalHealthStatus(string name)
         {
