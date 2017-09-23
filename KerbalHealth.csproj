@@ -89,8 +89,11 @@
     <None Include="KerbalHealth.version" />
     <None Include="KH-FASA.cfg" />
     <None Include="KHB9.cfg" />
+    <None Include="KHDeadlyReentry.cfg" />
+    <None Include="KHKerbalAtomics.cfg" />
     <None Include="KHKPBS.cfg" />
     <None Include="KHMKS.cfg" />
+    <None Include="KHSpaceY.cfg" />
     <None Include="KHStock.cfg" />
     <None Include="KHUSILS.cfg" />
   </ItemGroup>
