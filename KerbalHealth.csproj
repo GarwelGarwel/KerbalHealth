@@ -87,16 +87,16 @@
   <ItemGroup>
     <None Include="KerbalHealth.netkan" />
     <None Include="KerbalHealth.version" />
-    <None Include="KH-FASA.cfg" />
-    <None Include="KHB9.cfg" />
-    <None Include="KHDeadlyReentry.cfg" />
-    <None Include="KHIE.cfg" />
-    <None Include="KHKerbalAtomics.cfg" />
-    <None Include="KHKPBS.cfg" />
-    <None Include="KHMKS.cfg" />
-    <None Include="KHSpaceY.cfg" />
-    <None Include="KHStock.cfg" />
-    <None Include="KHUSILS.cfg" />
+    <None Include="Patches\KH-FASA.cfg" />
+    <None Include="Patches\KHB9.cfg" />
+    <None Include="Patches\KHDeadlyReentry.cfg" />
+    <None Include="Patches\KHIE.cfg" />
+    <None Include="Patches\KHKerbalAtomics.cfg" />
+    <None Include="Patches\KHKPBS.cfg" />
+    <None Include="Patches\KHMKS.cfg" />
+    <None Include="Patches\KHSpaceY.cfg" />
+    <None Include="Patches\KHStock.cfg" />
+    <None Include="Patches\KHUSILS.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
