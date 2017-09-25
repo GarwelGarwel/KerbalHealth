@@ -125,7 +125,7 @@ namespace KerbalHealth
 
         public override string GetInfo()
         {
-            string res = "KerbalHealth Module";
+            string res = "";
             if (partCrewOnly) res += "\nAffects only part crew";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
             if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
@@ -134,8 +134,9 @@ namespace KerbalHealth
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (resourceConsumption != 0) res += "\n" + resourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
             if (resourceConsumptionPerKerbal != 0) res += "\n" + resourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
-            if (shielding != 0) res += "\nShielding: " + shielding.ToString("F1") + " half-thicknesses";
+            if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
+            if (res != "") res = res.Remove(0, 2);  // Removing initial "\n"
             return res;
         }
     }
