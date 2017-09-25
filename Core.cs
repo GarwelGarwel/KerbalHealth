@@ -387,7 +387,10 @@ namespace KerbalHealth
         { ShowMessage(msg, UseMessageSystem, unwarpTime); }
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
-        { ShowMessage(msg, UseMessageSystem, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned); }
+        {
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().KSCNotificationsEnabled && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) return;
+            ShowMessage(msg, UseMessageSystem, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
+        }
 
         /// <summary>
         /// Mod-wide random number generator

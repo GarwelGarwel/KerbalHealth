@@ -35,7 +35,10 @@ namespace KerbalHealth
         }
 
         [GameParameters.CustomParameterUI("Events Enabled", toolTip = "If checked, random health events can happen")]
-        public bool EventsEnabled = false;
+        public bool EventsEnabled = true;
+
+        [GameParameters.CustomParameterUI("Notify of Events in KSC", toolTip = "If checked, notifications will be given of events with kerbals not on mission")]
+        public bool KSCNotificationsEnabled = false;
 
         [GameParameters.CustomFloatParameterUI("Avg. Time between Accidents", toolTip = "Average # of days between health accidents happening to a kerbal. 0 to disable accidents", minValue = 0, maxValue = 2000, stepCount = 41)]
         public float AccidentPeriod = 1000;
@@ -53,7 +56,7 @@ namespace KerbalHealth
         public float PanicAttackMaxDuration = 3;
 
         [GameParameters.CustomParameterUI("Sickness Enabled", toolTip = "If checked, kebals can become sick and infect each other")]
-        public bool SicknessEnabled = false;
+        public bool SicknessEnabled = true;
 
         [GameParameters.CustomFloatParameterUI("Avg. KSC Sickness Period", toolTip = "Average # of days before a kerbal gets sick while in KSC", minValue = 1, maxValue = 500, stepCount = 26)]
         public float KSCGetSickPeriod = 100;
