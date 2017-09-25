@@ -345,7 +345,7 @@ namespace KerbalHealth
         /// <param name="message">Text to log</param>
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
-        { if (messageLevel <= Level) Debug.Log("[KerbalHealth] " + message); }
+        { if ((messageLevel <= Level) && (message != "")) Debug.Log("[KerbalHealth] " + message); }
 
         private Core() { }
     }
