@@ -22,20 +22,17 @@ namespace KerbalHealth
                     DeathEnabled = false;
                     ExhaustionStartHealth = 0.1f;
                     ExhaustionEndHealth = 0.15f;
-                    RadiationEnabled = false;
                     break;
                 case GameParameters.Preset.Normal:
                     DeathEnabled = false;
                     ExhaustionStartHealth = 0.2f;
                     ExhaustionEndHealth = 0.25f;
-                    RadiationEnabled = false;
                     break;
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
                     DeathEnabled = true;
                     ExhaustionStartHealth = 0.2f;
                     ExhaustionEndHealth = 0.25f;
-                    RadiationEnabled = true;
                     break;
             }
         }
@@ -72,12 +69,6 @@ namespace KerbalHealth
 
         [GameParameters.CustomFloatParameterUI("Exhaustion End Health", toolTip = "Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float ExhaustionEndHealth = 0.25f;
-
-        [GameParameters.CustomParameterUI("Radiation Enabled", toolTip = "Degrade max health based on accumulated dose")]
-        public bool RadiationEnabled = true;
-
-        [GameParameters.CustomFloatParameterUI("Radiation Effect", toolTip = "Relative effect of radiation (default: -25% of max HP for 1e7 dose). 0 to disable effect", minValue = 0, maxValue = 2, displayFormat = "N1", asPercentage = true, stepCount = 21)]
-        public float RadiationEffect = 1;
 
         [GameParameters.CustomParameterUI("Debug Mode", toolTip = "Controls amount of logging")]
         public bool DebugMode = false;

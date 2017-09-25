@@ -64,6 +64,7 @@
     <Compile Include="KerbalHealthFactorsSettings.cs" />
     <Compile Include="HealthFactor.cs" />
     <Compile Include="EVAFactor.cs" />
+    <Compile Include="KerbalHealthRadiationSettings.cs" />
     <Compile Include="KSCFactor.cs" />
     <Compile Include="LonelinessFactor.cs" />
     <Compile Include="HomeFactor.cs" />

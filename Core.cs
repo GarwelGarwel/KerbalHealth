@@ -187,17 +187,89 @@ namespace KerbalHealth
         /// </summary>
         public static bool RadiationEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEnabled = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEnabled; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEnabled = value; }
         }
 
         /// <summary>
-        /// Relative effect of radiation (default: -25% of max HP for 1e7 dose). 0 to disable effect
+        /// Percentage of max health drained by 1e7 (10M) doses. 0 to disable effect
         /// </summary>
         public static float RadiationEffect
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEffect; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().RadiationEffect = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect = value; }
+        }
+
+        /// <summary>
+        /// How much cosmic radiation reaches the planetary surface (discounting atmospheric effects)
+        /// </summary>
+        public static float LandedCoefficient
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().LandedCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().LandedCoefficient = value; }
+        }
+
+        /// <summary>
+        /// How much cosmic radiation penetrates atmospheres, only affects kerbals on the surface
+        /// </summary>
+        public static float AtmoCoefficient
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().AtmoCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().AtmoCoefficient = value; }
+        }
+
+        /// <summary>
+        /// How much cosmic radiation reaches vessels flying in the air
+        /// </summary>
+        public static float FlyingCoefficient
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().FlyingCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().FlyingCoefficient = value; }
+        }
+
+        /// <summary>
+        /// How much cosmic radiation reaches vessels in low planetary orbits
+        /// </summary>
+        public static float InSpaceLowCoefficient
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = value; }
+        }
+
+        /// <summary>
+        /// How much cosmic radiation reaches vessels in high planetary orbits and on moons
+        /// </summary>
+        public static float InSpaceHighCoefficient
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = value; }
+        }
+
+        /// <summary>
+        /// How much more radiaiton kerbals receive when on EVA
+        /// </summary>
+        public static float EVAExposure
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().EVAExposure; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().EVAExposure = value; }
+        }
+
+        /// <summary>
+        /// Solar radiation in interplanetary space at 1 AU, banana doses/day
+        /// </summary>
+        public static float SolarRadiation
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = value; }
+        }
+
+        /// <summary>
+        /// Galactic cosmic radiation in interplanetary space, banana doses/day
+        /// </summary>
+        public static float GalacticRadiation
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = value; }
         }
 
         /// <summary>

@@ -86,7 +86,7 @@ namespace KerbalHealth
         /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
         /// </summary>
         public double RadiationMaxHPModifier
-        { get { return Core.RadiationEnabled ? 1 - Dose * 2.5e-8 * Core.RadiationEffect : 1; } }
+        { get { return Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1; } }
 
         /// <summary>
         /// Level of background radiation absorbed by the body, in bananas per day
@@ -112,18 +112,18 @@ namespace KerbalHealth
         public static double GetExposure(double shielding, double crewCap)
         { return Math.Pow(2, -shielding / Math.Pow(crewCap, 2f / 3)); }
 
-        static double landedRadiationQ = 0.05;  // How much cosmic radiation reaches planetary surface (not including atmosphere effect)
-        static double atmoRadiationQ = 0.01;  // How much cosmic radiation atmosphere lets through, multiplies with planetLandedRadiationQ
-        static double flyingRadiationQ = 0.003;
-        static double inSpaceLowRadiationQ = 0.1;
-        static double inSpaceHighRadiationQ = 0.5;
-        static double evaExposure = 10;
+        //static double landedRadiationQ = 0.05;  // How much cosmic radiation reaches planetary surface (not including atmosphere effect)
+        //static double atmoRadiationQ = 0.01;  // How much cosmic radiation atmosphere lets through, multiplies with planetLandedRadiationQ
+        //static double flyingRadiationQ = 0.003;
+        //static double inSpaceLowRadiationQ = 0.1;
+        //static double inSpaceHighRadiationQ = 0.5;
+        //static double evaExposure = 10;
 
-        static double solarRadiation = 5000;  // Sun radiation level at the home planet's orbit
-        static double galacticRadiation = 5000;  // Galactic cosmic rays level
+        //static double solarRadiation = 5000;  // Sun radiation level at the home planet's orbit
+        //static double galacticRadiation = 5000;  // Galactic cosmic rays level
 
         static double GetSolarRadiationAtDistance(double distance)
-        { return solarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
+        { return Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
 
         static bool IsPlanet(CelestialBody body)
         { return body?.orbit?.referenceBody == Sun.Instance.sun; }
@@ -134,7 +134,7 @@ namespace KerbalHealth
         public double GetCosmicRadiation()
         {
             if ((PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) || !Core.RadiationEnabled) return 0;
-            double cosmicRadiationQ = 1, distanceToSun = 0;
+            double cosmicRadiationRate = 1, distanceToSun = 0;
             Vessel v = Core.KerbalVessel(PCM);
             Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
             if (v.mainBody != Sun.Instance.sun)
@@ -146,27 +146,27 @@ namespace KerbalHealth
                         case Vessel.Situations.PRELAUNCH:
                         case Vessel.Situations.LANDED:
                         case Vessel.Situations.SPLASHED:
-                            cosmicRadiationQ *= landedRadiationQ;
+                            cosmicRadiationRate *= Core.LandedCoefficient;
                             break;
                         case Vessel.Situations.FLYING:
-                            cosmicRadiationQ *= flyingRadiationQ;
+                            cosmicRadiationRate *= Core.FlyingCoefficient;
                             break;
                         default:
-                            if (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold) cosmicRadiationQ *= inSpaceLowRadiationQ;
-                            else cosmicRadiationQ *= inSpaceHighRadiationQ;
+                            if (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold) cosmicRadiationRate *= Core.InSpaceLowCoefficient;
+                            else cosmicRadiationRate *= Core.InSpaceHighCoefficient;
                             break;
                     }
-                else cosmicRadiationQ *= inSpaceHighRadiationQ;
+                else cosmicRadiationRate *= Core.InSpaceHighCoefficient;
                 if (v.mainBody.atmosphere && ((v.situation == Vessel.Situations.PRELAUNCH) || (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)))
-                    cosmicRadiationQ *= atmoRadiationQ;
+                    cosmicRadiationRate *= Core.AtmoCoefficient;
             }
             else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
-            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationQ);
+            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
-            Core.Log("Nominal Galactic Radiation = " + galacticRadiation);
+            Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
             Core.Log("Exposure = " + Exposure);
-            return cosmicRadiationQ * (GetSolarRadiationAtDistance(distanceToSun) + galacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
+            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
         }
 
         double CachedChange
@@ -547,7 +547,7 @@ namespace KerbalHealth
                 foreach (Part p in Core.KerbalVessel(pcm).Parts)
                     ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
                 Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
-                if (IsOnEVA) Exposure *= evaExposure;
+                if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
             else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
             {
