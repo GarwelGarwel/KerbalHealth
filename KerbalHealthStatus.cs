@@ -15,6 +15,7 @@ namespace KerbalHealth
         double hp;
         double dose = 0, radiation = 0, partsRadiation = 0, exposure = 1;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
+        Dictionary<string, double> factors = new Dictionary<string, double>(Core.Factors.Count);
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
@@ -212,6 +213,15 @@ namespace KerbalHealth
         /// </summary>
         public double LastChangeTotal
         { get { return LastChange + MarginalChange; } }
+
+        /// <summary>
+        /// List of factors' effect on the kerbal (used for monitoring only)
+        /// </summary>
+        public Dictionary<string, double> Factors
+        {
+            get { return factors; }
+            set { factors = value; }
+        }
 
         /// <summary>
         /// Returns a list of all active health conditions for the kerbal
@@ -466,7 +476,7 @@ namespace KerbalHealth
                         if (mkh.multiplier > 1) maxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(maxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                         else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
-                    Core.Log("HP change after this module: " + change + "." + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
+                    Core.Log((change != 0 ? "HP change after this module: " + change : "") + "." + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
                     shielding += mkh.shielding;
                     if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
                     partsRadiation += mkh.radioactivity;
@@ -523,7 +533,11 @@ namespace KerbalHealth
 
             LastChange = 0;
             bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
-            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) CachedChange = partsRadiation = 0;
+            if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned))
+            {
+                CachedChange = partsRadiation = 0;
+                Factors = new Dictionary<string, double>(Core.Factors.Count);
+            }
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
 
             // Processing parts
@@ -552,6 +566,7 @@ namespace KerbalHealth
                 }
                 double c = f.ChangePerDay(pcm) * Multiplier(f.Name) * Multiplier("All");
                 Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
+                Factors[f.Name] = c;
                 if (f.Cachable) CachedChange += c;
                 else LastChange += c;
             }
