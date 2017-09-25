@@ -129,8 +129,8 @@ namespace KerbalHealth
                     gridContents.Add(new DialogGUIButton<KerbalHealthStatus>("Details", (khs) => { selectedKHS = khs; Invalidate(); }, Core.KerbalHealthList[i]));
                 }
                 monitorPosition.width = gridWidthMain + 10;
-                DialogGUIBase listArea = new DialogGUIGridLayout(new RectOffset(5, 5, 5, 5), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray());
-                if (Core.KerbalHealthList.Count > 12) listArea = new DialogGUIScrollList(new Vector2(gridWidthMain, 300), false, true, listArea as DialogGUILayoutBase);
+                DialogGUIBase listArea = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray());
+                if (Core.KerbalHealthList.Count > 12) listArea = new DialogGUIScrollList(new Vector2(gridWidthMain + 30, 400), false, true, listArea as DialogGUILayoutBase);
                 monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, listArea), false, HighLogic.UISkin, false);
             }
             else
@@ -168,7 +168,7 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("Radiation HP Loss:"));
                 gridContents.Add(new DialogGUILabel(""));
                 monitorPosition.width = gridWidthDetails + 10;
-                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Details", HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(5, 5, 5, 5), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton("Back", () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);
+                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Details", HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton("Back", () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);
             }
             dirty = true;
         }
