@@ -164,7 +164,13 @@ namespace KerbalHealth
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    khs = Core.KerbalHealthList.Find(pcm).Clone();
+                    khs = Core.KerbalHealthList.Find(pcm)?.Clone();
+                    if (khs == null)
+                    {
+                        Core.Log("Could not create a clone of KerbalHealthStatus for " + pcm.name + ". KerbalHealthList contains " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
+                        i++;
+                        continue;
+                    }
                     khs.HP = khs.MaxHP;
                     double ch = khs.HealthChangePerDay();
                     double b = khs.GetBalanceHP();
