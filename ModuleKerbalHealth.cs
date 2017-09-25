@@ -136,7 +136,7 @@ namespace KerbalHealth
             if (resourceConsumptionPerKerbal != 0) res += "\n" + resourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
-            if (res != "") res = res.Remove(0, 2);  // Removing initial "\n"
+            if (res != "") res = res.Remove(0, 1);  // Removing initial "\n"
             return res;
         }
     }
