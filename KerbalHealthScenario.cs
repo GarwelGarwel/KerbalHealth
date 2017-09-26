@@ -129,9 +129,9 @@ namespace KerbalHealth
                     gridContents.Add(new DialogGUIButton<KerbalHealthStatus>("Details", (khs) => { selectedKHS = khs; Invalidate(); }, Core.KerbalHealthList[i]));
                 }
                 monitorPosition.width = gridWidthMain + 10;
-                DialogGUIBase listArea = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray());
-                if (Core.KerbalHealthList.Count > 12) listArea = new DialogGUIScrollList(new Vector2(gridWidthMain + 30, 400), false, true, listArea as DialogGUILayoutBase);
-                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, listArea), false, HighLogic.UISkin, false);
+                //DialogGUIBase listArea = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray());
+                //if (Core.KerbalHealthList.Count > 12) listArea = new DialogGUIScrollList(new Vector2(gridWidthMain + 30, 400), false, true, listArea as DialogGUILayoutBase);
+                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray())), false, HighLogic.UISkin, false);
             }
             else
             {
