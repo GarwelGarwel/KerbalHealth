@@ -140,25 +140,11 @@ namespace KerbalHealth
             if (v.mainBody != Sun.Instance.sun)
             {
                 distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
-                if (IsPlanet(v.mainBody))
-                    switch (v.situation)
-                    {
-                        case Vessel.Situations.PRELAUNCH:
-                        case Vessel.Situations.LANDED:
-                        case Vessel.Situations.SPLASHED:
-                            cosmicRadiationRate *= Core.LandedCoefficient;
-                            break;
-                        case Vessel.Situations.FLYING:
-                            cosmicRadiationRate *= Core.FlyingCoefficient;
-                            break;
-                        default:
-                            if (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold) cosmicRadiationRate *= Core.InSpaceLowCoefficient;
-                            else cosmicRadiationRate *= Core.InSpaceHighCoefficient;
-                            break;
-                    }
-                else cosmicRadiationRate *= Core.InSpaceHighCoefficient;
-                if (v.mainBody.atmosphere && ((v.situation == Vessel.Situations.PRELAUNCH) || (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)))
-                    cosmicRadiationRate *= Core.AtmoCoefficient;
+                if (IsPlanet(v.mainBody) && (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold)) cosmicRadiationRate = Core.InSpaceLowCoefficient;
+                else cosmicRadiationRate = Core.InSpaceHighCoefficient;
+                if (v.mainBody.atmosphere)
+                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
+                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;
             }
             else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
@@ -481,6 +467,9 @@ namespace KerbalHealth
                     if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
                     partsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
+                    Core.Log("Part CoM offset is: " + part.CoMOffset);
+                    Core.Log("CoM of kerbal's part is: " + PCM.seat.part.CoMOffset);
+                    Core.Log("Distance is: " + Vector3.Distance(part.CoMOffset, PCM.seat.part.CoMOffset));
                 }
                 else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
             }

@@ -201,30 +201,12 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// How much cosmic radiation reaches the planetary surface (discounting atmospheric effects)
+        /// How much cosmic radiation reaches vessels in high planetary orbits and on moons
         /// </summary>
-        public static float LandedCoefficient
+        public static float InSpaceHighCoefficient
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().LandedCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().LandedCoefficient = value; }
-        }
-
-        /// <summary>
-        /// How much cosmic radiation penetrates atmospheres, only affects kerbals on the surface
-        /// </summary>
-        public static float AtmoCoefficient
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().AtmoCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().AtmoCoefficient = value; }
-        }
-
-        /// <summary>
-        /// How much cosmic radiation reaches vessels flying in the air
-        /// </summary>
-        public static float FlyingCoefficient
-        {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().FlyingCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().FlyingCoefficient = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = value; }
         }
 
         /// <summary>
@@ -237,12 +219,21 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// How much cosmic radiation reaches vessels in high planetary orbits and on moons
+        /// How much cosmic radiation reaches outer layers of the atmosphere
         /// </summary>
-        public static float InSpaceHighCoefficient
+        public static float StratoCoefficient
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = value; }
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = value; }
+        }
+
+        /// <summary>
+        /// How much cosmic radiation reaches the ground and lower layers of the atmosphere
+        /// </summary>
+        public static float TroposphereCoefficient
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = value; }
         }
 
         /// <summary>

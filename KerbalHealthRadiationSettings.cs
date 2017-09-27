@@ -47,20 +47,17 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("Radiation Effect", toolTip = "Percentage of max health drained by 1e7 (10M) doses. 0 to disable effect", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
         public float RadiationEffect = 0.25f;
 
-        [GameParameters.CustomFloatParameterUI("Landed Coefficient", toolTip = "How much cosmic radiation reaches the planetary surface (discounting atmospheric effects)", minValue = 0, maxValue = 0.2f, displayFormat = "N3", asPercentage = true, stepCount = 41)]
-        public float LandedCoefficient = 0.05f;
+        [GameParameters.CustomFloatParameterUI("In Space High Coefficient", toolTip = "How much cosmic radiation reaches vessels in high planetary orbit or on moons", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float InSpaceHighCoefficient = 0.50f;
 
-        [GameParameters.CustomFloatParameterUI("Atmosphere Transparency", toolTip = "How much cosmic radiation penetrates atmospheres, only affects kerbals on the surface", minValue = 0, maxValue = 0.02f, displayFormat = "N3", asPercentage = true, stepCount = 21)]
-        public float AtmoCoefficient = 0.01f;
-
-        [GameParameters.CustomFloatParameterUI("Flying Coefficient", toolTip = "How much cosmic radiation reaches vessels flying in the air", minValue = 0, maxValue = 0.1f, displayFormat = "N4", asPercentage = true, stepCount = 41)]
-        public float FlyingCoefficient = 0.03f;
-
-        [GameParameters.CustomFloatParameterUI("In Space Low Coefficient", toolTip = "How much cosmic radiation reaches vessels in low planetary orbits", minValue = 0, maxValue = 0.5f, displayFormat = "N2", asPercentage = true, stepCount = 11)]
+        [GameParameters.CustomFloatParameterUI("In Space Low Coefficient", toolTip = "How much cosmic radiation reaches vessels in low planetary orbits", minValue = 0, maxValue = 0.5f, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float InSpaceLowCoefficient = 0.10f;
 
-        [GameParameters.CustomFloatParameterUI("In Space High Coefficient", toolTip = "", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
-        public float InSpaceHighCoefficient = 0.50f;
+        [GameParameters.CustomFloatParameterUI("Stratosphere Transparency", toolTip = "How much cosmic radiation reaches outer layers of the atmosphere from space", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float StratoCoefficient = 0.2f;
+
+        [GameParameters.CustomFloatParameterUI("Troposphere Coefficient", toolTip = "How much cosmic radiation reaches the ground and lower layers of the atmosphere from space", minValue = 0, maxValue = 0.05f, displayFormat = "N4", asPercentage = true, stepCount = 51)]
+        public float TroposphereCoefficient = 0.01f;
 
         [GameParameters.CustomFloatParameterUI("EVA Exposure Multiplier", toolTip = "How much more radiaiton kerbals receive when on EVA", minValue = 0, maxValue = 20, displayFormat = "N0", stepCount = 21)]
         public float EVAExposure = 10;
