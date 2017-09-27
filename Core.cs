@@ -66,6 +66,11 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
+        /// </summary>
+        public static Dictionary<int, double> ResourceShielding { get; set; } = new Dictionary<int, double>();
+
+        /// <summary>
         /// Is Kerbal Health is enabled via Settings menu?
         /// </summary>
         public static bool ModEnabled
@@ -346,6 +351,19 @@ namespace KerbalHealth
                         return v;
             Log(pcm.name + " is Assigned, but was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Error);
             return null;
+        }
+
+        public static double GetResourceAmount(List<Part> parts, int resourceId)
+        {
+            double res = 0;
+            foreach (Part p in parts)
+            {
+                double amount = 0, maxAmount;
+                try { p.GetConnectedResourceTotals(resourceId, ResourceFlowMode.NO_FLOW, out amount, out maxAmount); }
+                catch (NullReferenceException e) { Core.Log(e.Message + "\r\nNRE in " + e.Source); }
+                res += amount;
+            }
+            return res;
         }
 
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)

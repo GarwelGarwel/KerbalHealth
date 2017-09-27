@@ -450,7 +450,6 @@ namespace KerbalHealth
                 Core.Log("Processing MKH #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " of " + part.name + "...\nCrew has " + crew.Length + " members.");
                 if (mkh.IsModuleActive && (!mkh.partCrewOnly || IsInCrew(crew)))
                 {
-                    Core.Log("Module is active. mkh.isActive = " + mkh.isActive + ". mkh.alwaysActive = " + mkh.alwaysActive);
                     change += mkh.hpChangePerDay;
                     if (mkh.hpMarginalChangePerDay > 0) LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
                     else if (mkh.hpMarginalChangePerDay < 0) LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
@@ -462,14 +461,16 @@ namespace KerbalHealth
                         if (mkh.multiplier > 1) maxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(maxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                         else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
-                    Core.Log((change != 0 ? "HP change after this module: " + change : "") + "." + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
+                    Core.Log((change != 0 ? "HP change after this module: " + change + ". " : "") + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
                     shielding += mkh.shielding;
                     if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
                     partsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
                     Core.Log("Part CoM offset is: " + part.CoMOffset);
-                    Core.Log("CoM of kerbal's part is: " + PCM.seat.part.CoMOffset);
-                    Core.Log("Distance is: " + Vector3.Distance(part.CoMOffset, PCM.seat.part.CoMOffset));
+                    Part p = null;
+                    if (Core.IsInEditor) p = ShipConstruction.ShipManifest.GetPartForCrew(PCM).PartInfo.partPrefab; else p = PCM.seat?.part;
+                    Core.Log("CoM of kerbal's part is: " + p?.CoMOffset);
+                    if (p != null) Core.Log("Distance is: " + Vector3.Distance(part.CoMOffset, p.CoMOffset));
                 }
                 else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
             }
@@ -530,21 +531,53 @@ namespace KerbalHealth
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
 
             // Processing parts
-            if (Core.IsKerbalLoaded(pcm))
+            if (Core.IsKerbalLoaded(pcm) || (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled))
             {
                 LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
-                foreach (Part p in Core.KerbalVessel(pcm).Parts)
-                    ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+                List<Part> parts = Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts;
+                foreach (Part p in parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+                foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
+                {
+                    double amount, maxAmount;
+                    if (Core.IsInEditor) amount = maxAmount = Core.GetResourceAmount(parts, res.Key);
+                    else Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
+                    Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key + ".");
+                    shielding += res.Value * amount;
+                }
                 Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
                 if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
-            else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
-            {
-                LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
-                foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
-                    ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
-                Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
-            }
+
+            //if (Core.IsKerbalLoaded(pcm))
+            //{
+            //    LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
+            //    List<Part> parts = Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts;
+            //    foreach (Part p in Core.KerbalVessel(pcm).Parts)
+            //        ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+            //    foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
+            //    {
+            //        double amount, maxAmount;
+            //        Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
+            //        Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key);
+            //        shielding += res.Value * amount;
+            //    }
+            //    Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
+            //    if (IsOnEVA) Exposure *= Core.EVAExposure;
+            //}
+            //else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
+            //{
+            //    LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
+            //    foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
+            //        ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
+            //    foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
+            //    {
+            //        double amount, maxAmount;
+            //        Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
+            //        Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key);
+            //        shielding += res.Value * amount;
+            //    }
+            //    Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
+            //}
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
             foreach (HealthFactor f in Core.Factors)
             {
