@@ -115,6 +115,14 @@ namespace KerbalHealth
             lastUpdated = time;
         }
 
+        [KSPAction(guiName = "Enable Health Module")]
+        public void ActionEnable()
+        { isActive = true; }
+
+        [KSPAction(guiName = "Disable Health Module")]
+        public void ActionDisable()
+        { isActive = alwaysActive; }
+
         [KSPAction(guiName = "Toggle Health Module")]
         public void ActionToggleActive()
         { OnToggleActive(); }
