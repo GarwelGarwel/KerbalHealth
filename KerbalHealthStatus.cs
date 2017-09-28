@@ -112,16 +112,6 @@ namespace KerbalHealth
         public static double GetExposure(double shielding, double crewCap)
         { return Math.Pow(2, -shielding / Math.Pow(crewCap, 2f / 3)); }
 
-        //static double landedRadiationQ = 0.05;  // How much cosmic radiation reaches planetary surface (not including atmosphere effect)
-        //static double atmoRadiationQ = 0.01;  // How much cosmic radiation atmosphere lets through, multiplies with planetLandedRadiationQ
-        //static double flyingRadiationQ = 0.003;
-        //static double inSpaceLowRadiationQ = 0.1;
-        //static double inSpaceHighRadiationQ = 0.5;
-        //static double evaExposure = 10;
-
-        //static double solarRadiation = 5000;  // Sun radiation level at the home planet's orbit
-        //static double galacticRadiation = 5000;  // Galactic cosmic rays level
-
         static double GetSolarRadiationAtDistance(double distance)
         { return Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
 

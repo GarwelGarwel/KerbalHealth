@@ -16,7 +16,7 @@ namespace KerbalHealth
 
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
-        bool dirty = false;
+        bool dirty = false, crewChanged = false;
         const int colNumMain = 7, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
         const int colSpacing = 10;
@@ -24,7 +24,9 @@ namespace KerbalHealth
         Rect monitorPosition = new Rect(0.5f, 0.5f, gridWidthMain, 200);
         PopupDialog monitorWindow;  // Health Monitor window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
-        KerbalHealthStatus selectedKHS = null;
+        KerbalHealthStatus selectedKHS = null;  // Currently selected kerbal for details view, null if list is shown
+        int page = 1;  // Current page in the  list of kerbals
+        int linesPerPage = 10;
 
         public void Start()
         {
@@ -34,6 +36,13 @@ namespace KerbalHealth
             if (!Core.Loaded) Core.LoadConfig();
             Core.KerbalHealthList.RegisterKerbals();
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
+            GameEvents.onCrewKilled.Add(OnCrewKilled);
+            GameEvents.OnCrewmemberHired.Add(OnCrewmemberHired);
+            GameEvents.OnCrewmemberSacked.Add(OnCrewmemberSacked);
+            GameEvents.onKerbalAdded.Add(OnKerbalAdded);
+            GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
+            GameEvents.onKerbalStatusChange.Add(OnKerbalStatusChange);
+            GameEvents.onKerbalNameChange.Add(OnKerbalNameChange);
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
@@ -67,6 +76,56 @@ namespace KerbalHealth
             UpdateKerbals(true);
         }
 
+        public void OnCrewKilled(EventReport er)
+        {
+            Core.Log("OnCrewKilled(" + er.msg + "/" + er.sender + "/" + er.other + ")");
+            Core.KerbalHealthList.Remove(er.sender);
+            //Core.KerbalHealthList.RegisterKerbals();
+            //UpdateKerbals(true);
+            dirty = crewChanged = true;
+        }
+
+        public void OnCrewmemberHired(ProtoCrewMember pcm, int i)
+        {
+            Core.Log("OnCrewmemberHired(" + pcm.name + ", " + i + ")");
+            dirty = crewChanged = true;
+        }
+
+        public void OnCrewmemberSacked(ProtoCrewMember pcm, int i)
+        {
+            Core.Log("OnCrewmemberSacked(" + pcm.name + ", " + i + ")");
+            Core.KerbalHealthList.Remove(pcm.name);
+            dirty = crewChanged = true;
+        }
+
+        public void OnKerbalAdded(ProtoCrewMember pcm)
+        {
+            Core.Log("OnKerbalAdded(" + pcm.name + ")");
+            Core.KerbalHealthList.Add(pcm.name);
+            dirty = crewChanged = true;
+        }
+
+        public void OnKerbalRemoved(ProtoCrewMember pcm)
+        {
+            Core.Log("OnKerbalRemoved(" + pcm.name + ")");
+            Core.KerbalHealthList.Remove(pcm.name);
+            dirty = crewChanged = true;
+        }
+
+        public void OnKerbalStatusChange(ProtoCrewMember pcm, ProtoCrewMember.RosterStatus s1, ProtoCrewMember.RosterStatus s2)
+        {
+            Core.Log("OnKerbalStatusChange(" + pcm.name + ", " + s1 + ", " + s2 + ")");
+            if (s2 == ProtoCrewMember.RosterStatus.Dead) Core.KerbalHealthList.Remove(pcm.name);
+            dirty = crewChanged = true;
+        }
+
+        public void OnKerbalNameChange(ProtoCrewMember pcm, string name1, string name2)
+        {
+            Core.Log("OnKerbalNameChange(" + pcm.name + ", " + name1 + ", " + name2 + ")");
+            Core.KerbalHealthList.Find(name1).Name = name2;
+            dirty = true;
+        }
+
         /// <summary>
         /// Next event update is scheduled after a random period of time, between 0 and 2 days
         /// </summary>
@@ -78,6 +137,7 @@ namespace KerbalHealth
         {
             double time = Planetarium.GetUniversalTime();
             double timePassed = time - lastUpdated;
+            if (timePassed == 0) return;
             if (forced || ((timePassed >= Core.UpdateInterval) && (timePassed >= Core.MinUpdateInterval * TimeWarp.CurrentRate)))
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
@@ -103,6 +163,45 @@ namespace KerbalHealth
         public void FixedUpdate()
         { if (Core.ModEnabled) UpdateKerbals(false); }
 
+        bool ShowPages
+        { get { return Core.KerbalHealthList.Count > linesPerPage; } }
+
+        int PageCount
+        { get { return (int)System.Math.Ceiling((double)(Core.KerbalHealthList.Count) / linesPerPage); } }
+
+        int FirstLine
+        { get { return (page - 1) * linesPerPage; } }
+
+        int LineCount
+        { get { return System.Math.Min(Core.KerbalHealthList.Count - FirstLine, linesPerPage); } }
+
+        void FirstPage()
+        {
+            dirty = page != PageCount;
+            page = 1;
+            if (!dirty) Invalidate();
+        }
+
+        void PageUp()
+        {
+            dirty = page != PageCount;
+            if (page > 1) page--;
+            if (!dirty) Invalidate();
+        }
+
+        void PageDown()
+        {
+            if (page < PageCount) page++;
+            if (page == PageCount) Invalidate();
+            else dirty = true;
+        }
+
+        void LastPage()
+        {
+            page = PageCount;
+            Invalidate();
+        }
+
         /// <summary>
         /// Shows Health monitor when the AppLauncher button is enabled
         /// </summary>
@@ -113,6 +212,14 @@ namespace KerbalHealth
             if (selectedKHS == null)
             {
                 Core.Log("No kerbal selected, showing overall list.");
+                DialogGUILayoutBase layout = new DialogGUIVerticalLayout(true, true);
+                if (page > PageCount) page = PageCount;
+                if (ShowPages) layout.AddChild(new DialogGUIHorizontalLayout(true, false,
+                    new DialogGUIButton("<<", FirstPage, () => (page > 1), true),
+                    new DialogGUIButton("<", PageUp, () => (page > 1), false),
+                    new DialogGUIHorizontalLayout(TextAnchor.LowerCenter, new DialogGUILabel("Page " + page + "/" + PageCount)),
+                    new DialogGUIButton(">", PageDown, () => (page < PageCount), false),
+                    new DialogGUIButton(">>", LastPage, () => (page < PageCount), true)));
                 gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain);
                 // Creating column titles
                 gridContents.Add(new DialogGUILabel("Name", true));
@@ -123,16 +230,15 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("Radiation", true));
                 gridContents.Add(new DialogGUILabel("", true));
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
-                for (int i = 0; i < Core.KerbalHealthList.Count; i++)
+                for (int i = FirstLine; i < FirstLine + LineCount; i++)
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
                         gridContents.Add(new DialogGUILabel("", true));
                     gridContents.Add(new DialogGUIButton<KerbalHealthStatus>("Details", (khs) => { selectedKHS = khs; Invalidate(); }, Core.KerbalHealthList[i]));
                 }
+                layout.AddChild(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray()));
                 monitorPosition.width = gridWidthMain + 10;
-                //DialogGUIBase listArea = new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray());
-                //if (Core.KerbalHealthList.Count > 12) listArea = new DialogGUIScrollList(new Vector2(gridWidthMain + 30, 400), false, true, listArea as DialogGUILayoutBase);
-                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray())), false, HighLogic.UISkin, false);
+                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, layout), false, HighLogic.UISkin, false);
             }
             else
             {
@@ -209,16 +315,16 @@ namespace KerbalHealth
                 }
                 if (selectedKHS == null)
                 {
-                    if (gridContents.Count != (Core.KerbalHealthList.Count + 1) * colNumMain)  // # of tracked kerbals has changed => close & reopen the window
+                    if (crewChanged)
                     {
-                        Core.Log("Kerbals' number has changed. Recreating the Health Monitor window.", Core.LogLevel.Important);
-                        UndisplayData();
-                        DisplayData();
+                        Core.KerbalHealthList.RegisterKerbals();
+                        if ((page >= PageCount) || (Core.KerbalHealthList.Count == linesPerPage + 1)) Invalidate();
+                        crewChanged = false;
                     }
                     // Fill the Health Monitor's grid with kerbals' health data
-                    for (int i = 0; i < Core.KerbalHealthList.Count; i++)
+                    for (int i = 0; i < LineCount; i++)
                     {
-                        KerbalHealthStatus khs = Core.KerbalHealthList[i];
+                        KerbalHealthStatus khs = Core.KerbalHealthList[FirstLine + i];
                         double ch = khs.LastChangeTotal;
                         gridContents[(i + 1) * colNumMain].SetOptionText(khs.Name);
                         gridContents[(i + 1) * colNumMain + 1].SetOptionText(khs.ConditionString);

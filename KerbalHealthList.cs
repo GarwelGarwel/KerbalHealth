@@ -15,15 +15,26 @@ namespace KerbalHealth
         /// <param name="health">Kerbal's current HP, maximum if skipped</param>
         public void Add(string name, double health = double.NaN)
         {
-            if (Contains(name))
-            {
-                Core.Log(name + " already registered.");
-                return;
-            } else Core.Log("Registering " + name + " with " + health + " health.", Core.LogLevel.Important);
+            if (Contains(name)) return;
+            Core.Log("Registering " + name + " with " + health + " health.", Core.LogLevel.Important);
             KerbalHealthStatus khs;
             if (double.IsNaN(health)) khs = new KerbalHealth.KerbalHealthStatus(name);
             else khs = new KerbalHealth.KerbalHealthStatus(name, health);
             Add(khs);
+        }
+
+        /// <summary>
+        /// Removes a kerbal with a given name from the list
+        /// </summary>
+        /// <param name="name"></param>
+        public void Remove(string name)
+        {
+            foreach (KerbalHealthStatus khs in this)
+                if (khs.Name == name)
+                {
+                    Remove(khs);
+                    return;
+                }
         }
 
         /// <summary>
@@ -33,11 +44,14 @@ namespace KerbalHealth
         {
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + " crew, " + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
-            foreach (ProtoCrewMember pcm in kerbalRoster.Crew.Concat(kerbalRoster.Tourist))
+            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.Crew.Count() + " crew, " + kerbalRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
+            foreach (KerbalHealthStatus khs in this)
+                if (!Core.IsKerbalTrackable(khs.PCM)) Remove(khs);
+            List<ProtoCrewMember> list = kerbalRoster.Crew.Concat(kerbalRoster.Tourist).ToList();
+            Core.Log(list.Count + " total kerbals in the roster.");
+            foreach (ProtoCrewMember pcm in list)
                 if (Core.IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
-                else Core.Log(pcm?.name + " is not trackable (" + (pcm == null ? "is null" : ("status: " + pcm.rosterStatus)) + ").");
-            Core.Log("" + Count + " kerbal(s) processed.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", Core.LogLevel.Important);
         }
 
         public void Update(double interval)
@@ -77,13 +91,21 @@ namespace KerbalHealth
         /// <summary>
         /// Returns KerbalHealthStatus for a given kerbal
         /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public KerbalHealthStatus Find(string name)
+        {
+            foreach (KerbalHealthStatus khs in this) if (khs.Name == name) return khs;
+            return null;
+        }
+
+        /// <summary>
+        /// Returns KerbalHealthStatus for a given kerbal
+        /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
         public KerbalHealthStatus Find(ProtoCrewMember pcm)
-        {
-            foreach (KerbalHealthStatus khs in this) if (khs.Name == pcm.name) return khs;
-            return null;
-        }
+        { return Find(pcm.name); }
 
         /// <summary>
         /// Returns true if a kerbal with this name exists in the list
