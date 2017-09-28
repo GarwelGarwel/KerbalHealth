@@ -74,7 +74,12 @@ namespace KerbalHealth
 
         public static void AddResourceShielding(string name, double shieldingPerTon)
         {
-            PartResourceDefinition prd = PartResourceLibrary.Instance.GetDefinition(name);
+            PartResourceDefinition prd = PartResourceLibrary.Instance?.GetDefinition(name);
+            if (prd == null)
+            {
+                Core.Log("Can't find ResourceDefinition for " + name + ".", LogLevel.Error);
+                return;
+            }
             ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
         }
 
