@@ -9,6 +9,8 @@ namespace KerbalHealth
     /// </summary>
     public class Core
     {
+        public static bool Loaded = false;
+
         /// <summary>
         /// List of all tracked kerbals
         /// </summary>
@@ -74,6 +76,17 @@ namespace KerbalHealth
         {
             PartResourceDefinition prd = PartResourceLibrary.Instance.GetDefinition(name);
             ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
+        }
+
+        public static void LoadConfig()
+        {
+            Log("Loading config...");
+            ConfigNode node = ConfigNode.Load(KSPUtil.ApplicationRootPath + "/GameData/KerbalHealth/KerbalHealth.cfg");
+            ResourceShielding = new Dictionary<int, double>();
+            foreach (ConfigNode n in node.GetNodes("RESOURCE_SHIELDING"))
+                AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
+            Log(Core.ResourceShielding.Count + " resource shielding values loaded.");
+            Loaded = true;
         }
 
         /// <summary>

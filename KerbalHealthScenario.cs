@@ -31,14 +31,8 @@ namespace KerbalHealth
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.Start", Core.LogLevel.Important);
             Core.Log(Core.Factors.Count + " factors initialized.");
+            if (!Core.Loaded) Core.LoadConfig();
             Core.KerbalHealthList.RegisterKerbals();
-            if ((Core.ResourceShielding == null) || (Core.ResourceShielding.Count == 0))
-            {
-                Core.AddResourceShielding("RadiationShielding", 20);
-                Core.AddResourceShielding("Water", 5);
-                Core.AddResourceShielding("WasteWater", 5);
-                Core.AddResourceShielding("Lead", 10);
-            }
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {

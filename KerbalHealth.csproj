@@ -86,6 +86,7 @@
     <Content Include="icon.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="KerbalHealth.cfg" />
     <None Include="KerbalHealth.netkan" />
     <None Include="KerbalHealth.version" />
     <None Include="Patches\KH-FASA.cfg" />
