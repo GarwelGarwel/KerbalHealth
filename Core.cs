@@ -70,6 +70,12 @@ namespace KerbalHealth
         /// </summary>
         public static Dictionary<int, double> ResourceShielding { get; set; } = new Dictionary<int, double>();
 
+        public static void AddResourceShielding(string name, double shieldingPerTon)
+        {
+            PartResourceDefinition prd = PartResourceLibrary.Instance.GetDefinition(name);
+            ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
+        }
+
         /// <summary>
         /// Is Kerbal Health is enabled via Settings menu?
         /// </summary>
