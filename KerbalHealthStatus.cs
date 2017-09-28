@@ -447,7 +447,7 @@ namespace KerbalHealth
             int i = 0;
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
-                Core.Log("Processing MKH #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " of " + part.name + "...\nCrew has " + crew.Length + " members.");
+                Core.Log("Processing ModuleKerbalHealth #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " in " + part.name + "... Crew has " + crew.Length + " members.");
                 if (mkh.IsModuleActive && (!mkh.partCrewOnly || IsInCrew(crew)))
                 {
                     change += mkh.hpChangePerDay;
@@ -466,11 +466,6 @@ namespace KerbalHealth
                     if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
                     partsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
-                    Core.Log("Part CoM offset is: " + part.CoMOffset);
-                    Part p = null;
-                    if (Core.IsInEditor) p = ShipConstruction.ShipManifest.GetPartForCrew(PCM).PartInfo.partPrefab; else p = PCM.seat?.part;
-                    Core.Log("CoM of kerbal's part is: " + p?.CoMOffset);
-                    if (p != null) Core.Log("Distance is: " + Vector3.Distance(part.CoMOffset, p.CoMOffset));
                 }
                 else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
             }

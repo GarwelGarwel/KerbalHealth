@@ -34,10 +34,10 @@ namespace KerbalHealth
             Core.KerbalHealthList.RegisterKerbals();
             if ((Core.ResourceShielding == null) || (Core.ResourceShielding.Count == 0))
             {
-                Core.AddResourceShielding("RadiationShielding", 10);
-                Core.AddResourceShielding("Water", 2.5);
-                Core.AddResourceShielding("WasteWater", 2.5);
-                Core.AddResourceShielding("Lead", 5);
+                Core.AddResourceShielding("RadiationShielding", 20);
+                Core.AddResourceShielding("Water", 5);
+                Core.AddResourceShielding("WasteWater", 5);
+                Core.AddResourceShielding("Lead", 10);
             }
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
