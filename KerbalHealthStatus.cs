@@ -110,7 +110,7 @@ namespace KerbalHealth
         }
 
         public static double GetExposure(double shielding, double crewCap)
-        { return Math.Pow(2, -shielding / Math.Pow(crewCap, 2f / 3)); }
+        { return Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3)); }
 
         static double GetSolarRadiationAtDistance(double distance)
         { return Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }

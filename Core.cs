@@ -230,6 +230,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Efficiency of radiation shielding provided by parts and resources
+        /// </summary>
+        public static float ShieldingEffect
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().ShieldingEffect; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().ShieldingEffect = value; }
+        }
+
+        /// <summary>
         /// How much cosmic radiation reaches vessels in high planetary orbits and on moons
         /// </summary>
         public static float InSpaceHighCoefficient
