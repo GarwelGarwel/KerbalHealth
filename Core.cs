@@ -266,6 +266,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// The max altitude where the celestial body blocks half of radiation, in % of its radius
+        /// </summary>
+        public static float BodyShieldingAltitude
+        {
+            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().BodyShieldingAltitude; }
+            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().BodyShieldingAltitude = value; }
+        }
+
+        /// <summary>
         /// How much more radiaiton kerbals receive when on EVA
         /// </summary>
         public static float EVAExposure

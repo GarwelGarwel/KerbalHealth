@@ -135,6 +135,7 @@ namespace KerbalHealth
                 if (v.mainBody.atmosphere)
                     if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
                     else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;
+                if (v.altitude < v.mainBody.Radius * Core.BodyShieldingAltitude) cosmicRadiationRate *= 0.5;  // Half of radiation is blocked by the celestial body when very close to it
             }
             else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
@@ -532,37 +533,6 @@ namespace KerbalHealth
                 Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
                 if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
-
-            //if (Core.IsKerbalLoaded(pcm))
-            //{
-            //    LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
-            //    List<Part> parts = Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts;
-            //    foreach (Part p in Core.KerbalVessel(pcm).Parts)
-            //        ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
-            //    foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
-            //    {
-            //        double amount, maxAmount;
-            //        Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
-            //        Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key);
-            //        shielding += res.Value * amount;
-            //    }
-            //    Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
-            //    if (IsOnEVA) Exposure *= Core.EVAExposure;
-            //}
-            //else if (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled)
-            //{
-            //    LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
-            //    foreach (PartCrewManifest p in ShipConstruction.ShipManifest.PartManifests)
-            //        ProcessPart(p.PartInfo.partPrefab, p.GetPartCrew(), ref change);
-            //    foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
-            //    {
-            //        double amount, maxAmount;
-            //        Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
-            //        Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key);
-            //        shielding += res.Value * amount;
-            //    }
-            //    Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
-            //}
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
             foreach (HealthFactor f in Core.Factors)
             {

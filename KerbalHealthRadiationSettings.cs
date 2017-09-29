@@ -59,6 +59,9 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("Troposphere Coefficient", toolTip = "How much cosmic radiation reaches the ground and lower layers of the atmosphere from space", minValue = 0, maxValue = 0.05f, displayFormat = "N4", asPercentage = true, stepCount = 51)]
         public float TroposphereCoefficient = 0.01f;
 
+        [GameParameters.CustomFloatParameterUI("Body Shielding Altitude", toolTip = "The max altitude where the celestial body blocks half of radiation, in % of its radius", minValue = 0, maxValue = 0.1f, displayFormat = "N4", asPercentage = true, stepCount = 21)]
+        public float BodyShieldingAltitude = 0.01f;
+
         [GameParameters.CustomFloatParameterUI("EVA Exposure Multiplier", toolTip = "How much more radiaiton kerbals receive when on EVA", minValue = 0, maxValue = 20, displayFormat = "N0", stepCount = 21)]
         public float EVAExposure = 10;
 
