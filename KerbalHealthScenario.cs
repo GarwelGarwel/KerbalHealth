@@ -370,6 +370,13 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
             UndisplayData();
             GameEvents.onCrewOnEva.Remove(OnKerbalEva);
+            GameEvents.onCrewKilled.Remove(OnCrewKilled);
+            GameEvents.OnCrewmemberHired.Remove(OnCrewmemberHired);
+            GameEvents.OnCrewmemberSacked.Remove(OnCrewmemberSacked);
+            GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
+            GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
+            GameEvents.onKerbalStatusChange.Remove(OnKerbalStatusChange);
+            GameEvents.onKerbalNameChange.Remove(OnKerbalNameChange);
             if (toolbarButton != null) toolbarButton.Destroy();
             if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
