@@ -97,6 +97,9 @@ namespace KerbalHealth
             set { radiation = value; }
         }
 
+        /// <summary>
+        /// Radiation shielding provided by the vessel
+        /// </summary>
         public double Shielding
         { get { return shielding; } }
 
