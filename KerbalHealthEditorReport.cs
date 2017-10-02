@@ -65,12 +65,8 @@ namespace KerbalHealth
             // Preparing factors checklist
             List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
             foreach (HealthFactor f in Core.Factors)
-                checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, delegate(bool state)
-                {
-                    f.SetEnabledInEditor(state);
-                    Invalidate();
-                }));
-            checklist.Add(new DialogGUIToggle(true, "Health modules", OnHealthModulesSelected));
+                checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, (state) => { f.SetEnabledInEditor(state); Invalidate(); }));
+            checklist.Add(new DialogGUIToggle(true, "Health modules", (state) => { healthModulesEnabled = state; Invalidate(); }));
 
             reportWindow = PopupDialog.SpawnPopupDialog(
                 new Vector2(0.5f, 0.5f),
@@ -95,12 +91,6 @@ namespace KerbalHealth
                 false, 
                 HighLogic.UISkin, 
                 false);
-            Invalidate();
-        }
-
-        public void OnHealthModulesSelected(bool state)
-        {
-            healthModulesEnabled = state;
             Invalidate();
         }
 
