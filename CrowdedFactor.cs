@@ -16,6 +16,7 @@ namespace KerbalHealth
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
             if (Core.IsInEditor && !IsEnabledInEditor()) return 0;
+            if (Core.KerbalHealthList.Find(pcm).IsOnEVA) return 0;
             return BaseChangePerDay * Core.GetCrewCount(pcm) / Core.GetCrewCapacity(pcm);
         }
     }

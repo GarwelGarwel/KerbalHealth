@@ -25,8 +25,7 @@ namespace KerbalHealth
             if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessDuration > 0)
                 chance = 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessDuration;
             Core.Log("Chance of sickness self-treatment is " + chance + ".");
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration <= 0)
-                return chance;
+            if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration <= 0) return chance;
             int sickCrew = 0, doctorsCrew = 0;
             IEnumerable<ProtoCrewMember> kerbalsList;
             if (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
