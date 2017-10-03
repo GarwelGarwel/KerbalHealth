@@ -323,7 +323,8 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string ParseUT(double time)
         {
-            if (double.IsNaN(time) || (time == 0)) return "N/A";
+            if (double.IsNaN(time) || (time == 0)) return "—";
+            if (time > KSPUtil.dateTimeFormatter.Year * 10) return "> 10y";
             return KSPUtil.PrintDateDeltaCompact(time, time < KSPUtil.dateTimeFormatter.Day * 100, false);
         }
 
@@ -370,14 +371,13 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        /// <remarks>Currently always returns false since DeepFreeze implementation is bugged</remarks>
-        public static bool IsKerbalFrozen(string name)
-        {
-            //if (!DFWrapper.APIReady) return false;
-            //foreach (KeyValuePair<string, DFWrapper.KerbalInfo> el in DFWrapper.DeepFreezeAPI.FrozenKerbalsList)
-            //    if (el.Key == name) return true;
-            return false;
-        }
+        //public static bool IsKerbalFrozen(string name)
+        //{
+        //    if (!DFWrapper.APIReady) return false;
+        //    foreach (KeyValuePair<string, DFWrapper.KerbalInfo> el in DFWrapper.DeepFreezeAPI.FrozenKerbals)
+        //        if (el.Key == name) return true;
+        //    return false;
+        //}
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
@@ -386,7 +386,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         {
-            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return null;
+            if ((pcm == null) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) return null;
             foreach (Vessel v in FlightGlobals.Vessels)
                 foreach (ProtoCrewMember k in v.GetVesselCrew())
                     if (k == pcm)
@@ -471,7 +471,7 @@ namespace KerbalHealth
         /// <param name="message">Text to log</param>
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
-        { if ((messageLevel <= Level) && (message != "")) Debug.Log("[KerbalHealth] " + message); }
+        { if ((messageLevel <= Level) && (message != "")) Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message); }
 
         private Core() { }
     }

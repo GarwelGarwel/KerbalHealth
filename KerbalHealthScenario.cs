@@ -40,8 +40,13 @@ namespace KerbalHealth
             GameEvents.OnCrewmemberSacked.Add(OnCrewmemberSacked);
             GameEvents.onKerbalAdded.Add(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
-            GameEvents.onKerbalStatusChange.Add(OnKerbalStatusChange);
+            //GameEvents.onKerbalStatusChange.Add(OnKerbalStatusChange);
             GameEvents.onKerbalNameChange.Add(OnKerbalNameChange);
+            EventData<Part, ProtoCrewMember> dfEvent;
+            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
+            if (dfEvent != null) dfEvent.Add(OnKerbalFrozen);
+            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
+            if (dfEvent != null) dfEvent.Add(OnKerbalThaw);
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
@@ -97,30 +102,42 @@ namespace KerbalHealth
 
         public void OnKerbalAdded(ProtoCrewMember pcm)
         {
-            Core.Log("OnKerbalAdded(" + pcm.name + ")");
+            Core.Log("OnKerbalAdded('" + pcm.name + "')");
             Core.KerbalHealthList.Add(pcm.name);
             dirty = crewChanged = true;
         }
 
         public void OnKerbalRemoved(ProtoCrewMember pcm)
         {
-            Core.Log("OnKerbalRemoved(" + pcm.name + ")");
+            Core.Log("OnKerbalRemoved('" + pcm.name + "')");
             Core.KerbalHealthList.Remove(pcm.name);
             dirty = crewChanged = true;
         }
 
-        public void OnKerbalStatusChange(ProtoCrewMember pcm, ProtoCrewMember.RosterStatus s1, ProtoCrewMember.RosterStatus s2)
-        {
-            Core.Log("OnKerbalStatusChange(" + pcm.name + ", " + s1 + ", " + s2 + ")");
-            if (s2 == ProtoCrewMember.RosterStatus.Dead) Core.KerbalHealthList.Remove(pcm.name);
-            dirty = crewChanged = true;
-        }
+        //public void OnKerbalStatusChange(ProtoCrewMember pcm, ProtoCrewMember.RosterStatus s1, ProtoCrewMember.RosterStatus s2)
+        //{
+        //    Core.Log("OnKerbalStatusChange('" + pcm.name + "', '" + s1 + "', '" + s2 + "')");
+        //    if (s2 == ProtoCrewMember.RosterStatus.Dead) Core.KerbalHealthList.Remove(pcm.name);
+        //    dirty = crewChanged = true;
+        //}
 
         public void OnKerbalNameChange(ProtoCrewMember pcm, string name1, string name2)
         {
-            Core.Log("OnKerbalNameChange(" + pcm.name + ", " + name1 + ", " + name2 + ")");
+            Core.Log("OnKerbalNameChange('" + pcm.name + "', '" + name1 + "', '" + name2 + "')");
             Core.KerbalHealthList.Find(name1).Name = name2;
             dirty = true;
+        }
+
+        public void OnKerbalFrozen(Part part, ProtoCrewMember pcm)
+        {
+            Core.Log("OnKerbalFrozen('" + part.name + "', '" + pcm.name + "')");
+            Core.KerbalHealthList.Find(pcm).AddCondition(new KerbalHealth.HealthCondition("Frozen"));
+        }
+
+        public void OnKerbalThaw(Part part, ProtoCrewMember pcm)
+        {
+            Core.Log("OnKerbalThaw('" + part.name + "', '" + pcm.name + "')");
+            Core.KerbalHealthList.Find(pcm).RemoveCondition("Frozen");
         }
 
         /// <summary>
@@ -138,11 +155,14 @@ namespace KerbalHealth
             if (forced || ((timePassed >= Core.UpdateInterval) && (timePassed >= Core.MinUpdateInterval * TimeWarp.CurrentRate)))
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
-                //if (!DFWrapper.InstanceExists)
-                //{
-                //    Core.Log("Initializing DFWrapper...");
-                //    DFWrapper.InitDFWrapper();
-                //}
+                Core.Log("DeepFreeze assembly " + (DFWrapper.AssemblyExists ? "exists" : "does NOT exist") + ".");
+                if (!DFWrapper.InstanceExists)
+                {
+                    Core.Log("Initializing DFWrapper...");
+                    DFWrapper.InitDFWrapper();
+                    if (DFWrapper.InstanceExists) Core.Log("DFWrapper initialized.");
+                    else Core.Log("Could not initialize DFWrapper.", Core.LogLevel.Error);
+                }
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
                 if (Core.EventsEnabled)
@@ -256,7 +276,7 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("HP Change:"));
                 gridContents.Add(new DialogGUILabel(""));
-                if (Core.IsKerbalLoaded(selectedKHS.PCM))
+                if (Core.IsKerbalLoaded(selectedKHS.PCM) && !selectedKHS.HasCondition("Frozen"))
                     foreach (HealthFactor f in Core.Factors)
                     {
                         gridContents.Add(new DialogGUILabel(f.Title + ":"));
@@ -325,20 +345,16 @@ namespace KerbalHealth
                     for (int i = 0; i < LineCount; i++)
                     {
                         KerbalHealthStatus khs = Core.KerbalHealthList[FirstLine + i];
+                        bool frozen = khs.HasCondition("Frozen");
                         double ch = khs.LastChangeTotal;
                         gridContents[(i + 1) * colNumMain].SetOptionText(khs.Name);
                         gridContents[(i + 1) * colNumMain + 1].SetOptionText(khs.ConditionString);
                         gridContents[(i + 1) * colNumMain + 2].SetOptionText((100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
-                        gridContents[(i + 1) * colNumMain + 3].SetOptionText((khs.Health >= 1) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
+                        gridContents[(i + 1) * colNumMain + 3].SetOptionText((frozen ||(khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
                         double b = khs.GetBalanceHP();
                         string s = "";
-                        if (b > khs.NextConditionHP()) s = "—";
-                        else
-                        {
-                            double ttnc = khs.TimeToNextCondition();
-                            if (ttnc < KSPUtil.dateTimeFormatter.Year * 10) s = ((b > 0) ? "> " : "") + Core.ParseUT(ttnc);
-                            else s = "> 10y";
-                        }
+                        if (frozen || (b > khs.NextConditionHP())) s = "—";
+                        else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                         gridContents[(i + 1) * colNumMain + 4].SetOptionText(s);
                         gridContents[(i + 1) * colNumMain + 5].SetOptionText(khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : ""));
                     }
@@ -346,20 +362,21 @@ namespace KerbalHealth
                 else
                 {
                     ProtoCrewMember pcm = selectedKHS.PCM;
+                    bool frozen = selectedKHS.HasCondition("Frozen");
                     gridContents[1].SetOptionText(selectedKHS.Name);
                     gridContents[3].SetOptionText(pcm.experienceLevel.ToString());
                     gridContents[5].SetOptionText(pcm.rosterStatus.ToString());
                     gridContents[7].SetOptionText(selectedKHS.MaxHP.ToString("F2"));
                     gridContents[9].SetOptionText(selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")");
-                    gridContents[11].SetOptionText(selectedKHS.LastChangeTotal.ToString("F2"));
+                    gridContents[11].SetOptionText(frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"));
                     int i = 13;
-                    if (Core.IsKerbalLoaded(selectedKHS.PCM))
+                    if (Core.IsKerbalLoaded(selectedKHS.PCM) && !frozen)
                         foreach (HealthFactor f in Core.Factors)
                         {
                             gridContents[i].SetOptionText(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A");
                             i += 2;
                         }
-                    gridContents[i].SetOptionText(selectedKHS.LastMarginalPositiveChange.ToString("F0") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
+                    gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastMarginalPositiveChange.ToString("F0") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
                     gridContents[i + 2].SetOptionText(selectedKHS.ConditionString);
                     gridContents[i + 4].SetOptionText(selectedKHS.Exposure.ToString("P2"));
                     gridContents[i + 6].SetOptionText(selectedKHS.Radiation.ToString("N2") + "/day");
@@ -374,14 +391,21 @@ namespace KerbalHealth
         {
             Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
             UndisplayData();
+
             GameEvents.onCrewOnEva.Remove(OnKerbalEva);
             GameEvents.onCrewKilled.Remove(OnCrewKilled);
             GameEvents.OnCrewmemberHired.Remove(OnCrewmemberHired);
             GameEvents.OnCrewmemberSacked.Remove(OnCrewmemberSacked);
             GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
-            GameEvents.onKerbalStatusChange.Remove(OnKerbalStatusChange);
+            //GameEvents.onKerbalStatusChange.Remove(OnKerbalStatusChange);
             GameEvents.onKerbalNameChange.Remove(OnKerbalNameChange);
+            EventData<Part, ProtoCrewMember> dfEvent;
+            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
+            if (dfEvent != null) dfEvent.Remove(OnKerbalFrozen);
+            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
+            if (dfEvent != null) dfEvent.Remove(OnKerbalThaw);
+
             if (toolbarButton != null) toolbarButton.Destroy();
             if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);

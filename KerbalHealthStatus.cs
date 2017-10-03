@@ -19,8 +19,9 @@ namespace KerbalHealth
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
-        bool onEva = false;  // True if kerbal is on EVA
-        bool warned = true;  // True if a warning has already been displayed for this kerbal
+        bool onEva = false;
+        //bool frozen = false;
+        bool warned = true;
 
         // These dictionaries are used to calculate factor modifiers from part modules
         Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
@@ -327,6 +328,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// True if the kerbal is frozen with DeepFreeze
+        /// </summary>
+        //public bool IsFrozen
+        //{
+        //    get { return frozen; }
+        //    set { frozen = value; }
+        //}
+
+        /// <summary>
         /// Returns true if a low health alarm has been shown for the kerbal
         /// </summary>
         public bool IsWarned
@@ -348,6 +358,8 @@ namespace KerbalHealth
                     if (pcm.name == Name) return pcmCached = pcm;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Tourist)
                     if (pcm.name == Name) return pcmCached = pcm;
+                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Unowned)
+                    if (pcm.name == Name) return pcmCached = pcm;
                 return null;
             }
             set
@@ -363,7 +375,7 @@ namespace KerbalHealth
         /// <param name="pcm"></param>
         /// <returns></returns>
         public static double GetMaxHP(ProtoCrewMember pcm)
-        { return Core.BaseMaxHP + Core.HPPerLevel * pcm.experienceLevel; }
+        { return Core.BaseMaxHP + (pcm != null ? Core.HPPerLevel * pcm.experienceLevel : 0); }
 
         /// <summary>
         /// Returns the max number of HP for the kerbal (including the modifier)
@@ -483,7 +495,13 @@ namespace KerbalHealth
             ProtoCrewMember pcm = PCM;
             if (pcm == null)
             {
-                Core.Log(Name + " not found in Core.KerbalHealthList!");
+                Core.Log(Name + " not found in Core.KerbalHealthList!", Core.LogLevel.Error);
+                return 0;
+            }
+
+            if (HasCondition("Frozen"))
+            {
+                Core.Log(Name + " is frozen, health does not change.");
                 return 0;
             }
 
@@ -566,15 +584,18 @@ namespace KerbalHealth
         public void Update(double interval)
         {
             Core.Log("Updating " + Name + "'s health.");
-            //if (DFWrapper.APIReady && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(Name))
-            //{
-            //    Core.Log(Name + " is frozen with DeepFreeze; health will not be updated.");
-            //    DFWrapper.KerbalInfo dfki;
-            //    DFWrapper.DeepFreezeAPI.FrozenKerbals.TryGetValue(Name, out dfki);
-            //    if (dfki == null) Core.Log("However, kerbal " + Name + " couldn't be retrieved from FrozenKerbals.");
-            //    else Core.Log(Name + "'s rosters status: " + dfki.status + "; type: " + dfki.type);
-            //    return;
-            //}
+            bool frozen = HasCondition("Frozen");
+            if (Core.RadiationEnabled)
+            {
+                if (!frozen) Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
+                Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
+                Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
+            }
+            if (frozen)
+            {
+                Core.Log(Name + " is frozen, health doesn't change.");
+                return;
+            }
             HP += HealthChangePerDay() / KSPUtil.dateTimeFormatter.Day * interval;
             if ((HP <= 0) && Core.DeathEnabled)
             {
@@ -584,12 +605,6 @@ namespace KerbalHealth
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
                 Core.ShowMessage(Name + " has died of poor health!", true);
             }
-            if (Core.RadiationEnabled)
-            {
-                Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
-                Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
-                Core.Log(Name + "'s radiation level is " + Radiation + " BED/day. Total accumulated dose is " + Dose + " BED.");
-            }
             if (HasCondition("Exhausted"))
             {
                 if (HP >= Core.ExhaustionEndHealth * MaxHP)
@@ -598,8 +613,7 @@ namespace KerbalHealth
                     Core.ShowMessage(Name + " is no longer exhausted.", PCM);
                 }
             }
-            else
-            if (HP < Core.ExhaustionStartHealth * MaxHP)
+            else if (HP < Core.ExhaustionStartHealth * MaxHP)
             {
                 AddCondition(new HealthCondition("Exhausted"));
                 Core.ShowMessage(Name + " is exhausted!", PCM);

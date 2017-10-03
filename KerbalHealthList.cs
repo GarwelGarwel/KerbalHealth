@@ -46,7 +46,8 @@ namespace KerbalHealth
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.Crew.Count() + " crew, " + kerbalRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
             foreach (KerbalHealthStatus khs in this)
-                if (!Core.IsKerbalTrackable(khs.PCM)) Remove(khs);
+                if (!Core.IsKerbalTrackable(khs.PCM) && !khs.HasCondition("Frozen"))
+                    Remove(khs);
             List<ProtoCrewMember> list = kerbalRoster.Crew.Concat(kerbalRoster.Tourist).ToList();
             Core.Log(list.Count + " total kerbals in the roster.");
             foreach (ProtoCrewMember pcm in list)
@@ -60,19 +61,17 @@ namespace KerbalHealth
             {
                 KerbalHealthStatus khs = this[i];
                 ProtoCrewMember pcm = khs.PCM;
-                if (!Core.IsKerbalFrozen(pcm.name))
-                    if (Core.IsKerbalTrackable(pcm))
-                        khs.Update(interval);
-                    else
-                    {
-                        Core.Log(khs.Name + " is not trackable anymore. Removing.");
-                        //Core.Log("DFWrapper is " + (DFWrapper.APIReady ? ("ready. " + DFWrapper.DeepFreezeAPI.FrozenKerbalsList.Count + " items in FrozenKerbalsList.") : "not ready."));
-                        RemoveAt(i);
-                        i--;
-                    }
-                else Core.Log(khs.Name + " is frozen, skipping update.");
+                if (khs.HasCondition("Frozen") || Core.IsKerbalTrackable(pcm))
+                    khs.Update(interval);
+                else
+                {
+                    Core.Log(khs.Name + " is not trackable anymore. Removing.");
+                    //Core.Log("DFWrapper is " + (DFWrapper.APIReady ? ("ready. " + DFWrapper.DeepFreezeAPI.FrozenKerbalsList.Count + " items in FrozenKerbalsList.") : "not ready."));
+                    RemoveAt(i);
+                    i--;
+                }
             }
-            if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
+            //if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }
 
         /// <summary>
@@ -82,7 +81,7 @@ namespace KerbalHealth
         {
             foreach (KerbalHealthStatus khs in this)
             {
-                if (!Core.IsKerbalTrackable(khs.PCM) || Core.IsKerbalFrozen(khs.Name)) continue;
+                if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(khs.PCM)) continue;
                 Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...");
                 foreach (Event e in Core.Events) e.Process(khs);
             }
