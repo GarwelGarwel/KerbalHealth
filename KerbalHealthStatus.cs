@@ -448,13 +448,14 @@ namespace KerbalHealth
         /// <param name="part"></param>
         /// <param name="crew"></param>
         /// <param name="change"></param>
-        void ProcessPart(Part part, ProtoCrewMember[] crew, ref double change)
+        void ProcessPart(Part part, bool crewInPart, ref double change)
         {
             int i = 0;
+            Core.Log("ProcessPart(" + (Core.IsInEditor ? part.craftID : part.flightID) + ", " + crewInPart + ", ...)");
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
-                Core.Log("Processing ModuleKerbalHealth #" + (++i) + "/" + part.FindModulesImplementing<ModuleKerbalHealth>().Count + " in " + part.name + "... Crew has " + crew.Length + " members.");
-                if (mkh.IsModuleActive && (!mkh.partCrewOnly || IsInCrew(crew)))
+                Core.Log("Processing ModuleKerbalHealth #" + (++i) + " in " + part.name + ".");
+                if (mkh.IsModuleActive && (!mkh.partCrewOnly || crewInPart))
                 {
                     change += mkh.hpChangePerDay;
                     if (mkh.hpMarginalChangePerDay > 0) LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
@@ -467,13 +468,13 @@ namespace KerbalHealth
                         if (mkh.multiplier > 1) maxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(maxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                         else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
-                    Core.Log((change != 0 ? "HP change after this module: " + change + ". " : "") + (mkh.MultiplyFactor != null ? " Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
+                    Core.Log((change != 0 ? "HP change after this module: " + change + ". " : "") + (mkh.MultiplyFactor != null ? "Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
                     shielding += mkh.shielding;
-                    if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + " half-thicknesses.");
+                    if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + ".");
                     partsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
                 }
-                else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + IsInCrew(crew) + ")");
+                else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + crewInPart + ")");
             }
         }
 
@@ -542,7 +543,7 @@ namespace KerbalHealth
             {
                 LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
                 List<Part> parts = Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts;
-                foreach (Part p in parts) ProcessPart(p, p.protoModuleCrew.ToArray(), ref change);
+                foreach (Part p in parts) ProcessPart(p, Core.IsInEditor ? ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID == p.craftID : p.protoModuleCrew.Contains(pcm), ref change);
                 foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
                 {
                     double amount, maxAmount;

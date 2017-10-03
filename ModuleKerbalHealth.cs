@@ -56,7 +56,9 @@ namespace KerbalHealth
         public bool IsModuleActive
         { get { return alwaysActive || isActive; } }
 
-        // Returns # of kerbals affected by this module, capped by crewCap
+        /// <summary>
+        /// Returns # of kerbals affected by this module, capped by crewCap
+        /// </summary>
         public int AffectedCrewCount
         {
             get
@@ -65,9 +67,9 @@ namespace KerbalHealth
                 if (Core.IsInEditor)
                     if (partCrewOnly)
                     {
-                        foreach (PartCrewManifest pcm in ShipConstruction.ShipManifest.PartManifests)
-                            foreach (ModuleKerbalHealth mkh in pcm.PartInfo.partPrefab.FindModulesImplementing<ModuleKerbalHealth>())
-                                if (mkh == this) r = pcm.GetPartCrew().Length;
+                        foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew())
+                            if (pcm != null) r++;
+                        Core.Log(r + " kerbals found in " + part?.name + ".");
                     }
                     else r = ShipConstruction.ShipManifest.CrewCount;
                 else if (partCrewOnly) r = part.protoModuleCrew.Count;
