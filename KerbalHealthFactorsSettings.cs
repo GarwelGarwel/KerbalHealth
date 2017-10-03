@@ -53,7 +53,7 @@ namespace KerbalHealth
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
                     EVAFactor = -10;
-                    SicknessFactor = -5;
+                    SicknessFactor = -2;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
                     KSCFactor = 5;
