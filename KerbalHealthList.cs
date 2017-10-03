@@ -6,7 +6,7 @@ namespace KerbalHealth
     /// <summary>
     /// List of all tracked kerbals
     /// </summary>
-    public class KerbalHealthList : List<KerbalHealthStatus>
+    public class KerbalHealthList : Dictionary<string, KerbalHealthStatus>
     {
         /// <summary>
         /// Adds a kerbal to the list, unless already exists
@@ -15,26 +15,22 @@ namespace KerbalHealth
         /// <param name="health">Kerbal's current HP, maximum if skipped</param>
         public void Add(string name, double health = double.NaN)
         {
-            if (Contains(name)) return;
+            if (ContainsKey(name)) return;
             Core.Log("Registering " + name + " with " + health + " health.", Core.LogLevel.Important);
             KerbalHealthStatus khs;
             if (double.IsNaN(health)) khs = new KerbalHealth.KerbalHealthStatus(name);
             else khs = new KerbalHealth.KerbalHealthStatus(name, health);
-            Add(khs);
+            Add(name, khs);
         }
 
         /// <summary>
-        /// Removes a kerbal with a given name from the list
+        /// Adds a kerbal to the list, unless already exists
         /// </summary>
-        /// <param name="name"></param>
-        public void Remove(string name)
+        /// <param name="khs"></param>
+        public void Add(KerbalHealthStatus khs)
         {
-            foreach (KerbalHealthStatus khs in this)
-                if (khs.Name == name)
-                {
-                    Remove(khs);
-                    return;
-                }
+            try { Add(khs.Name, khs); }
+            catch (System.ArgumentException) { }
         }
 
         /// <summary>
@@ -45,9 +41,9 @@ namespace KerbalHealth
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.Crew.Count() + " crew, " + kerbalRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
-            foreach (KerbalHealthStatus khs in this)
+            foreach (KerbalHealthStatus khs in Values)
                 if (!Core.IsKerbalTrackable(khs.PCM) && !khs.HasCondition("Frozen"))
-                    Remove(khs);
+                    Remove(khs.Name);
             List<ProtoCrewMember> list = kerbalRoster.Crew.Concat(kerbalRoster.Tourist).ToList();
             Core.Log(list.Count + " total kerbals in the roster.");
             foreach (ProtoCrewMember pcm in list)
@@ -57,18 +53,15 @@ namespace KerbalHealth
 
         public void Update(double interval)
         {
-            for (int i = 0; i < Count; i++)
+            foreach (KerbalHealthStatus khs in Values)
             {
-                KerbalHealthStatus khs = this[i];
                 ProtoCrewMember pcm = khs.PCM;
                 if (khs.HasCondition("Frozen") || Core.IsKerbalTrackable(pcm))
                     khs.Update(interval);
                 else
                 {
                     Core.Log(khs.Name + " is not trackable anymore. Removing.");
-                    //Core.Log("DFWrapper is " + (DFWrapper.APIReady ? ("ready. " + DFWrapper.DeepFreezeAPI.FrozenKerbalsList.Count + " items in FrozenKerbalsList.") : "not ready."));
-                    RemoveAt(i);
-                    i--;
+                    Remove(khs.Name);
                 }
             }
             //if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
@@ -79,7 +72,7 @@ namespace KerbalHealth
         /// </summary>
         public void ProcessEvents()
         {
-            foreach (KerbalHealthStatus khs in this)
+            foreach (KerbalHealthStatus khs in Values)
             {
                 if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(khs.PCM)) continue;
                 Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...");
@@ -93,10 +86,7 @@ namespace KerbalHealth
         /// <param name="name"></param>
         /// <returns></returns>
         public KerbalHealthStatus Find(string name)
-        {
-            foreach (KerbalHealthStatus khs in this) if (khs.Name == name) return khs;
-            return null;
-        }
+        { return ContainsKey(name) ? this[name] : null; }
 
         /// <summary>
         /// Returns KerbalHealthStatus for a given kerbal
@@ -106,15 +96,7 @@ namespace KerbalHealth
         public KerbalHealthStatus Find(ProtoCrewMember pcm)
         { return Find(pcm.name); }
 
-        /// <summary>
-        /// Returns true if a kerbal with this name exists in the list
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public bool Contains(string name)
-        {
-            foreach (KerbalHealthStatus khs in this) if (khs.Name == name) return true;
-            return false;
-        }
+        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
+        { }
     }
 }

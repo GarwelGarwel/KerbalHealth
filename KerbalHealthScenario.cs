@@ -34,6 +34,7 @@ namespace KerbalHealth
             Core.Log(Core.Factors.Count + " factors initialized.");
             if (!Core.Loaded) Core.LoadConfig();
             Core.KerbalHealthList.RegisterKerbals();
+
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             GameEvents.onCrewKilled.Add(OnCrewKilled);
             GameEvents.OnCrewmemberHired.Add(OnCrewmemberHired);
@@ -47,6 +48,7 @@ namespace KerbalHealth
             if (dfEvent != null) dfEvent.Add(OnKerbalFrozen);
             dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
             if (dfEvent != null) dfEvent.Add(OnKerbalThaw);
+
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
@@ -132,12 +134,14 @@ namespace KerbalHealth
         {
             Core.Log("OnKerbalFrozen('" + part.name + "', '" + pcm.name + "')");
             Core.KerbalHealthList.Find(pcm).AddCondition(new KerbalHealth.HealthCondition("Frozen"));
+            dirty = true;
         }
 
         public void OnKerbalThaw(Part part, ProtoCrewMember pcm)
         {
             Core.Log("OnKerbalThaw('" + part.name + "', '" + pcm.name + "')");
             Core.KerbalHealthList.Find(pcm).RemoveCondition("Frozen");
+            dirty = true;
         }
 
         /// <summary>
@@ -155,7 +159,6 @@ namespace KerbalHealth
             if (forced || ((timePassed >= Core.UpdateInterval) && (timePassed >= Core.MinUpdateInterval * TimeWarp.CurrentRate)))
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
-                Core.Log("DeepFreeze assembly " + (DFWrapper.AssemblyExists ? "exists" : "does NOT exist") + ".");
                 if (!DFWrapper.InstanceExists)
                 {
                     Core.Log("Initializing DFWrapper...");
@@ -250,11 +253,12 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("Radiation", true));
                 gridContents.Add(new DialogGUILabel("", true));
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
+                List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
                 for (int i = FirstLine; i < FirstLine + LineCount; i++)
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
                         gridContents.Add(new DialogGUILabel("", true));
-                    gridContents.Add(new DialogGUIButton<int>("Details", (n) => { selectedKHS = Core.KerbalHealthList[n]; Invalidate(); }, i));
+                    gridContents.Add(new DialogGUIButton<int>("Details", (n) => { selectedKHS = kerbals[n]; Invalidate(); }, i));
                 }
                 layout.AddChild(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray()));
                 monitorPosition.width = gridWidthMain + 10;
@@ -344,7 +348,8 @@ namespace KerbalHealth
                     // Fill the Health Monitor's grid with kerbals' health data
                     for (int i = 0; i < LineCount; i++)
                     {
-                        KerbalHealthStatus khs = Core.KerbalHealthList[FirstLine + i];
+                        List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
+                        KerbalHealthStatus khs = kerbals[FirstLine + i];
                         bool frozen = khs.HasCondition("Frozen");
                         double ch = khs.LastChangeTotal;
                         gridContents[(i + 1) * colNumMain].SetOptionText(khs.Name);
@@ -419,7 +424,7 @@ namespace KerbalHealth
             UpdateKerbals(true);
             int i = 0;
             node.AddValue("nextEventTime", nextEventTime);
-            foreach (KerbalHealthStatus khs in Core.KerbalHealthList)
+            foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
                 Core.Log("Saving " + khs.Name + "'s health.");
                 node.AddNode(khs.ConfigNode);
