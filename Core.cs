@@ -77,7 +77,7 @@ namespace KerbalHealth
             PartResourceDefinition prd = PartResourceLibrary.Instance?.GetDefinition(name);
             if (prd == null)
             {
-                Core.Log("Can't find ResourceDefinition for " + name + ".", LogLevel.Error);
+                Log("Can't find ResourceDefinition for " + name + ".", LogLevel.Important);
                 return;
             }
             ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
@@ -90,7 +90,7 @@ namespace KerbalHealth
             ResourceShielding = new Dictionary<int, double>();
             foreach (ConfigNode n in node.GetNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
-            Log(Core.ResourceShielding.Count + " resource shielding values loaded.");
+            Log(ResourceShielding.Count + " resource shielding values loaded.");
             Loaded = true;
         }
 

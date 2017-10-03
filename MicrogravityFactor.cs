@@ -16,11 +16,6 @@ namespace KerbalHealth
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
             if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            //if (pcm == null)
-            //{
-            //    Core.Log("MicrogravityFactor.ChangePerDay: pcm is null!", Core.LogLevel.Error);
-            //    return 0;
-            //}
             if (Core.KerbalHealthList.Find(pcm) == null)
             {
                 Core.Log(pcm.name + " not found in KerbalHealthList. The list has " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
