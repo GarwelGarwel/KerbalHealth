@@ -496,7 +496,7 @@ namespace KerbalHealth
             ProtoCrewMember pcm = PCM;
             if (pcm == null)
             {
-                Core.Log(Name + " not found in Core.KerbalHealthList!", Core.LogLevel.Error);
+                Core.Log(Name + " was not found in the kerbal roster!", Core.LogLevel.Error);
                 return 0;
             }
 

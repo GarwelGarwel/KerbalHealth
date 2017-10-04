@@ -55,7 +55,7 @@ namespace KerbalHealth
             {
                 Name = value.GetValue("name");
                 if (value.HasValue("title")) Title = value.GetValue("title");
-                IsVisible = bool.Parse(value.GetValue("visible"));
+                IsVisible = Core.GetBool(value, "visible", true);
             }
         }
 
