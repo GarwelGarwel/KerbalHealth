@@ -86,9 +86,8 @@ namespace KerbalHealth
         public static void LoadConfig()
         {
             Log("Loading config...");
-            ConfigNode node = ConfigNode.Load(KSPUtil.ApplicationRootPath + "/GameData/KerbalHealth/KerbalHealth.cfg");
             ResourceShielding = new Dictionary<int, double>();
-            foreach (ConfigNode n in node.GetNodes("RESOURCE_SHIELDING"))
+            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.");
             Loaded = true;
@@ -365,19 +364,6 @@ namespace KerbalHealth
         /// <returns></returns>
         public static bool IsKerbalTrackable(ProtoCrewMember pcm)
         { return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)); }
-
-        /// <summary>
-        /// Returns true if kerbal is currently frozen with DeepFreeze
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        //public static bool IsKerbalFrozen(string name)
-        //{
-        //    if (!DFWrapper.APIReady) return false;
-        //    foreach (KeyValuePair<string, DFWrapper.KerbalInfo> el in DFWrapper.DeepFreezeAPI.FrozenKerbals)
-        //        if (el.Key == name) return true;
-        //    return false;
-        //}
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned

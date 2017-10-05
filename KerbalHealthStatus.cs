@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
 
 namespace KerbalHealth
 {
@@ -11,21 +9,18 @@ namespace KerbalHealth
     public class KerbalHealthStatus
     {
         string name;
-        double maxHPModifier = 0;  // How many HP are added (or subtracted) to maximum HP
         double hp;
-        double dose = 0, radiation = 0, partsRadiation = 0, exposure = 1;
+        double partsRadiation = 0;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         Dictionary<string, double> factors = new Dictionary<string, double>(Core.Factors.Count);
         double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
         bool onEva = false;
-        //bool frozen = false;
         bool warned = true;
 
         // These dictionaries are used to calculate factor modifiers from part modules
         Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
-        double shielding = 0;
 
         /// <summary>
         /// Kerbal's name
@@ -68,20 +63,12 @@ namespace KerbalHealth
         /// <summary>
         /// Health points added to (or subtracted from) kerbal's max HP
         /// </summary>
-        public double MaxHPModifier
-        {
-            get { return maxHPModifier; }
-            set { maxHPModifier = value; }
-        }
+        public double MaxHPModifier { get; set; }
 
         /// <summary>
         /// Lifetime absorbed dose of ionizing radiation, in banana equivalent doses (BEDs, 1 BED = 1e-7 Sv)
         /// </summary>
-        public double Dose
-        {
-            get { return dose; }
-            set { dose = value; }
-        }
+        public double Dose { get; set; }
 
         /// <summary>
         /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
@@ -92,26 +79,17 @@ namespace KerbalHealth
         /// <summary>
         /// Level of background radiation absorbed by the body, in bananas per day
         /// </summary>
-        public double Radiation
-        {
-            get { return radiation; }
-            set { radiation = value; }
-        }
+        public double Radiation { get; set; }
 
         /// <summary>
         /// Radiation shielding provided by the vessel
         /// </summary>
-        public double Shielding
-        { get { return shielding; } }
+        public double Shielding { get; set; }
 
         /// <summary>
         /// Proportion of radiation that gets absorbed by the kerbal
         /// </summary>
-        public double Exposure
-        {
-            get { return exposure; }
-            set { exposure = value; }
-        }
+        public double Exposure { get; set; }
 
         public static double GetExposure(double shielding, double crewCap)
         { return Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3)); }
@@ -469,7 +447,7 @@ namespace KerbalHealth
                         else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
                     Core.Log((change != 0 ? "HP change after this module: " + change + ". " : "") + (mkh.MultiplyFactor != null ? "Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
-                    shielding += mkh.shielding;
+                    Shielding += mkh.shielding;
                     if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + ".");
                     partsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
@@ -527,7 +505,7 @@ namespace KerbalHealth
                 minMultipliers.Add(f.Name, 1);
                 maxMultipliers.Add(f.Name, 1);
             }
-            shielding = 0;
+            Shielding = 0;
 
             LastChange = 0;
             bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
@@ -550,9 +528,9 @@ namespace KerbalHealth
                     if (Core.IsInEditor) amount = maxAmount = Core.GetResourceAmount(parts, res.Key);
                     else Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
                     Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key + ".");
-                    shielding += res.Value * amount;
+                    Shielding += res.Value * amount;
                 }
-                Exposure = GetExposure(shielding, Core.GetCrewCapacity(pcm));
+                Exposure = GetExposure(Shielding, Core.GetCrewCapacity(pcm));
                 if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
@@ -574,7 +552,7 @@ namespace KerbalHealth
 
             Core.Log("Marginal change for " + pcm.name + ": " + mc + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
             Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
-            if (recalculateCache) Core.Log("Total shielding: " + shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
+            if (recalculateCache) Core.Log("Total shielding: " + Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
             return LastChangeTotal;
         }
 
