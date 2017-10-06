@@ -120,19 +120,7 @@ namespace KerbalHealth
             lastUpdated = time;
         }
 
-        [KSPAction(guiName = "Enable Health Module")]
-        public void ActionEnable()
-        { isActive = true; }
-
-        [KSPAction(guiName = "Disable Health Module")]
-        public void ActionDisable()
-        { isActive = alwaysActive; }
-
-        [KSPAction(guiName = "Toggle Health Module")]
-        public void ActionToggleActive()
-        { OnToggleActive(); }
-
-        [KSPEvent(name = "OnToggleActive", active = true, guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
+        [KSPEvent(name = "OnToggleActive", active = true, guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
         public void OnToggleActive()
         { isActive = alwaysActive || !isActive; }
 
@@ -150,8 +138,7 @@ namespace KerbalHealth
             if (resourceConsumptionPerKerbal != 0) res += "\n" + resourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
-            if (res != "") res = res.Remove(0, 1);  // Removing initial "\n"
-            return res;
+            return res.Trim('\n');
         }
     }
 }
