@@ -13,7 +13,7 @@ namespace KerbalHealth
         double partsRadiation = 0;
         double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
         Dictionary<string, double> factors = new Dictionary<string, double>(Core.Factors.Count);
-        double lastMarginalPositiveChange = 0, lastMarginalNegativeChange = 0;  // Cached marginal HP change (in %)
+        double lastRecuperation = 0, lastDecay = 0;  // Cached recuperation/decay HP change (in %)
         List<HealthCondition> conditions = new List<HealthCondition>();
         string trait = null;
         bool onEva = false;
@@ -144,28 +144,28 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Marginal change in the latest update (positive only)
+        /// Health recuperation in the latest update
         /// </summary>
-        public double LastMarginalPositiveChange
+        public double LastRecuperation
         {
-            get { return lastMarginalPositiveChange; }
-            set { lastMarginalPositiveChange = value; }
+            get { return lastRecuperation; }
+            set { lastRecuperation = value; }
         }
 
         /// <summary>
-        /// Marginal change in the latest update (negative only)
+        /// Health decay in the latest update
         /// </summary>
-        public double LastMarginalNegativeChange
+        public double LastDecay
         {
-            get { return lastMarginalNegativeChange; }
-            set { lastMarginalNegativeChange = value; }
+            get { return lastDecay; }
+            set { lastDecay = value; }
         }
 
         /// <summary>
-        /// HP change due to marginal effects
+        /// HP change due to recuperation/decay
         /// </summary>
         public double MarginalChange
-        { get { return (MaxHP - HP) * (LastMarginalPositiveChange / 100) - HP * (LastMarginalNegativeChange / 100); } }
+        { get { return (MaxHP - HP) * (LastRecuperation / 100) - HP * (LastDecay / 100); } }
 
         /// <summary>
         /// Total HP change per day rate in the latest update
@@ -403,10 +403,10 @@ namespace KerbalHealth
         /// <returns></returns>
         public double GetBalanceHP()
         {
-            Core.Log(Name + "'s last change: " + LastChange + ", MPC: " + LastMarginalPositiveChange + "%, MNC: " + LastMarginalNegativeChange + "%.");
+            Core.Log(Name + "'s last change: " + LastChange + ". Recuperation: " + LastRecuperation + "%. Decay: " + LastDecay + "%.");
             if (LastChange == 0) HealthChangePerDay();
-            if (LastMarginalPositiveChange <= LastMarginalNegativeChange) return 0;
-            return (MaxHP * LastMarginalPositiveChange + LastChange * 100) / (LastMarginalPositiveChange - LastMarginalNegativeChange);
+            if (LastRecuperation <= LastDecay) return 0;
+            return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation - LastDecay);
         }
 
         /// <summary>
@@ -436,8 +436,8 @@ namespace KerbalHealth
                 if (mkh.IsModuleActive && (!mkh.partCrewOnly || crewInPart))
                 {
                     change += mkh.hpChangePerDay;
-                    if (mkh.hpMarginalChangePerDay > 0) LastMarginalPositiveChange += mkh.hpMarginalChangePerDay;
-                    else if (mkh.hpMarginalChangePerDay < 0) LastMarginalNegativeChange -= mkh.hpMarginalChangePerDay;
+                    LastRecuperation += mkh.recuperation;
+                    LastDecay += mkh.decay;
                     // Processing factor multiplier
                     if ((mkh.multiplier != 1) && (mkh.MultiplyFactor != null))
                     {
@@ -519,7 +519,7 @@ namespace KerbalHealth
             // Processing parts
             if (Core.IsKerbalLoaded(pcm) || (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled))
             {
-                LastMarginalPositiveChange = LastMarginalNegativeChange = 0;
+                LastRecuperation = LastDecay = 0;
                 List<Part> parts = Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts;
                 foreach (Part p in parts) ProcessPart(p, Core.IsInEditor ? ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID == p.craftID : p.protoModuleCrew.Contains(pcm), ref change);
                 foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
@@ -550,7 +550,7 @@ namespace KerbalHealth
             LastChange += CachedChange;
             double mc = MarginalChange;
 
-            Core.Log("Marginal change for " + pcm.name + ": " + mc + " (+" + LastMarginalPositiveChange + "%, -" + LastMarginalNegativeChange + "%).");
+            Core.Log("Recuperation/decay change for " + pcm.name + ": " + mc + " (+" + LastRecuperation + "%, -" + LastDecay + "%).");
             Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
             if (recalculateCache) Core.Log("Total shielding: " + Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
             return LastChangeTotal;
@@ -615,8 +615,8 @@ namespace KerbalHealth
                     n.AddNode(hc.ConfigNode);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
-                if (LastMarginalPositiveChange != 0) n.AddValue("lastMarginalPositiveChange", LastMarginalPositiveChange);
-                if (LastMarginalNegativeChange != 0) n.AddValue("lastMarginalNegativeChange", LastMarginalNegativeChange);
+                if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
+                if (LastDecay != 0) n.AddValue("lastDecay", LastDecay);
                 if (IsOnEVA) n.AddValue("onEva", true);
                 return n;
             }
@@ -633,8 +633,8 @@ namespace KerbalHealth
                     AddCondition(new HealthCondition(n));
                 if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
                 CachedChange = Core.GetDouble(value, "cachedChange");
-                LastMarginalPositiveChange = Core.GetDouble(value, "lastMarginalPositiveChange");
-                LastMarginalNegativeChange = Core.GetDouble(value, "lastMarginalNegativeChange");
+                LastRecuperation = Core.GetDouble(value, "lastRecuperation");
+                LastDecay = Core.GetDouble(value, "lastDecay");
                 IsOnEVA = Core.GetBool(value, "onEva");
             }
         }

@@ -10,7 +10,10 @@ namespace KerbalHealth
         public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
 
         [KSPField]
-        public float hpMarginalChangePerDay = 0;  // If >0, will increase HP by this % of (MaxHP - HP). If <0, will decrease by this % of (HP - MinHP)
+        public float recuperation = 0;  // Will increase HP by this % of (MaxHP - HP) per day
+
+        [KSPField]
+        public float decay = 0;  // Will decrease by this % of (HP - MinHP) per day
 
         [KSPField]
         public bool partCrewOnly = false;  // Does the module affect health of only crew in this part or the entire vessel?
@@ -138,7 +141,8 @@ namespace KerbalHealth
             string res = "";
             if (partCrewOnly) res += "\nAffects only part crew";
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
-            if (hpMarginalChangePerDay != 0) res += "\nMarginal HP/day: " + hpMarginalChangePerDay.ToString("F1") + "%";
+            if (recuperation != 0) res += "\nRecuperation: " + recuperation.ToString("F1") + "%/day";
+            if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";
             if (multiplier != 1) 
                 res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");

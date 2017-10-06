@@ -25,7 +25,7 @@ namespace KerbalHealth
         PopupDialog monitorWindow;  // Health Monitor window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
         KerbalHealthStatus selectedKHS = null;  // Currently selected kerbal for details view, null if list is shown
-        int page = 1;  // Current page in the  list of kerbals
+        int page = 1;  // Current page in the list of kerbals
 
         public void Start()
         {
@@ -41,7 +41,6 @@ namespace KerbalHealth
             GameEvents.OnCrewmemberSacked.Add(OnCrewmemberSacked);
             GameEvents.onKerbalAdded.Add(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
-            //GameEvents.onKerbalStatusChange.Add(OnKerbalStatusChange);
             GameEvents.onKerbalNameChange.Add(OnKerbalNameChange);
             EventData<Part, ProtoCrewMember> dfEvent;
             dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
@@ -115,13 +114,6 @@ namespace KerbalHealth
             Core.KerbalHealthList.Remove(pcm.name);
             dirty = crewChanged = true;
         }
-
-        //public void OnKerbalStatusChange(ProtoCrewMember pcm, ProtoCrewMember.RosterStatus s1, ProtoCrewMember.RosterStatus s2)
-        //{
-        //    Core.Log("OnKerbalStatusChange('" + pcm.name + "', '" + s1 + "', '" + s2 + "')");
-        //    if (s2 == ProtoCrewMember.RosterStatus.Dead) Core.KerbalHealthList.Remove(pcm.name);
-        //    dirty = crewChanged = true;
-        //}
 
         public void OnKerbalNameChange(ProtoCrewMember pcm, string name1, string name2)
         {
@@ -286,7 +278,7 @@ namespace KerbalHealth
                         gridContents.Add(new DialogGUILabel(f.Title + ":"));
                         gridContents.Add(new DialogGUILabel(""));
                     }
-                gridContents.Add(new DialogGUILabel("Marginal Bonus:"));
+                gridContents.Add(new DialogGUILabel("Recuperation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Conditions:"));
                 gridContents.Add(new DialogGUILabel(""));
@@ -381,7 +373,7 @@ namespace KerbalHealth
                             gridContents[i].SetOptionText(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A");
                             i += 2;
                         }
-                    gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastMarginalPositiveChange.ToString("F0") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
+                    gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F0") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
                     gridContents[i + 2].SetOptionText(selectedKHS.ConditionString);
                     gridContents[i + 4].SetOptionText(selectedKHS.Exposure.ToString("P2"));
                     gridContents[i + 6].SetOptionText(selectedKHS.Radiation.ToString("N2") + "/day");
@@ -403,7 +395,6 @@ namespace KerbalHealth
             GameEvents.OnCrewmemberSacked.Remove(OnCrewmemberSacked);
             GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
-            //GameEvents.onKerbalStatusChange.Remove(OnKerbalStatusChange);
             GameEvents.onKerbalNameChange.Remove(OnKerbalNameChange);
             EventData<Part, ProtoCrewMember> dfEvent;
             dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");

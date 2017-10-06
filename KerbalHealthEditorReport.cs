@@ -169,7 +169,7 @@ namespace KerbalHealth
                     else s = ch.ToString("F1") + " HP/day";
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     if (b > khs.NextConditionHP()) s = "—";
-                    else s = ((khs.LastMarginalPositiveChange > khs.LastMarginalNegativeChange) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
+                    else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }

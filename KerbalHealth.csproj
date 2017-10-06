@@ -89,7 +89,7 @@
     <None Include="KerbalHealth.cfg" />
     <None Include="KerbalHealth.netkan" />
     <None Include="KerbalHealth.version" />
-    <None Include="Patches\KH-FASA.cfg" />
+    <None Include="Patches\KHFASA.cfg" />
     <None Include="Patches\KHB9.cfg" />
     <None Include="Patches\KHDeadlyReentry.cfg" />
     <None Include="Patches\KHIE.cfg" />
