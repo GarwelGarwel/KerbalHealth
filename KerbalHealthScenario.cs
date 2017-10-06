@@ -280,7 +280,7 @@ namespace KerbalHealth
                     }
                 gridContents.Add(new DialogGUILabel("Recuperation:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Conditions:"));
+                gridContents.Add(new DialogGUILabel("Condition:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Exposure:"));
                 gridContents.Add(new DialogGUILabel(""));
