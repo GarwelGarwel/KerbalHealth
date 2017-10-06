@@ -89,6 +89,7 @@
     <None Include="KerbalHealth.cfg" />
     <None Include="KerbalHealth.netkan" />
     <None Include="KerbalHealth.version" />
+    <None Include="LICENSE" />
     <None Include="Patches\KHFASA.cfg" />
     <None Include="Patches\KHB9.cfg" />
     <None Include="Patches\KHDeadlyReentry.cfg" />
@@ -99,6 +100,7 @@
     <None Include="Patches\KHSpaceY.cfg" />
     <None Include="Patches\KHStock.cfg" />
     <None Include="Patches\KHUSILS.cfg" />
+    <None Include="README.md" />
     <None Include="Resources.cfg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
