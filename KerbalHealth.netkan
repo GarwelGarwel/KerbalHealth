@@ -3,7 +3,7 @@
     "identifier"   : "KerbalHealth",
     "$kref"        : "#/ckan/github/GarwelGarwel/KerbalHealth",
     "author"       : "Garwel",
-    "abstract"     : "Adds health, stress and general well-being management. Encourages smart vessel design and mission planning, especially for long flights. Easily configurable. Beta version.",
+    "abstract"     : "Adds health, stress and general well-being management. Encourages smart vessel design and mission planning, especially for long flights. Easily configurable.",
     "license"      : "MIT",
     "$vref"        : "#/ckan/ksp-avc",
     "resources": {

@@ -74,6 +74,6 @@ namespace KerbalHealth
         public float ExhaustionEndHealth = 0.25f;
 
         [GameParameters.CustomParameterUI("Debug Mode", toolTip = "Controls amount of logging")]
-        public bool DebugMode = true;
+        public bool DebugMode = false;
     }
 }
