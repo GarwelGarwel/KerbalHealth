@@ -52,6 +52,8 @@ The amount of radiation a kerbal receives depends on many factors. Most importan
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it significantly.
 
+You may use this [tool to calculate radiation effects](https://docs.google.com/spreadsheets/d/1uAGrzg9ACDa8Uhtq9Fa45t2zmLikVAC9YH13eZiFzHw/edit?usp=sharing). Copy it to your Google Drive or download as XLSX to edit.
+
 **Random events**
 
 Kerbals' organisms, like ours own, are not always predictable. Sometimes, very rarely, you may see random events that can impact your whole mission. Now you need to prepare for contingencies like real space programs do. You may completely disable or fine-tune the event system in settings.
