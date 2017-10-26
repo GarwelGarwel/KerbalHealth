@@ -32,7 +32,7 @@ namespace KerbalHealth
         double inactionTime;
         protected override void Run()
         {
-            inactionTime = Core.rand.NextDouble() * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackMaxDuration * 3600;
+            inactionTime = Core.rand.NextDouble() * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().PanicAttackMaxDuration;
             Core.Log(khs.Name + " will be inactive for " + inactionTime + " seconds.");
             khs.PCM.SetInactive(inactionTime);
         }
