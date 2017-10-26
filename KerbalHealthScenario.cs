@@ -42,11 +42,22 @@ namespace KerbalHealth
             GameEvents.onKerbalAdded.Add(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
             GameEvents.onKerbalNameChange.Add(OnKerbalNameChange);
-            EventData<Part, ProtoCrewMember> dfEvent;
-            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
-            if (dfEvent != null) dfEvent.Add(OnKerbalFrozen);
-            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
-            if (dfEvent != null) dfEvent.Add(OnKerbalThaw);
+
+            if (!DFWrapper.InstanceExists)
+            {
+                Core.Log("Initializing DFWrapper...", Core.LogLevel.Important);
+                DFWrapper.InitDFWrapper();
+                if (DFWrapper.InstanceExists)
+                {
+                    Core.Log("DFWrapper initialized.", Core.LogLevel.Important);
+                    EventData<Part, ProtoCrewMember> dfEvent;
+                    dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
+                    if (dfEvent != null) dfEvent.Add(OnKerbalFrozen);
+                    dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
+                    if (dfEvent != null) dfEvent.Add(OnKerbalThaw);
+                }
+                else Core.Log("Could not initialize DFWrapper.", Core.LogLevel.Important);
+            }
 
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
             {
@@ -151,13 +162,6 @@ namespace KerbalHealth
             if (forced || ((timePassed >= Core.UpdateInterval) && (timePassed >= Core.MinUpdateInterval * TimeWarp.CurrentRate)))
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
-                if (!DFWrapper.InstanceExists)
-                {
-                    Core.Log("Initializing DFWrapper...");
-                    DFWrapper.InitDFWrapper();
-                    if (DFWrapper.InstanceExists) Core.Log("DFWrapper initialized.");
-                    else Core.Log("Could not initialize DFWrapper.", Core.LogLevel.Error);
-                }
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
                 if (Core.EventsEnabled)
