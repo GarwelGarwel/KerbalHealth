@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     class KerbalHealthEventsSettings : GameParameters.CustomParameterNode
     {
-        public override string Title { get { return "Health Events"; } }
-        public override GameParameters.GameMode GameMode { get { return GameParameters.GameMode.ANY; } }
-        public override bool HasPresets { get { return true; } }
-        public override string Section { get { return "Kerbal Health"; } }
-        public override string DisplaySection { get { return Section; } }
-        public override int SectionOrder { get { return 3; } }
+        public override string Title => "Health Events";
+        public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
+        public override bool HasPresets => true;
+        public override string Section => "Kerbal Health";
+        public override string DisplaySection => Section;
+        public override int SectionOrder => 3;
 
         public override void SetDifficultyPreset(GameParameters.Preset preset)
         {

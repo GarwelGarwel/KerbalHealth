@@ -1,23 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace KerbalHealth
 {
     public class LoseImmunityEvent : Event
     {
-        public override string Name
-        { get { return "LoseImmunity"; } }
+        public override string Name => "LoseImmunity";
 
-        protected override bool IsSilent
-        { get { return true; } }
+        protected override bool IsSilent => true;
 
-        public override bool Condition()
-        { return Core.SicknessEnabled && khs.HasCondition("Immune"); }
+        public override bool Condition() => Core.SicknessEnabled && khs.HasCondition("Immune");
 
-        public override double ChancePerDay()
-        { return Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ImmunityDuration, 1); }
+        public override double ChancePerDay() => Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ImmunityDuration, 1);
 
         protected override void Run()
         {

@@ -52,12 +52,11 @@ namespace KerbalHealth
 
         public HealthFactor MultiplyFactor
         {
-            get { return Core.FindFactor(multiplyFactor); }
-            set { multiplyFactor = value.Name; }
+            get => Core.FindFactor(multiplyFactor);
+            set => multiplyFactor = value.Name;
         }
 
-        public bool IsModuleActive
-        { get { return alwaysActive || isActive; } }
+        public bool IsModuleActive => alwaysActive || isActive;
 
         /// <summary>
         /// Returns # of kerbals affected by this module, capped by crewCap
@@ -84,19 +83,19 @@ namespace KerbalHealth
 
         public List<PartResourceDefinition> GetConsumedResources()
         {
-            if (resourceConsumption != 0) return new List<PartResourceDefinition>() { resourceDefinition };
+            if (resourceConsumption != 0) return new List<PartResourceDefinition>() { ResourceDefinition };
             else return new List<PartResourceDefinition>();
         }
 
-        PartResourceDefinition resourceDefinition
+        PartResourceDefinition ResourceDefinition
         {
-            get { return PartResourceLibrary.Instance.GetDefinition(resource); }
-            set { resource = value?.name; }
+            get => PartResourceLibrary.Instance.GetDefinition(resource);
+            set => resource = value?.name;
         }
 
         public override void OnStart(StartState state)
         {
-            Core.Log("ModuleKerbalHealth.OnStart (" + state + ")");
+            Core.Log("ModuleKerbalHealth.OnStart(" + state + ")");
             base.OnStart(state);
             if (alwaysActive) isActive = true;
             lastUpdated = Planetarium.GetUniversalTime();
@@ -110,10 +109,10 @@ namespace KerbalHealth
             {
                 Core.Log(AffectedCrewCount + " crew affected by this part + " + part.name + ".");
                 double res = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), res2;
-                if ((res2 = vessel.RequestResource(part, resourceDefinition.id, res, false)) * 2 < res)
+                if ((res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res)
                 {
                     Core.Log("Module shut down due to lack of " + resource + " (" + res + " needed, " + res2 + " provided).");
-                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name + " shut down due to lack of " + resourceDefinition.name + ".");
+                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name + " shut down due to lack of " + ResourceDefinition.name + ".");
                     isActive = false;
                 }
             }
@@ -121,8 +120,7 @@ namespace KerbalHealth
         }
 
         [KSPEvent(name = "OnToggleActive", active = true, guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
-        public void OnToggleActive()
-        { isActive = alwaysActive || !isActive; }
+        public void OnToggleActive() => isActive = alwaysActive || !isActive;
 
         public override string GetInfo()
         {
@@ -134,8 +132,8 @@ namespace KerbalHealth
             if (multiplier != 1) 
                 res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
-            if (resourceConsumption != 0) res += "\n" + resourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
-            if (resourceConsumptionPerKerbal != 0) res += "\n" + resourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
+            if (resourceConsumption != 0) res += "\n" + ResourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
+            if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
             return res.Trim('\n');

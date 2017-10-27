@@ -4,17 +4,13 @@ namespace KerbalHealth
 {
     public class GetSickEvent : Event
     {
-        public override string Name
-        { get { return "GetSick"; } }
+        public override string Name => "GetSick";
 
-        public override string Message()
-        { return khs.Name + " has fallen sick."; }
+        public override string Message() => khs.Name + " has fallen sick.";
 
-        public override bool Condition()
-        { return Core.SicknessEnabled && khs.HasCondition("Infected"); }
+        public override bool Condition() => Core.SicknessEnabled && khs.HasCondition("Infected");
 
-        public override double ChancePerDay()
-        { return Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().IncubationDuration, 1); }
+        public override double ChancePerDay() => Math.Min(1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().IncubationDuration, 1);
 
         protected override void Run()
         {

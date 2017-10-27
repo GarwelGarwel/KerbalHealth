@@ -85,18 +85,15 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public KerbalHealthStatus Find(string name)
-        { return ContainsKey(name) ? this[name] : null; }
+        public KerbalHealthStatus Find(string name) =>  ContainsKey(name) ? this[name] : null;
 
         /// <summary>
         /// Returns KerbalHealthStatus for a given kerbal
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public KerbalHealthStatus Find(ProtoCrewMember pcm)
-        { return Find(pcm.name); }
+        public KerbalHealthStatus Find(ProtoCrewMember pcm) => Find(pcm.name);
 
-        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
-        { }
+        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count) { }
     }
 }

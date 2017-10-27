@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     public class KSCFactor : HealthFactor
     {
-        public override string Name
-        { get { return "KSC"; } }
+        public override string Name => "KSC";
 
-        public override string Title
-        { get { return "KSC"; } }
+        public override bool Cachable => false;
 
-        public override bool Cachable
-        { get { return false; } }
+        public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
-        public override void ResetEnabledInEditor() { SetEnabledInEditor(false); }
-
-        public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCFactor; } }
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCFactor;
         
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

@@ -9,25 +9,12 @@ namespace KerbalHealth
     public class KerbalHealthStatus
     {
         string name;
-        double hp;
-        double partsRadiation = 0;
-        double cachedChange = 0, lastChange = 0;  // Cached HP change per day (for unloaded vessels), last ordinary (non-marginal) change (used for statistics/monitoring)
-        Dictionary<string, double> factors = new Dictionary<string, double>(Core.Factors.Count);
-        double lastRecuperation = 0, lastDecay = 0;  // Cached recuperation/decay HP change (in %)
-        List<HealthCondition> conditions = new List<HealthCondition>();
-        string trait = null;
-        bool onEva = false;
-        bool warned = true;
-
-        // These dictionaries are used to calculate factor modifiers from part modules
-        Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
-
         /// <summary>
         /// Kerbal's name
         /// </summary>
         public string Name
         {
-            get { return name; }
+            get => name;
             set
             {
                 name = value;
@@ -35,30 +22,31 @@ namespace KerbalHealth
             }
         }
 
+        double hp;
         /// <summary>
         /// Kerbal's health points
         /// </summary>
         public double HP
         {
-            get { return hp; }
+            get => hp;
             set
             {
                 if (value < 0) hp = 0;
                 else if (value > MaxHP) hp = MaxHP;
                 else hp = value;
-                if (!warned && Health < Core.LowHealthAlert)
+                if (!IsWarned && Health < Core.LowHealthAlert)
                 {
                     Core.ShowMessage(Name + "'s health is dangerously low!", true);
-                    warned = true;
+                    IsWarned = true;
                 }
-                else if (warned && Health >= Core.LowHealthAlert) warned = false;
+                else if (IsWarned && Health >= Core.LowHealthAlert) IsWarned = false;
             }
         }
 
         /// <summary>
         /// Returns kerbal's HP relative to MaxHealth (0 to 1)
         /// </summary>
-        public double Health { get { return HP / MaxHP; } }
+        public double Health => HP / MaxHP;
 
         /// <summary>
         /// Health points added to (or subtracted from) kerbal's max HP
@@ -73,8 +61,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
         /// </summary>
-        public double RadiationMaxHPModifier
-        { get { return Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1; } }
+        public double RadiationMaxHPModifier => Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1;
 
         /// <summary>
         /// Level of background radiation absorbed by the body, in bananas per day
@@ -91,17 +78,13 @@ namespace KerbalHealth
         /// </summary>
         public double Exposure { get; set; }
 
-        public static double GetExposure(double shielding, double crewCap)
-        { return Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3)); }
+        public static double GetExposure(double shielding, double crewCap) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
 
-        static double GetSolarRadiationAtDistance(double distance)
-        { return Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance); }
+        static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
 
-        static bool IsPlanet(CelestialBody body)
-        { return body?.orbit?.referenceBody == Sun.Instance.sun; }
+        static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
-        static CelestialBody GetPlanet(CelestialBody body)
-        { return ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody); }
+        static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
 
         public double GetCosmicRadiation()
         {
@@ -128,68 +111,42 @@ namespace KerbalHealth
             return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
         }
 
-        double CachedChange
-        {
-            get { return cachedChange; }
-            set { cachedChange = value; }
-        }
+        double CachedChange { get; set; } = 0;
 
         /// <summary>
         /// HP change per day rate in the latest update. Only includes factors, not marginal change
         /// </summary>
-        public double LastChange
-        {
-            get { return lastChange; }
-            set { lastChange = value; }
-        }
+        public double LastChange { get; set; } = 0;
 
         /// <summary>
         /// Health recuperation in the latest update
         /// </summary>
-        public double LastRecuperation
-        {
-            get { return lastRecuperation; }
-            set { lastRecuperation = value; }
-        }
+        public double LastRecuperation { get; set; } = 0;
 
         /// <summary>
         /// Health decay in the latest update
         /// </summary>
-        public double LastDecay
-        {
-            get { return lastDecay; }
-            set { lastDecay = value; }
-        }
+        public double LastDecay { get; set; } = 0;
 
         /// <summary>
         /// HP change due to recuperation/decay
         /// </summary>
-        public double MarginalChange
-        { get { return (MaxHP - HP) * (LastRecuperation / 100) - HP * (LastDecay / 100); } }
+        public double MarginalChange => (MaxHP - HP) * (LastRecuperation / 100) - HP * (LastDecay / 100);
 
         /// <summary>
         /// Total HP change per day rate in the latest update
         /// </summary>
-        public double LastChangeTotal
-        { get { return LastChange + MarginalChange; } }
+        public double LastChangeTotal => LastChange + MarginalChange;
 
         /// <summary>
         /// List of factors' effect on the kerbal (used for monitoring only)
         /// </summary>
-        public Dictionary<string, double> Factors
-        {
-            get { return factors; }
-            set { factors = value; }
-        }
+        public Dictionary<string, double> Factors { get; set; } = new Dictionary<string, double>(Core.Factors.Count);
 
         /// <summary>
         /// Returns a list of all active health conditions for the kerbal
         /// </summary>
-        public List<HealthCondition> Conditions
-        {
-            get { return conditions; }
-            set { conditions = value; }
-        }
+        public List<HealthCondition> Conditions { get; set; } = new List<HealthCondition>();
 
         /// <summary>
         /// Returns the condition with a given name, if present (null otherwise)
@@ -208,8 +165,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public bool HasCondition(string condition)
-        { return GetCondition(condition) != null; }
+        public bool HasCondition(string condition) => GetCondition(condition) != null;
 
         /// <summary>
         /// Adds a new health condition
@@ -287,41 +243,25 @@ namespace KerbalHealth
             }
         }
 
+        string trait = null;
         /// <summary>
         /// Returns saved kerbal's trait or current trait if nothing is saved
         /// </summary>
         string Trait
         {
-            get { return trait ?? PCM.trait; }
-            set { trait = value; }
+            get => trait ?? PCM.trait;
+            set => trait = value;
         }
 
         /// <summary>
         /// Returns true if the kerbal is marked as being on EVA
         /// </summary>
-        public bool IsOnEVA
-        {
-            get { return onEva; }
-            set { onEva = value; }
-        }
-
-        /// <summary>
-        /// True if the kerbal is frozen with DeepFreeze
-        /// </summary>
-        //public bool IsFrozen
-        //{
-        //    get { return frozen; }
-        //    set { frozen = value; }
-        //}
+        public bool IsOnEVA { get; set; } = false;
 
         /// <summary>
         /// Returns true if a low health alarm has been shown for the kerbal
         /// </summary>
-        public bool IsWarned
-        {
-            get { return warned; }
-            set { warned = value; }
-        }
+        public bool IsWarned { get; set; } = true;
 
         ProtoCrewMember pcmCached;
         /// <summary>
@@ -352,14 +292,12 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static double GetMaxHP(ProtoCrewMember pcm)
-        { return Core.BaseMaxHP + (pcm != null ? Core.HPPerLevel * pcm.experienceLevel : 0); }
+        public static double GetMaxHP(ProtoCrewMember pcm) => Core.BaseMaxHP + (pcm != null ? Core.HPPerLevel * pcm.experienceLevel : 0);
 
         /// <summary>
         /// Returns the max number of HP for the kerbal (including the modifier)
         /// </summary>
-        public double MaxHP
-        { get { return (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier; } }
+        public double MaxHP => (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier;
 
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
@@ -394,8 +332,7 @@ namespace KerbalHealth
         /// Returns number of seconds until the next condition is reached
         /// </summary>
         /// <returns></returns>
-        public double TimeToNextCondition()
-        { return TimeToValue(NextConditionHP()); }
+        public double TimeToNextCondition() => TimeToValue(NextConditionHP());
 
         /// <summary>
         /// Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
@@ -419,6 +356,10 @@ namespace KerbalHealth
             foreach (ProtoCrewMember pcm in crew) if (pcm?.name == Name) return true;
             return false;
         }
+
+        double partsRadiation = 0;
+        // These dictionaries are used to calculate factor modifiers from part modules
+        Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
 
         /// <summary>
         /// Checks a part for its effects on the kerbal
@@ -639,13 +580,11 @@ namespace KerbalHealth
             }
         }
 
-        public override bool Equals(object obj)
-        { return ((KerbalHealthStatus)obj).Name.Equals(Name); }
+        public override bool Equals(object obj) => ((KerbalHealthStatus)obj).Name.Equals(Name);
 
-        public override int GetHashCode() { return ConfigNode.GetHashCode(); }
+        public override int GetHashCode() => ConfigNode.GetHashCode();
 
-        public KerbalHealthStatus Clone()
-        { return (KerbalHealthStatus)this.MemberwiseClone(); }
+        public KerbalHealthStatus Clone() => (KerbalHealthStatus)this.MemberwiseClone();
 
         public KerbalHealthStatus(string name)
         {

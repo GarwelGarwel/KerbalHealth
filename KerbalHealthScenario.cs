@@ -151,8 +151,7 @@ namespace KerbalHealth
         /// Next event update is scheduled after a random period of time, between 0 and 2 days
         /// </summary>
         /// <returns></returns>
-        double GetNextEventInterval()
-        { return Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2; }
+        double GetNextEventInterval() => Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
         void UpdateKerbals(bool forced)
         {
@@ -179,20 +178,15 @@ namespace KerbalHealth
         public void FixedUpdate()
         { if (Core.ModEnabled) UpdateKerbals(false); }
 
-        int LinesPerPage
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LinesPerPage; } }
+        int LinesPerPage => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LinesPerPage;
 
-        bool ShowPages
-        { get { return Core.KerbalHealthList.Count > LinesPerPage; } }
+        bool ShowPages => Core.KerbalHealthList.Count > LinesPerPage;
 
-        int PageCount
-        { get { return (int)System.Math.Ceiling((double)(Core.KerbalHealthList.Count) / LinesPerPage); } }
+        int PageCount => (int)System.Math.Ceiling((double)(Core.KerbalHealthList.Count) / LinesPerPage);
 
-        int FirstLine
-        { get { return (page - 1) * LinesPerPage; } }
+        int FirstLine => (page - 1) * LinesPerPage;
 
-        int LineCount
-        { get { return System.Math.Min(Core.KerbalHealthList.Count - FirstLine, LinesPerPage); } }
+        int LineCount => System.Math.Min(Core.KerbalHealthList.Count - FirstLine, LinesPerPage);
 
         void FirstPage()
         {

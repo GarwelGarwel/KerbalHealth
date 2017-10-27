@@ -1,44 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     public class AccidentEvent : Event
     {
-        public override string Name
-        { get { return "Accident"; } }
+        public override string Name => "Accident";
 
-        public override string Message()
-        { return khs.Name + " has lost some health in an accident."; }
+        public override string Message() => khs.Name + " has lost some health in an accident.";
 
-        public override bool Condition()
-        { return true; }
+        public override bool Condition() => true;
 
-        public override double ChancePerDay()
-        {
-            if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod > 0)
-                return 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod;
-            else return 0;
-        }
+        public override double ChancePerDay() => (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod > 0) ? 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod : 0;
 
         float MinDamage
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMinDamage; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMinDamage = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMinDamage;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMinDamage = value;
         }
 
         float MaxDamage
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMaxDamage; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMaxDamage = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMaxDamage;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentMaxDamage = value;
         }
 
-        double Damage(double x)
-        { return 1 - MinDamage - (MaxDamage - MinDamage) * x; }
+        double Damage(double x) => 1 - MinDamage - (MaxDamage - MinDamage) * x;
 
-        protected override void Run()
-        { khs.HP *= Damage(Core.rand.NextDouble()); }
+        protected override void Run() => khs.HP *= Damage(Core.rand.NextDouble());
     }
 }

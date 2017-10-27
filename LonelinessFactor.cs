@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     class LonelinessFactor : HealthFactor
     {
-        public override string Name
-        { get { return "Loneliness"; } }
+        public override string Name => "Loneliness";
 
-        public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().LonelinessFactor; } }
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().LonelinessFactor;
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

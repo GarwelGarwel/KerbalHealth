@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     class EVAFactor : HealthFactor
     {
-        public override string Name
-        { get { return "EVA"; } }
+        public override string Name => "EVA";
 
-        public override void ResetEnabledInEditor() { SetEnabledInEditor (false); }
+        public override void ResetEnabledInEditor() => SetEnabledInEditor (false);
 
-        public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().EVAFactor; } }
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().EVAFactor;
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

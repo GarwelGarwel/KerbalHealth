@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace KerbalHealth
 {
     public class GetInfectedEvent : Event
     {
-        public override string Name
-        { get { return "GetInfected"; } }
+        public override string Name => "GetInfected";
 
-        protected override bool IsSilent
-        { get { return true; } }
+        protected override bool IsSilent => true;
 
-        public override bool Condition()
-        { return Core.SicknessEnabled && !khs.HasCondition("Infected") && !khs.HasCondition("Sick") && !khs.HasCondition("Immune"); }
+        public override bool Condition() => Core.SicknessEnabled && !khs.HasCondition("Infected") && !khs.HasCondition("Sick") && !khs.HasCondition("Immune");
 
         public override double ChancePerDay()
         {

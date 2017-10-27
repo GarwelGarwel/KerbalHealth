@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace KerbalHealth
 {
     public class CureEvent : Event
     {
-        public override string Name
-        { get { return "Cure"; } }
+        public override string Name => "Cure";
 
-        protected override bool IsSilent
-        { get { return khs.HasCondition("Infected"); } }
+        protected override bool IsSilent => khs.HasCondition("Infected");
 
-        public override string Message()
-        { return khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!"; }
+        public override string Message() => khs.Name + " has cured " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "his" : "her") + " sickness!";
 
-        public override bool Condition()
-        { return Core.SicknessEnabled && khs.HasCondition("Sick"); }
+        public override bool Condition() => Core.SicknessEnabled && khs.HasCondition("Sick");
 
         public override double ChancePerDay()
         {

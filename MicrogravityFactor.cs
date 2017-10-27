@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     class MicrogravityFactor : HealthFactor
     {
-        public override string Name
-        { get { return "Microgravity"; } }
+        public override string Name => "Microgravity";
 
-        public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().MicrogravityFactor; } }
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().MicrogravityFactor;
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     public class SicknessFactor : HealthFactor
     {
-        public override string Name
-        { get { return "Sickness"; } }
+        public override string Name => "Sickness";
 
-        public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().SicknessFactor; } }
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().SicknessFactor;
 
-        public override bool Cachable
-        { get { return false; } }
+        public override bool Cachable => false;
 
-        public override void ResetEnabledInEditor() { SetEnabledInEditor(false); }
+        public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

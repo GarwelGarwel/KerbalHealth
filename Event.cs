@@ -13,8 +13,7 @@ namespace KerbalHealth
         /// <summary>
         /// Tells whether to skip notification about the event
         /// </summary>
-        protected virtual bool IsSilent
-        { get { return false; } }
+        protected virtual bool IsSilent => false;
 
         /// <summary>
         /// Returns system name of the event
@@ -24,15 +23,13 @@ namespace KerbalHealth
         /// <summary>
         /// Returns human-readable title of the event. Same as Name by default
         /// </summary>
-        public virtual string Title
-        { get { return Name; } }
+        public virtual string Title => Name;
 
         /// <summary>
         /// Returns the message text when the event happens (null if no message)
         /// </summary>
         /// <returns></returns>
-        public virtual string Message()
-        { return Title + " event has happened to " + khs.Name + "."; }
+        public virtual string Message() => Title + " event has happened to " + khs.Name + ".";
 
         /// <summary>
         /// Returns true if the event can happen to this kerbal at the moment

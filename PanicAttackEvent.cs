@@ -1,25 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     public class PanicAttackEvent : Event
     {
-        public override string Name
-        { get { return "PanicAttack"; } }
+        public override string Name => "PanicAttack";
 
-        public override string Message()
-        {
-            return khs.Name + " is having a panic attack!";
-        }
+        public override string Message() => khs.Name + " is having a panic attack!";
 
-        public override bool Condition()
-        {
-            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && !khs.HasCondition("Exhausted");
-        }
+        public override bool Condition() => (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && !khs.HasCondition("Exhausted");
 
         public override double ChancePerDay()
         {

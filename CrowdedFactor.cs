@@ -1,23 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     public class CrowdedFactor : HealthFactor
     {
-        public override string Name
-        { get { return "Crowded"; } }
+        public override string Name => "Crowded";
 
-        public override double BaseChangePerDay
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor; } }
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor;
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
-        {
-            if (Core.IsInEditor && !IsEnabledInEditor()) return 0;
-            if (Core.KerbalHealthList.Find(pcm).IsOnEVA) return 0;
-            return BaseChangePerDay * Core.GetCrewCount(pcm) / Core.GetCrewCapacity(pcm);
-        }
+        public override double ChangePerDay(ProtoCrewMember pcm) => ((Core.IsInEditor && !IsEnabledInEditor()) || Core.KerbalHealthList.Find(pcm).IsOnEVA) ? 0 : BaseChangePerDay * Core.GetCrewCount(pcm) / Core.GetCrewCapacity(pcm);
     }
 }

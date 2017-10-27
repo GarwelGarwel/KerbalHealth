@@ -33,8 +33,8 @@ namespace KerbalHealth
         /// </summary>
         public static List<HealthFactor> Factors
         {
-            get { return factors; }
-            set { factors = value; }
+            get => factors;
+            set => factors = value;
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace KerbalHealth
         /// </summary>
         public static List<Event> Events
         {
-            get { return events; }
-            set { events = value; }
+            get => events;
+            set => events = value;
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool ModEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().modEnabled = value;
         }
 
         /// <summary>
@@ -107,8 +107,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool UseMessageSystem
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem = value;
         }
 
         /// <summary>
@@ -116,8 +116,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool UseBlizzysToolbar
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar = value;
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace KerbalHealth
         /// </summary>
         public static float UpdateInterval
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UpdateInterval = value;
         }
 
         /// <summary>
@@ -134,8 +134,8 @@ namespace KerbalHealth
         /// </summary>
         public static float MinUpdateInterval
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinUpdateInterval; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinUpdateInterval = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinUpdateInterval;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().MinUpdateInterval = value;
         }
 
         /// <summary>
@@ -143,8 +143,8 @@ namespace KerbalHealth
         /// </summary>
         public static float BaseMaxHP
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().BaseMaxHP = value;
         }
 
         /// <summary>
@@ -152,8 +152,8 @@ namespace KerbalHealth
         /// </summary>
         public static float HPPerLevel
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().HPPerLevel = value;
         }
 
         /// <summary>
@@ -161,8 +161,8 @@ namespace KerbalHealth
         /// </summary>
         public static float LowHealthAlert
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LowHealthAlert; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LowHealthAlert = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LowHealthAlert;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LowHealthAlert = value;
         }
 
         /// <summary>
@@ -170,8 +170,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool DeathEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathEnabled = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DeathEnabled = value;
         }
 
         /// <summary>
@@ -179,8 +179,8 @@ namespace KerbalHealth
         /// </summary>
         public static float ExhaustionStartHealth
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionStartHealth = value;
         }
 
         /// <summary>
@@ -188,8 +188,8 @@ namespace KerbalHealth
         /// </summary>
         public static float ExhaustionEndHealth
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth = value;
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool EventsEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled = value;
         }
 
         /// <summary>
@@ -206,8 +206,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool SicknessEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled = value;
         }
 
         /// <summary>
@@ -215,8 +215,8 @@ namespace KerbalHealth
         /// </summary>
         public static bool RadiationEnabled
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEnabled; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEnabled = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEnabled = value;
         }
 
         /// <summary>
@@ -224,8 +224,8 @@ namespace KerbalHealth
         /// </summary>
         public static float RadiationEffect
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect = value;
         }
 
         /// <summary>
@@ -233,8 +233,8 @@ namespace KerbalHealth
         /// </summary>
         public static float ShieldingEffect
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().ShieldingEffect; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().ShieldingEffect = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().ShieldingEffect;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().ShieldingEffect = value;
         }
 
         /// <summary>
@@ -242,8 +242,8 @@ namespace KerbalHealth
         /// </summary>
         public static float InSpaceHighCoefficient
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = value;
         }
 
         /// <summary>
@@ -251,8 +251,8 @@ namespace KerbalHealth
         /// </summary>
         public static float InSpaceLowCoefficient
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = value;
         }
 
         /// <summary>
@@ -260,8 +260,8 @@ namespace KerbalHealth
         /// </summary>
         public static float StratoCoefficient
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = value;
         }
 
         /// <summary>
@@ -269,8 +269,8 @@ namespace KerbalHealth
         /// </summary>
         public static float TroposphereCoefficient
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = value;
         }
 
         /// <summary>
@@ -278,8 +278,8 @@ namespace KerbalHealth
         /// </summary>
         public static float BodyShieldingAltitude
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().BodyShieldingAltitude; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().BodyShieldingAltitude = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().BodyShieldingAltitude;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().BodyShieldingAltitude = value;
         }
 
         /// <summary>
@@ -287,8 +287,8 @@ namespace KerbalHealth
         /// </summary>
         public static float EVAExposure
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().EVAExposure; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().EVAExposure = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().EVAExposure;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().EVAExposure = value;
         }
 
         /// <summary>
@@ -296,8 +296,8 @@ namespace KerbalHealth
         /// </summary>
         public static float SolarRadiation
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = value;
         }
 
         /// <summary>
@@ -305,15 +305,14 @@ namespace KerbalHealth
         /// </summary>
         public static float GalacticRadiation
         {
-            get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation; }
-            set { HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = value; }
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = value;
         }
 
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
         /// </summary>
-        public static bool IsInEditor
-        { get { return HighLogic.LoadedSceneIsEditor; } }
+        public static bool IsInEditor => HighLogic.LoadedSceneIsEditor;
 
         /// <summary>
         /// Parses UT as a delta compact time (e.g. "2d 3h 15m"). Time is hidden when days >= 100.
@@ -332,38 +331,28 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static int GetCrewCount(ProtoCrewMember pcm)
-        {
-            if (IsInEditor) return ShipConstruction.ShipManifest.CrewCount;
-            return IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1;
-        }
+        public static int GetCrewCount(ProtoCrewMember pcm) => IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1);
 
         /// <summary>
         /// Returns number of maximum crew in a vessel the kerbal is in or in the currently constructed vessel
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static int GetCrewCapacity(ProtoCrewMember pcm)
-        {
-            if (IsInEditor) return ShipConstruction.ShipManifest.GetAllCrew(true).Count;
-            return IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1;
-        }
+        public static int GetCrewCapacity(ProtoCrewMember pcm) => IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1);
 
         /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalLoaded(ProtoCrewMember pcm)
-        { return (pcm?.seat?.vessel != null) || (KerbalVessel(pcm)?.loaded ?? false); }
+        public static bool IsKerbalLoaded(ProtoCrewMember pcm) => (pcm?.seat?.vessel != null) || (KerbalVessel(pcm)?.loaded ?? false);
 
         /// <summary>
         /// Returns true if kerbal exists and is either assigned or available
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalTrackable(ProtoCrewMember pcm)
-        { return (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)); }
+        public static bool IsKerbalTrackable(ProtoCrewMember pcm) => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
@@ -410,8 +399,7 @@ namespace KerbalHealth
             return res;
         }
 
-        public static double Sqr(double x)
-        { return x * x; }
+        public static double Sqr(double x) => x * x;
 
         public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
         {
@@ -420,8 +408,7 @@ namespace KerbalHealth
             if (unwarpTime) TimeWarp.SetRate(0, false, useMessageSystem);
         }
 
-        public static void ShowMessage(string msg, bool unwarpTime)
-        { ShowMessage(msg, UseMessageSystem, unwarpTime); }
+        public static void ShowMessage(string msg, bool unwarpTime) => ShowMessage(msg, UseMessageSystem, unwarpTime);
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
@@ -448,8 +435,7 @@ namespace KerbalHealth
         /// <summary>
         /// Current <see cref="LogLevel"/>: either Debug or Important
         /// </summary>
-        public static LogLevel Level
-        { get { return HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DebugMode ? LogLevel.Debug : LogLevel.Important; } }
+        public static LogLevel Level => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DebugMode ? LogLevel.Debug : LogLevel.Important;
 
         /// <summary>
         /// Write into output_log.txt

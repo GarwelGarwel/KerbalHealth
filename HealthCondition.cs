@@ -1,45 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KerbalHealth
+﻿namespace KerbalHealth
 {
     /// <summary>
     /// Holds information about a certain health condition (such as exhaustion, sickness, etc.)
     /// </summary>
     public class HealthCondition
     {
-        string name;
         string title;
-        bool visible = true;
 
         /// <summary>
         /// Internal name of the condition
         /// </summary>
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public string Name { get; set; }
 
         /// <summary>
         /// Displayable name of the condition (similar to Name by default)
         /// </summary>
         public string Title
         {
-            get { if ((title == null) || (title == "")) return name; else return title; }
-            set { title = value; }
+            get => ((title == null) || (title == "")) ? Name : title;
+            set => title = value;
         }
 
         /// <summary>
         /// Whether this condition should be visible to the player
         /// </summary>
-        public bool IsVisible
-        {
-            get { return visible; }
-            set { visible = value; }
-        }
+        public bool IsVisible { get; set; } = true;
 
         public virtual ConfigNode ConfigNode
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
@@ -94,8 +93,7 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        public static bool HealthModulesEnabled
-        { get { return healthModulesEnabled; } }
+        public static bool HealthModulesEnabled => healthModulesEnabled;
 
         public void OnResetButtonSelected()
         {
@@ -105,17 +103,9 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        string GetShielding()
-        {
-            if (ShipConstruction.ShipManifest.CrewCount == 0) return "N/A";
-            return Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Shielding.ToString("F1");
-        }
+        string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Shielding.ToString("F1") : "N/A";
 
-        string GetExposure()
-        {
-            if (ShipConstruction.ShipManifest.CrewCount == 0) return "N/A";
-            return Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Exposure.ToString("P1");
-        }
+        string GetExposure() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Exposure.ToString("P1") : "N/A";
 
         public void UndisplayData()
         {
@@ -179,8 +169,7 @@ namespace KerbalHealth
             }
         }
 
-        public void Invalidate()
-        { dirty = true; }
+        public void Invalidate() => dirty = true;
 
         public void OnDisable()
         {
