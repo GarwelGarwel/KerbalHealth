@@ -7,6 +7,9 @@ namespace KerbalHealth
     public class ModuleKerbalHealth : PartModule, IResourceConsumer
     {
         [KSPField]
+        string title = "";  // Module title displayed in right-click menu (empty string for auto)
+
+        [KSPField]
         public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
 
         [KSPField]
@@ -30,7 +33,7 @@ namespace KerbalHealth
         [KSPField]
         public bool alwaysActive = false;  // Is the module's effect (and consumption) always active or togglable in-flight
 
-        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Health Module Active")]
+        [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
         [KSPField]
@@ -97,7 +100,12 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ")");
             base.OnStart(state);
-            if (alwaysActive) isActive = true;
+            if (alwaysActive)
+            {
+                isActive = true;
+                Events["OnToggleActive"].guiActive = false;
+            }
+            UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
         }
 
@@ -111,21 +119,47 @@ namespace KerbalHealth
                 double res = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), res2;
                 if ((res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res)
                 {
-                    Core.Log("Module shut down due to lack of " + resource + " (" + res + " needed, " + res2 + " provided).");
-                    ScreenMessages.PostScreenMessage("Kerbal Health Module in " + part.name + " shut down due to lack of " + ResourceDefinition.name + ".");
+                    Core.Log(Title + " Module shut down due to lack of " + resource + " (" + res + " needed, " + res2 + " provided).");
+                    ScreenMessages.PostScreenMessage(Title + " Module in " + part.name + " shut down due to lack of " + ResourceDefinition.name + ".");
                     isActive = false;
                 }
             }
             lastUpdated = time;
         }
 
-        [KSPEvent(name = "OnToggleActive", active = true, guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
-        public void OnToggleActive() => isActive = alwaysActive || !isActive;
+        public string Title
+        {
+            get
+            {
+                if (title != "") return title;
+                if (recuperation > 0) return "R&R";
+                if (decay > 0) return "Health Poisoning";
+                switch (multiplyFactor)
+                {
+                    case "Crowded": return "Comforts";
+                    case "Microgravity": return "Paragravity";
+                    case "Sickness": return "Sick Bay";
+                }
+                if (shielding > 0) return "RadShield";
+                if (radioactivity > 0) return "Radiation";
+                return "Health Module";
+            }
+            set => title = value;
+        }
+
+        void UpdateGUIName() => Events["OnToggleActive"].guiName = (isActive ? "Disable " : "Enable ") + Title;
+        
+        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
+        public void OnToggleActive()
+        {
+            isActive = alwaysActive || !isActive;
+            UpdateGUIName();
+        }
 
         public override string GetInfo()
         {
             string res = "";
-            if (partCrewOnly) res += "\nAffects only part crew";
+            res += Title;
             if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
             if (recuperation != 0) res += "\nRecuperation: " + recuperation.ToString("F1") + "%/day";
             if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";

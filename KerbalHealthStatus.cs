@@ -373,7 +373,7 @@ namespace KerbalHealth
             Core.Log("ProcessPart(" + (Core.IsInEditor ? part.craftID : part.flightID) + ", " + crewInPart + ", ...)");
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
-                Core.Log("Processing ModuleKerbalHealth #" + (++i) + " in " + part.name + ".");
+                Core.Log("Processing " + mkh.Title + " Module in " + part.name + ".");
                 if (mkh.IsModuleActive && (!mkh.partCrewOnly || crewInPart))
                 {
                     change += mkh.hpChangePerDay;
@@ -393,7 +393,7 @@ namespace KerbalHealth
                     partsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
                 }
-                else Core.Log("This module doesn't affect " + Name + "(active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + crewInPart + ")");
+                else Core.Log("This module doesn't affect " + Name + " (active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + crewInPart + ")");
             }
         }
 
