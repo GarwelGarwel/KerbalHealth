@@ -62,7 +62,7 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 - Panic Attack: when your kerbal's is on a mission, he/she may epxerience a panic attack and become uncontrollable for up to 3 hours. This event's probability depends on the kerbal's health (the lower, the more likely) and courage (the lower, again, the more likely) of the kerbal, the maximum average frequency is once per 100 days.
 
-- Accident: your kerbals loses a random percentage of their current health (20 to 50%). It happens very rarely (every 1,000 days on average), but becomes an important factor for very long missions.
+- Accident: your kerbals loses a random percentage of their current health (20 to 50%). This event's chance depends on kerbal's stupidity, but generally happens very rarely (every 1,000 days on average with 50% stupidity). However, it can become an important factor for very long missions.
 
 
 **Requirements**
@@ -88,7 +88,7 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 - Any mod (including USI-LS), which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then rutn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
-- RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved when RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors.
+- RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
 
 **Future features**
 
