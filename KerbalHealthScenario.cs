@@ -77,7 +77,7 @@ namespace KerbalHealth
             }
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
-            Core.Log("KerbalHealthScenario.Start finished.");
+            Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
         /// <summary>
@@ -153,14 +153,19 @@ namespace KerbalHealth
         /// <returns></returns>
         double GetNextEventInterval() => Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
+        /// <summary>
+        /// The main method for updating all kerbals' health and processing events
+        /// </summary>
+        /// <param name="forced">Whether to process kerbals regardless of the amount of time passed</param>
         void UpdateKerbals(bool forced)
         {
             double time = Planetarium.GetUniversalTime();
             double timePassed = time - lastUpdated;
-            if (timePassed == 0) return;
+            if (timePassed <= 0) return;
             if (forced || ((timePassed >= Core.UpdateInterval) && (timePassed >= Core.MinUpdateInterval * TimeWarp.CurrentRate)))
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
+                Core.ClearCache();
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
                 if (Core.EventsEnabled)
@@ -216,7 +221,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Shows Health monitor when the AppLauncher button is enabled
+        /// Shows Health monitor when the AppLauncher/Blizzy's Toolbar button is clicked
         /// </summary>
         public void DisplayData()
         {
@@ -254,6 +259,7 @@ namespace KerbalHealth
                 monitorPosition.width = gridWidthMain + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, layout), false, HighLogic.UISkin, false);
             }
+
             else
             {
                 Core.Log("Showing details for " + selectedKHS.Name + ".");
@@ -313,6 +319,9 @@ namespace KerbalHealth
             DisplayData();
         }
 
+        /// <summary>
+        /// Actually displays values in Health Monitor
+        /// </summary>
         public void Update()
         {
             if (!Core.ModEnabled)

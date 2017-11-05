@@ -354,6 +354,13 @@ namespace KerbalHealth
         /// <returns></returns>
         public static bool IsKerbalTrackable(ProtoCrewMember pcm) => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
 
+        static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
+
+        /// <summary>
+        /// Clears kerbal vessels cache, to be called on every list update or when necessary
+        /// </summary>
+        public static void ClearCache() => kerbalVesselsCache.Clear();
+
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
         /// </summary>
@@ -362,21 +369,24 @@ namespace KerbalHealth
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         {
             if ((pcm == null) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)) return null;
+            if (kerbalVesselsCache.ContainsKey(pcm.name)) return kerbalVesselsCache[pcm.name];
             foreach (Vessel v in FlightGlobals.Vessels)
                 foreach (ProtoCrewMember k in v.GetVesselCrew())
                     if (k == pcm)
+                    {
+                        kerbalVesselsCache.Add(pcm.name, v);
                         return v;
+                    }
             Log(pcm.name + " is Assigned, but was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Error);
             return null;
         }
 
         public static double GetResourceAmount(List<Part> parts, int resourceId)
         {
-            double res = 0;
+            double res = 0, amount = 0;
             foreach (Part p in parts)
             {
-                double amount = 0, maxAmount;
-                try { p.GetConnectedResourceTotals(resourceId, ResourceFlowMode.NO_FLOW, out amount, out maxAmount); }
+                try { p.GetConnectedResourceTotals(resourceId, ResourceFlowMode.NO_FLOW, out amount, out double maxAmount); }
                 catch (NullReferenceException e) { Core.Log(e.Message + "\r\nNRE in " + e.Source); }
                 res += amount;
             }
@@ -438,12 +448,19 @@ namespace KerbalHealth
         public static LogLevel Level => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().DebugMode ? LogLevel.Debug : LogLevel.Important;
 
         /// <summary>
+        /// Returns true if current logging allows logging of messages at messageLevel
+        /// </summary>
+        /// <param name="messageLevel"></param>
+        /// <returns></returns>
+        public static bool IsLogging(LogLevel messageLevel = LogLevel.Debug) => messageLevel <= Level;
+
+        /// <summary>
         /// Write into output_log.txt
         /// </summary>
         /// <param name="message">Text to log</param>
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
-        { if ((messageLevel <= Level) && (message != "")) Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message); }
+        { if (IsLogging(messageLevel) && (message != "")) Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message); }
 
         private Core() { }
     }
