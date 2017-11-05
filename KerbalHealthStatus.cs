@@ -86,6 +86,10 @@ namespace KerbalHealth
 
         static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
 
+        /// <summary>
+        /// Returns level of current cosmic radiation for this kerbal, before exposure
+        /// </summary>
+        /// <returns>Cosmic radiation level in bananas/day</returns>
         public double GetCosmicRadiation()
         {
             if ((PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) || !Core.RadiationEnabled) return 0;
@@ -369,7 +373,6 @@ namespace KerbalHealth
         /// <param name="change"></param>
         void ProcessPart(Part part, bool crewInPart, ref double change)
         {
-            int i = 0;
             Core.Log("ProcessPart(" + (Core.IsInEditor ? part.craftID : part.flightID) + ", " + crewInPart + ", ...)");
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
@@ -474,6 +477,7 @@ namespace KerbalHealth
                 Exposure = GetExposure(Shielding, Core.GetCrewCapacity(pcm));
                 if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
+
             Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
             foreach (HealthFactor f in Core.Factors)
             {
@@ -505,18 +509,22 @@ namespace KerbalHealth
         {
             Core.Log("Updating " + Name + "'s health.");
             bool frozen = HasCondition("Frozen");
+
             if (Core.RadiationEnabled)
             {
                 if (!frozen) Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
+
             if (frozen)
             {
                 Core.Log(Name + " is frozen, health doesn't change.");
                 return;
             }
+
             HP += HealthChangePerDay() / KSPUtil.dateTimeFormatter.Day * interval;
+
             if ((HP <= 0) && Core.DeathEnabled)
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
@@ -525,6 +533,7 @@ namespace KerbalHealth
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
                 Core.ShowMessage(Name + " has died of poor health!", true);
             }
+
             if (HasCondition("Exhausted"))
             {
                 if (HP >= Core.ExhaustionEndHealth * MaxHP)
