@@ -35,7 +35,7 @@
         [GameParameters.CustomParameterUI("Notify of Events in KSC", toolTip = "If checked, notifications will be given of events with kerbals not on mission")]
         public bool KSCNotificationsEnabled = false;
 
-        [GameParameters.CustomFloatParameterUI("Avg. Time between Accidents", toolTip = "Average # of days between health accidents happening to a kerbal. 0 to disable accidents", minValue = 0, maxValue = 2000, stepCount = 41)]
+        [GameParameters.CustomFloatParameterUI("Avg. Time between Accidents", toolTip = "Average # of days between health accidents happening to a kerbal with 50% stupidity. 0 to disable accidents", minValue = 0, maxValue = 2000, stepCount = 41)]
         public float AccidentPeriod = 1000;
 
         [GameParameters.CustomFloatParameterUI("Accident Min Damage", toolTip = "Min % of HP lost in an Accident event", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
