@@ -47,16 +47,18 @@ namespace KerbalHealth
             {
                 Core.Log("Initializing DFWrapper...", Core.LogLevel.Important);
                 DFWrapper.InitDFWrapper();
-                if (DFWrapper.InstanceExists)
-                {
-                    Core.Log("DFWrapper initialized.", Core.LogLevel.Important);
-                    EventData<Part, ProtoCrewMember> dfEvent;
-                    dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
-                    if (dfEvent != null) dfEvent.Add(OnKerbalFrozen);
-                    dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
-                    if (dfEvent != null) dfEvent.Add(OnKerbalThaw);
-                }
+                if (DFWrapper.InstanceExists) Core.Log("DFWrapper initialized.", Core.LogLevel.Important);
                 else Core.Log("Could not initialize DFWrapper.", Core.LogLevel.Important);
+            }
+            if (DFWrapper.InstanceExists)
+            {
+                EventData<Part, ProtoCrewMember> dfEvent;
+                dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
+                if (dfEvent != null) dfEvent.Add(OnKerbalFrozen);
+                else Core.Log("Could not find onKerbalFrozen event!", Core.LogLevel.Error);
+                dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
+                if (dfEvent != null) dfEvent.Add(OnKerbalThaw);
+                else Core.Log("Could not find onKerbalThaw event!", Core.LogLevel.Error);
             }
 
             if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
@@ -94,55 +96,60 @@ namespace KerbalHealth
 
         public void OnCrewKilled(EventReport er)
         {
-            Core.Log("OnCrewKilled(" + er.msg + "/" + er.sender + "/" + er.other + ")");
+            Core.Log("OnCrewKilled(<'" + er.msg + "', " + er.sender + ", " + er.other + ">)", Core.LogLevel.Important);
             Core.KerbalHealthList.Remove(er.sender);
             dirty = crewChanged = true;
         }
 
         public void OnCrewmemberHired(ProtoCrewMember pcm, int i)
         {
-            Core.Log("OnCrewmemberHired(" + pcm.name + ", " + i + ")");
+            Core.Log("OnCrewmemberHired('" + pcm.name + "', " + i + ")", Core.LogLevel.Important);
             dirty = crewChanged = true;
         }
 
         public void OnCrewmemberSacked(ProtoCrewMember pcm, int i)
         {
-            Core.Log("OnCrewmemberSacked(" + pcm.name + ", " + i + ")");
+            Core.Log("OnCrewmemberSacked('" + pcm.name + "', " + i + ")", Core.LogLevel.Important);
             Core.KerbalHealthList.Remove(pcm.name);
             dirty = crewChanged = true;
         }
 
         public void OnKerbalAdded(ProtoCrewMember pcm)
         {
-            Core.Log("OnKerbalAdded('" + pcm.name + "')");
+            Core.Log("OnKerbalAdded('" + pcm.name + "')", Core.LogLevel.Important);
+            if ((pcm.type == ProtoCrewMember.KerbalType.Applicant) || (pcm.type == ProtoCrewMember.KerbalType.Unowned))
+            {
+                Core.Log("The kerbal is " + pcm.type + ". Skipping.");
+                return;
+            }
             Core.KerbalHealthList.Add(pcm.name);
             dirty = crewChanged = true;
         }
 
         public void OnKerbalRemoved(ProtoCrewMember pcm)
         {
-            Core.Log("OnKerbalRemoved('" + pcm.name + "')");
+            Core.Log("OnKerbalRemoved('" + pcm.name + "')", Core.LogLevel.Important);
             Core.KerbalHealthList.Remove(pcm.name);
             dirty = crewChanged = true;
         }
 
         public void OnKerbalNameChange(ProtoCrewMember pcm, string name1, string name2)
         {
-            Core.Log("OnKerbalNameChange('" + pcm.name + "', '" + name1 + "', '" + name2 + "')");
+            Core.Log("OnKerbalNameChange('" + pcm.name + "', '" + name1 + "', '" + name2 + "')", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(name1).Name = name2;
             dirty = true;
         }
 
         public void OnKerbalFrozen(Part part, ProtoCrewMember pcm)
         {
-            Core.Log("OnKerbalFrozen('" + part.name + "', '" + pcm.name + "')");
+            Core.Log("OnKerbalFrozen('" + part.name + "', '" + pcm.name + "')", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(pcm).AddCondition(new KerbalHealth.HealthCondition("Frozen"));
             dirty = true;
         }
 
         public void OnKerbalThaw(Part part, ProtoCrewMember pcm)
         {
-            Core.Log("OnKerbalThaw('" + part.name + "', '" + pcm.name + "')");
+            Core.Log("OnKerbalThaw('" + part.name + "', '" + pcm.name + "')", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(pcm).RemoveCondition("Frozen");
             dirty = true;
         }

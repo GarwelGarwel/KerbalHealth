@@ -8,6 +8,7 @@ namespace KerbalHealth
     /// </summary>
     public class KerbalHealthStatus
     {
+        #region BASIC PROPERTIES
         string name;
         /// <summary>
         /// Kerbal's name
@@ -22,130 +23,63 @@ namespace KerbalHealth
             }
         }
 
-        double hp;
+        string trait = null;
         /// <summary>
-        /// Kerbal's health points
+        /// Returns saved kerbal's trait or current trait if nothing is saved
         /// </summary>
-        public double HP
+        string Trait
         {
-            get => hp;
+            get => trait ?? PCM.trait;
+            set => trait = value;
+        }
+
+        /// <summary>
+        /// Returns true if the kerbal is marked as being on EVA
+        /// </summary>
+        public bool IsOnEVA { get; set; } = false;
+
+        /// <summary>
+        /// Returns true if a low health alarm has been shown for the kerbal
+        /// </summary>
+        public bool IsWarned { get; set; } = true;
+
+        ProtoCrewMember pcmCached;
+        /// <summary>
+        /// Returns ProtoCrewMember for the kerbal
+        /// </summary>
+        public ProtoCrewMember PCM
+        {
+            get
+            {
+                if (pcmCached != null) return pcmCached;
+                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
+                    if (pcm.name == Name) return pcmCached = pcm;
+                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Tourist)
+                    if (pcm.name == Name) return pcmCached = pcm;
+                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Unowned)
+                    if (pcm.name == Name) return pcmCached = pcm;
+                return null;
+            }
             set
             {
-                if (value < 0) hp = 0;
-                else if (value > MaxHP) hp = MaxHP;
-                else hp = value;
-                if (!IsWarned && Health < Core.LowHealthAlert)
-                {
-                    Core.ShowMessage(Name + "'s health is dangerously low!", true);
-                    IsWarned = true;
-                }
-                else if (IsWarned && Health >= Core.LowHealthAlert) IsWarned = false;
+                Name = value.name;
+                pcmCached = value;
             }
         }
 
         /// <summary>
-        /// Returns kerbal's HP relative to MaxHealth (0 to 1)
+        /// Returns true if the kerbal is member of an array of ProtoCrewMembers
         /// </summary>
-        public double Health => HP / MaxHP;
-
-        /// <summary>
-        /// Health points added to (or subtracted from) kerbal's max HP
-        /// </summary>
-        public double MaxHPModifier { get; set; }
-
-        /// <summary>
-        /// Lifetime absorbed dose of ionizing radiation, in banana equivalent doses (BEDs, 1 BED = 1e-7 Sv)
-        /// </summary>
-        public double Dose { get; set; }
-
-        /// <summary>
-        /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
-        /// </summary>
-        public double RadiationMaxHPModifier => Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1;
-
-        /// <summary>
-        /// Level of background radiation absorbed by the body, in bananas per day
-        /// </summary>
-        public double Radiation { get; set; }
-
-        /// <summary>
-        /// Radiation shielding provided by the vessel
-        /// </summary>
-        public double Shielding { get; set; }
-
-        /// <summary>
-        /// Proportion of radiation that gets absorbed by the kerbal
-        /// </summary>
-        public double Exposure { get; set; }
-
-        public static double GetExposure(double shielding, double crewCap) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
-
-        static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
-
-        static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
-
-        static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
-
-        /// <summary>
-        /// Returns level of current cosmic radiation for this kerbal, before exposure
-        /// </summary>
-        /// <returns>Cosmic radiation level in bananas/day</returns>
-        public double GetCosmicRadiation()
+        /// <param name="crew"></param>
+        /// <returns></returns>
+        bool IsInCrew(ProtoCrewMember[] crew)
         {
-            if ((PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) || !Core.RadiationEnabled) return 0;
-            double cosmicRadiationRate = 1, distanceToSun = 0;
-            Vessel v = Core.KerbalVessel(PCM);
-            Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
-            if (v.mainBody != Sun.Instance.sun)
-            {
-                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
-                if (IsPlanet(v.mainBody) && (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold)) cosmicRadiationRate = Core.InSpaceLowCoefficient;
-                else cosmicRadiationRate = Core.InSpaceHighCoefficient;
-                if (v.mainBody.atmosphere)
-                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
-                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;
-                if (v.altitude < v.mainBody.Radius * Core.BodyShieldingAltitude) cosmicRadiationRate *= 0.5;  // Half of radiation is blocked by the celestial body when very close to it
-            }
-            else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
-            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
-            Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
-            Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
-            Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            Core.Log("Exposure = " + Exposure);
-            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
+            foreach (ProtoCrewMember pcm in crew) if (pcm?.name == Name) return true;
+            return false;
         }
 
-        double CachedChange { get; set; } = 0;
-
-        /// <summary>
-        /// HP change per day rate in the latest update. Only includes factors, not marginal change
-        /// </summary>
-        public double LastChange { get; set; } = 0;
-
-        /// <summary>
-        /// Health recuperation in the latest update
-        /// </summary>
-        public double LastRecuperation { get; set; } = 0;
-
-        /// <summary>
-        /// Health decay in the latest update
-        /// </summary>
-        public double LastDecay { get; set; } = 0;
-
-        /// <summary>
-        /// HP change due to recuperation/decay
-        /// </summary>
-        public double MarginalChange => (MaxHP - HP) * (LastRecuperation / 100) - HP * (LastDecay / 100);
-
-        /// <summary>
-        /// Total HP change per day rate in the latest update
-        /// </summary>
-        public double LastChangeTotal => LastChange + MarginalChange;
-
-        /// <summary>
-        /// List of factors' effect on the kerbal (used for monitoring only)
-        /// </summary>
-        public Dictionary<string, double> Factors { get; set; } = new Dictionary<string, double>(Core.Factors.Count);
+        #endregion
+        #region CONDITIONS
 
         /// <summary>
         /// Returns a list of all active health conditions for the kerbal
@@ -246,48 +180,26 @@ namespace KerbalHealth
                 return res;
             }
         }
-
-        string trait = null;
+        #endregion
+        #region HP
+        double hp;
         /// <summary>
-        /// Returns saved kerbal's trait or current trait if nothing is saved
+        /// Kerbal's health points
         /// </summary>
-        string Trait
+        public double HP
         {
-            get => trait ?? PCM.trait;
-            set => trait = value;
-        }
-
-        /// <summary>
-        /// Returns true if the kerbal is marked as being on EVA
-        /// </summary>
-        public bool IsOnEVA { get; set; } = false;
-
-        /// <summary>
-        /// Returns true if a low health alarm has been shown for the kerbal
-        /// </summary>
-        public bool IsWarned { get; set; } = true;
-
-        ProtoCrewMember pcmCached;
-        /// <summary>
-        /// Returns ProtoCrewMember for the kerbal
-        /// </summary>
-        public ProtoCrewMember PCM
-        {
-            get
-            {
-                if (pcmCached != null) return pcmCached;
-                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
-                    if (pcm.name == Name) return pcmCached = pcm;
-                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Tourist)
-                    if (pcm.name == Name) return pcmCached = pcm;
-                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Unowned)
-                    if (pcm.name == Name) return pcmCached = pcm;
-                return null;
-            }
+            get => hp;
             set
             {
-                Name = value.name;
-                pcmCached = value;
+                if (value < 0) hp = 0;
+                else if (value > MaxHP) hp = MaxHP;
+                else hp = value;
+                if (!IsWarned && Health < Core.LowHealthAlert)
+                {
+                    Core.ShowMessage(Name + "'s health is dangerously low!", true);
+                    IsWarned = true;
+                }
+                else if (IsWarned && Health >= Core.LowHealthAlert) IsWarned = false;
             }
         }
 
@@ -303,6 +215,48 @@ namespace KerbalHealth
         /// </summary>
         public double MaxHP => (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier;
 
+        /// <summary>
+        /// Returns kerbal's HP relative to MaxHealth (0 to 1)
+        /// </summary>
+        public double Health => HP / MaxHP;
+
+        /// <summary>
+        /// Health points added to (or subtracted from) kerbal's max HP
+        /// </summary>
+        public double MaxHPModifier { get; set; }
+        #endregion
+        #region HP CHANGE
+        double CachedChange { get; set; } = 0;
+
+        /// <summary>
+        /// HP change per day rate in the latest update. Only includes factors, not marginal change
+        /// </summary>
+        public double LastChange { get; set; } = 0;
+
+        /// <summary>
+        /// Health recuperation in the latest update
+        /// </summary>
+        public double LastRecuperation { get; set; } = 0;
+
+        /// <summary>
+        /// Health decay in the latest update
+        /// </summary>
+        public double LastDecay { get; set; } = 0;
+
+        /// <summary>
+        /// HP change due to recuperation/decay
+        /// </summary>
+        public double MarginalChange => (MaxHP - HP) * (LastRecuperation / 100) - HP * (LastDecay / 100);
+
+        /// <summary>
+        /// Total HP change per day rate in the latest update
+        /// </summary>
+        public double LastChangeTotal => LastChange + MarginalChange;
+
+        /// <summary>
+        /// List of factors' effect on the kerbal (used for monitoring only)
+        /// </summary>
+        public Dictionary<string, double> Factors { get; set; } = new Dictionary<string, double>(Core.Factors.Count);
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
         /// </summary>
@@ -350,16 +304,72 @@ namespace KerbalHealth
             return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation - LastDecay);
         }
 
+        #endregion
+        #region RADIATION
         /// <summary>
-        /// Returns true if the kerbal is member of an array of ProtoCrewMembers
+        /// Lifetime absorbed dose of ionizing radiation, in banana equivalent doses (BEDs, 1 BED = 1e-7 Sv)
         /// </summary>
-        /// <param name="crew"></param>
-        /// <returns></returns>
-        bool IsInCrew(ProtoCrewMember[] crew)
+        public double Dose { get; set; }
+
+        /// <summary>
+        /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
+        /// </summary>
+        public double RadiationMaxHPModifier => Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1;
+
+        /// <summary>
+        /// Level of background radiation absorbed by the body, in bananas per day
+        /// </summary>
+        public double Radiation { get; set; }
+
+        /// <summary>
+        /// Radiation shielding provided by the vessel
+        /// </summary>
+        public double Shielding { get; set; }
+
+        /// <summary>
+        /// Proportion of radiation that gets absorbed by the kerbal
+        /// </summary>
+        public double Exposure { get; set; }
+
+        public static double GetExposure(double shielding, double crewCap) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
+
+        static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
+
+        static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
+
+        static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
+
+        /// <summary>
+        /// Returns level of current cosmic radiation for this kerbal, before exposure
+        /// </summary>
+        /// <returns>Cosmic radiation level in bananas/day</returns>
+        public double GetCosmicRadiation()
         {
-            foreach (ProtoCrewMember pcm in crew) if (pcm?.name == Name) return true;
-            return false;
+            if (!Core.RadiationEnabled) return 0;
+            double cosmicRadiationRate = 1, distanceToSun = 0;
+            Vessel v = Core.KerbalVessel(PCM);
+            Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
+            if (v.mainBody != Sun.Instance.sun)
+            {
+                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
+                if (IsPlanet(v.mainBody) && (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold)) cosmicRadiationRate = Core.InSpaceLowCoefficient;
+                else cosmicRadiationRate = Core.InSpaceHighCoefficient;
+                if (v.mainBody.atmosphere)
+                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
+                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;
+                if (v.altitude < v.mainBody.Radius * Core.BodyShieldingAltitude) cosmicRadiationRate *= 0.5;  // Half of radiation is blocked by the celestial body when very close to it
+            }
+            else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
+            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
+            Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
+            Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
+            Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
+            Core.Log("Exposure = " + Exposure);
+            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
         }
+
+        #endregion
+        #region HEALTH UPDATE
 
         double partsRadiation = 0;
         // These dictionaries are used to calculate factor modifiers from part modules
@@ -373,7 +383,6 @@ namespace KerbalHealth
         /// <param name="change"></param>
         void ProcessPart(Part part, bool crewInPart, ref double change)
         {
-            Core.Log("ProcessPart(" + (Core.IsInEditor ? part.craftID : part.flightID) + ", " + crewInPart + ", ...)");
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
                 Core.Log("Processing " + mkh.Title + " Module in " + part.name + ".");
@@ -510,9 +519,10 @@ namespace KerbalHealth
             Core.Log("Updating " + Name + "'s health.");
             bool frozen = HasCondition("Frozen");
 
-            if (Core.RadiationEnabled)
+            if (Core.RadiationEnabled && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Available))
             {
-                if (!frozen) Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
+                Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
+                //if (!frozen) Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
@@ -548,7 +558,8 @@ namespace KerbalHealth
                 Core.ShowMessage(Name + " is exhausted!", PCM);
             }
         }
-
+        #endregion
+        #region SAVING, LOADING, INITIALIZING ETC.
         public ConfigNode ConfigNode
         {
             get
@@ -608,5 +619,6 @@ namespace KerbalHealth
         }
 
         public KerbalHealthStatus(ConfigNode node) { ConfigNode = node; }
+        #endregion
     }
 }

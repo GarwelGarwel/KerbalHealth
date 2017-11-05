@@ -64,7 +64,6 @@ namespace KerbalHealth
                     Remove(khs.Name);
                 }
             }
-            //if (HighLogic.fetch.currentGame.CrewRoster.Crew.Count() + HighLogic.fetch.currentGame.CrewRoster.Tourist.Count() != Count) RegisterKerbals();
         }
 
         /// <summary>
@@ -85,7 +84,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public KerbalHealthStatus Find(string name) =>  ContainsKey(name) ? this[name] : null;
+        public KerbalHealthStatus Find(string name) => ContainsKey(name) ? this[name] : null;
 
         /// <summary>
         /// Returns KerbalHealthStatus for a given kerbal
