@@ -36,6 +36,9 @@ namespace KerbalHealth
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
+        [KSPField(isPersistant = true)]
+        public bool starving = false;  // Determines if the module is disabled due to the lack of the resource
+
         [KSPField]
         public string multiplyFactor = "All";  // Name of factor whose effect is multiplied
 
@@ -59,7 +62,7 @@ namespace KerbalHealth
             set => multiplyFactor = value.Name;
         }
 
-        public bool IsModuleActive => alwaysActive || isActive;
+        public bool IsModuleActive => (alwaysActive || isActive) && !starving;
 
         /// <summary>
         /// Returns # of kerbals affected by this module, capped by crewCap
@@ -113,16 +116,11 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor || !Core.ModEnabled) return;
             double time = Planetarium.GetUniversalTime();
-            if (IsModuleActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
+            if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
-                Core.Log(AffectedCrewCount + " crew affected by this part + " + part.name + ".");
                 double res = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), res2;
-                if ((res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res)
-                {
-                    Core.Log(Title + " Module shut down due to lack of " + resource + " (" + res + " needed, " + res2 + " provided).");
-                    ScreenMessages.PostScreenMessage(Title + " Module in " + part.name + " shut down due to lack of " + ResourceDefinition.name + ".");
-                    isActive = false;
-                }
+                starving = (res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res;
+                if (starving) Core.Log(Title + " Module is starving of " + resource + " (" + res + " needed, " + res2 + " provided).");
             }
             lastUpdated = time;
         }
@@ -160,11 +158,10 @@ namespace KerbalHealth
         {
             string res = "";
             res += Title;
-            if (hpChangePerDay != 0) res += "\nHP/day: " + hpChangePerDay.ToString("F1");
+            if (hpChangePerDay != 0) res += "\nHealth points: " + hpChangePerDay.ToString("F1") + "/day";
             if (recuperation != 0) res += "\nRecuperation: " + recuperation.ToString("F1") + "%/day";
             if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";
-            if (multiplier != 1) 
-                res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
+            if (multiplier != 1) res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
             if (resourceConsumption != 0) res += "\n" + ResourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
             if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
