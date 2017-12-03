@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace KerbalHealth
 {
@@ -40,30 +39,35 @@ namespace KerbalHealth
         {
             Core.Log("Registering kerbals...");
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
-            Core.Log("" + kerbalRoster.Count + " kerbals in CrewRoster: " + kerbalRoster.Crew.Count() + " crew, " + kerbalRoster.Tourist.Count() + " tourists.", Core.LogLevel.Important);
-            foreach (KerbalHealthStatus khs in Values)
-                if (!Core.IsKerbalTrackable(khs.PCM) && !khs.HasCondition("Frozen"))
-                    Remove(khs.Name);
-            List<ProtoCrewMember> list = kerbalRoster.Crew.Concat(kerbalRoster.Tourist).ToList();
-            Core.Log(list.Count + " total kerbals in the roster.");
+            RemoveUntrackable();
+            List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
+            list.AddRange(kerbalRoster.Tourist);
+            Core.Log(list.Count + " total trackable kerbals.", Core.LogLevel.Important);
             foreach (ProtoCrewMember pcm in list)
                 if (Core.IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
             Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", Core.LogLevel.Important);
         }
 
-        public void Update(double interval)
+        void RemoveUntrackable()
         {
+            List<string> toRemove = new List<string>();
             foreach (KerbalHealthStatus khs in Values)
             {
                 ProtoCrewMember pcm = khs.PCM;
-                if (khs.HasCondition("Frozen") || Core.IsKerbalTrackable(pcm))
-                    khs.Update(interval);
-                else
+                if (!Core.IsKerbalTrackable(pcm) && !khs.HasCondition("Frozen"))
                 {
-                    Core.Log(khs.Name + " is not trackable anymore. Removing.");
-                    Remove(khs.Name);
+                    Core.Log(khs.Name + " is not trackable anymore. Marking for removal.");
+                    toRemove.Add(khs.Name);
                 }
             }
+            foreach (string name in toRemove) Remove(name);
+            if (toRemove.Count > 0) Core.Log(toRemove.Count + " kerbal(s) removed from the list.");
+        }
+
+        public void Update(double interval)
+        {
+            RemoveUntrackable();
+            foreach (KerbalHealthStatus khs in Values) khs.Update(interval);
         }
 
         /// <summary>
