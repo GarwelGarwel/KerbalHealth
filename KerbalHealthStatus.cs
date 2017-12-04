@@ -345,7 +345,6 @@ namespace KerbalHealth
         /// <returns>Cosmic radiation level in bananas/day</returns>
         public double GetCosmicRadiation()
         {
-            if (!Core.RadiationEnabled) return 0;
             double cosmicRadiationRate = 1, distanceToSun = 0;
             Vessel v = Core.KerbalVessel(PCM);
             Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
@@ -522,10 +521,10 @@ namespace KerbalHealth
             if (Core.RadiationEnabled && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Available))
             {
                 Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
-                //if (!frozen) Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
+            else Radiation = 0;
 
             if (frozen)
             {
