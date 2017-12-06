@@ -384,7 +384,7 @@ namespace KerbalHealth
                 kerbalVesselsCache.Add(pcm.name, v);
                 return v;
             }
-            Log(pcm.name + " is Assigned, but was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Error);
+            Log(pcm.name + " is " + pcm.rosterStatus + " and was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Important);
             return null;
         }
 
