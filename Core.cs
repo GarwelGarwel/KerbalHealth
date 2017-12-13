@@ -322,7 +322,7 @@ namespace KerbalHealth
         public static string ParseUT(double time)
         {
             if (double.IsNaN(time) || (time == 0)) return "—";
-            if (time > KSPUtil.dateTimeFormatter.Year * 10) return "> 10y";
+            if (time > KSPUtil.dateTimeFormatter.Year * 10) return "10y+";
             return KSPUtil.PrintDateDeltaCompact(time, time < KSPUtil.dateTimeFormatter.Day * 100, false);
         }
 
@@ -345,7 +345,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalLoaded(ProtoCrewMember pcm) => (pcm?.seat?.vessel != null) || (KerbalVessel(pcm)?.loaded ?? false);
+        public static bool IsKerbalLoaded(ProtoCrewMember pcm) => KerbalVessel(pcm)?.loaded ?? false;
 
         /// <summary>
         /// Returns true if kerbal exists and is either assigned or available
