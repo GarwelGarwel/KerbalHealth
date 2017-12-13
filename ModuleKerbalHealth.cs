@@ -22,6 +22,21 @@ namespace KerbalHealth
         public bool partCrewOnly = false;  // Does the module affect health of only crew in this part or the entire vessel?
 
         [KSPField]
+        public string multiplyFactor = "All";  // Name of factor whose effect is multiplied
+
+        [KSPField]
+        public float multiplier = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
+
+        [KSPField]
+        public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
+
+        [KSPField]
+        public float shielding = 0;  // Number of halving-thicknesses
+
+        [KSPField]
+        public float radioactivity = 0;  // Radioactive emission, bananas/day
+
+        [KSPField]
         public string resource = "ElectricCharge";  // Determines, which resource is consumed by the module
 
         [KSPField]
@@ -38,21 +53,6 @@ namespace KerbalHealth
 
         [KSPField(isPersistant = true)]
         public bool starving = false;  // Determines if the module is disabled due to the lack of the resource
-
-        [KSPField]
-        public string multiplyFactor = "All";  // Name of factor whose effect is multiplied
-
-        [KSPField]
-        public float multiplier = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
-
-        [KSPField]
-        public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
-
-        [KSPField]
-        public float shielding = 0;  // Number of halving-thicknesses
-
-        [KSPField]
-        public float radioactivity = 0;  // Radioactive emission, bananas/day
 
         double lastUpdated;
 

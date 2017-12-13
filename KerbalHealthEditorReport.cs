@@ -52,11 +52,13 @@ namespace KerbalHealth
                 Core.Log("Ship is empty. Let's get outta here!", Core.LogLevel.Important);
                 return;
             }
-            gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum);
-            // Creating column titles
-            gridContents.Add(new DialogGUILabel("Name", true));
-            gridContents.Add(new DialogGUILabel("Trend", true));
-            gridContents.Add(new DialogGUILabel("Time Left", true));
+            gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
+            {
+                // Creating column titles
+                new DialogGUILabel("Name", true),
+                new DialogGUILabel("Trend", true),
+                new DialogGUILabel("Time Left", true)
+            };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));

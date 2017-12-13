@@ -20,7 +20,8 @@ namespace KerbalHealth
         const int colNumMain = 7, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
         const int colSpacing = 10;
-        const int gridWidthMain = colNumMain * (colWidth + colSpacing) - colSpacing, gridWidthDetails = colNumDetails * (colWidth + colSpacing) - colSpacing;  // Grid width
+        const int gridWidthMain = colNumMain * (colWidth + colSpacing) - colSpacing,
+            gridWidthDetails = colNumDetails * (colWidth + colSpacing) - colSpacing;  // Grid width
         Rect monitorPosition = new Rect(0.5f, 0.5f, gridWidthMain, 200);
         PopupDialog monitorWindow;  // Health Monitor window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
