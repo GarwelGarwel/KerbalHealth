@@ -21,9 +21,12 @@ namespace KerbalHealth
             Core.Log("Chance of sickness self-treatment is " + chance + ".");
             if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration <= 0) return chance;
             int sickCrew = 0, doctorsCrew = 0;
-            IEnumerable<ProtoCrewMember> kerbalsList;
+            List<ProtoCrewMember> kerbalsList;
             if (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
-                kerbalsList = HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.KerbalType.Crew, ProtoCrewMember.RosterStatus.Available);
+            {
+                kerbalsList = new List<ProtoCrewMember>(HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.KerbalType.Crew, ProtoCrewMember.RosterStatus.Available));
+                kerbalsList.AddRange(HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.KerbalType.Tourist, ProtoCrewMember.RosterStatus.Available));
+            }
             else kerbalsList = Core.KerbalVessel(khs.PCM).GetVesselCrew();
             foreach (ProtoCrewMember pcm in kerbalsList)
             {
