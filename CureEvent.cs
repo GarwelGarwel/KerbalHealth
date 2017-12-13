@@ -32,7 +32,7 @@ namespace KerbalHealth
                 if (pcm.trait == "Medic") doctorsCrew += 2;
             }
             Core.Log(khs.Name + "'s vessel has " + sickCrew + " sick crew members, " + doctorsCrew + " doctors.");
-            chance = 1 - (1 - chance) * (1 - Math.Min((double) doctorsCrew / sickCrew, 1) / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration);
+            if (doctorsCrew != 0) chance = 1 - (1 - chance) * (1 - Math.Min((double) doctorsCrew / sickCrew, 1) / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration);
             Core.Log("Total chance of sickness curing is " + chance + ".");
             return chance;
         }
