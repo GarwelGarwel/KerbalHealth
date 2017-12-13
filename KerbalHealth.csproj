@@ -94,6 +94,8 @@
     <None Include="KerbalHealth.netkan" />
     <None Include="KerbalHealth.version" />
     <None Include="LICENSE" />
+    <None Include="Patches\General.cfg" />
+    <None Include="Patches\KHDeepFreeze.cfg" />
     <None Include="Patches\KHFASA.cfg" />
     <None Include="Patches\KHB9.cfg" />
     <None Include="Patches\KHDeadlyReentry.cfg" />
