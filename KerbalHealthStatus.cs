@@ -78,6 +78,8 @@ namespace KerbalHealth
             return false;
         }
 
+        public VesselHealthInfo VesselHealthInfo { get; set; } = new VesselHealthInfo();
+
         #endregion
         #region CONDITIONS
 
@@ -321,10 +323,7 @@ namespace KerbalHealth
         /// </summary>
         public double Radiation { get; set; }
 
-        /// <summary>
-        /// Radiation shielding provided by the vessel
-        /// </summary>
-        public double Shielding { get; set; }
+        double partsRadiation = 0;
 
         /// <summary>
         /// Proportion of radiation that gets absorbed by the kerbal
@@ -370,59 +369,12 @@ namespace KerbalHealth
         #endregion
         #region HEALTH UPDATE
 
-        double partsRadiation = 0;
-        // These dictionaries are used to calculate factor modifiers from part modules
-        Dictionary<string, double> fmBonusSums = new Dictionary<string, double>(), fmFreeMultipliers = new Dictionary<string, double>(), minMultipliers = new Dictionary<string, double>(), maxMultipliers = new Dictionary<string, double>();
-
-        /// <summary>
-        /// Checks a part for its effects on the kerbal
-        /// </summary>
-        /// <param name="part"></param>
-        /// <param name="crew"></param>
-        /// <param name="change"></param>
-        void ProcessPart(Part part, bool crewInPart, ref double change)
-        {
-            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
-            {
-                Core.Log("Processing " + mkh.Title + " Module in " + part.name + ".");
-                if (mkh.IsModuleActive && (!mkh.partCrewOnly || crewInPart))
-                {
-                    change += mkh.hpChangePerDay;
-                    LastRecuperation += mkh.recuperation;
-                    LastDecay += mkh.decay;
-                    // Processing factor multiplier
-                    if ((mkh.multiplier != 1) && (mkh.MultiplyFactor != null))
-                    {
-                        if (mkh.crewCap > 0) fmBonusSums[mkh.multiplyFactor] += (1 - mkh.multiplier) * Math.Min(mkh.crewCap, mkh.AffectedCrewCount);
-                        else fmFreeMultipliers[mkh.MultiplyFactor.Name] *= mkh.multiplier;
-                        if (mkh.multiplier > 1) maxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(maxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
-                        else minMultipliers[mkh.MultiplyFactor.Name] = Math.Min(minMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
-                    }
-                    Core.Log((change != 0 ? "HP change after this module: " + change + ". " : "") + (mkh.MultiplyFactor != null ? "Bonus to " + mkh.MultiplyFactor.Name + ": " + fmBonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + fmFreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
-                    Shielding += mkh.shielding;
-                    if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + ".");
-                    partsRadiation += mkh.radioactivity;
-                    if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
-                }
-                else Core.Log("This module doesn't affect " + Name + " (active: " + mkh.IsModuleActive + "; part crew only: " + mkh.partCrewOnly + "; in part's crew: " + crewInPart + ")");
-            }
-        }
-
-        double Multiplier(string factorId)
-        {
-            double res = 1 - fmBonusSums[factorId] / Core.GetCrewCount(PCM);
-            if (res < 1) res = Math.Max(res, minMultipliers[factorId]); else res = Math.Min(res, maxMultipliers[factorId]);
-            Core.Log("Multiplier for " + factorId + " for " + Name + " is " + res + " (bonus sum: " + fmBonusSums[factorId] + "; free multiplier: " + fmFreeMultipliers[factorId] + "; multipliers: " + minMultipliers[factorId] + ".." + maxMultipliers[factorId] + ")");
-            return res * fmFreeMultipliers[factorId];
-        }
-
         /// <summary>
         /// Returns effective HP change rate per day
         /// </summary>
         /// <returns></returns>
         public double HealthChangePerDay()
         {
-            double change = 0;
             ProtoCrewMember pcm = PCM;
             if (pcm == null)
             {
@@ -442,28 +394,11 @@ namespace KerbalHealth
                 IsOnEVA = false;
             }
 
-            fmBonusSums.Clear();
-            fmBonusSums.Add("All", 0);
-            fmFreeMultipliers.Clear();
-            fmFreeMultipliers.Add("All", 1);
-            minMultipliers.Clear();
-            minMultipliers.Add("All", 1);
-            maxMultipliers.Clear();
-            maxMultipliers.Add("All", 1);
-            foreach (HealthFactor f in Core.Factors)
-            {
-                fmBonusSums.Add(f.Name, 0);
-                fmFreeMultipliers.Add(f.Name, 1);
-                minMultipliers.Add(f.Name, 1);
-                maxMultipliers.Add(f.Name, 1);
-            }
-            Shielding = 0;
-
             LastChange = 0;
             bool recalculateCache = Core.IsKerbalLoaded(pcm) || Core.IsInEditor;
             if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned))
             {
-                CachedChange = partsRadiation = 0;
+                CachedChange = 0;
                 Factors = new Dictionary<string, double>(Core.Factors.Count);
             }
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
@@ -471,22 +406,19 @@ namespace KerbalHealth
             // Processing parts
             if (Core.IsKerbalLoaded(pcm) || (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled))
             {
-                LastRecuperation = LastDecay = 0;
-                List<Part> parts = Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts;
-                foreach (Part p in parts) ProcessPart(p, Core.IsInEditor ? ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID == p.craftID : p.protoModuleCrew.Contains(pcm), ref change);
-                foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
-                {
-                    double amount, maxAmount;
-                    if (Core.IsInEditor) amount = maxAmount = Core.GetResourceAmount(parts, res.Key);
-                    else Core.KerbalVessel(pcm).GetConnectedResourceTotals(res.Key, out amount, out maxAmount);
-                    Core.Log("The vessel contains " + amount + "/" + maxAmount + " of resource id " + res.Key + ".");
-                    Shielding += res.Value * amount;
-                }
-                Exposure = GetExposure(Shielding, Core.GetCrewCapacity(pcm));
+                VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm);
+                VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
+                Core.Log("Vessel Health Info:\n" + VesselHealthInfo);
+                LastChange = VesselHealthInfo.HPChange;
+                LastRecuperation = VesselHealthInfo.Recuperation;
+                LastDecay = VesselHealthInfo.Decay;
+                partsRadiation = VesselHealthInfo.PartsRadiation;
+                Exposure = GetExposure(VesselHealthInfo.Shielding, Core.GetCrewCapacity(pcm));
                 if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
 
-            Core.Log("Processing all the " + Core.Factors.Count + " factors for " + Name + "...");
+            Core.Log("Processing " + Core.Factors.Count + " factors for " + Name + "...");
+            int crewCount = Core.GetCrewCount(pcm);
             foreach (HealthFactor f in Core.Factors)
             {
                 if (f.Cachable && !recalculateCache)
@@ -494,7 +426,8 @@ namespace KerbalHealth
                     Core.Log(f.Name + " is not recalculated for " + pcm.name + " (" + HighLogic.LoadedScene + " scene, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "loaded, " + (IsOnEVA ? "" : "not ") + "on EVA).");
                     continue;
                 }
-                double c = f.ChangePerDay(pcm) * Multiplier(f.Name) * Multiplier("All");
+                double c = f.ChangePerDay(pcm) * VesselHealthInfo.GetMultiplier(f.Name, crewCount) * VesselHealthInfo.GetMultiplier("All", crewCount);
+                Core.Log("Multiplier for " + f.Name + " is " + VesselHealthInfo.GetMultiplier(f.Name, crewCount) + " * " + VesselHealthInfo.FreeMultipliers[f.Name] + " (bonus sum: " + VesselHealthInfo.BonusSums[f.Name] + "; multipliers: " + VesselHealthInfo.MinMultipliers[f.Name] + ".." + VesselHealthInfo.MaxMultipliers[f.Name] + ")");
                 Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
                 Factors[f.Name] = c;
                 if (f.Cachable) CachedChange += c;
@@ -505,7 +438,7 @@ namespace KerbalHealth
 
             Core.Log("Recuperation/decay change for " + pcm.name + ": " + mc + " (+" + LastRecuperation + "%, -" + LastDecay + "%).");
             Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
-            if (recalculateCache) Core.Log("Total shielding: " + Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
+            if (recalculateCache) Core.Log("Total shielding: " + VesselHealthInfo.Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
             return LastChangeTotal;
         }
 

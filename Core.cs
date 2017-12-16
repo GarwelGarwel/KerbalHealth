@@ -341,6 +341,13 @@ namespace KerbalHealth
         public static int GetCrewCapacity(ProtoCrewMember pcm) => IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1);
 
         /// <summary>
+        /// Returns Part where ProtoCrewMember is currently located or null if none
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public static Part GetCrewPart(ProtoCrewMember pcm) => IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
+
+        /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
         /// </summary>
         /// <param name="pcm"></param>
@@ -359,7 +366,11 @@ namespace KerbalHealth
         /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
         /// </summary>
-        public static void ClearCache() => kerbalVesselsCache.Clear();
+        public static void ClearCache()
+        {
+            kerbalVesselsCache.Clear();
+            VesselHealthInfo.Cache.Clear();
+        }
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
@@ -386,18 +397,6 @@ namespace KerbalHealth
             }
             Log(pcm.name + " is " + pcm.rosterStatus + " and was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Important);
             return null;
-        }
-
-        public static double GetResourceAmount(List<Part> parts, int resourceId)
-        {
-            double res = 0, amount = 0;
-            foreach (Part p in parts)
-            {
-                try { p.GetConnectedResourceTotals(resourceId, ResourceFlowMode.NO_FLOW, out amount, out double maxAmount); }
-                catch (NullReferenceException e) { Core.Log(e.Message + "\r\nNRE in " + e.Source); }
-                res += amount;
-            }
-            return res;
         }
 
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)

@@ -85,6 +85,7 @@
     <Compile Include="KerbalHealthGeneralSettings.cs" />
     <Compile Include="SicknessFactor.cs" />
     <Compile Include="ToolbarWrapper.cs" />
+    <Compile Include="VesselHealthInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.png" />

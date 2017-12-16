@@ -105,7 +105,7 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Shielding.ToString("F1") : "N/A";
+        string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).VesselHealthInfo.Shielding.ToString("F1") : "N/A";
 
         string GetExposure() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Exposure.ToString("P1") : "N/A";
 
@@ -142,6 +142,7 @@ namespace KerbalHealth
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;
+                VesselHealthInfo.Cache.Clear();
                 foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
                 {
                     if (pcm == null) continue;
@@ -165,7 +166,7 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
-                shieldingLbl.SetOptionText(khs.Shielding.ToString("F1"));
+                shieldingLbl.SetOptionText(khs.VesselHealthInfo.Shielding.ToString("F1"));
                 exposureLbl.SetOptionText(khs.Exposure.ToString("P1"));
                 dirty = false;
             }
