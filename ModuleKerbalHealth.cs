@@ -31,7 +31,7 @@ namespace KerbalHealth
         public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
 
         [KSPField]
-        public double comfort = 0;  // Points of comfort, used in calculating Crowded factor
+        public double space = 0;  // Points of living space provided by the part (used to calculate Crowded factor)
 
         [KSPField]
         public float shielding = 0;  // Number of halving-thicknesses
@@ -137,12 +137,12 @@ namespace KerbalHealth
                 if (decay > 0) return "Health Poisoning";
                 switch (multiplyFactor)
                 {
-                    case "Crowded": return "Extra Room";
+                    case "Crowded": return "Comforts";
                     case "Loneliness": return "Entertainment";
                     case "Microgravity": return "Paragravity";
                     case "Sickness": return "Sick Bay";
                 }
-                if (comfort > 0) return "Comforts";
+                if (space > 0) return "Living Space";
                 if (shielding > 0) return "RadShield";
                 if (radioactivity > 0) return "Radiation";
                 return "Health Module";
@@ -168,7 +168,7 @@ namespace KerbalHealth
             if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";
             if (multiplier != 1) res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
-            if (comfort != 0) res += "\nComfort: " + comfort.ToString("N0");
+            if (space != 0) res += "\nLiving space: " + space.ToString("F1");
             if (resourceConsumption != 0) res += "\n" + ResourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
             if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
