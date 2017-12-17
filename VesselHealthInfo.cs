@@ -49,6 +49,7 @@ namespace KerbalHealth
         }
             
         public double HPChange { get; set; }
+        public double Space { get; set; }
         public double Recuperation { get; set; }
         public double Decay { get; set; }
         public double Shielding { get; set; }
@@ -80,9 +81,10 @@ namespace KerbalHealth
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
             {
                 Core.Log("Processing " + mkh.Title + " Module in " + part.name + ".");
-                if (mkh.IsModuleActive && (!mkh.partCrewOnly || crewInPart))
+                if (mkh.IsModuleActive && (!mkh.partCrewOnly ^ crewInPart))
                 {
                     HPChange += mkh.hpChangePerDay;
+                    Space += mkh.space;
                     Recuperation += mkh.recuperation;
                     Decay += mkh.decay;
                     // Processing factor multiplier
@@ -121,6 +123,7 @@ namespace KerbalHealth
         {
             string res = "";
             if (HPChange != 0) res += "\nHP change per day: " + HPChange.ToString("F2");
+            if (Space != 0) res += "\nSpace: " + Space.ToString("F1");
             if (Recuperation != 0) res += "\nRecuperation: " + Recuperation.ToString("F0") + "%";
             if (Decay != 0) res += "\nDecay: " + Shielding.ToString("F0") + "%";
             if (Shielding != 0) res += "\nShielding: " + Shielding.ToString("F1");
