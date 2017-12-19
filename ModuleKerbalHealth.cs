@@ -48,9 +48,6 @@ namespace KerbalHealth
         [KSPField]
         public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
 
-        [KSPField]
-        public bool alwaysActive = false;  // Is the module's effect (and consumption) always active or togglable in-flight
-
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
@@ -65,7 +62,9 @@ namespace KerbalHealth
             set => multiplyFactor = value.Name;
         }
 
-        public bool IsModuleActive => (alwaysActive || isActive) && !starving;
+        public bool IsAlwaysActive => (resourceConsumption == 0) && (resourceConsumptionPerKerbal == 0);
+
+        public bool IsModuleActive => IsAlwaysActive || (isActive && (!Core.IsInEditor || KerbalHealthEditorReport.HealthModulesEnabled) && !starving);
 
         /// <summary>
         /// Returns # of kerbals affected by this module, capped by crewCap
@@ -106,7 +105,7 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ")");
             base.OnStart(state);
-            if (alwaysActive)
+            if (IsAlwaysActive)
             {
                 isActive = true;
                 Events["OnToggleActive"].guiActive = false;
@@ -138,8 +137,9 @@ namespace KerbalHealth
                 switch (multiplyFactor)
                 {
                     case "Crowded": return "Comforts";
-                    case "Loneliness": return "Entertainment";
+                    case "Loneliness": return "Meditation";
                     case "Microgravity": return "Paragravity";
+                    case "Connected": return "TV Set";
                     case "Sickness": return "Sick Bay";
                 }
                 if (space > 0) return "Living Space";
@@ -155,25 +155,25 @@ namespace KerbalHealth
         [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
         public void OnToggleActive()
         {
-            isActive = alwaysActive || !isActive;
+            isActive = IsAlwaysActive || !isActive;
             UpdateGUIName();
         }
 
         public override string GetInfo()
         {
             string res = "";
-            res += Title;
             if (hpChangePerDay != 0) res += "\nHealth points: " + hpChangePerDay.ToString("F1") + "/day";
             if (recuperation != 0) res += "\nRecuperation: " + recuperation.ToString("F1") + "%/day";
             if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";
             if (multiplier != 1) res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
             if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
-            if (space != 0) res += "\nLiving space: " + space.ToString("F1");
-            if (resourceConsumption != 0) res += "\n" + ResourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F1") + "/sec.";
-            if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F1") + "/sec.";
+            if (space != 0) res += "\nSpace: " + space.ToString("F1");
+            if (resourceConsumption != 0) res += "\n" + ResourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F2") + "/sec.";
+            if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F2") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
-            return res.Trim('\n');
+            if (res == "") return "";
+            return "Module type: " + Title + res;
         }
     }
 }
