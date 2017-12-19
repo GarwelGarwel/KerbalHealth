@@ -404,7 +404,7 @@ namespace KerbalHealth
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
 
             // Processing parts
-            if (Core.IsKerbalLoaded(pcm) || (Core.IsInEditor && KerbalHealthEditorReport.HealthModulesEnabled))
+            if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
             {
                 VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm);
                 VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
