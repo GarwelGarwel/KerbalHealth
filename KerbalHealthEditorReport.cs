@@ -14,7 +14,7 @@ namespace KerbalHealth
         Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
-        DialogGUILabel shieldingLbl, exposureLbl;
+        DialogGUILabel spaceLbl, shieldingLbl, exposureLbl;
         int colNum = 3;  // # of columns in Health Report
         static bool healthModulesEnabled = true;
 
@@ -80,6 +80,8 @@ namespace KerbalHealth
                     reportPosition,
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
+                        new DialogGUILabel("Space: ", false),
+                        spaceLbl = new DialogGUILabel("N/A", true),
                         new DialogGUILabel("Shielding: ", false),
                         shieldingLbl = new DialogGUILabel("N/A", true),
                         new DialogGUILabel("Exposure: ", false),
@@ -166,6 +168,7 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
+                spaceLbl.SetOptionText(khs.VesselHealthInfo.Space.ToString("F1"));
                 shieldingLbl.SetOptionText(khs.VesselHealthInfo.Shielding.ToString("F1"));
                 exposureLbl.SetOptionText(khs.Exposure.ToString("P1"));
                 dirty = false;
