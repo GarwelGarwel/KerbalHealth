@@ -85,8 +85,8 @@ namespace KerbalHealth
                 {
                     HPChange += mkh.hpChangePerDay;
                     Space += mkh.space;
-                    Recuperation += mkh.recuperation;
-                    Decay += mkh.decay;
+                    Recuperation += mkh.EffectiveRecuperation;
+                    Decay += mkh.EffectiveDecay;
                     // Processing factor multiplier
                     if ((mkh.multiplier != 1) && (mkh.MultiplyFactor != null))
                     {

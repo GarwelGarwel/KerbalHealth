@@ -101,6 +101,10 @@ namespace KerbalHealth
             set => resource = value?.name;
         }
 
+        public double EffectiveRecuperation => (crewCap > 0) ? recuperation * crewCap / AffectedCrewCount : recuperation;
+
+        public double EffectiveDecay => (crewCap > 0) ? decay * crewCap / AffectedCrewCount : decay;
+
         public override void OnStart(StartState state)
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ")");
