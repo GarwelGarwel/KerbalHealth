@@ -14,7 +14,7 @@ namespace KerbalHealth
         Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
-        DialogGUILabel spaceLbl, shieldingLbl, exposureLbl;
+        DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl;
         int colNum = 3;  // # of columns in Health Report
         static bool healthModulesEnabled = true;
 
@@ -82,6 +82,9 @@ namespace KerbalHealth
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("Space: ", false),
                         spaceLbl = new DialogGUILabel("N/A", true),
+                        new DialogGUILabel("Recuperation: ", false),
+                        recupLbl = new DialogGUILabel("N/A", true)),
+                    new DialogGUIHorizontalLayout(
                         new DialogGUILabel("Shielding: ", false),
                         shieldingLbl = new DialogGUILabel("N/A", true),
                         new DialogGUILabel("Exposure: ", false),
@@ -91,8 +94,8 @@ namespace KerbalHealth
                         new DialogGUILabel("Factors", true),
                         new DialogGUIButton("Reset", OnResetButtonSelected, false)),
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(140, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
-                false, 
-                HighLogic.UISkin, 
+                false,
+                HighLogic.UISkin,
                 false);
             Invalidate();
         }
@@ -149,10 +152,10 @@ namespace KerbalHealth
                 {
                     if (pcm == null) continue;
                     gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
-                    khs = Core.KerbalHealthList.Find(pcm)?.Clone();
+                    khs = Core.KerbalHealthList?.Find(pcm)?.Clone();
                     if (khs == null)
                     {
-                        Core.Log("Could not create a clone of KerbalHealthStatus for " + pcm.name + ". KerbalHealthList contains " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
+                        Core.Log("Could not create a clone of KerbalHealthStatus for " + pcm.name + ". It is " + ((Core.KerbalHealthList?.Find(pcm) == null) ? "not " : "") + "found in KerbalHealthList, which contains " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
                         i++;
                         continue;
                     }
@@ -169,6 +172,7 @@ namespace KerbalHealth
                     i++;
                 }
                 spaceLbl.SetOptionText(khs.VesselHealthInfo.Space.ToString("F1"));
+                recupLbl.SetOptionText(khs.VesselHealthInfo.Recuperation.ToString("F1") + "%");
                 shieldingLbl.SetOptionText(khs.VesselHealthInfo.Shielding.ToString("F1"));
                 exposureLbl.SetOptionText(khs.Exposure.ToString("P1"));
                 dirty = false;
