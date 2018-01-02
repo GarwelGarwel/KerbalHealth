@@ -406,7 +406,8 @@ namespace KerbalHealth
             // Processing parts
             if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
             {
-                VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm);
+                VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm).Clone();
+                Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
                 VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
                 Core.Log("Vessel Health Info:\n" + VesselHealthInfo);
                 LastChange = VesselHealthInfo.HPChange;
@@ -550,7 +551,7 @@ namespace KerbalHealth
             HP = health;
         }
 
-        public KerbalHealthStatus(ConfigNode node) { ConfigNode = node; }
+        public KerbalHealthStatus(ConfigNode node) => ConfigNode = node;
         #endregion
     }
 }

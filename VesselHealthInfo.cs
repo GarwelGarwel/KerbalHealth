@@ -30,27 +30,11 @@ namespace KerbalHealth
             return GetVesselInfo(Core.KerbalVessel(pcm));
         }
 
-        public static VesselHealthInfo operator +(VesselHealthInfo vhi1, VesselHealthInfo vhi2)
-        {
-            VesselHealthInfo res = new VesselHealthInfo();
-            res.HPChange = vhi1.HPChange + vhi2.HPChange;
-            res.Recuperation = vhi1.Recuperation + vhi2.Recuperation;
-            res.Decay = vhi1.Decay + vhi2.Decay;
-            res.Shielding = vhi1.Shielding + vhi2.Shielding;
-            res.PartsRadiation = vhi1.PartsRadiation + vhi2.PartsRadiation;
-            foreach (string f in res.BonusSums.Keys)
-            {
-                res.BonusSums[f] = vhi1.BonusSums[f] + vhi2.BonusSums[f];
-                res.FreeMultipliers[f] = vhi1.FreeMultipliers[f] * vhi2.FreeMultipliers[f];
-                res.MinMultipliers[f] = Math.Min(vhi1.MinMultipliers[f], vhi2.MinMultipliers[f]);
-                res.MaxMultipliers[f] = Math.Max(vhi1.MaxMultipliers[f], vhi2.MaxMultipliers[f]);
-            }
-            return res;
-        }
-            
         public double HPChange { get; set; }
         public double Space { get; set; }
-        public double Recuperation { get; set; }
+        public double RecuperationPower { get; set; }
+        public double MaxRecuperaction { get; set; }
+        public double Recuperation => Math.Min(RecuperationPower, MaxRecuperaction);
         public double Decay { get; set; }
         public double Shielding { get; set; }
         public double PartsRadiation { get; set; }
@@ -79,18 +63,23 @@ namespace KerbalHealth
                 return;
             }
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
-            {
-                Core.Log("Processing " + mkh.Title + " Module in " + part.name + ".");
                 if (mkh.IsModuleActive && (!mkh.partCrewOnly ^ crewInPart))
                 {
+                    Core.Log("Processing " + mkh.Title + " Module in " + part.name + ".");
+                    Core.Log("PartCrewOnly: " + mkh.partCrewOnly + "; CrewInPart: " + crewInPart + "; condition: " + (!mkh.partCrewOnly ^ crewInPart));
                     HPChange += mkh.hpChangePerDay;
                     Space += mkh.space;
-                    Recuperation += mkh.EffectiveRecuperation;
-                    Decay += mkh.EffectiveDecay;
+                    if (mkh.recuperation != 0)
+                    {
+                        RecuperationPower += mkh.RecuperationPower;
+                        Core.Log("Module's recuperation power = " + mkh.RecuperationPower);
+                        MaxRecuperaction = Math.Max(MaxRecuperaction, mkh.recuperation);
+                    }
+                    Decay += mkh.DecayPower;
                     // Processing factor multiplier
                     if ((mkh.multiplier != 1) && (mkh.MultiplyFactor != null))
                     {
-                        if (mkh.crewCap > 0) BonusSums[mkh.multiplyFactor] += (1 - mkh.multiplier) * Math.Min(mkh.crewCap, mkh.AffectedCrewCount);
+                        if (mkh.crewCap > 0) BonusSums[mkh.multiplyFactor] += (1 - mkh.multiplier) * Math.Min(mkh.crewCap, mkh.CappedAffectedCrewCount);
                         else FreeMultipliers[mkh.MultiplyFactor.Name] *= mkh.multiplier;
                         if (mkh.multiplier > 1) MaxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(MaxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                         else MinMultipliers[mkh.MultiplyFactor.Name] = Math.Min(MinMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
@@ -101,7 +90,6 @@ namespace KerbalHealth
                     PartsRadiation += mkh.radioactivity;
                     if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
                 }
-            }
         }
 
         public void ProcessParts(List<Part> parts)
@@ -124,8 +112,8 @@ namespace KerbalHealth
             string res = "";
             if (HPChange != 0) res += "\nHP change per day: " + HPChange.ToString("F2");
             if (Space != 0) res += "\nSpace: " + Space.ToString("F1");
-            if (Recuperation != 0) res += "\nRecuperation: " + Recuperation.ToString("F0") + "%";
-            if (Decay != 0) res += "\nDecay: " + Shielding.ToString("F0") + "%";
+            if (RecuperationPower != 0) res += "\nRecuperation Power: " + RecuperationPower.ToString("F1") + "% (max " + MaxRecuperaction.ToString("F1") + "%)";
+            if (Decay != 0) res += "\nDecay: " + Shielding.ToString("F1") + "%";
             if (Shielding != 0) res += "\nShielding: " + Shielding.ToString("F1");
             if (PartsRadiation != 0) res += "\nParts radiation: " + PartsRadiation.ToString("F0");
             foreach (HealthFactor f in Core.Factors)
@@ -141,6 +129,8 @@ namespace KerbalHealth
             if (MaxMultipliers["All"] != 1) res += "\nWildcard max multiplier: " + MaxMultipliers["All"];
             return res.Trim();
         }
+
+        public VesselHealthInfo Clone() => (VesselHealthInfo)this.MemberwiseClone();
 
         public VesselHealthInfo()
         {

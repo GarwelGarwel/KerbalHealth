@@ -67,33 +67,33 @@ namespace KerbalHealth
         public bool IsModuleActive => IsAlwaysActive || (isActive && (!Core.IsInEditor || KerbalHealthEditorReport.HealthModulesEnabled) && !starving);
 
         /// <summary>
-        /// Returns # of kerbals affected by this module, capped by crewCap
+        /// Returns total # of kerbals affected by this module
         /// </summary>
-        public int AffectedCrewCount
+        public int TotalAffectedCrewCount
         {
             get
             {
-                int r = 0;
                 if (Core.IsInEditor)
                     if (partCrewOnly)
                     {
+                        int r = 0;
                         foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew())
                             if (pcm != null) r++;
-                        Core.Log(r + " kerbals found in " + part?.name + ".");
+                        Core.Log(r + " kerbal(s) found in " + part?.name + ".");
+                        return r;
                     }
-                    else r = ShipConstruction.ShipManifest.CrewCount;
-                else if (partCrewOnly) r = part.protoModuleCrew.Count;
-                else r = vessel.GetCrewCount();
-                if (crewCap > 0) return Math.Min(r, crewCap);
-                else return r;
+                    else return ShipConstruction.ShipManifest.CrewCount;
+                else if (partCrewOnly) return part.protoModuleCrew.Count;
+                else return vessel.GetCrewCount();
             }
         }
 
-        public List<PartResourceDefinition> GetConsumedResources()
-        {
-            if (resourceConsumption != 0) return new List<PartResourceDefinition>() { ResourceDefinition };
-            else return new List<PartResourceDefinition>();
-        }
+        /// <summary>
+        /// Returns # of kerbals affected by this module, capped by crewCap
+        /// </summary>
+        public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
+
+        public List<PartResourceDefinition> GetConsumedResources() => resourceConsumption != 0 ? new List<PartResourceDefinition>() { ResourceDefinition } : new List<PartResourceDefinition>();
 
         PartResourceDefinition ResourceDefinition
         {
@@ -101,9 +101,9 @@ namespace KerbalHealth
             set => resource = value?.name;
         }
 
-        public double EffectiveRecuperation => (crewCap > 0) ? recuperation * crewCap / AffectedCrewCount : recuperation;
+        public double RecuperationPower => crewCap > 0 ? recuperation * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : recuperation;
 
-        public double EffectiveDecay => (crewCap > 0) ? decay * crewCap / AffectedCrewCount : decay;
+        public double DecayPower => crewCap > 0 ? decay * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : decay;
 
         public override void OnStart(StartState state)
         {
@@ -124,7 +124,7 @@ namespace KerbalHealth
             double time = Planetarium.GetUniversalTime();
             if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
-                double res = (resourceConsumption + resourceConsumptionPerKerbal * AffectedCrewCount) * (time - lastUpdated), res2;
+                double res = (resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount) * (time - lastUpdated), res2;
                 starving = (res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res;
                 if (starving) Core.Log(Title + " Module is starving of " + resource + " (" + res + " needed, " + res2 + " provided).");
             }
@@ -166,7 +166,7 @@ namespace KerbalHealth
         public override string GetInfo()
         {
             string res = "";
-            if (hpChangePerDay != 0) res += "\nHealth points: " + hpChangePerDay.ToString("F1") + "/day";
+            if (hpChangePerDay != 0) res = "\nHealth points: " + hpChangePerDay.ToString("F1") + "/day";
             if (recuperation != 0) res += "\nRecuperation: " + recuperation.ToString("F1") + "%/day";
             if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";
             if (multiplier != 1) res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;

@@ -388,7 +388,7 @@ namespace KerbalHealth
                             gridContents[i].SetOptionText(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A");
                             i += 2;
                         }
-                    gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F0") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
+                    gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
                     gridContents[i + 2].SetOptionText(selectedKHS.ConditionString);
                     gridContents[i + 4].SetOptionText(selectedKHS.Exposure.ToString("P2"));
                     gridContents[i + 6].SetOptionText(selectedKHS.Radiation.ToString("N2") + "/day");
