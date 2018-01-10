@@ -328,7 +328,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Actually displays values in Health Monitor
+        /// Displays actual values in Health Monitor
         /// </summary>
         public void Update()
         {
@@ -337,66 +337,68 @@ namespace KerbalHealth
                 if (monitorWindow != null) monitorWindow.Dismiss();
                 return;
             }
-            if ((monitorWindow != null) && dirty)
+
+            if ((monitorWindow == null) || !dirty) return;
+
+            if (gridContents == null)
             {
-                if (gridContents == null)
-                {
-                    Core.Log("KerbalHealthScenario.gridContents is null.", Core.LogLevel.Error);
-                    return;
-                }
-                if (selectedKHS == null)
-                {
-                    if (crewChanged)
-                    {
-                        Core.KerbalHealthList.RegisterKerbals();
-                        if ((page >= PageCount) || (Core.KerbalHealthList.Count == LinesPerPage + 1)) Invalidate();
-                        crewChanged = false;
-                    }
-                    // Fill the Health Monitor's grid with kerbals' health data
-                    for (int i = 0; i < LineCount; i++)
-                    {
-                        List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
-                        KerbalHealthStatus khs = kerbals[FirstLine + i];
-                        bool frozen = khs.HasCondition("Frozen");
-                        double ch = khs.LastChangeTotal;
-                        gridContents[(i + 1) * colNumMain].SetOptionText(khs.Name);
-                        gridContents[(i + 1) * colNumMain + 1].SetOptionText(khs.ConditionString);
-                        gridContents[(i + 1) * colNumMain + 2].SetOptionText((100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
-                        gridContents[(i + 1) * colNumMain + 3].SetOptionText((frozen ||(khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
-                        double b = khs.GetBalanceHP();
-                        string s = "";
-                        if (frozen || (b > khs.NextConditionHP())) s = "—";
-                        else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
-                        gridContents[(i + 1) * colNumMain + 4].SetOptionText(s);
-                        gridContents[(i + 1) * colNumMain + 5].SetOptionText(khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : ""));
-                    }
-                }
-                else
-                {
-                    ProtoCrewMember pcm = selectedKHS.PCM;
-                    bool frozen = selectedKHS.HasCondition("Frozen");
-                    gridContents[1].SetOptionText(selectedKHS.Name);
-                    gridContents[3].SetOptionText(pcm.experienceLevel.ToString());
-                    gridContents[5].SetOptionText(pcm.rosterStatus.ToString());
-                    gridContents[7].SetOptionText(selectedKHS.MaxHP.ToString("F2"));
-                    gridContents[9].SetOptionText(selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")");
-                    gridContents[11].SetOptionText(frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"));
-                    int i = 13;
-                    if (Core.IsKerbalLoaded(selectedKHS.PCM) && !frozen)
-                        foreach (HealthFactor f in Core.Factors)
-                        {
-                            gridContents[i].SetOptionText(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A");
-                            i += 2;
-                        }
-                    gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
-                    gridContents[i + 2].SetOptionText(selectedKHS.ConditionString);
-                    gridContents[i + 4].SetOptionText(selectedKHS.Exposure.ToString("P2"));
-                    gridContents[i + 6].SetOptionText(selectedKHS.Radiation.ToString("N2") + "/day");
-                    gridContents[i + 8].SetOptionText(selectedKHS.Dose.ToString("N2"));
-                    gridContents[i + 10].SetOptionText((1 - selectedKHS.RadiationMaxHPModifier).ToString("P2"));
-                }
-                dirty = false;
+                Core.Log("KerbalHealthScenario.gridContents is null.", Core.LogLevel.Error);
+                return;
             }
+
+            if (selectedKHS == null)  // Showing list of all kerbals
+            {
+                if (crewChanged)
+                {
+                    Core.KerbalHealthList.RegisterKerbals();
+                    if ((page >= PageCount) || (Core.KerbalHealthList.Count == LinesPerPage + 1)) Invalidate();
+                    crewChanged = false;
+                }
+                // Fill the Health Monitor's grid with kerbals' health data
+                for (int i = 0; i < LineCount; i++)
+                {
+                    List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
+                    KerbalHealthStatus khs = kerbals[FirstLine + i];
+                    bool frozen = khs.HasCondition("Frozen");
+                    double ch = khs.LastChangeTotal;
+                    gridContents[(i + 1) * colNumMain].SetOptionText(khs.Name);
+                    gridContents[(i + 1) * colNumMain + 1].SetOptionText(khs.ConditionString);
+                    gridContents[(i + 1) * colNumMain + 2].SetOptionText((100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
+                    gridContents[(i + 1) * colNumMain + 3].SetOptionText((frozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
+                    double b = khs.GetBalanceHP();
+                    string s = "";
+                    if (frozen || (b > khs.NextConditionHP())) s = "—";
+                    else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
+                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(s);
+                    gridContents[(i + 1) * colNumMain + 5].SetOptionText(khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : ""));
+                }
+            }
+            else  // Showing details for one particular kerbal
+            {
+                ProtoCrewMember pcm = selectedKHS.PCM;
+                bool frozen = selectedKHS.HasCondition("Frozen");
+                gridContents[1].SetOptionText(selectedKHS.Name);
+                gridContents[3].SetOptionText(pcm.experienceLevel.ToString());
+                gridContents[5].SetOptionText(pcm.rosterStatus.ToString());
+                gridContents[7].SetOptionText(selectedKHS.MaxHP.ToString("F2"));
+                gridContents[9].SetOptionText(selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")");
+                gridContents[11].SetOptionText(frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"));
+                int i = 13;
+                if (Core.IsKerbalLoaded(selectedKHS.PCM) && !frozen)
+                    foreach (HealthFactor f in Core.Factors)
+                    {
+                        gridContents[i].SetOptionText(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A");
+                        i += 2;
+                    }
+                gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
+                gridContents[i + 2].SetOptionText(selectedKHS.ConditionString);
+                gridContents[i + 4].SetOptionText(selectedKHS.Exposure.ToString("P2"));
+                gridContents[i + 6].SetOptionText(selectedKHS.Radiation.ToString("N2") + "/day");
+                gridContents[i + 8].SetOptionText(selectedKHS.Dose.ToString("N2"));
+                gridContents[i + 10].SetOptionText((1 - selectedKHS.RadiationMaxHPModifier).ToString("P2"));
+            }
+            dirty = false;
+
         }
 
         public void OnDisable()
