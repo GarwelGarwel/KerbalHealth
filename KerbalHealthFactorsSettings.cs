@@ -59,8 +59,8 @@
         [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
         public float AssignedFactor = -0.5f;
 
-        [GameParameters.CustomFloatParameterUI("Crowded", toolTip = "HP change per day in a crowded vessel", minValue = -20, maxValue = 0, stepCount = 21)]
-        public float CrowdedBaseFactor = -5;
+        [GameParameters.CustomFloatParameterUI("Crowded", toolTip = "HP change per day in a crowded vessel", minValue = -10, maxValue = 0, stepCount = 21)]
+        public float CrowdedBaseFactor = -3;
 
         [GameParameters.CustomFloatParameterUI("Loneliness", toolTip = "HP change per day when the kerbal has no crewmates", minValue = -20, maxValue = 0, stepCount = 21)]
         public float LonelinessFactor = -1;

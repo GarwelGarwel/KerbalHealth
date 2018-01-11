@@ -13,6 +13,8 @@ namespace KerbalHealth
     {
         static double lastUpdated;  // UT at last health update
         static double nextEventTime;  // UT when (or after) next event check occurs
+        [KSPField(isPersistant = true)]
+        bool v11WarningDisplayed = false;
 
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
@@ -80,6 +82,12 @@ namespace KerbalHealth
             }
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
+            if (!v11WarningDisplayed && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
+            {
+                Core.Log("Crowded Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor + " instead of -3. Sending a warning to the player.");
+                Core.ShowMessage("If you have just updated Kerbal Health to v1.1, it is recommended that you set Crowded Factor setting to -3 for balance purposes. You can do it in the Difficulty Settings menu.", true);
+            }
+            v11WarningDisplayed = true;
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
