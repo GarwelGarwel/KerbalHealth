@@ -29,13 +29,13 @@
                     RadiationEnabled = true;
                     RadiationEffect = 0.1f;
                     ShieldingEffect = 1;
-                    EVAExposure = 3;
+                    EVAExposure = 2;
                     break;
             case GameParameters.Preset.Hard:
                     RadiationEnabled = true;
                     RadiationEffect = 0.25f;
                     ShieldingEffect = 1;
-                    EVAExposure = 10;
+                    EVAExposure = 5;
                     break;
         }
     }
@@ -64,8 +64,8 @@
         [GameParameters.CustomFloatParameterUI("Body Shielding Altitude", toolTip = "The max altitude where the celestial body blocks half of radiation, in % of its radius", minValue = 0, maxValue = 0.1f, displayFormat = "N4", asPercentage = true, stepCount = 21)]
         public float BodyShieldingAltitude = 0.01f;
 
-        [GameParameters.CustomFloatParameterUI("EVA Exposure Multiplier", toolTip = "How much more radiaiton kerbals receive when on EVA", minValue = 0, maxValue = 20, displayFormat = "N0", stepCount = 21)]
-        public float EVAExposure = 10;
+        [GameParameters.CustomFloatParameterUI("EVA Exposure Multiplier", toolTip = "How much more radiaiton kerbals receive when on EVA", minValue = 0, maxValue = 10, displayFormat = "N0", stepCount = 21)]
+        public float EVAExposure = 5;
 
         [GameParameters.CustomFloatParameterUI("Solar Radiation (Nominal)", toolTip = "Solar radiation in interplanetary space at 1 AU, banana doses/day", minValue = 0, maxValue = 20000, displayFormat = "N0", stepCount = 21)]
         public float SolarRadiation = 5000;
