@@ -97,6 +97,7 @@
     <None Include="LICENSE" />
     <None Include="Patches\General.cfg" />
     <None Include="Patches\KHAtomicAge.cfg" />
+    <None Include="Patches\KHBDB.cfg" />
     <None Include="Patches\KHDeepFreeze.cfg" />
     <None Include="Patches\KHDSEV.cfg" />
     <None Include="Patches\KHFASA.cfg" />
