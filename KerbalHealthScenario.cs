@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
@@ -13,8 +14,7 @@ namespace KerbalHealth
     {
         static double lastUpdated;  // UT at last health update
         static double nextEventTime;  // UT when (or after) next event check occurs
-        [KSPField(isPersistant = true)]
-        bool v11WarningDisplayed = false;
+        Version version;  // Current Kerbal Health version
 
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
@@ -82,12 +82,19 @@ namespace KerbalHealth
             }
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
-            if (!v11WarningDisplayed && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
+
+            Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (version != v)
+                Core.Log("Current mod version " + v + " is different from v" + version + " used to save the game. Most likely, Kerbal Health has been recently updated.", Core.LogLevel.Important);
+            else Core.Log("Kerbal Health v" + version);
+            if ((version < new Version(1, 1, 0)) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
             {
                 Core.Log("Crowded Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor + " instead of -3. Sending a warning to the player.");
-                Core.ShowMessage("If you have just updated Kerbal Health to v1.1, it is recommended that you set Crowded Factor setting to -3 for balance purposes. You can do it in the Difficulty Settings menu.", true);
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor = -3;
+                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
             }
-            v11WarningDisplayed = true;
+            version = v;
+
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
@@ -440,6 +447,7 @@ namespace KerbalHealth
             UpdateKerbals(true);
             int i = 0;
             node.AddValue("nextEventTime", nextEventTime);
+            node.AddValue("version", version.ToString());
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
                 Core.Log("Saving " + khs.Name + "'s health.");
@@ -456,6 +464,7 @@ namespace KerbalHealth
             Core.KerbalHealthList.Clear();
             int i = 0;
             nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
+            version = new Version(node.HasValue("version") ? node.GetValue("version") : "0.0");
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
             {
                 Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
