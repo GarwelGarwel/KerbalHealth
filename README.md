@@ -69,7 +69,7 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 **Requirements**
 
-- ModuleManager
+- [Module Manager](https://forum.kerbalspaceprogram.com/threads/55219)
 
 **Supported mods**
 
@@ -80,6 +80,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Bluedog Design Bureau](https://forum.kerbalspaceprogram.com/index.php?/topic/122020-131-bluedog-design-bureau-stockalike-saturn-apollo-and-more-v141-атлас-1jan2018)
 - [Deadly Reentry Continued](https://forum.kerbalspaceprogram.com/index.php?/topic/50296-122-deadly-reentry-v760-june-9-2017-the-ariel-edition/)
 - [DeepFreeze Continued](http://forum.kerbalspaceprogram.com/index.php?/topic/112328-11-deepfreeze-continued)
+- Deep Space Exploration Vehicles
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
