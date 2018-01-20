@@ -55,12 +55,17 @@ namespace KerbalHealth
         public void Process(KerbalHealthStatus status)
         {
             khs = status;
-            if (Condition() && (Core.rand.NextDouble() < ChancePerDay()))
+            if (Condition())
             {
-                Core.Log(Name + " event has fired for " + khs.Name + ".", Core.LogLevel.Important);
-                string msg = Message();
-                if ((msg != null) && !IsSilent) Core.ShowMessage(msg, khs.PCM);
-                Run();
+                double roll = Core.rand.NextDouble(), chance = ChancePerDay();
+                Core.Log(Name + " event for " + khs.Name + ": rolled " + roll + " with a chance of " + chance + ".");
+                if (roll < chance)
+                {
+                    Core.Log(Name + " event has fired for " + khs.Name + ".", Core.LogLevel.Important);
+                    string msg = Message();
+                    if ((msg != null) && !IsSilent) Core.ShowMessage(msg, khs.PCM);
+                    Run();
+                }
             }
         }
 
