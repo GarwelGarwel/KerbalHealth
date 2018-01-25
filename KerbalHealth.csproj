@@ -64,6 +64,7 @@
     <Compile Include="GetSickEvent.cs" />
     <Compile Include="CureEvent.cs" />
     <Compile Include="HealthCondition.cs" />
+    <Compile Include="HealthEffect.cs" />
     <Compile Include="KerbalHealthEventsSettings.cs" />
     <Compile Include="KerbalHealthFactorsSettings.cs" />
     <Compile Include="HealthFactor.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="KerbalHealthGeneralSettings.cs" />
     <Compile Include="SicknessFactor.cs" />
     <Compile Include="ToolbarWrapper.cs" />
+    <Compile Include="Quirk.cs" />
     <Compile Include="VesselHealthInfo.cs" />
   </ItemGroup>
   <ItemGroup>

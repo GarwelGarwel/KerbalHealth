@@ -67,6 +67,15 @@ namespace KerbalHealth
             set => events = value;
         }
 
+        public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
+
+        public static Quirk GetQuirk(string name)
+        {
+            foreach (Quirk q in Quirks)
+                if (string.Compare(name, q.Name, true) == 0) return q;
+            return null;
+        }
+
         /// <summary>
         /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
         /// </summary>
@@ -86,10 +95,16 @@ namespace KerbalHealth
         public static void LoadConfig()
         {
             Log("Loading config...");
+
             ResourceShielding = new Dictionary<int, double>();
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.");
+
+            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_QUIRK"))
+                Quirks.Add(new Quirk(n));
+            Core.Log(Quirks.Count + " quirks loaded.");
+
             Loaded = true;
         }
 
@@ -403,6 +418,14 @@ namespace KerbalHealth
         {
             double res;
             try { res = Double.Parse(n.GetValue(key)); }
+            catch (Exception) { res = defaultValue; }
+            return res;
+        }
+
+        public static int GetInt(ConfigNode n, string key, int defaultValue = 0)
+        {
+            int res;
+            try { res = Int32.Parse(n.GetValue(key)); }
             catch (Exception) { res = defaultValue; }
             return res;
         }

@@ -183,6 +183,93 @@ namespace KerbalHealth
             }
         }
         #endregion
+        #region QUIRKS
+
+        /// <summary>
+        /// List of this kerbal's quirks
+        /// </summary>
+        public List<string> Quirks { get; set; } = new List<string>();
+
+        /// <summary>
+        /// Last level processed for the kerbal
+        /// </summary>
+        public int QuirkLevel { get; set; } = 0;
+
+        /// <summary>
+        /// Adds the quirk unless it is already present
+        /// </summary>
+        /// <param name="quirk"></param>
+        public void AddQuirk(string quirk)
+        { if (!Quirks.Contains(quirk)) Quirks.Add(quirk); }
+
+        /// <summary>
+        /// Adds the quirk unless it is already present
+        /// </summary>
+        /// <param name="quirk"></param>
+        public void AddQuirk(Quirk quirk) => AddQuirk(quirk.Name);
+
+        static double GetQuirkWeight(double val, double w)
+        {
+            double v1 = (val - 0.5) * 2;
+            if (v1 < 0) return 1 / (1 + (1 - w) * v1);
+            else return 1 + (w - 1) * v1;
+        }
+
+        public Quirk GetRandomQuirk(int level)
+        {
+            List<Quirk> availableQuirks = new List<Quirk>();
+            List<double> weights = new List<double>();
+            double weightSum = 0;
+            foreach (Quirk q in Core.Quirks)
+                if (q.IsAvailableTo(this, level) && !Quirks.Contains(q.Name))
+                {
+                    availableQuirks.Add(q);
+                    double w = GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight);
+                    weightSum += w;
+                    weights.Add(w);
+                    Core.Log("Available quirk: " + q.Name + " (weight " + w + ")");
+                }
+            if ((availableQuirks.Count == 0) || (weightSum <= 0))
+            {
+                Core.Log("No available quirks found for " + Name + " (level " + level + ").", Core.LogLevel.Important);
+                return null;
+            }
+            double r = Core.rand.NextDouble() * weightSum;
+            Core.Log("Quirk selection roll: " + r + " out of " + weightSum);
+            for (int i = 0; i < availableQuirks.Count; i++)
+            {
+                r -= weights[i];
+                if (r < 0)
+                {
+                    Core.Log("Quirk " + availableQuirks[i].Name + " selected.");
+                    return availableQuirks[i];
+                }
+            }
+            Core.Log("Something is terribly wrong with quirk selection!", Core.LogLevel.Error);
+            return null;
+        }
+
+        public void AddRandomQuirk(int level) => Quirks.Add(GetRandomQuirk(level).Name);
+
+        public void AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
+
+        public void ProcessQuirks()
+        {
+            for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
+            {
+                if (Quirks.Count >= 2) break;
+                double r = Core.rand.NextDouble();
+                if (r < 0.2)
+                {
+                    Core.Log("A quirk will be added to " + Name + " (level " + l + ").");
+                    AddRandomQuirk(l);
+                }
+                else Core.Log("No quirks will be added to " + Name + " (level " + l + ").");
+            }
+            QuirkLevel = PCM.experienceLevel;
+        }
+
+        #endregion
         #region HP
         double hp;
         /// <summary>
@@ -409,6 +496,11 @@ namespace KerbalHealth
                 VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm).Clone();
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
                 VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
+                foreach (string s in Quirks)
+                {
+                    Quirk q = Core.GetQuirk(s);
+                    if (q != null) q.Apply(this);
+                }
                 Core.Log("Vessel Health Info:\n" + VesselHealthInfo);
                 LastChange = VesselHealthInfo.HPChange;
                 LastRecuperation = VesselHealthInfo.Recuperation;
@@ -450,6 +542,9 @@ namespace KerbalHealth
         public void Update(double interval)
         {
             Core.Log("Updating " + Name + "'s health.");
+
+            ProcessQuirks();
+
             bool frozen = HasCondition("Frozen");
 
             if (Core.RadiationEnabled && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Available))
@@ -507,6 +602,9 @@ namespace KerbalHealth
                 if (Exposure != 1) n.AddValue("exposure", Exposure);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
+                foreach (string q in Quirks)
+                    n.AddValue("quirk", q);
+                if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
                 if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
@@ -525,6 +623,9 @@ namespace KerbalHealth
                 Exposure = Core.GetDouble(value, "exposure", 1);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
+                foreach (string s in value.GetValues("quirk"))
+                    AddQuirk(s);
+                QuirkLevel = Core.GetInt(value, "quirkLevel");
                 if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
                 CachedChange = Core.GetDouble(value, "cachedChange");
                 LastRecuperation = Core.GetDouble(value, "lastRecuperation");

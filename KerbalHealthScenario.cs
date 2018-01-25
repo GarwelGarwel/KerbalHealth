@@ -445,9 +445,9 @@ namespace KerbalHealth
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnSave", Core.LogLevel.Important);
             UpdateKerbals(true);
-            int i = 0;
-            node.AddValue("nextEventTime", nextEventTime);
             node.AddValue("version", version.ToString());
+            node.AddValue("nextEventTime", nextEventTime);
+            int i = 0;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
                 Core.Log("Saving " + khs.Name + "'s health.");
@@ -461,10 +461,10 @@ namespace KerbalHealth
         {
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
+            version = new Version(node.HasValue("version") ? node.GetValue("version") : "0.0");
+            nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
             Core.KerbalHealthList.Clear();
             int i = 0;
-            nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
-            version = new Version(node.HasValue("version") ? node.GetValue("version") : "0.0");
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
             {
                 Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
