@@ -433,6 +433,11 @@ namespace KerbalHealth
         {
             double cosmicRadiationRate = 1, distanceToSun = 0;
             Vessel v = Core.KerbalVessel(PCM);
+            if (v == null)
+            {
+                Core.Log(Name + "'s vessel not found. No radiation added.", Core.LogLevel.Important);
+                return 0;
+            }
             Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
             if (v.mainBody != Sun.Instance.sun)
             {
@@ -449,7 +454,6 @@ namespace KerbalHealth
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            Core.Log("Exposure = " + Exposure);
             return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
         }
 
@@ -547,7 +551,7 @@ namespace KerbalHealth
 
             bool frozen = HasCondition("Frozen");
 
-            if (Core.RadiationEnabled && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Available))
+            if (Core.RadiationEnabled && ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen))
             {
                 Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
