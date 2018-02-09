@@ -130,7 +130,15 @@ namespace KerbalHealth
             return res.Trim();
         }
 
-        public VesselHealthInfo Clone() => (VesselHealthInfo)this.MemberwiseClone();
+        public VesselHealthInfo Clone()
+        {
+            VesselHealthInfo vhi = (VesselHealthInfo)this.MemberwiseClone();
+            vhi.BonusSums = new Dictionary<string, double>(BonusSums);
+            vhi.FreeMultipliers = new Dictionary<string, double>(FreeMultipliers);
+            vhi.MinMultipliers = new Dictionary<string, double>(MinMultipliers);
+            vhi.MaxMultipliers = new Dictionary<string, double>(MaxMultipliers);
+            return vhi;
+        }
 
         public VesselHealthInfo()
         {
