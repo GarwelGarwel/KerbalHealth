@@ -27,7 +27,7 @@ namespace KerbalHealth
         public double CourageWeight { get; set; } = 1;
         public double StupidityWeight { get; set; } = 1;
 
-        public List<HealthEffect> Effects { get; set; }
+        public List<HealthEffect> Effects { get; set; } = new List<HealthEffect>();
 
         /// <summary>
         /// Returns true if this quirk can be assigned to the given kerbal at a certain experience level
@@ -39,7 +39,7 @@ namespace KerbalHealth
         {
             if (level < MinLevel) return false;
             foreach (string q in IncompatibleQuirks)
-                if (khs.Quirks.Contains(q)) return false;
+                if (khs.Quirks.Contains(Core.GetQuirk(q))) return false;
             return true;
         }
 
@@ -60,16 +60,16 @@ namespace KerbalHealth
             }
         }
 
+        public override bool Equals(object obj) => (obj is Quirk) && (obj != null) && (((Quirk)obj).Name == Name);
+        public override int GetHashCode() => Name.GetHashCode();
+
         public override string ToString()
         {
-            string res = Name + " ('" + Title + "' " + (IsVisible ? "visible" : "invisible") + " MinLevel " + MinLevel;
-            if (IncompatibleQuirks.Count > 0)
-            {
-                res += " Incompatible with";
-                foreach (string s in IncompatibleQuirks)
-                    res += " " + s;
-            }
-            return res + ")";
+            string res = Title;
+            if ((Description != null) && (Description != "")) res += "\n" + Description;
+            foreach (HealthEffect he in Effects)
+                res += "\n" + he;
+            return res;
         }
 
         public Quirk(ConfigNode node)
@@ -87,6 +87,12 @@ namespace KerbalHealth
             foreach (ConfigNode n in node.GetNodes("EFFECT"))
                 Effects.Add(new HealthEffect(n));
             Core.Log("Quirk loaded: " + this);
+        }
+
+        public Quirk(string name)
+        {
+            Name = name;
+            IsVisible = false;
         }
     }
 }
