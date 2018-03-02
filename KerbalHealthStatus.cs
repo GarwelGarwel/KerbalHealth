@@ -188,7 +188,7 @@ namespace KerbalHealth
         /// <summary>
         /// List of this kerbal's quirks
         /// </summary>
-        public List<string> Quirks { get; set; } = new List<string>();
+        public List<Quirk> Quirks { get; set; } = new List<Quirk>();
 
         /// <summary>
         /// Last level processed for the kerbal
@@ -199,21 +199,22 @@ namespace KerbalHealth
         /// Adds the quirk unless it is already present
         /// </summary>
         /// <param name="quirk"></param>
-        public void AddQuirk(string quirk)
+        public void AddQuirk(Quirk quirk)
         { if (!Quirks.Contains(quirk)) Quirks.Add(quirk); }
 
         /// <summary>
         /// Adds the quirk unless it is already present
         /// </summary>
         /// <param name="quirk"></param>
-        public void AddQuirk(Quirk quirk) => AddQuirk(quirk.Name);
-
-        static double GetQuirkWeight(double val, double w)
+        public void AddQuirk(string quirk)
         {
-            double v1 = (val - 0.5) * 2;
-            if (v1 < 0) return 1 / (1 + (1 - w) * v1);
-            else return 1 + (w - 1) * v1;
+            Quirk q = Core.GetQuirk(quirk);
+            if (q == null) q = new Quirk(quirk);
+            Core.Quirks.Add(q);
+            AddQuirk(q);
         }
+
+        static double GetQuirkWeight(double val, double k) => val * (2 - 4 / (k + 1)) + 2 / (k + 1);
 
         public Quirk GetRandomQuirk(int level)
         {
@@ -221,7 +222,7 @@ namespace KerbalHealth
             List<double> weights = new List<double>();
             double weightSum = 0;
             foreach (Quirk q in Core.Quirks)
-                if (q.IsAvailableTo(this, level) && !Quirks.Contains(q.Name))
+                if (q.IsVisible && q.IsAvailableTo(this, level) && !Quirks.Contains(q))
                 {
                     availableQuirks.Add(q);
                     double w = GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight);
@@ -249,11 +250,16 @@ namespace KerbalHealth
             return null;
         }
 
-        public void AddRandomQuirk(int level) => Quirks.Add(GetRandomQuirk(level).Name);
+        public void AddRandomQuirk(int level)
+        {
+            Quirk q = GetRandomQuirk(level);
+            Quirks.Add(q);
+            Core.ShowMessage(Name + " acquired a new quirk.\n" + q, true, false);
+        }
 
         public void AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
 
-        public void ProcessQuirks()
+        public void AwardQuirks()
         {
             for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
             {
@@ -261,10 +267,10 @@ namespace KerbalHealth
                 double r = Core.rand.NextDouble();
                 if (r < 0.2)
                 {
-                    Core.Log("A quirk will be added to " + Name + " (level " + l + ").");
+                    Core.Log("A quirk will be added to " + Name + " (level " + l + "). Dice roll = " + r);
                     AddRandomQuirk(l);
                 }
-                else Core.Log("No quirks will be added to " + Name + " (level " + l + ").");
+                else Core.Log("No quirks will be added to " + Name + " (level " + l + "). Dice roll = " + r);
             }
             QuirkLevel = PCM.experienceLevel;
         }
@@ -302,7 +308,18 @@ namespace KerbalHealth
         /// <summary>
         /// Returns the max number of HP for the kerbal (including the modifier)
         /// </summary>
-        public double MaxHP => (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier;
+        public double MaxHP
+        {
+            get
+            {
+                double k = 1;
+                foreach (Quirk q in Quirks)
+                    if (q != null)
+                        foreach (HealthEffect he in q.Effects)
+                            if (he != null) k *= he.MaxHP;
+                return (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier * k;
+            }
+        }
 
         /// <summary>
         /// Returns kerbal's HP relative to MaxHealth (0 to 1)
@@ -497,15 +514,13 @@ namespace KerbalHealth
             // Processing parts
             if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
             {
+                Core.Log("VHI cache contains " + VesselHealthInfo.Cache.Count + " record(s).");
                 VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm).Clone();
+                Core.Log("Vessel Health Info before applying part and kerbal modifiers:\n" + VesselHealthInfo);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
                 VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
-                foreach (string s in Quirks)
-                {
-                    Quirk q = Core.GetQuirk(s);
-                    if (q != null) q.Apply(this);
-                }
-                Core.Log("Vessel Health Info:\n" + VesselHealthInfo);
+                foreach (Quirk q in Quirks) q.Apply(this);
+                Core.Log("Vessel Health Info after applying all modifiers:\n" + VesselHealthInfo);
                 LastChange = VesselHealthInfo.HPChange;
                 LastRecuperation = VesselHealthInfo.Recuperation;
                 LastDecay = VesselHealthInfo.Decay;
@@ -547,7 +562,8 @@ namespace KerbalHealth
         {
             Core.Log("Updating " + Name + "'s health.");
 
-            ProcessQuirks();
+            // UNCOMMENT THE NEXT LINE TO ENABLE AWARDING QUIRKS
+            //AwardQuirks();
 
             bool frozen = HasCondition("Frozen");
 
@@ -606,8 +622,8 @@ namespace KerbalHealth
                 if (Exposure != 1) n.AddValue("exposure", Exposure);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
-                foreach (string q in Quirks)
-                    n.AddValue("quirk", q);
+                foreach (Quirk q in Quirks)
+                    n.AddValue("quirk", q.Name);
                 if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
@@ -644,16 +660,17 @@ namespace KerbalHealth
 
         public KerbalHealthStatus Clone() => (KerbalHealthStatus)this.MemberwiseClone();
 
-        public KerbalHealthStatus(string name)
-        {
-            Name = name;
-            HP = MaxHP;
-        }
-
         public KerbalHealthStatus(string name, double health)
         {
             Name = name;
             HP = health;
+        }
+
+        public KerbalHealthStatus(string name)
+        {
+            Name = name;
+            HP = MaxHP;
+            Core.Log("Created record for " + name + " with " + HP + " HP.");
         }
 
         public KerbalHealthStatus(ConfigNode node) => ConfigNode = node;

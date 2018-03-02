@@ -12,14 +12,11 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="name">Kerbal's name</param>
         /// <param name="health">Kerbal's current HP, maximum if skipped</param>
-        public void Add(string name, double health = double.NaN)
+        public void Add(string name)
         {
             if (ContainsKey(name)) return;
-            Core.Log("Registering " + name + " with " + health + " health.", Core.LogLevel.Important);
-            KerbalHealthStatus khs;
-            if (double.IsNaN(health)) khs = new KerbalHealth.KerbalHealthStatus(name);
-            else khs = new KerbalHealth.KerbalHealthStatus(name, health);
-            Add(name, khs);
+            Core.Log("Registering " + name + ".", Core.LogLevel.Important);
+            Add(name, new KerbalHealthStatus(name));
         }
 
         /// <summary>
@@ -44,7 +41,7 @@ namespace KerbalHealth
             list.AddRange(kerbalRoster.Tourist);
             Core.Log(list.Count + " total trackable kerbals.", Core.LogLevel.Important);
             foreach (ProtoCrewMember pcm in list)
-                if (Core.IsKerbalTrackable(pcm)) Add(pcm.name, KerbalHealthStatus.GetMaxHP(pcm));
+                if (Core.IsKerbalTrackable(pcm)) Add(pcm.name);
             Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", Core.LogLevel.Important);
         }
 
