@@ -135,7 +135,7 @@ namespace KerbalHealth
             Core.Log("OnKerbalAdded('" + pcm.name + "')", Core.LogLevel.Important);
             if ((pcm.type == ProtoCrewMember.KerbalType.Applicant) || (pcm.type == ProtoCrewMember.KerbalType.Unowned))
             {
-                Core.Log("The kerbal is " + pcm.type + ". Skipping.");
+                Core.Log("The kerbal is " + pcm.type + ". Skipping.", Core.LogLevel.Important);
                 return;
             }
             Core.KerbalHealthList.Add(pcm.name);
@@ -152,7 +152,13 @@ namespace KerbalHealth
         public void OnKerbalNameChange(ProtoCrewMember pcm, string name1, string name2)
         {
             Core.Log("OnKerbalNameChange('" + pcm.name + "', '" + name1 + "', '" + name2 + "')", Core.LogLevel.Important);
-            Core.KerbalHealthList.Find(name1).Name = name2;
+            KerbalHealthStatus khs = Core.KerbalHealthList.Find(name1);
+            if (khs == null)
+            {
+                Core.Log(name1 + " not found in KerbalHealthList (contains " + Core.KerbalHealthList.Count + " records). He/she is " + pcm.rosterStatus + ".", Core.LogLevel.Important);
+                return;
+            }
+            khs.Name = name2;
             dirty = true;
         }
 
@@ -291,6 +297,8 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Level:"));
                 gridContents.Add(new DialogGUILabel(""));
+                gridContents.Add(new DialogGUILabel("Quirks:"));
+                gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Status:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Max HP:"));
@@ -394,11 +402,16 @@ namespace KerbalHealth
                 bool frozen = selectedKHS.HasCondition("Frozen");
                 gridContents[1].SetOptionText(selectedKHS.Name);
                 gridContents[3].SetOptionText(pcm.experienceLevel.ToString());
-                gridContents[5].SetOptionText(pcm.rosterStatus.ToString());
-                gridContents[7].SetOptionText(selectedKHS.MaxHP.ToString("F2"));
-                gridContents[9].SetOptionText(selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")");
-                gridContents[11].SetOptionText(frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"));
-                int i = 13;
+                string s = "";
+                foreach (Quirk q in selectedKHS.Quirks)
+                    if (q.IsVisible) s += ((s != "") ? ", " : "") + q.Title;
+                if (s == "") s = "None";
+                gridContents[5].SetOptionText(s);
+                gridContents[7].SetOptionText(pcm.rosterStatus.ToString());
+                gridContents[9].SetOptionText(selectedKHS.MaxHP.ToString("F2"));
+                gridContents[11].SetOptionText(selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")");
+                gridContents[13].SetOptionText(frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"));
+                int i = 15;
                 if (Core.IsKerbalLoaded(selectedKHS.PCM) && !frozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
