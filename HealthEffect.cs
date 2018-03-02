@@ -13,12 +13,6 @@ namespace KerbalHealth
         public double ExhaustedEnd { get; set; } = 1;  // Exhausted end level multiplier
         public double Exposure { get; set; } = 1;  // Exposure multiplier
 
-        public double AccidentChance { get; set; } = 1;  // Accident chance multiplier
-        public double PanicAttackChance { get; set; } = 1;  // Panic attack chance multiplier
-        public double SicknessChance { get; set; } = 1;  // Getting infected/sick chance multiplier
-        public double CureChance { get; set; } = 1;  // Sickness cure chance multiplier
-        public double LoseImmunityChance { get; set; } = 1;  // Lose immunity chance multiplier
-
         public double HPChangePerDay { get; set; } = 0;  // How many raw HP per day every affected kerbal gains
         public double Recuperation { get; set; } = 0;  // Will increase HP by this % of (MaxHP - HP) per day
         public double Decay { get; set; } = 0;  // Will decrease by this % of (HP - MinHP) per day
@@ -27,6 +21,12 @@ namespace KerbalHealth
         public double Space { get; set; } = 0;  // Points of living space provided by the part (used to calculate Crowded factor)
         public double Shielding { get; set; } = 0;  // Number of halving-thicknesses
         public double Radioactivity { get; set; } = 0;  // Radioactive emission, bananas/day
+
+        public double AccidentChance { get; set; } = 1;  // Accident chance multiplier
+        public double PanicAttackChance { get; set; } = 1;  // Panic attack chance multiplier
+        public double SicknessChance { get; set; } = 1;  // Getting infected/sick chance multiplier
+        public double CureChance { get; set; } = 1;  // Sickness cure chance multiplier
+        public double LoseImmunityChance { get; set; } = 1;  // Lose immunity chance multiplier
 
         public void Apply(KerbalHealthStatus khs)
         {
@@ -51,11 +51,24 @@ namespace KerbalHealth
             if (Space != 0) res += "\nSpace: " + Space.ToString("F1");
             if (Shielding != 0) res += "\nShielding rating: " + Shielding.ToString("F1");
             if (Radioactivity != 0) res += "\nRadioactive emission: " + Radioactivity.ToString("N0") + "/day";
-            return res;
+
+            if (AccidentChance != 1) res += "\nAccident chance: x" + AccidentChance;
+            if (PanicAttackChance != 1) res += "\nPanic attack chance: x" + PanicAttackChance;
+            if (SicknessChance != 1) res += "\nSickness chance: x" + SicknessChance;
+            if (CureChance != 1) res += "\nCure chance: x" + CureChance;
+            if (LoseImmunityChance != 1) res += "\nLose immunity chance: x" + LoseImmunityChance;
+
+            return res.Trim();
         }
 
         public HealthEffect(ConfigNode node)
         {
+            MaxHP = Core.GetDouble(node, "maxHP", 1);
+            MaxHPBonus = Core.GetDouble(node, "maxHPBonus");
+            ExhaustedStart = Core.GetDouble(node, "exhaustedStart", 1);
+            ExhaustedEnd = Core.GetDouble(node, "exhaustedEnd", 1);
+            Exposure = Core.GetDouble(node, "exposure", 1);
+
             HPChangePerDay = Core.GetDouble(node, "hpChangePerDay");
             Recuperation = Core.GetDouble(node, "recuperation");
             Decay = Core.GetDouble(node, "decay");
@@ -64,6 +77,15 @@ namespace KerbalHealth
             Space = Core.GetDouble(node, "space");
             Shielding = Core.GetDouble(node, "shielding");
             Radioactivity = Core.GetDouble(node, "radioactivity");
+
+            AccidentChance = Core.GetDouble(node, "accidentChance", 1);
+            PanicAttackChance = Core.GetDouble(node, "panicAttackChance", 1);
+            SicknessChance = Core.GetDouble(node, "sicknessChance", 1);
+            CureChance = Core.GetDouble(node, "cureChance", 1);
+            LoseImmunityChance = Core.GetDouble(node, "loseImmunityChance", 1);
         }
+
+        private HealthEffect()
+        { }
     }
 }
