@@ -5,16 +5,32 @@ using System.Text;
 
 namespace KerbalHealth
 {
+    /// <summary>
+    /// Keeps modifiers introduced by vessel parts etc.
+    /// </summary>
     public class VesselHealthInfo
     {
+        /// <summary>
+        /// Cache of processed vessels, refreshed at every update
+        /// </summary>
         public static Dictionary<Guid, VesselHealthInfo> Cache = new Dictionary<Guid, VesselHealthInfo>();
 
+        /// <summary>
+        /// Returns vessel health info for the given vessel, either cached or calculated
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static VesselHealthInfo GetVesselInfo(Vessel v)
         {
             if (Cache.ContainsKey(v.id)) return Cache[v.id];
             return Cache[v.id] = new VesselHealthInfo(v);
         }
 
+        /// <summary>
+        /// Returns vessel health info for the vessel with the given kerbal
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
         public static VesselHealthInfo GetVesselInfo(ProtoCrewMember pcm)
         {
             if (Core.IsInEditor)
@@ -38,11 +54,18 @@ namespace KerbalHealth
         public double Decay { get; set; }
         public double Shielding { get; set; }
         public double PartsRadiation { get; set; }
+        public double ExposureModifier { get; set; }
         public Dictionary<string, double> BonusSums { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> FreeMultipliers { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> MinMultipliers { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> MaxMultipliers { get; set; } = new Dictionary<string, double>();
 
+        /// <summary>
+        /// Returns effective multiplier for the given factor
+        /// </summary>
+        /// <param name="factorId"></param>
+        /// <param name="crewCount"></param>
+        /// <returns></returns>
         public double GetMultiplier(string factorId, int crewCount)
         {
             double res = 1 - BonusSums[factorId] / crewCount;
@@ -92,6 +115,10 @@ namespace KerbalHealth
                 }
         }
 
+        /// <summary>
+        /// Processes several parts and also records their RadiationShielding values
+        /// </summary>
+        /// <param name="parts"></param>
         public void ProcessParts(List<Part> parts)
         {
             Core.Log("Processing " + parts.Count + " parts...");
@@ -107,6 +134,10 @@ namespace KerbalHealth
             }
         }
 
+        /// <summary>
+        /// Returns a text description of all significant values
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string res = "";
@@ -130,6 +161,10 @@ namespace KerbalHealth
             return res.Trim();
         }
 
+        /// <summary>
+        /// Returns a deep copy of the instance
+        /// </summary>
+        /// <returns></returns>
         public VesselHealthInfo Clone()
         {
             VesselHealthInfo vhi = (VesselHealthInfo)this.MemberwiseClone();
