@@ -110,6 +110,7 @@
     <None Include="Patches\KHIE.cfg" />
     <None Include="Patches\KHKerbalAtomics.cfg" />
     <None Include="Patches\KHKPBS.cfg" />
+    <None Include="Patches\KHMakingHistory.cfg" />
     <None Include="Patches\KHMKS.cfg" />
     <None Include="Patches\KHRSCapsuledyne.cfg" />
     <None Include="Patches\KHSpaceY.cfg" />
