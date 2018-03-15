@@ -30,6 +30,7 @@ namespace KerbalHealth
 
         public void Apply(KerbalHealthStatus khs)
         {
+            khs.Exposure *= Exposure;
             khs.VesselHealthInfo.HPChange += HPChangePerDay;
             khs.VesselHealthInfo.RecuperationPower += Recuperation;
             khs.VesselHealthInfo.MaxRecuperaction = Math.Max(khs.VesselHealthInfo.MaxRecuperaction, Recuperation);
@@ -44,19 +45,25 @@ namespace KerbalHealth
         public override string ToString()
         {
             string res = "";
-            if (HPChangePerDay != 0) res = "\nHealth points: " + HPChangePerDay.ToString("F1") + "/day";
-            if (Recuperation != 0) res += "\nRecuperation: " + Recuperation.ToString("F1") + "%/day";
-            if (Decay != 0) res += "\nHealth decay: " + Decay.ToString("F1") + "%/day";
-            if (Multiplier != 1) res += "\n" + Multiplier.ToString("F2") + "x " + MultiplyFactor;
-            if (Space != 0) res += "\nSpace: " + Space.ToString("F1");
-            if (Shielding != 0) res += "\nShielding rating: " + Shielding.ToString("F1");
-            if (Radioactivity != 0) res += "\nRadioactive emission: " + Radioactivity.ToString("N0") + "/day";
+            if (MaxHP != 1) res += "\n" + Core.SignValue(HPChangePerDay - 1, "P0") + " max HP";
+            if (MaxHPBonus != 0) res += "\n" + Core.SignValue(MaxHPBonus, "F0") + "x max HP";
+            if (ExhaustedStart != 1) res += "\n" + ExhaustedStart.ToString("F2") + "x Exhausted condition start HP";
+            if (ExhaustedEnd != 1) res += "\n" + ExhaustedEnd.ToString("F2") + "x Exhausted condition end HP";
+            if (Exposure != 1) res += "\n" + Exposure.ToString("F2") + "x Radiation Exposure";
 
-            if (AccidentChance != 1) res += "\nAccident chance: x" + AccidentChance;
-            if (PanicAttackChance != 1) res += "\nPanic attack chance: x" + PanicAttackChance;
-            if (SicknessChance != 1) res += "\nSickness chance: x" + SicknessChance;
-            if (CureChance != 1) res += "\nCure chance: x" + CureChance;
-            if (LoseImmunityChance != 1) res += "\nLose immunity chance: x" + LoseImmunityChance;
+            if (HPChangePerDay != 0) res = "\n" + Core.SignValue(HPChangePerDay, "F1") + " HP/day";
+            if (Recuperation != 0) res += "\n" + Recuperation.ToString("F1") + "%/day Recuperation";
+            if (Decay != 0) res += "\n" + Decay.ToString("F1") + "%/day Health Decay";
+            if (Multiplier != 1) res += "\n" + Multiplier.ToString("F2") + "x " + MultiplyFactor;
+            if (Space != 0) res += "\n" + Core.SignValue(Space, "F1") + " Living Space";
+            if (Shielding != 0) res += "\n" + Core.SignValue(Shielding, "F1") + " Shielding";
+            if (Radioactivity != 0) res += "\n" + Core.SignValue(Radioactivity, "N0") + " banana/day radioactive emission";
+
+            if (AccidentChance != 1) res += "\n" + AccidentChance.ToString("F2") + "x Accident chance";
+            if (PanicAttackChance != 1) res += "\n" + PanicAttackChance.ToString("F2") + "x Panic attack chance";
+            if (SicknessChance != 1) res += "\n" + SicknessChance.ToString("F2") + "x Sickness chance";
+            if (CureChance != 1) res += "\n" + CureChance.ToString("F2") + "x Cure chance";
+            if (LoseImmunityChance != 1) res += "\n" + LoseImmunityChance.ToString("F2") + "x Lose immunity chance";
 
             return res.Trim();
         }
