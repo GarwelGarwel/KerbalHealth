@@ -108,6 +108,8 @@ namespace KerbalHealth
             Loaded = true;
         }
 
+        #region SETTINGS
+
         /// <summary>
         /// Is Kerbal Health is enabled via Settings menu?
         /// </summary>
@@ -325,6 +327,43 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Quirks can be awarded to kerbals and affect their health stats
+        /// </summary>
+        public static bool QuirksEnabled
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksEnabled = value;
+        }
+
+        /// <summary>
+        /// Maximum number of quirks for a kerbal
+        /// </summary>
+        public static int MaxQuirks
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().MaxQuirks;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().MaxQuirks = value;
+        }
+
+        /// <summary>
+        /// Chance of a kerbal being awarded a quirk when he/she levels up
+        /// </summary>
+        public static float QuirkChance
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirkChance;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirkChance = value;
+        }
+
+        /// <summary>
+        /// Chances of getting some quirks depend on Courage and Stupidity of the kerbal
+        /// </summary>
+        public static bool StatsAffectQuirkWeights
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().StatsAffectQuirkWeights;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().StatsAffectQuirkWeights = value;
+        }
+
+        #endregion
+        /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
         /// </summary>
         public static bool IsInEditor => HighLogic.LoadedSceneIsEditor;
@@ -439,6 +478,8 @@ namespace KerbalHealth
         }
 
         public static double Sqr(double x) => x * x;
+
+        public static string SignValue(double v, string format) => ((v > 0) ? "+" : "") + v.ToString(format);
 
         public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
         {

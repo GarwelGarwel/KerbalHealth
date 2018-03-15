@@ -225,7 +225,7 @@ namespace KerbalHealth
                 if (q.IsVisible && q.IsAvailableTo(this, level) && !Quirks.Contains(q))
                 {
                     availableQuirks.Add(q);
-                    double w = GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight);
+                    double w = Core.StatsAffectQuirkWeights ? GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight) : 1;
                     weightSum += w;
                     weights.Add(w);
                     Core.Log("Available quirk: " + q.Name + " (weight " + w + ")");
@@ -263,9 +263,9 @@ namespace KerbalHealth
         {
             for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
             {
-                if (Quirks.Count >= 2) break;
+                if (Quirks.Count >= Core.MaxQuirks) break;
                 double r = Core.rand.NextDouble();
-                if (r < 0.2)
+                if (r < Core.QuirkChance)
                 {
                     Core.Log("A quirk will be added to " + Name + " (level " + l + "). Dice roll = " + r);
                     AddRandomQuirk(l);
@@ -313,10 +313,11 @@ namespace KerbalHealth
             get
             {
                 double k = 1;
-                foreach (Quirk q in Quirks)
-                    if (q != null)
-                        foreach (HealthEffect he in q.Effects)
-                            if (he != null) k *= he.MaxHP;
+                if (Core.QuirksEnabled)
+                    foreach (Quirk q in Quirks)
+                        if (q != null)
+                            foreach (HealthEffect he in q.Effects)
+                                if (he != null) k *= he.MaxHP;
                 return (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier * k;
             }
         }
@@ -511,7 +512,7 @@ namespace KerbalHealth
             }
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
 
-            // Processing parts
+            // Processing parts and quirks
             if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
             {
                 Core.Log("VHI cache contains " + VesselHealthInfo.Cache.Count + " record(s).");
@@ -519,7 +520,8 @@ namespace KerbalHealth
                 Core.Log("Vessel Health Info before applying part and kerbal modifiers:\n" + VesselHealthInfo);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
                 VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
-                foreach (Quirk q in Quirks) q.Apply(this);
+                if (Core.QuirksEnabled)
+                    foreach (Quirk q in Quirks) q.Apply(this);
                 Core.Log("Vessel Health Info after applying all modifiers:\n" + VesselHealthInfo);
                 LastChange = VesselHealthInfo.HPChange;
                 LastRecuperation = VesselHealthInfo.Recuperation;
@@ -562,8 +564,7 @@ namespace KerbalHealth
         {
             Core.Log("Updating " + Name + "'s health.");
 
-            // UNCOMMENT THE NEXT LINE TO ENABLE AWARDING QUIRKS
-            //AwardQuirks();
+            if (Core.QuirksEnabled) AwardQuirks();
 
             bool frozen = HasCondition("Frozen");
 
