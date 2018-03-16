@@ -65,10 +65,15 @@ namespace KerbalHealth
 
         public override string ToString()
         {
-            string res = Title;
+            string res = Title + ".";
             if ((Description != null) && (Description != "")) res += "\n" + Description;
-            foreach (HealthEffect he in Effects)
-                res += "\n" + he;
+            if (Effects.Count == 1) res += "\nEffect: " + Effects[0];
+            if (Effects.Count > 1)
+            {
+                res += "\nEffects:";
+                foreach (HealthEffect he in Effects)
+                    res += "\n" + he;
+            }
             return res;
         }
 
