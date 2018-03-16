@@ -101,6 +101,7 @@ namespace KerbalHealth
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.");
 
+            Quirks = new List<Quirk>();
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_QUIRK"))
                 Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.");
@@ -453,6 +454,8 @@ namespace KerbalHealth
             return null;
         }
 
+        public static string GetString(ConfigNode n, string key, string defaultValue = null) => n.HasValue(key) ? n.GetValue(key) : defaultValue;
+
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
         {
             double res;
@@ -477,9 +480,33 @@ namespace KerbalHealth
             return res;
         }
 
+        /// <summary>
+        /// Returns x*x
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
         public static double Sqr(double x) => x * x;
 
+        /// <summary>
+        /// Returns a string representing value v with a mandatory sign (+ or -, unless v = 0)
+        /// </summary>
+        /// <param name="v">Value to present as a string</param>
+        /// <param name="format">String format according to Double.ToString</param>
+        /// <returns></returns>
         public static string SignValue(double v, string format) => ((v > 0) ? "+" : "") + v.ToString(format);
+
+        /// <summary>
+        /// Returns the number of occurences of a character in a string
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        public static int CountChars(string s, char c)
+        {
+            int res = 0;
+            foreach (char ch in s) if (ch == c) res++;
+            return res;
+        }
 
         public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
         {
