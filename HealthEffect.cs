@@ -28,8 +28,19 @@ namespace KerbalHealth
         public double CureChance { get; set; } = 1;  // Sickness cure chance multiplier
         public double LoseImmunityChance { get; set; } = 1;  // Lose immunity chance multiplier
 
+        public Logic Logic { get; set; } = new Logic();
+
+        public bool IsApplicable(KerbalHealthStatus khs) => Logic.Test(khs.PCM);
+
         public void Apply(KerbalHealthStatus khs)
         {
+            //Core.Log("Applying the following effect to " + khs.Name + ": " + this);
+            if (!Logic.Test(khs.PCM))
+            {
+                Core.Log("Logic is false for this effect. Application canceled.");
+                return;
+            }
+            else Core.Log("Logic is true for this effect.");
             khs.Exposure *= Exposure;
             khs.VesselHealthInfo.HPChange += HPChangePerDay;
             khs.VesselHealthInfo.RecuperationPower += Recuperation;
@@ -45,7 +56,7 @@ namespace KerbalHealth
         public override string ToString()
         {
             string res = "";
-            if (MaxHP != 1) res += "\n" + Core.SignValue(HPChangePerDay - 1, "P0") + " max HP";
+            if (MaxHP != 1) res += "\n" + Core.SignValue(MaxHP - 1, "P0") + " max HP";
             if (MaxHPBonus != 0) res += "\n" + Core.SignValue(MaxHPBonus, "F0") + "x max HP";
             if (ExhaustedStart != 1) res += "\n" + ExhaustedStart.ToString("F2") + "x Exhausted condition start HP";
             if (ExhaustedEnd != 1) res += "\n" + ExhaustedEnd.ToString("F2") + "x Exhausted condition end HP";
@@ -54,7 +65,7 @@ namespace KerbalHealth
             if (HPChangePerDay != 0) res = "\n" + Core.SignValue(HPChangePerDay, "F1") + " HP/day";
             if (Recuperation != 0) res += "\n" + Recuperation.ToString("F1") + "%/day Recuperation";
             if (Decay != 0) res += "\n" + Decay.ToString("F1") + "%/day Health Decay";
-            if (Multiplier != 1) res += "\n" + Multiplier.ToString("F2") + "x " + MultiplyFactor;
+            if (Multiplier != 1) res += "\n" + Multiplier.ToString("F2") + "x " + MultiplyFactor + " factor";
             if (Space != 0) res += "\n" + Core.SignValue(Space, "F1") + " Living Space";
             if (Shielding != 0) res += "\n" + Core.SignValue(Shielding, "F1") + " Shielding";
             if (Radioactivity != 0) res += "\n" + Core.SignValue(Radioactivity, "N0") + " banana/day radioactive emission";
@@ -64,6 +75,9 @@ namespace KerbalHealth
             if (SicknessChance != 1) res += "\n" + SicknessChance.ToString("F2") + "x Sickness chance";
             if (CureChance != 1) res += "\n" + CureChance.ToString("F2") + "x Cure chance";
             if (LoseImmunityChance != 1) res += "\n" + LoseImmunityChance.ToString("F2") + "x Lose immunity chance";
+
+            string l = Logic.ToString();
+            if (l != "") res += "\nLogic:\n" + l;
 
             return res.Trim();
         }
@@ -90,6 +104,8 @@ namespace KerbalHealth
             SicknessChance = Core.GetDouble(node, "sicknessChance", 1);
             CureChance = Core.GetDouble(node, "cureChance", 1);
             LoseImmunityChance = Core.GetDouble(node, "loseImmunityChance", 1);
+
+            Logic.ConfigNode = node;
         }
 
         private HealthEffect()

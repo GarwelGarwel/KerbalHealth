@@ -72,6 +72,7 @@
     <Compile Include="KerbalHealthQuirkSettings.cs" />
     <Compile Include="KerbalHealthRadiationSettings.cs" />
     <Compile Include="KSCFactor.cs" />
+    <Compile Include="Logic.cs" />
     <Compile Include="LonelinessFactor.cs" />
     <Compile Include="HomeFactor.cs" />
     <Compile Include="LoseImmunityEvent.cs" />
