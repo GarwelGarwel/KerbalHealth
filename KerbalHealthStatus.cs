@@ -254,7 +254,7 @@ namespace KerbalHealth
         {
             Quirk q = GetRandomQuirk(level);
             Quirks.Add(q);
-            Core.ShowMessage(Name + " acquired a new quirk.\n" + q, true, false);
+            Core.ShowMessage(Name + " acquired a new quirk: " + q, true, false);
         }
 
         public void AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
@@ -312,13 +312,17 @@ namespace KerbalHealth
         {
             get
             {
-                double k = 1;
+                double k = 1, a = 0;
                 if (Core.QuirksEnabled)
                     foreach (Quirk q in Quirks)
                         if (q != null)
                             foreach (HealthEffect he in q.Effects)
-                                if (he != null) k *= he.MaxHP;
-                return (GetMaxHP(PCM) + MaxHPModifier) * RadiationMaxHPModifier * k;
+                                if ((he != null) && he.IsApplicable(this))
+                                {
+                                    a += he.MaxHPBonus;
+                                    k *= he.MaxHP;
+                                }
+                return (GetMaxHP(PCM) + MaxHPModifier + a) * RadiationMaxHPModifier * k;
             }
         }
 
@@ -515,6 +519,8 @@ namespace KerbalHealth
             // Processing parts and quirks
             if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
             {
+                Exposure = GetExposure(VesselHealthInfo.Shielding, Core.GetCrewCapacity(pcm));
+                if (IsOnEVA) Exposure *= Core.EVAExposure;
                 Core.Log("VHI cache contains " + VesselHealthInfo.Cache.Count + " record(s).");
                 VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm).Clone();
                 Core.Log("Vessel Health Info before applying part and kerbal modifiers:\n" + VesselHealthInfo);
@@ -527,8 +533,6 @@ namespace KerbalHealth
                 LastRecuperation = VesselHealthInfo.Recuperation;
                 LastDecay = VesselHealthInfo.Decay;
                 partsRadiation = VesselHealthInfo.PartsRadiation;
-                Exposure = GetExposure(VesselHealthInfo.Shielding, Core.GetCrewCapacity(pcm));
-                if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
 
             Core.Log("Processing " + Core.Factors.Count + " factors for " + Name + "...");
@@ -593,15 +597,24 @@ namespace KerbalHealth
                 Core.ShowMessage(Name + " has died of poor health!", true);
             }
 
+            double xs = Core.ExhaustionStartHealth, xe = Core.ExhaustionEndHealth;
+            if (Core.QuirksEnabled)
+                foreach (Quirk q in Quirks)
+                    foreach (HealthEffect he in q.Effects)
+                        if (he.IsApplicable(this))
+                        {
+                            xs *= he.ExhaustedStart;
+                            xe *= he.ExhaustedEnd;
+                        }
             if (HasCondition("Exhausted"))
             {
-                if (HP >= Core.ExhaustionEndHealth * MaxHP)
+                if (HP >= xe * MaxHP)
                 {
                     RemoveCondition("Exhausted");
                     Core.ShowMessage(Name + " is no longer exhausted.", PCM);
                 }
             }
-            else if (HP < Core.ExhaustionStartHealth * MaxHP)
+            else if (HP < xs * MaxHP)
             {
                 AddCondition(new HealthCondition("Exhausted"));
                 Core.ShowMessage(Name + " is exhausted!", PCM);
