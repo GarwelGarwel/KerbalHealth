@@ -35,7 +35,6 @@ namespace KerbalHealth
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.Start", Core.LogLevel.Important);
             Core.Log(Core.Factors.Count + " factors initialized.");
-            if (!Core.Loaded) Core.LoadConfig();
             Core.KerbalHealthList.RegisterKerbals();
 
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
@@ -472,6 +471,7 @@ namespace KerbalHealth
 
         public override void OnLoad(ConfigNode node)
         {
+            if (!Core.Loaded) Core.LoadConfig();
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             version = new Version(node.HasValue("version") ? node.GetValue("version") : "0.0");
