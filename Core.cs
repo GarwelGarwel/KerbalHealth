@@ -508,6 +508,42 @@ namespace KerbalHealth
             return res;
         }
 
+        /// <summary>
+        /// Formats time as a string, e.g. 876 d 5 h 43 m 21.09 s
+        /// </summary>
+        /// <param name="time">Time in seconds</param>
+        /// <param name="digits">Number of floating-point digits in seconds, default = 0</param>
+        /// <returns></returns>
+        public static string FormatTime(double time, bool showSeconds = true, int digits = 0)
+        {
+            double t = time;
+            int d, m, h;
+            string res = "";
+            bool show0 = false;
+            if (t >= KSPUtil.dateTimeFormatter.Day)
+            {
+                d = (int)Math.Floor(time / KSPUtil.dateTimeFormatter.Day);
+                t -= d * KSPUtil.dateTimeFormatter.Day;
+                res += d + " d ";
+                show0 = true;
+            }
+            if ((t >= 3600) || show0)
+            {
+                h = (int)Math.Floor(time / 3600);
+                t -= h * 3600;
+                res += h + " h ";
+                show0 = true;
+            }
+            if ((t >= 60) || show0)
+            {
+                m = (int)Math.Floor(time / 60);
+                t -= m * 60;
+                res += m + " m ";
+            }
+            if ((time < 60) || showSeconds) res += t.ToString("F" + digits) + " s";
+            return res.TrimEnd();
+        }
+
         public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
         {
             if (useMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
