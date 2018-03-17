@@ -104,7 +104,7 @@ namespace KerbalHealth
             string indent2 = indent1 + pad + " ";
             if (InSOI != null) res += "\n" + indent2 + "Kerbal is in the SOI of " + InSOI;
             if (KerbalStatus != null) res += "\n" + indent2 + "Kerbal is" + KerbalStatus;
-            if (!Double.IsNaN(MissionTime)) res += "\n" + indent2 + "Mission lasts at least " + MissionTime + " sec";
+            if (!Double.IsNaN(MissionTime)) res += "\n" + indent2 + "Mission lasts at least " + Core.ParseUT(MissionTime, false, 100);
             if (GenderPresent != null) res += "\n" + indent2 + GenderPresent + " gender kerbal(s) present in the vessel";
             foreach (Logic l in Operands) res += "\n" + l.Description(level + 1, pad);
             if (Core.CountChars(res, '\n') >= 2)

@@ -4,7 +4,7 @@
     {
         public override string Name => "PanicAttack";
 
-        public override string Message() => khs.Name + " is having a panic attack! " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "He" : "She") + " is expected to get better in about " + Core.FormatTime(inactionTime, false) + ".";
+        public override string Message() => khs.Name + " is having a panic attack! " + (khs.PCM.gender == ProtoCrewMember.Gender.Male ? "He" : "She") + " is expected to get better in about " + Core.ParseUT(inactionTime, false, 2) + ".";
 
         public override bool Condition() => (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) && !khs.HasCondition("Exhausted");
 

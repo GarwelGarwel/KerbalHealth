@@ -390,7 +390,7 @@ namespace KerbalHealth
                     double b = khs.GetBalanceHP();
                     string s = "";
                     if (frozen || (b > khs.NextConditionHP())) s = "—";
-                    else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
+                    else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), true, 100);
                     gridContents[(i + 1) * colNumMain + 4].SetOptionText(s);
                     gridContents[(i + 1) * colNumMain + 5].SetOptionText(khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : ""));
                 }

@@ -370,18 +370,6 @@ namespace KerbalHealth
         public static bool IsInEditor => HighLogic.LoadedSceneIsEditor;
 
         /// <summary>
-        /// Parses UT as a delta compact time (e.g. "2d 3h 15m"). Time is hidden when days >= 100.
-        /// </summary>
-        /// <param name="time">Universal time</param>
-        /// <returns></returns>
-        public static string ParseUT(double time)
-        {
-            if (double.IsNaN(time) || (time == 0)) return "—";
-            if (time > KSPUtil.dateTimeFormatter.Year * 10) return "10y+";
-            return KSPUtil.PrintDateDeltaCompact(time, time < KSPUtil.dateTimeFormatter.Day * 100, false);
-        }
-
-        /// <summary>
         /// Returns number of current crew in a vessel the kerbal is in or in the currently constructed vessel
         /// </summary>
         /// <param name="pcm"></param>
@@ -509,38 +497,52 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Formats time as a string, e.g. 876 d 5 h 43 m 21.09 s
+        /// Parses UT into a string (e.g. "2 d 3 h 15 m 59 s"), hides zero elements
         /// </summary>
         /// <param name="time">Time in seconds</param>
-        /// <param name="digits">Number of floating-point digits in seconds, default = 0</param>
+        /// <param name="showSeconds">If false, seconds will be displayed only if time is less than 1 minute; otherwise always</param>
+        /// <param name="daysTimeLimit">If time is longer than this number of days, time value will be skipped; -1 to disable</param>
         /// <returns></returns>
-        public static string FormatTime(double time, bool showSeconds = true, int digits = 0)
+        public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
+            if (Double.IsNaN(time) || (time == 0)) return "—";
+            if (time > KSPUtil.dateTimeFormatter.Year * 10) return "10y+";
             double t = time;
-            int d, m, h;
+            int y, d, m, h;
             string res = "";
             bool show0 = false;
+            if (t >= KSPUtil.dateTimeFormatter.Year)
+            {
+                y = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Year);
+                t -= t * KSPUtil.dateTimeFormatter.Year;
+                res += y + " y ";
+                show0 = true;
+            }
             if (t >= KSPUtil.dateTimeFormatter.Day)
             {
-                d = (int)Math.Floor(time / KSPUtil.dateTimeFormatter.Day);
+                d = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Day);
                 t -= d * KSPUtil.dateTimeFormatter.Day;
                 res += d + " d ";
                 show0 = true;
             }
-            if ((t >= 3600) || show0)
+            if ((daysTimeLimit > -1) && (time >= KSPUtil.dateTimeFormatter.Day * daysTimeLimit))
             {
-                h = (int)Math.Floor(time / 3600);
-                t -= h * 3600;
-                res += h + " h ";
-                show0 = true;
+                if ((t >= 3600) || show0)
+                {
+                    h = (int)Math.Floor(t / 3600);
+                    t -= h * 3600;
+                    res += h + " h ";
+                    show0 = true;
+                }
+                if ((t >= 60) || show0)
+                {
+                    m = (int)Math.Floor(t / 60);
+                    t -= m * 60;
+                    res += m + " m ";
+                }
+                if ((time < 60) || (showSeconds && (Math.Floor(t) > 0))) res += t.ToString("F0") + " s";
             }
-            if ((t >= 60) || show0)
-            {
-                m = (int)Math.Floor(time / 60);
-                t -= m * 60;
-                res += m + " m ";
-            }
-            if ((time < 60) || showSeconds) res += t.ToString("F" + digits) + " s";
+            else if (time < KSPUtil.dateTimeFormatter.Day) res = "0 d";
             return res.TrimEnd();
         }
 
