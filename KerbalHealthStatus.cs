@@ -519,8 +519,7 @@ namespace KerbalHealth
             // Processing parts and quirks
             if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
             {
-                Exposure = GetExposure(VesselHealthInfo.Shielding, Core.GetCrewCapacity(pcm));
-                if (IsOnEVA) Exposure *= Core.EVAExposure;
+                Exposure = 1;
                 Core.Log("VHI cache contains " + VesselHealthInfo.Cache.Count + " record(s).");
                 VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm).Clone();
                 Core.Log("Vessel Health Info before applying part and kerbal modifiers:\n" + VesselHealthInfo);
@@ -533,6 +532,8 @@ namespace KerbalHealth
                 LastRecuperation = VesselHealthInfo.Recuperation;
                 LastDecay = VesselHealthInfo.Decay;
                 partsRadiation = VesselHealthInfo.PartsRadiation;
+                Exposure *= GetExposure(VesselHealthInfo.Shielding, Core.GetCrewCapacity(pcm));
+                if (IsOnEVA) Exposure *= Core.EVAExposure;
             }
 
             Core.Log("Processing " + Core.Factors.Count + " factors for " + Name + "...");
