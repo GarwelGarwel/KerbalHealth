@@ -8,7 +8,15 @@
 
         public override bool Condition() => true;
 
-        public override double ChancePerDay() => (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod > 0) ? 2 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod * khs.PCM.stupidity : 0;
+        public override double ChancePerDay()
+        {
+            double c = (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod > 0) ? 2 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().AccidentPeriod * khs.PCM.stupidity : 0;
+            if ((c != 0) && Core.QuirksEnabled)
+                foreach (Quirk q in khs.Quirks)
+                    foreach (HealthEffect he in q.Effects)
+                        if (he.IsApplicable(khs)) c *= he.AccidentChance;
+            return c;
+        }
 
         float MinDamage
         {

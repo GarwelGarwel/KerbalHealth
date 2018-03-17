@@ -36,6 +36,10 @@ namespace KerbalHealth
             }
             Core.Log(khs.Name + "'s vessel has " + sickCrew + " sick crew members, " + doctorsCrew + " doctors.");
             if (doctorsCrew != 0) chance = 1 - (1 - chance) * (1 - Math.Min((double) doctorsCrew / sickCrew, 1) / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().TreatmentDuration);
+            if ((chance != 0) && Core.QuirksEnabled)
+                foreach (Quirk q in khs.Quirks)
+                    foreach (HealthEffect he in q.Effects)
+                        if (he.IsApplicable(khs)) chance *= he.CureChance;
             Core.Log("Total chance of sickness curing is " + chance + ".");
             return chance;
         }

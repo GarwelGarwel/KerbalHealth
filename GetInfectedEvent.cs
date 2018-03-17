@@ -21,7 +21,12 @@ namespace KerbalHealth
                 if ((pcm.name != khs.Name) && (Core.KerbalHealthList.Find(pcm).HasCondition("Sick") || (Core.KerbalHealthList.Find(pcm).HasCondition("Infected"))))
                     sickCrewmates++;
             Core.Log(sickCrewmates + " infected crewmates found.");
-            return 1 - Math.Pow(1 - 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ContagionPeriod, sickCrewmates);
+            double c = 1 - Math.Pow(1 - 1 / HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ContagionPeriod, sickCrewmates);
+            if ((c != 0) && Core.QuirksEnabled)
+                foreach (Quirk q in khs.Quirks)
+                    foreach (HealthEffect he in q.Effects)
+                        if (he.IsApplicable(khs)) c *= he.SicknessChance;
+            return c;
         }
 
         protected override void Run()
