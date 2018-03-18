@@ -373,7 +373,8 @@ namespace KerbalHealth
                 if (crewChanged)
                 {
                     Core.KerbalHealthList.RegisterKerbals();
-                    if ((page >= PageCount) || (Core.KerbalHealthList.Count == LinesPerPage + 1)) Invalidate();
+                    //if ((page >= PageCount) || (Core.KerbalHealthList.Count == LinesPerPage + 1))
+                    Invalidate();
                     crewChanged = false;
                 }
                 // Fill the Health Monitor's grid with kerbals' health data
