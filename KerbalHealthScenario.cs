@@ -399,6 +399,11 @@ namespace KerbalHealth
             else  // Showing details for one particular kerbal
             {
                 ProtoCrewMember pcm = selectedKHS.PCM;
+                if (pcm == null)
+                {
+                    selectedKHS = null;
+                    Invalidate();
+                }
                 bool frozen = selectedKHS.HasCondition("Frozen");
                 gridContents[1].SetOptionText(selectedKHS.Name);
                 gridContents[3].SetOptionText(pcm.experienceLevel.ToString());
