@@ -116,6 +116,7 @@
     <None Include="Patches\KHMKS.cfg" />
     <None Include="Patches\KHRSCapsuledyne.cfg" />
     <None Include="Patches\KHSpaceY.cfg" />
+    <None Include="Patches\KHSSTU.cfg" />
     <None Include="Patches\KHStock.cfg" />
     <None Include="Patches\KHUSILS.cfg" />
     <None Include="README.md" />
