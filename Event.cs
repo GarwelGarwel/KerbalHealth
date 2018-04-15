@@ -62,9 +62,9 @@ namespace KerbalHealth
                 if (roll < chance)
                 {
                     Core.Log(Name + " event has fired for " + khs.Name + ".", Core.LogLevel.Important);
+                    Run();
                     string msg = Message();
                     if ((msg != null) && !IsSilent) Core.ShowMessage(msg, khs.PCM);
-                    Run();
                 }
             }
         }
