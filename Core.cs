@@ -501,7 +501,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="time">Time in seconds</param>
         /// <param name="showSeconds">If false, seconds will be displayed only if time is less than 1 minute; otherwise always</param>
-        /// <param name="daysTimeLimit">If time is longer than this number of days, time value will be skipped; -1 to disable</param>
+        /// <param name="daysTimeLimit">If time is longer than this number of days, time value will be skipped; -1 to alwys show time</param>
         /// <returns></returns>
         public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
@@ -514,18 +514,18 @@ namespace KerbalHealth
             if (t >= KSPUtil.dateTimeFormatter.Year)
             {
                 y = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Year);
-                t -= t * KSPUtil.dateTimeFormatter.Year;
+                t -= y * KSPUtil.dateTimeFormatter.Year;
                 res += y + " y ";
                 show0 = true;
             }
-            if (t >= KSPUtil.dateTimeFormatter.Day)
+            if ((t >= KSPUtil.dateTimeFormatter.Day) || (show0 && (t >= 1)))
             {
                 d = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Day);
                 t -= d * KSPUtil.dateTimeFormatter.Day;
                 res += d + " d ";
                 show0 = true;
             }
-            if ((daysTimeLimit > -1) && (time >= KSPUtil.dateTimeFormatter.Day * daysTimeLimit))
+            if ((daysTimeLimit == -1) || (time < KSPUtil.dateTimeFormatter.Day * daysTimeLimit))
             {
                 if ((t >= 3600) || show0)
                 {
