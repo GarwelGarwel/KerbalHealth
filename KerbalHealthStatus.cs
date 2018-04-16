@@ -469,7 +469,9 @@ namespace KerbalHealth
                 if (v.mainBody.atmosphere)
                     if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
                     else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;
-                if (v.altitude < v.mainBody.Radius * Core.BodyShieldingAltitude) cosmicRadiationRate *= 0.5;  // Half of radiation is blocked by the celestial body when very close to it
+                double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
+                Core.Log("At an altitude of " + v.altitude + " m and R = " + v.mainBody.Radius + " m, occlusion coefficient is " + occlusionCoefficient.ToString("P2") + ".");
+                cosmicRadiationRate *= occlusionCoefficient;
             }
             else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
