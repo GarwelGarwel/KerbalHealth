@@ -182,6 +182,49 @@ namespace KerbalHealth
                 return res;
             }
         }
+
+        /// <summary>
+        /// Health level (in percentage) for Exhaustion condition to kick in
+        /// </summary>
+        public double ExhaustionStart
+        {
+            get
+            {
+                double xs = Core.ExhaustionStartHealth;
+                if (Core.QuirksEnabled)
+                    foreach (Quirk q in Quirks)
+                        foreach (HealthEffect he in q.Effects)
+                            if (he.IsApplicable(this)) xs *= he.ExhaustedStart;
+                return xs;
+            }
+        }
+
+        /// <summary>
+        /// HP for Exhaustion condition to kick in
+        /// </summary>
+        public double ExhaustionStartHP => ExhaustionStart * MaxHP;
+
+        /// <summary>
+        /// Health level (in percentage) for Exhaustion condition to end
+        /// </summary>
+        public double ExhaustionEnd
+        {
+            get
+            {
+                double xe = Core.ExhaustionEndHealth;
+                if (Core.QuirksEnabled)
+                    foreach (Quirk q in Quirks)
+                        foreach (HealthEffect he in q.Effects)
+                            if (he.IsApplicable(this))
+                                xe *= he.ExhaustedEnd;
+                return xe;
+            }
+        }
+
+        /// <summary>
+        /// HP for Exhaustion condition to end
+        /// </summary>
+        public double ExhaustionEndHP => ExhaustionEnd * MaxHP;
         #endregion
         #region QUIRKS
 
@@ -389,11 +432,11 @@ namespace KerbalHealth
         {
             if (LastChangeTotal > 0)
                 if (HasCondition("Exhausted"))
-                    return Core.ExhaustionEndHealth * MaxHP;
+                    return ExhaustionEndHP;
                 else return MaxHP;
             if (LastChangeTotal < 0)
                 if (HasCondition("Exhausted")) return 0;
-                else return Core.ExhaustionStartHealth * MaxHP;
+                else return ExhaustionStartHP;
             return double.NaN;
         }
 
@@ -600,24 +643,15 @@ namespace KerbalHealth
                 Core.ShowMessage(Name + " has died of poor health!", true);
             }
 
-            double xs = Core.ExhaustionStartHealth, xe = Core.ExhaustionEndHealth;
-            if (Core.QuirksEnabled)
-                foreach (Quirk q in Quirks)
-                    foreach (HealthEffect he in q.Effects)
-                        if (he.IsApplicable(this))
-                        {
-                            xs *= he.ExhaustedStart;
-                            xe *= he.ExhaustedEnd;
-                        }
             if (HasCondition("Exhausted"))
             {
-                if (HP >= xe * MaxHP)
+                if (HP >= ExhaustionEndHP)
                 {
                     RemoveCondition("Exhausted");
                     Core.ShowMessage(Name + " is no longer exhausted.", PCM);
                 }
             }
-            else if (HP < xs * MaxHP)
+            else if (HP < ExhaustionStartHP)
             {
                 AddCondition(new HealthCondition("Exhausted"));
                 Core.ShowMessage(Name + " is exhausted!", PCM);
