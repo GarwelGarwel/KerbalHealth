@@ -97,6 +97,30 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
+        public void OnDisable()
+        {
+            Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
+            UndisplayData();
+
+            GameEvents.onCrewOnEva.Remove(OnKerbalEva);
+            GameEvents.onCrewKilled.Remove(OnCrewKilled);
+            GameEvents.OnCrewmemberHired.Remove(OnCrewmemberHired);
+            GameEvents.OnCrewmemberSacked.Remove(OnCrewmemberSacked);
+            GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
+            GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
+            GameEvents.onKerbalNameChange.Remove(OnKerbalNameChange);
+            EventData<Part, ProtoCrewMember> dfEvent;
+            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
+            if (dfEvent != null) dfEvent.Remove(OnKerbalFrozen);
+            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
+            if (dfEvent != null) dfEvent.Remove(OnKerbalThaw);
+
+            if (toolbarButton != null) toolbarButton.Destroy();
+            if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
+                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
+            Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
+        }
+
         /// <summary>
         /// Marks the kerbal as being on EVA, to apply EVA-only effects
         /// </summary>
@@ -268,12 +292,12 @@ namespace KerbalHealth
                     new DialogGUIButton(">>", LastPage, () => (page < PageCount), true)));
                 gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain);
                 // Creating column titles
-                gridContents.Add(new DialogGUILabel("Name", true));
-                gridContents.Add(new DialogGUILabel("Condition", true));
-                gridContents.Add(new DialogGUILabel("Health", true));
-                gridContents.Add(new DialogGUILabel("Change/day", true));
-                gridContents.Add(new DialogGUILabel("Time Left", true));
-                gridContents.Add(new DialogGUILabel("Radiation", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Name</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Condition</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Health</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Change/day</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Time Left</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Radiation</color></b>", true));
                 gridContents.Add(new DialogGUILabel("", true));
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
                 List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
@@ -373,7 +397,6 @@ namespace KerbalHealth
                 if (crewChanged)
                 {
                     Core.KerbalHealthList.RegisterKerbals();
-                    //if ((page >= PageCount) || (Core.KerbalHealthList.Count == LinesPerPage + 1))
                     Invalidate();
                     crewChanged = false;
                 }
@@ -384,16 +407,25 @@ namespace KerbalHealth
                     KerbalHealthStatus khs = kerbals[FirstLine + i];
                     bool frozen = khs.HasCondition("Frozen");
                     double ch = khs.LastChangeTotal;
-                    gridContents[(i + 1) * colNumMain].SetOptionText(khs.Name);
-                    gridContents[(i + 1) * colNumMain + 1].SetOptionText(khs.ConditionString);
-                    gridContents[(i + 1) * colNumMain + 2].SetOptionText((100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")");
-                    gridContents[(i + 1) * colNumMain + 3].SetOptionText((frozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2")));
                     double b = khs.GetBalanceHP();
+                    string formatTag = "", formatUntag = "";
                     string s = "";
                     if (frozen || (b > khs.NextConditionHP())) s = "—";
-                    else s = ((b > 0) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), true, 100);
-                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(s);
-                    gridContents[(i + 1) * colNumMain + 5].SetOptionText(khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : ""));
+                    else
+                    {
+                        s = Core.ParseUT(khs.TimeToNextCondition(), true, 100);
+                        if (ch < 0)
+                        {
+                            formatTag = "<color=\"red\">";
+                            formatUntag = "</color>";
+                        }
+                    }
+                    gridContents[(i + 1) * colNumMain].SetOptionText(formatTag + khs.Name + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.ConditionString + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 2].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + ((frozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + s + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : "") + formatUntag);
                 }
             }
             else  // Showing details for one particular kerbal
@@ -405,57 +437,33 @@ namespace KerbalHealth
                     Invalidate();
                 }
                 bool frozen = selectedKHS.HasCondition("Frozen");
-                gridContents[1].SetOptionText(selectedKHS.Name);
-                gridContents[3].SetOptionText(pcm.experienceLevel.ToString());
+                gridContents[1].SetOptionText("<color=\"white\">" + selectedKHS.Name + "</color>");
+                gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel.ToString() + "</color>");
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks)
                     if (q.IsVisible) s += ((s != "") ? ", " : "") + q.Title;
                 if (s == "") s = "None";
-                gridContents[5].SetOptionText(s);
-                gridContents[7].SetOptionText(pcm.rosterStatus.ToString());
-                gridContents[9].SetOptionText(selectedKHS.MaxHP.ToString("F2"));
-                gridContents[11].SetOptionText(selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")");
-                gridContents[13].SetOptionText(frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"));
+                gridContents[5].SetOptionText("<color=\"white\">" + s + "</color>");
+                gridContents[7].SetOptionText("<color=\"white\">" + pcm.rosterStatus.ToString() + "</color>");
+                gridContents[9].SetOptionText("<color=\"white\">" + selectedKHS.MaxHP.ToString("F2") + "</color>");
+                gridContents[11].SetOptionText("<color=\"white\">" + selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")" + "</color>");
+                gridContents[13].SetOptionText("<color=\"white\">" + (frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2")) + "</color>");
                 int i = 15;
                 if (Core.IsKerbalLoaded(selectedKHS.PCM) && !frozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
-                        gridContents[i].SetOptionText(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A");
+                        gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].SetOptionText(frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)");
-                gridContents[i + 2].SetOptionText(selectedKHS.ConditionString);
-                gridContents[i + 4].SetOptionText(selectedKHS.Exposure.ToString("P2"));
-                gridContents[i + 6].SetOptionText(selectedKHS.Radiation.ToString("N2") + "/day");
-                gridContents[i + 8].SetOptionText(selectedKHS.Dose.ToString("N2"));
-                gridContents[i + 10].SetOptionText((1 - selectedKHS.RadiationMaxHPModifier).ToString("P2"));
+                gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)") + "</color>");
+                gridContents[i + 2].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
+                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.Exposure.ToString("P2") + "</color>");
+                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N2") + "/day</color>");
+                gridContents[i + 8].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N2") + "</color>");
+                gridContents[i + 10].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
             }
             dirty = false;
 
-        }
-
-        public void OnDisable()
-        {
-            Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
-            UndisplayData();
-
-            GameEvents.onCrewOnEva.Remove(OnKerbalEva);
-            GameEvents.onCrewKilled.Remove(OnCrewKilled);
-            GameEvents.OnCrewmemberHired.Remove(OnCrewmemberHired);
-            GameEvents.OnCrewmemberSacked.Remove(OnCrewmemberSacked);
-            GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
-            GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
-            GameEvents.onKerbalNameChange.Remove(OnKerbalNameChange);
-            EventData<Part, ProtoCrewMember> dfEvent;
-            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
-            if (dfEvent != null) dfEvent.Remove(OnKerbalFrozen);
-            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
-            if (dfEvent != null) dfEvent.Remove(OnKerbalThaw);
-
-            if (toolbarButton != null) toolbarButton.Destroy();
-            if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
-                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
-            Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
         }
 
         public override void OnSave(ConfigNode node)

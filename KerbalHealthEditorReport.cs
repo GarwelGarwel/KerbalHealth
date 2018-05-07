@@ -55,9 +55,9 @@ namespace KerbalHealth
             gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
                 // Creating column titles
-                new DialogGUILabel("Name", true),
-                new DialogGUILabel("Trend", true),
-                new DialogGUILabel("Time Left", true)
+                new DialogGUILabel("<b><color=\"white\">Name</color></b>", true),
+                new DialogGUILabel("<b><color=\"white\">Trend</color></b>", true),
+                new DialogGUILabel("<b><color=\"white\">Time Left</color></b>", true)
             };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
@@ -80,14 +80,14 @@ namespace KerbalHealth
                     reportPosition,
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("Space: ", false),
+                        new DialogGUILabel("<color=\"white\">Space: </color>", false),
                         spaceLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("Recuperation: ", false),
+                        new DialogGUILabel("<color=\"white\">Recuperation: </color>", false),
                         recupLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("Shielding: ", false),
+                        new DialogGUILabel("<color=\"white\">Shielding: </color>", false),
                         shieldingLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("Exposure: ", false),
+                        new DialogGUILabel("<color=\"white\">Exposure: </color>", false),
                         exposureLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
@@ -171,10 +171,10 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
-                spaceLbl.SetOptionText(khs.VesselHealthInfo.Space.ToString("F1"));
-                recupLbl.SetOptionText(khs.VesselHealthInfo.Recuperation.ToString("F1") + "%");
-                shieldingLbl.SetOptionText(khs.VesselHealthInfo.Shielding.ToString("F1"));
-                exposureLbl.SetOptionText(khs.Exposure.ToString("P1"));
+                spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselHealthInfo.Space.ToString("F1") + "</color>");
+                recupLbl.SetOptionText("<color=\"white\">" + khs.VesselHealthInfo.Recuperation.ToString("F1") + "%</color>");
+                shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselHealthInfo.Shielding.ToString("F1") + "</color>");
+                exposureLbl.SetOptionText("<color=\"white\">" + khs.Exposure.ToString("P1") + "</color>");
                 dirty = false;
             }
         }
