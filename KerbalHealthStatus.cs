@@ -304,6 +304,7 @@ namespace KerbalHealth
 
         public void AwardQuirks()
         {
+            if (Core.QuirksAtKSCOnly && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Available)) return;
             for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
             {
                 if (Quirks.Count >= Core.MaxQuirks) break;

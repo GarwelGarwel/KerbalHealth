@@ -18,6 +18,9 @@
         [GameParameters.CustomFloatParameterUI("Chance of Getting a Quirk", toolTip = "Chance of a kerbal being awarded a quirk when he/she levels up", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float QuirkChance = 0.2f;
 
+        [GameParameters.CustomParameterUI("Assign at KSC Only", toolTip = "Quirks are only awarded when kerbals level up at KSC, not during missions")]
+        public bool QuirksAtKSCOnly = true;
+
         [GameParameters.CustomParameterUI("Kerbal Stats Affect Quirk Weights", toolTip = "Chances of getting some quirks depend on Courage and Stupidity of the kerbal")]
         public bool StatsAffectQuirkWeights = true;
     }

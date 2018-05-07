@@ -346,6 +346,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Quirks are only awarded when kerbals level up at KSC, not during missions
+        /// </summary>
+        public static bool QuirksAtKSCOnly
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksAtKSCOnly;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksAtKSCOnly = value;
+        }
+
+        /// <summary>
         /// Chances of getting some quirks depend on Courage and Stupidity of the kerbal
         /// </summary>
         public static bool StatsAffectQuirkWeights
