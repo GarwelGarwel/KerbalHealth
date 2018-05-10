@@ -30,6 +30,23 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Changes name of a registered kerbal and renames the entry
+        /// </summary>
+        /// <param name="name1"></param>
+        /// <param name="name2"></param>
+        public void Rename(string name1, string name2)
+        {
+            Core.Log("KerbalHealthList.Rename('" + name1 + "', '" + name2 + "')");
+            if (ContainsKey(name1))
+            {
+                this[name1].Name = name2;
+                Add(name2, this[name1]);
+                Remove(name1);
+            }
+            else Core.Log("Could not find '" + name1 + "'.", Core.LogLevel.Error);
+        }
+
+        /// <summary>
         /// Scans all trackable kerbals and adds them to the list
         /// </summary>
         public void RegisterKerbals()
@@ -93,6 +110,17 @@ namespace KerbalHealth
         /// <param name="pcm"></param>
         /// <returns></returns>
         public KerbalHealthStatus Find(ProtoCrewMember pcm) => Find(pcm.name);
+
+        /// <summary>
+        /// Returns the list of names
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            string s = "";
+            foreach (string n in Keys) s += n + "\r\n";
+            return s.Trim();
+        }
 
         public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count) { }
     }

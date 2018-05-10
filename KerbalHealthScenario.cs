@@ -43,7 +43,7 @@ namespace KerbalHealth
             GameEvents.OnCrewmemberSacked.Add(OnCrewmemberSacked);
             GameEvents.onKerbalAdded.Add(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
-            GameEvents.onKerbalNameChange.Add(OnKerbalNameChange);
+            GameEvents.onKerbalNameChanged.Add(OnKerbalNameChanged);
 
             if (!DFWrapper.InstanceExists)
             {
@@ -108,7 +108,7 @@ namespace KerbalHealth
             GameEvents.OnCrewmemberSacked.Remove(OnCrewmemberSacked);
             GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
-            GameEvents.onKerbalNameChange.Remove(OnKerbalNameChange);
+            GameEvents.onKerbalNameChange.Remove(OnKerbalNameChanged);
             EventData<Part, ProtoCrewMember> dfEvent;
             dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
             if (dfEvent != null) dfEvent.Remove(OnKerbalFrozen);
@@ -172,16 +172,10 @@ namespace KerbalHealth
             dirty = crewChanged = true;
         }
 
-        public void OnKerbalNameChange(ProtoCrewMember pcm, string name1, string name2)
+        public void OnKerbalNameChanged(ProtoCrewMember pcm, string name1, string name2)
         {
-            Core.Log("OnKerbalNameChange('" + pcm.name + "', '" + name1 + "', '" + name2 + "')", Core.LogLevel.Important);
-            KerbalHealthStatus khs = Core.KerbalHealthList.Find(name1);
-            if (khs == null)
-            {
-                Core.Log(name1 + " not found in KerbalHealthList (contains " + Core.KerbalHealthList.Count + " records). He/she is " + pcm.rosterStatus + ".", Core.LogLevel.Important);
-                return;
-            }
-            khs.Name = name2;
+            Core.Log("OnKerbalNameChanged('" + pcm.name + "', '" + name1 + "', '" + name2 + "')", Core.LogLevel.Important);
+            Core.KerbalHealthList.Rename(name1, name2);
             dirty = true;
         }
 

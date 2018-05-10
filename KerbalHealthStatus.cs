@@ -58,6 +58,7 @@ namespace KerbalHealth
                     if (pcm.name == Name) return pcmCached = pcm;
                 foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Unowned)
                     if (pcm.name == Name) return pcmCached = pcm;
+                Core.Log("Could not find ProtoCrewMember for " + Name + ". KerbalHealth kerbal list contains " + Core.KerbalHealthList.Count + " records:\r\n" + Core.KerbalHealthList);
                 return null;
             }
             set
@@ -614,6 +615,12 @@ namespace KerbalHealth
         public void Update(double interval)
         {
             Core.Log("Updating " + Name + "'s health.");
+
+            if (PCM == null)
+            {
+                Core.Log(Name + "not found in KerbalHealthList. Aborting health update.", Core.LogLevel.Error);
+                return;
+            }
 
             if (Core.QuirksEnabled) AwardQuirks();
 
