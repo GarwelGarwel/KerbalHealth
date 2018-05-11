@@ -330,7 +330,7 @@ namespace KerbalHealth
                         gridContents.Add(new DialogGUILabel(f.Title + ":"));
                         gridContents.Add(new DialogGUILabel(""));
                     }
-                gridContents.Add(new DialogGUILabel("Recuperation:"));
+                gridContents.Add(new DialogGUILabel("Recuperation/Decay:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Condition:"));
                 gridContents.Add(new DialogGUILabel(""));
@@ -449,7 +449,7 @@ namespace KerbalHealth
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : selectedKHS.LastRecuperation.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP/day)") + "</color>");
+                gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%/" + selectedKHS.LastDecay.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
                 gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.Exposure.ToString("P2") + "</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N2") + "/day</color>");
