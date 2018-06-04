@@ -348,10 +348,10 @@ namespace KerbalHealth
         /// <summary>
         /// Quirks are only awarded when kerbals level up at KSC, not during missions
         /// </summary>
-        public static bool QuirksAtKSCOnly
+        public static bool AwardQuirksOnMissions
         {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksAtKSCOnly;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksAtKSCOnly = value;
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AwardQuirksOnMissions;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AwardQuirksOnMissions = value;
         }
 
         /// <summary>
@@ -412,7 +412,7 @@ namespace KerbalHealth
         public static void ClearCache()
         {
             kerbalVesselsCache.Clear();
-            VesselHealthInfo.Cache.Clear();
+            HealthModifierSet.VesselCache.Clear();
         }
 
         /// <summary>
