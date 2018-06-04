@@ -79,7 +79,7 @@ namespace KerbalHealth
             return false;
         }
 
-        public VesselHealthInfo VesselHealthInfo { get; set; } = new VesselHealthInfo();
+        public HealthModifierSet VesselModifiers { get; set; } = new HealthModifierSet();
 
         #endregion
         #region CONDITIONS
@@ -305,19 +305,21 @@ namespace KerbalHealth
 
         public void AwardQuirks()
         {
-            if (Core.QuirksAtKSCOnly && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Available)) return;
-            for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
+            if (Core.AwardQuirksOnMissions || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available))
             {
-                if (Quirks.Count >= Core.MaxQuirks) break;
-                double r = Core.rand.NextDouble();
-                if (r < Core.QuirkChance)
+                for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
                 {
-                    Core.Log("A quirk will be added to " + Name + " (level " + l + "). Dice roll = " + r);
-                    AddRandomQuirk(l);
+                    if (Quirks.Count >= Core.MaxQuirks) break;
+                    double r = Core.rand.NextDouble();
+                    if (r < Core.QuirkChance)
+                    {
+                        Core.Log("A quirk will be added to " + Name + " (level " + l + "). Dice roll = " + r);
+                        AddRandomQuirk(l);
+                    }
+                    else Core.Log("No quirks will be added to " + Name + " (level " + l + "). Dice roll = " + r);
                 }
-                else Core.Log("No quirks will be added to " + Name + " (level " + l + "). Dice roll = " + r);
+                QuirkLevel = PCM.experienceLevel;
             }
-            QuirkLevel = PCM.experienceLevel;
         }
 
         #endregion
@@ -407,7 +409,7 @@ namespace KerbalHealth
         /// <summary>
         /// Total HP change per day rate in the latest update
         /// </summary>
-        public double LastChangeTotal => LastChange + MarginalChange;
+        public double LastChangeTotal { get; set; }// => LastChange + MarginalChange;
 
         /// <summary>
         /// List of factors' effect on the kerbal (used for monitoring only)
@@ -482,9 +484,9 @@ namespace KerbalHealth
         /// <summary>
         /// Proportion of radiation that gets absorbed by the kerbal
         /// </summary>
-        public double Exposure { get; set; }
+        public double LastExposure { get; set; } = 0;
 
-        public static double GetExposure(double shielding, double crewCap) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
+        //public static double GetExposure(double shielding, double crewCap) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
 
         static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
 
@@ -564,25 +566,39 @@ namespace KerbalHealth
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
 
             // Processing parts and quirks
-            if (Core.IsKerbalLoaded(pcm) || Core.IsInEditor)
+            HealthModifierSet mods;
+            if (recalculateCache)
             {
-                Exposure = 1;
-                Core.Log("VHI cache contains " + VesselHealthInfo.Cache.Count + " record(s).");
-                VesselHealthInfo = VesselHealthInfo.GetVesselInfo(pcm).Clone();
-                Core.Log("Vessel Health Info before applying part and kerbal modifiers:\n" + VesselHealthInfo);
+                Core.Log("Vessel modifiers cache contains " + HealthModifierSet.VesselCache.Count + " record(s).");
+                VesselModifiers = HealthModifierSet.GetVesselModifiers(pcm);
+                mods = VesselModifiers.Clone();
+                Core.Log("Vessel health modifiers before applying part and kerbal effects:\n" + mods);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
-                VesselHealthInfo.ProcessPart(Core.GetCrewPart(pcm), true);
-                if (Core.QuirksEnabled)
-                    foreach (Quirk q in Quirks) q.Apply(this);
-                Core.Log("Vessel Health Info after applying all modifiers:\n" + VesselHealthInfo);
-                LastChange = VesselHealthInfo.HPChange;
-                LastRecuperation = VesselHealthInfo.Recuperation;
-                LastDecay = VesselHealthInfo.Decay;
-                partsRadiation = VesselHealthInfo.PartsRadiation;
-                Exposure *= GetExposure(VesselHealthInfo.Shielding, Core.GetCrewCapacity(pcm));
-                if (IsOnEVA) Exposure *= Core.EVAExposure;
+                mods.ProcessPart(Core.GetCrewPart(pcm), true);
+                mods.ExposureMultiplier *= mods.GetExposure(Core.GetCrewCapacity(pcm));
+                if (IsOnEVA) mods.ExposureMultiplier *= Core.EVAExposure;
+            }
+            else
+            {
+                mods = new HealthModifierSet();
+                mods.MaxRecuperaction = mods.RecuperationPower = LastRecuperation;
+                mods.Decay = LastDecay;
+                mods.ExposureMultiplier = LastExposure;
             }
 
+            // Applying quirks
+            if (Core.QuirksEnabled)
+                foreach (Quirk q in Quirks) q.Apply(this, mods);
+
+            Core.Log("Health modifiers after applying all effects:\n" + mods);
+
+            LastChange = mods.HPChange;
+            LastRecuperation = mods.Recuperation;
+            LastDecay = mods.Decay;
+            LastExposure = mods.ExposureMultiplier;
+            partsRadiation = mods.PartsRadiation;
+
+            // Processing factors
             Core.Log("Processing " + Core.Factors.Count + " factors for " + Name + "...");
             int crewCount = Core.GetCrewCount(pcm);
             foreach (HealthFactor f in Core.Factors)
@@ -592,8 +608,8 @@ namespace KerbalHealth
                     Core.Log(f.Name + " is not recalculated for " + pcm.name + " (" + HighLogic.LoadedScene + " scene, " + (Core.IsKerbalLoaded(pcm) ? "" : "not ") + "loaded, " + (IsOnEVA ? "" : "not ") + "on EVA).");
                     continue;
                 }
-                double c = f.ChangePerDay(pcm) * VesselHealthInfo.GetMultiplier(f.Name, crewCount) * VesselHealthInfo.GetMultiplier("All", crewCount);
-                Core.Log("Multiplier for " + f.Name + " is " + VesselHealthInfo.GetMultiplier(f.Name, crewCount) + " * " + VesselHealthInfo.FreeMultipliers[f.Name] + " (bonus sum: " + VesselHealthInfo.BonusSums[f.Name] + "; multipliers: " + VesselHealthInfo.MinMultipliers[f.Name] + ".." + VesselHealthInfo.MaxMultipliers[f.Name] + ")");
+                double c = f.ChangePerDay(pcm) * mods.GetMultiplier(f.Name, crewCount) * mods.GetMultiplier("All", crewCount);
+                Core.Log("Multiplier for " + f.Name + " is " + mods.GetMultiplier(f.Name, crewCount) + " * " + mods.FreeMultipliers[f.Name] + " (bonus sum: " + mods.BonusSums[f.Name] + "; multipliers: " + mods.MinMultipliers[f.Name] + ".." + mods.MaxMultipliers[f.Name] + ")");
                 Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
                 Factors[f.Name] = c;
                 if (f.Cachable) CachedChange += c;
@@ -601,10 +617,11 @@ namespace KerbalHealth
             }
             LastChange += CachedChange;
             double mc = MarginalChange;
+            LastChangeTotal = LastChange + mc;
 
             Core.Log("Recuperation/decay change for " + pcm.name + ": " + mc + " (+" + LastRecuperation + "%, -" + LastDecay + "%).");
-            Core.Log("Total change for " + pcm.name + ": " + (LastChange + mc) + " HP/day.");
-            if (recalculateCache) Core.Log("Total shielding: " + VesselHealthInfo.Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
+            Core.Log("Total change for " + pcm.name + ": " + LastChangeTotal + " HP/day.");
+            if (recalculateCache) Core.Log("Total shielding: " + mods.Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
             return LastChangeTotal;
         }
 
@@ -618,7 +635,7 @@ namespace KerbalHealth
 
             if (PCM == null)
             {
-                Core.Log(Name + "not found in KerbalHealthList. Aborting health update.", Core.LogLevel.Error);
+                Core.Log(Name + " ProtoCrewMember record not found. Aborting health update.", Core.LogLevel.Error);
                 return;
             }
 
@@ -628,7 +645,7 @@ namespace KerbalHealth
 
             if (Core.RadiationEnabled && ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen))
             {
-                Radiation = Exposure * (partsRadiation + GetCosmicRadiation());
+                Radiation = LastExposure * (partsRadiation + GetCosmicRadiation());
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
@@ -678,7 +695,7 @@ namespace KerbalHealth
                 n.AddValue("dose", Dose);
                 if (Radiation != 0) n.AddValue("radiation", Radiation);
                 if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
-                if (Exposure != 1) n.AddValue("exposure", Exposure);
+                if (LastExposure != 0) n.AddValue("exposure", LastExposure);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
                 foreach (Quirk q in Quirks)
@@ -699,7 +716,7 @@ namespace KerbalHealth
                 Dose = Core.GetDouble(value, "dose");
                 Radiation = Core.GetDouble(value, "radiation");
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
-                Exposure = Core.GetDouble(value, "exposure", 1);
+                LastExposure = Core.GetDouble(value, "exposure");
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
                 foreach (string s in value.GetValues("quirk"))
