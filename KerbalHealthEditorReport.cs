@@ -110,9 +110,9 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).VesselHealthInfo.Shielding.ToString("F1") : "N/A";
+        string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).VesselModifiers.Shielding.ToString("F1") : "N/A";
 
-        string GetExposure() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).Exposure.ToString("P1") : "N/A";
+        string GetExposure() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).LastExposure.ToString("P1") : "N/A";
 
         public void UndisplayData()
         {
@@ -147,7 +147,7 @@ namespace KerbalHealth
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;
-                VesselHealthInfo.Cache.Clear();
+                HealthModifierSet.VesselCache.Clear();
                 foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
                 {
                     if (pcm == null) continue;
@@ -171,10 +171,10 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
                     i++;
                 }
-                spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselHealthInfo.Space.ToString("F1") + "</color>");
-                recupLbl.SetOptionText("<color=\"white\">" + khs.VesselHealthInfo.Recuperation.ToString("F1") + "%</color>");
-                shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselHealthInfo.Shielding.ToString("F1") + "</color>");
-                exposureLbl.SetOptionText("<color=\"white\">" + khs.Exposure.ToString("P1") + "</color>");
+                spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Space.ToString("F1") + "</color>");
+                recupLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Recuperation.ToString("F1") + "%</color>");
+                shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
+                exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
                 dirty = false;
             }
         }

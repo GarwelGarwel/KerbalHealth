@@ -451,7 +451,7 @@ namespace KerbalHealth
                     }
                 gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%/" + selectedKHS.LastDecay.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
-                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.Exposure.ToString("P2") + "</color>");
+                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N2") + "/day</color>");
                 gridContents[i + 8].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N2") + "</color>");
                 gridContents[i + 10].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");

@@ -32,25 +32,19 @@ namespace KerbalHealth
 
         public bool IsApplicable(KerbalHealthStatus khs) => Logic.Test(khs.PCM);
 
-        public void Apply(KerbalHealthStatus khs)
+        public void Apply(HealthModifierSet hms)
         {
-            //Core.Log("Applying the following effect to " + khs.Name + ": " + this);
-            if (!Logic.Test(khs.PCM))
-            {
-                Core.Log("Logic is false for this effect. Application canceled.");
-                return;
-            }
-            else Core.Log("Logic is true for this effect.");
-            khs.Exposure *= Exposure;
-            khs.VesselHealthInfo.HPChange += HPChangePerDay;
-            khs.VesselHealthInfo.RecuperationPower += Recuperation;
-            khs.VesselHealthInfo.MaxRecuperaction = Math.Max(khs.VesselHealthInfo.MaxRecuperaction, Recuperation);
-            khs.VesselHealthInfo.Decay += Decay;
-            if (khs.VesselHealthInfo.FreeMultipliers.ContainsKey(MultiplyFactor)) khs.VesselHealthInfo.FreeMultipliers[MultiplyFactor] *= Multiplier;
-            else khs.VesselHealthInfo.FreeMultipliers[MultiplyFactor] = Multiplier;
-            khs.VesselHealthInfo.Space += Space;
-            khs.VesselHealthInfo.Shielding += Shielding;
-            khs.VesselHealthInfo.PartsRadiation += Radioactivity;
+            Core.Log("Applying effect:\n" + this);
+            hms.ExposureMultiplier *= Exposure;
+            hms.HPChange += HPChangePerDay;
+            hms.RecuperationPower += Recuperation;
+            hms.MaxRecuperaction = Math.Max(hms.MaxRecuperaction, Recuperation);
+            hms.Decay += Decay;
+            if (hms.FreeMultipliers.ContainsKey(MultiplyFactor)) hms.FreeMultipliers[MultiplyFactor] *= Multiplier;
+            else hms.FreeMultipliers[MultiplyFactor] = Multiplier;
+            hms.Space += Space;
+            hms.Shielding += Shielding;
+            hms.PartsRadiation += Radioactivity;
         }
 
         public override string ToString()

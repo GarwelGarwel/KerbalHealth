@@ -50,14 +50,16 @@ namespace KerbalHealth
         /// <returns></returns>
         public bool IsAvailableTo(KerbalHealthStatus khs) => IsAvailableTo(khs, khs.PCM.experienceLevel);
 
-        public void Apply(KerbalHealthStatus khs)
+        /// <summary>
+        /// Applies valid effects of this quirk to the given kerbal's HealthModifierSet
+        /// </summary>
+        /// <param name="khs"></param>
+        /// <param name="hms"></param>
+        public void Apply(KerbalHealthStatus khs, HealthModifierSet hms)
         {
             Core.Log("Applying " + Name + " quirk to " + khs.Name + ".");
             foreach (HealthEffect eff in Effects)
-            {
-                Core.Log("Applying effect: " + eff);
-                eff.Apply(khs);
-            }
+                if (eff.IsApplicable(khs)) eff.Apply(hms);
         }
 
         public override bool Equals(object obj) => (obj is Quirk) && (obj != null) && (((Quirk)obj).Name == Name);
