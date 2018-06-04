@@ -89,7 +89,7 @@
     <Compile Include="SicknessFactor.cs" />
     <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
-    <Compile Include="VesselHealthInfo.cs" />
+    <Compile Include="HealthModifierSet.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.png" />
@@ -114,6 +114,7 @@
     <None Include="Patches\KHKPBS.cfg" />
     <None Include="Patches\KHMakingHistory.cfg" />
     <None Include="Patches\KHMKS.cfg" />
+    <None Include="Patches\KHRLA.cfg" />
     <None Include="Patches\KHRSCapsuledyne.cfg" />
     <None Include="Patches\KHSpaceY.cfg" />
     <None Include="Patches\KHSSTU.cfg" />

@@ -8,42 +8,43 @@ namespace KerbalHealth
     /// <summary>
     /// Keeps modifiers introduced by vessel parts etc.
     /// </summary>
-    public class VesselHealthInfo
+    public class HealthModifierSet
     {
         /// <summary>
         /// Cache of processed vessels, refreshed at every update
         /// </summary>
-        public static Dictionary<Guid, VesselHealthInfo> Cache = new Dictionary<Guid, VesselHealthInfo>();
+        public static Dictionary<Guid, HealthModifierSet> VesselCache = new Dictionary<Guid, HealthModifierSet>();
 
         /// <summary>
-        /// Returns vessel health info for the given vessel, either cached or calculated
+        /// Returns vessel health modifiers for the given vessel, either cached or calculated
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static VesselHealthInfo GetVesselInfo(Vessel v)
+        public static HealthModifierSet GetVesselModifiers(Vessel v)
         {
-            if (Cache.ContainsKey(v.id)) return Cache[v.id];
-            return Cache[v.id] = new VesselHealthInfo(v);
+            if (VesselCache.ContainsKey(v.id)) return VesselCache[v.id];
+            return VesselCache[v.id] = new HealthModifierSet(v);
         }
 
         /// <summary>
-        /// Returns vessel health info for the vessel with the given kerbal
+        /// Returns vessel health modifiers for the vessel with the given kerbal
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static VesselHealthInfo GetVesselInfo(ProtoCrewMember pcm)
+        public static HealthModifierSet GetVesselModifiers(ProtoCrewMember pcm)
         {
             if (Core.IsInEditor)
             {
-                if (Cache.Count > 0)
+                if (VesselCache.Count > 0)
                 {
                     Core.Log("In editor and VesselHealthInfo found in cache. Retrieving.");
-                    return Cache.First().Value;
+                    return VesselCache.First().Value;
                 }
                 Core.Log("In editor and VesselHealthInfo not found in cache. Calculating and adding to cache.");
-                return Cache[Guid.Empty] = new VesselHealthInfo(EditorLogic.SortedShipList);
+                return VesselCache[Guid.Empty] = new HealthModifierSet(EditorLogic.SortedShipList);
             }
-            return GetVesselInfo(Core.KerbalVessel(pcm));
+            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return new HealthModifierSet();
+            return GetVesselModifiers(Core.KerbalVessel(pcm));
         }
 
         public double HPChange { get; set; }
@@ -54,7 +55,8 @@ namespace KerbalHealth
         public double Decay { get; set; }
         public double Shielding { get; set; }
         public double PartsRadiation { get; set; }
-        public double ExposureModifier { get; set; }
+        public double ExposureMultiplier { get; set; } = 1;
+        public double GetExposure(double crewCap) => Math.Pow(2, -Shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
         public Dictionary<string, double> BonusSums { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> FreeMultipliers { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> MinMultipliers { get; set; } = new Dictionary<string, double>();
@@ -82,7 +84,7 @@ namespace KerbalHealth
         {
             if (part == null)
             {
-                Core.Log("VesselHealthInfo: 'part' is null. Unless the kerbal is on EVA, this is probably an error.", Core.LogLevel.Important);
+                Core.Log("HealthModifierSet: 'part' is null. Unless the kerbal is on EVA, this is probably an error.", Core.LogLevel.Important);
                 return;
             }
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())
@@ -165,17 +167,17 @@ namespace KerbalHealth
         /// Returns a deep copy of the instance
         /// </summary>
         /// <returns></returns>
-        public VesselHealthInfo Clone()
+        public HealthModifierSet Clone()
         {
-            VesselHealthInfo vhi = (VesselHealthInfo)this.MemberwiseClone();
-            vhi.BonusSums = new Dictionary<string, double>(BonusSums);
-            vhi.FreeMultipliers = new Dictionary<string, double>(FreeMultipliers);
-            vhi.MinMultipliers = new Dictionary<string, double>(MinMultipliers);
-            vhi.MaxMultipliers = new Dictionary<string, double>(MaxMultipliers);
-            return vhi;
+            HealthModifierSet hms = (HealthModifierSet)this.MemberwiseClone();
+            hms.BonusSums = new Dictionary<string, double>(BonusSums);
+            hms.FreeMultipliers = new Dictionary<string, double>(FreeMultipliers);
+            hms.MinMultipliers = new Dictionary<string, double>(MinMultipliers);
+            hms.MaxMultipliers = new Dictionary<string, double>(MaxMultipliers);
+            return hms;
         }
 
-        public VesselHealthInfo()
+        public HealthModifierSet()
         {
             foreach (HealthFactor f in Core.Factors)
             {
@@ -190,8 +192,8 @@ namespace KerbalHealth
             MaxMultipliers["All"] = 1;
         }
 
-        public VesselHealthInfo(Vessel v) : this() => ProcessParts(v.Parts);
+        public HealthModifierSet(Vessel v) : this() => ProcessParts(v?.Parts);
 
-        public VesselHealthInfo(List<Part> parts) : this() => ProcessParts(parts);
+        public HealthModifierSet(List<Part> parts) : this() => ProcessParts(parts);
     }
 }
