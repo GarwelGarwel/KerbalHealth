@@ -314,9 +314,9 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Level:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Quirks:"));
+                gridContents.Add(new DialogGUILabel("Condition:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Status:"));
+                gridContents.Add(new DialogGUILabel("Quirks:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Max HP:"));
                 gridContents.Add(new DialogGUILabel(""));
@@ -330,17 +330,15 @@ namespace KerbalHealth
                         gridContents.Add(new DialogGUILabel(f.Title + ":"));
                         gridContents.Add(new DialogGUILabel(""));
                     }
-                gridContents.Add(new DialogGUILabel("Recuperation/Decay:"));
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Condition:"));
+                gridContents.Add(new DialogGUILabel("Recuperation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Exposure:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Radiation:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Accumulated Dose:"));
+                gridContents.Add(new DialogGUILabel("Lifetime Dose:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Radiation HP Loss:"));
+                gridContents.Add(new DialogGUILabel("Rad HP Loss:"));
                 gridContents.Add(new DialogGUILabel(""));
                 monitorPosition.width = gridWidthDetails + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Details", HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton("Back", () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);
@@ -383,6 +381,7 @@ namespace KerbalHealth
             if (gridContents == null)
             {
                 Core.Log("KerbalHealthScenario.gridContents is null.", Core.LogLevel.Error);
+                monitorWindow.Dismiss();
                 return;
             }
 
@@ -433,12 +432,12 @@ namespace KerbalHealth
                 bool frozen = selectedKHS.HasCondition("Frozen");
                 gridContents[1].SetOptionText("<color=\"white\">" + selectedKHS.Name + "</color>");
                 gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel.ToString() + "</color>");
+                gridContents[5].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks)
                     if (q.IsVisible) s += ((s != "") ? ", " : "") + q.Title;
                 if (s == "") s = "None";
-                gridContents[5].SetOptionText("<color=\"white\">" + s + "</color>");
-                gridContents[7].SetOptionText("<color=\"white\">" + pcm.rosterStatus.ToString() + "</color>");
+                gridContents[7].SetOptionText("<color=\"white\">" + s + "</color>");
                 gridContents[9].SetOptionText("<color=\"white\">" + selectedKHS.MaxHP.ToString("F2") + "</color>");
                 gridContents[11].SetOptionText("<color=\"white\">" + selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")" + "</color>");
                 gridContents[13].SetOptionText("<color=\"white\">" + (frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2")) + "</color>");
@@ -449,15 +448,13 @@ namespace KerbalHealth
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%/" + selectedKHS.LastDecay.ToString("F1") + "% (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
-                gridContents[i + 2].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
-                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
-                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N2") + "/day</color>");
-                gridContents[i + 8].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N2") + "</color>");
-                gridContents[i + 10].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
+                gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
+                gridContents[i + 2].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
+                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N2") + "/day</color>");
+                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N2") + "</color>");
+                gridContents[i + 8].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
             }
             dirty = false;
-
         }
 
         public override void OnSave(ConfigNode node)
