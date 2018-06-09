@@ -5,14 +5,14 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 **Features**
 
 - Every kerbal has Health Points (HP).
-- Maximum HP increase with kerbals' level. A newbie has 100 HP while a 5-level kerbal has 150 (by default).
-- Kerbals' HP change, including in background and in timewarp, based on a range of factors such as living space, presence of crewmates, gravity, and specific ship parts. E.g., a level 1 kerbal will typically survive 11 days in a 1-man pod before becoming exhausted and turning into a Tourist.
+- Maximum HP increases with kerbals' level. A newbie has 100 HP while a 5-level kerbal has 150.
+- Kerbals' HP change, including in the background and in timewarp, based on a range of factors such as living space, presence of crewmates, gravity, and specific ship parts. E.g., a level 1 kerbal will typically survive 11 days in a 1-man pod before becoming exhausted and turning into a Tourist.
 - Kerbals need time to recuperate at the KSC between flights to restore full health.
-- If a kerbal's health goes under 20%, he/she is exhausted and becomes a tourist. They will go back to work when health grows back to 25%.
+- If a kerbal's health goes under 20%, he/she is exhausted and becomes a Tourist. They will go back to work when health grows back to 25%.
 - If a kerbal's health falls to 0, he/she dies!
 - Kerbals experience radiation, both cosmic and artificial, which permanently affects their maximum health.
 - You can protect from radiation by using shielding and choosing safer mission profiles.
-- When kerbals level up, they can acquire quirks that affect their health reactions.
+- When kerbals level up, they can acquire quirks that affect their health reactions, to the better or to the worse.
 - Kerbals may fall sick, have health accidents or panic attacks: prepare for contingences!
 - Health Monitor lets you check on all your kerbals in KSC and in flight.
 - Health Report in Editor helps design comfy and healthy craft.
@@ -24,18 +24,18 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 
 The following factors may affect kerbal's health:
 - Assigned (kerbal is on a mission): -0.5 HP/day
-- Crowded (scaled effect): -3 x <Crew> / <Living Space> HP/day
-- Loneliness (only 1 kerbal on the vessel, badass kerbals are immune): -1 HP/day
+- Crowded (scaled effect): -3 x <Crew> / <Living Space> HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
+- Loneliness (only 1 kerbal in the vessel, badass kerbals are immune): -1 HP/day
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
-- EVA: -10 HP/day (don't abandon your kerbals outside for long!)
+- EVA: -10 HP/day
 - Sickness (the kerbal is marked as Sick, cures after some time): -5 HP/day
-- Connected (having a working CommNet to home): +0.5 HP/day
-- Home (on Kerbin at altitude of under 18 km): +2 HP/day
+- Connected (having a working CommNet connection to home): +0.5 HP/day
+- Home (on Kerbin below 18 km altitude): +2 HP/day
 - KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
-Certain parts (Hitchhiker, crew cabin, and the Cupola) can reduce the effect of a health factor (Crowded in this case) allowing for much longer and healthier flights. It requires EC though. Hab rings (e.g. in MKS) can help overcome microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
+Certain parts (Hitchhiker, crew cabins, and the Cupola) can additionally reduce the effect of a health factor (Crowded in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
 
 **Health Recuperation and Health Decay**
 
@@ -47,7 +47,7 @@ As you see, this mechanics may allow some kerbals to stay relatively healthy ind
 
 Note that, since v1.1, Recuperation is not stacked and has crew cap. It means that one Cupola provides 1% Recup for 2 kerbals, 2 Cupolas give 1% for 4 kerbals (not 2%!), etc. If you have more kerbals than the crew cap, Recuperation will be split among them evenly (e.g. 4 kerbals with 1 Cupola will get 0.5% Recup).
 
-Decay is the opposite to Recuperation: for every percentage point of Decay, your kerbal will lose 1% of their remaining health per day.
+Decay is the opposite to Recuperation: for every percentage point of Decay, your kerbal will lose 1% of their remaining health per day. Fortunately, it is very rare.
 
 **Radiation**
 
@@ -55,7 +55,7 @@ All kerbals on missions are affected by radiation, which slowly but permanently 
 
 The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Planetary magnetic fields and atmospheres reduce radiation substantially; being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's surface is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
-You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it significantly.
+You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
 
 You may use this [tool to calculate radiation effects](https://docs.google.com/spreadsheets/d/1uAGrzg9ACDa8Uhtq9Fa45t2zmLikVAC9YH13eZiFzHw/edit?usp=sharing). Copy it to your Google Drive or download as XLSX to edit.
 
@@ -65,7 +65,7 @@ Whenever a kerbal levels up, there is a 20% chance that he or she will acquire o
 
 **Random events**
 
-Kerbals' organisms, like ours own, are not always predictable. Sometimes, very rarely, you may see random events that can impact your whole mission. Now you need to prepare for contingencies like real space programs do. You may completely disable or fine-tune the event system in settings.
+Kerbals' organisms, like ours own, are not always predictable. Sometimes, quite rarely, you may see random events that can impact your whole mission. Now you need to prepare for contingencies like real space programs do. You may completely disable or fine-tune the event system in settings.
 
 - Sickness/Curing: a kerbal can become sick and start losing health quickly. This condition heals itself after some time, but you may have to evacuate the kerbal to KSC (or bar him/her from flights) before their health falls too low. On average, kerbals catch flu once every 200 days and cure after 20 days or so. Note that these diseases have incubation periods, so it may be wise to quarantine kerbals for several weeks before sending them on an interplanetary trip.
 
