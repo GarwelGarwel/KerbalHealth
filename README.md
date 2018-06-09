@@ -12,6 +12,7 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - If a kerbal's health falls to 0, he/she dies!
 - Kerbals experience radiation, both cosmic and artificial, which permanently affects their maximum health.
 - You can protect from radiation by using shielding and choosing safer mission profiles.
+- When kerbals level up, they can acquire quirks that affect their health reactions.
 - Kerbals may fall sick, have health accidents or panic attacks: prepare for contingences!
 - Health Monitor lets you check on all your kerbals in KSC and in flight.
 - Health Report in Editor helps design comfy and healthy craft.
@@ -32,7 +33,7 @@ The following factors may affect kerbal's health:
 - Home (on Kerbin at altitude of under 18 km): +2 HP/day
 - KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
 
-These values, like most others in the mod, are adjustable in Difficulty Settings.
+These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
 Certain parts (Hitchhiker, crew cabin, and the Cupola) can reduce the effect of a health factor (Crowded in this case) allowing for much longer and healthier flights. It requires EC though. Hab rings (e.g. in MKS) can help overcome microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
 
@@ -46,15 +47,21 @@ As you see, this mechanics may allow some kerbals to stay relatively healthy ind
 
 Note that, since v1.1, Recuperation is not stacked and has crew cap. It means that one Cupola provides 1% Recup for 2 kerbals, 2 Cupolas give 1% for 4 kerbals (not 2%!), etc. If you have more kerbals than the crew cap, Recuperation will be split among them evenly (e.g. 4 kerbals with 1 Cupola will get 0.5% Recup).
 
+Decay is the opposite to Recuperation: for every percentage point of Decay, your kerbal will lose 1% of their remaining health per day.
+
 **Radiation**
 
 All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 25%; 4e7 bananas kill a kerbal. Currently, there is no way to reduce the dose and, if it is added in the future, it's going to be really hard.
 
-The amount of radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Planetary magnetic fields and atmospheres reduce radiation substantially; being very close to a celestial body may screen half of the rays too. E.g., radiation level at Kerbin's surface is 2,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain part like atomic engines and nuclear reactors.
+The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Planetary magnetic fields and atmospheres reduce radiation substantially; being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's surface is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it significantly.
 
 You may use this [tool to calculate radiation effects](https://docs.google.com/spreadsheets/d/1uAGrzg9ACDa8Uhtq9Fa45t2zmLikVAC9YH13eZiFzHw/edit?usp=sharing). Copy it to your Google Drive or download as XLSX to edit.
+
+**Quirks**
+
+Whenever a kerbal levels up, there is a 20% chance that he or she will acquire one of quirks. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
 
 **Random events**
 
@@ -66,32 +73,37 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, very r
 
 - Accident: your kerbals loses a random percentage of their current health (20 to 50%). This event's chance depends on kerbal's stupidity, but generally happens very rarely (every 1,000 days on average with 50% stupidity). However, it can become an important factor for very long missions.
 
-
 **Requirements**
 
 - [Module Manager](https://forum.kerbalspaceprogram.com/threads/55219)
 
 **Supported mods**
 
-Kerbal Health should work well alongside most other mods and will try to adapt to them with smart MM patches. Some have better, native support though:
+Kerbal Health should work well alongside most other mods and will try to adapt to them with smart MM patches. Some have better, manually balanced support though:
 
 - [B9 Aerospace](https://github.com/blowfishpro/B9-Aerospace)
 - [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [Bluedog Design Bureau](https://forum.kerbalspaceprogram.com/index.php?/topic/122020-131-bluedog-design-bureau-stockalike-saturn-apollo-and-more-v141-атлас-1jan2018)
 - [Deadly Reentry Continued](https://forum.kerbalspaceprogram.com/index.php?/topic/50296-122-deadly-reentry-v760-june-9-2017-the-ariel-edition/)
 - [DeepFreeze Continued](http://forum.kerbalspaceprogram.com/index.php?/topic/112328-11-deepfreeze-continued)
-- Deep Space Exploration Vehicles
+- [Deep Space Exploration Vehicles](https://forum.kerbalspaceprogram.com/index.php?/topic/122162-14x-deep-space-exploration-vessels-build-nasa-inspired-ships-in-ksp/)
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
 - [KSP Interstellar Extended](https://forum.kerbalspaceprogram.com/index.php?/topic/155255-12213-kspi-extended)
+- [Malemute](https://forum.kerbalspaceprogram.com/index.php?/topic/139668-13-the-malemute-rover-020/)
+- [RLA Reborn](https://forum.kerbalspaceprogram.com/index.php?/topic/175512-14-rla-reborn/)
 - [Spacetux Recycled Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-131-spacetux-industries-recycled-parts/) (Atomic Age, FTmN, FTmN-New, RSCapsuledyne)
 - [SpaceY Heavy Lifters](https://forum.kerbalspaceprogram.com/index.php?/topic/90545-12213-spacey-heavy-lifter-parts-pack-v116-2017-01-30/)
+- [SSTU](https://github.com/shadowmage45/SSTULabs)
+- [Tundra Exploration](https://forum.kerbalspaceprogram.com/index.php?/topic/166915-143-tundra-exploration-v113-may-31st-stockalike-spacex-falcon-9-dragon-v2-and-bfr/)
 - [USI Kolonization Systems (MKS/OKS)](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 
-If you would like to include native support for your (or your favorite) mod, let me know.
+If you would like to include special support for your (or your favorite) mod, let me know. Or, better yet, provide a PR.
+
+Making History expansion is fully supported, but not required.
 
 **Conflicts & Incompatibilities**
 
@@ -101,7 +113,9 @@ If you would like to include native support for your (or your favorite) mod, let
 
 **Future features**
 
-- New mechanics: health traits, injuries, medical supplies, quarantine, and whatnot...
+- New mechanics: individual planet configuration, injuries, medical supplies, quarantine, and whatnot...
+- Solar weather and/or radiation events
+- UI improvement
 - API for collaboration with other mods
 
 **Copyright and License**
