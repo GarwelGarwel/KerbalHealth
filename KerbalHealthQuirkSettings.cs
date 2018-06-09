@@ -16,7 +16,7 @@
         public int MaxQuirks = 2;
 
         [GameParameters.CustomFloatParameterUI("Chance of Getting a Quirk", toolTip = "Chance of a kerbal being awarded a quirk when he/she levels up", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
-        public float QuirkChance = 0.2f;
+        public float QuirkChance = 0.25f;
 
         [GameParameters.CustomParameterUI("Award on Missions", toolTip = "Quirks can be awarded when the kerbal is assigned, otherwise only at KSC")]
         public bool AwardQuirksOnMissions = false;

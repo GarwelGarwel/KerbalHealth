@@ -61,7 +61,7 @@ You may use this [tool to calculate radiation effects](https://docs.google.com/s
 
 **Quirks**
 
-Whenever a kerbal levels up, there is a 20% chance that he or she will acquire one of quirks. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
+Whenever a kerbal levels up, there is a 25% chance that he or she will acquire one of quirks. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. A kerbal can have up to two quirks. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
 
 **Random events**
 
