@@ -2,12 +2,12 @@
 {
     class KerbalHealthQuirkSettings : GameParameters.CustomParameterNode
     {
-    public override string Title => "Quirks";
-    public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
-    public override bool HasPresets => true;
-    public override string Section => "Kerbal Health (2)";
-    public override string DisplaySection => Section;
-    public override int SectionOrder => 2;
+        public override string Title => "Quirks";
+        public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
+        public override bool HasPresets => false;
+        public override string Section => "Kerbal Health (2)";
+        public override string DisplaySection => Section;
+        public override int SectionOrder => 2;
 
         [GameParameters.CustomParameterUI("Quirks Enabled", toolTip = "Quirks can be awarded to kerbals and affect their health stats")]
         public bool QuirksEnabled = true;
