@@ -67,15 +67,6 @@ namespace KerbalHealth
             set => events = value;
         }
 
-        public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
-
-        public static Quirk GetQuirk(string name)
-        {
-            foreach (Quirk q in Quirks)
-                if (string.Compare(name, q.Name, true) == 0) return q;
-            return null;
-        }
-
         /// <summary>
         /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
         /// </summary>
@@ -92,6 +83,19 @@ namespace KerbalHealth
             ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
         }
 
+        public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
+
+        public static Quirk GetQuirk(string name)
+        {
+            foreach (Quirk q in Quirks)
+                if (string.Compare(name, q.Name, true) == 0) return q;
+            return null;
+        }
+
+        public static Dictionary<string, BodyProperties> Bodies { get; set; }
+
+        public static BodyProperties GetBodyProperties(string name) => Bodies.ContainsKey(name) ? Bodies[name] : null;
+
         public static void LoadConfig()
         {
             Log("Loading config...");
@@ -105,6 +109,14 @@ namespace KerbalHealth
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_QUIRK"))
                 Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.");
+
+            Bodies = new Dictionary<string, BodyProperties>();
+            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("BODY_PROPERTIES"))
+            {
+                BodyProperties bp = new BodyProperties(n);
+                Bodies.Add(bp.Name, bp);
+            }
+            Core.Log(Bodies.Count + " body properties loaded.");
 
             Loaded = true;
         }
