@@ -490,10 +490,6 @@ namespace KerbalHealth
 
         static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
 
-        static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
-
-        static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
-
         /// <summary>
         /// Returns level of current cosmic radiation for this kerbal, before exposure
         /// </summary>
@@ -508,11 +504,20 @@ namespace KerbalHealth
                 return 0;
             }
             Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
+            Core.Log("Configs for " + v.mainBody.bodyName + ":\r\n" + Core.BodyConfigs[v.mainBody] ?? "NOT FOUND");
+
             if (v.mainBody != Sun.Instance.sun)
             {
-                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : GetPlanet(v.mainBody).orbit.radius;
-                if (IsPlanet(v.mainBody) && (v.altitude < v.mainBody.scienceValues.spaceAltitudeThreshold)) cosmicRadiationRate = Core.InSpaceLowCoefficient;
-                else cosmicRadiationRate = Core.InSpaceHighCoefficient;
+                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude;
+                double a = v.altitude;
+                for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
+                {
+                    if (Core.BodyConfigs[v.mainBody].HasMagneticField)
+                        if (a < b.scienceValues.spaceAltitudeThreshold)
+                            cosmicRadiationRate *= Core.InSpaceLowCoefficient;
+                        else cosmicRadiationRate *= Core.InSpaceHighCoefficient;
+                    a = b.orbit.altitude;
+                }
                 if (v.mainBody.atmosphere)
                     if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
                     else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;

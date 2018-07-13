@@ -55,7 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssignedFactor.cs" />
-    <Compile Include="BodyProperties.cs" />
+    <Compile Include="BodyHealthConfig.cs" />
     <Compile Include="ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DFWrapper.cs" />

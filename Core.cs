@@ -92,31 +92,42 @@ namespace KerbalHealth
             return null;
         }
 
-        public static Dictionary<string, BodyProperties> Bodies { get; set; }
+        public static Dictionary<CelestialBody, BodyHealthConfig> BodyConfigs { get; set; }
 
-        public static BodyProperties GetBodyProperties(string name) => Bodies.ContainsKey(name) ? Bodies[name] : null;
+        public static BodyHealthConfig GetBodyConfig(string name)
+        {
+            CelestialBody cb = FlightGlobals.GetBodyByName(name);
+            if ((cb == null) || !BodyConfigs.ContainsKey(cb)) return null;
+            return BodyConfigs[cb];
+        }
 
         public static void LoadConfig()
         {
-            Log("Loading config...");
+            Log("Loading config...", LogLevel.Important);
 
             ResourceShielding = new Dictionary<int, double>();
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
-            Log(ResourceShielding.Count + " resource shielding values loaded.");
+            Log(ResourceShielding.Count + " resource shielding values loaded.", LogLevel.Important);
 
             Quirks = new List<Quirk>();
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_QUIRK"))
                 Quirks.Add(new Quirk(n));
-            Core.Log(Quirks.Count + " quirks loaded.");
+            Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
-            Bodies = new Dictionary<string, BodyProperties>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("BODY_PROPERTIES"))
+            BodyConfigs = new Dictionary<CelestialBody, BodyHealthConfig>(FlightGlobals.Bodies.Count);
+            foreach (CelestialBody b in FlightGlobals.Bodies) BodyConfigs.Add(b, new BodyHealthConfig(b));
+            int i = 0;
+            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("BODY_CONFIG"))
             {
-                BodyProperties bp = new BodyProperties(n);
-                Bodies.Add(bp.Name, bp);
+                BodyHealthConfig bc = GetBodyConfig(GetString(n, "name"));
+                if (bc != null)
+                {
+                    bc.ConfigNode = n;
+                    i++;
+                }
             }
-            Core.Log(Bodies.Count + " body properties loaded.");
+            Core.Log(i + " body configs out of " + BodyConfigs.Count + " bodies loaded.", LogLevel.Important);
 
             Loaded = true;
         }
@@ -453,6 +464,10 @@ namespace KerbalHealth
             Log(pcm.name + " is " + pcm.rosterStatus + " and was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Important);
             return null;
         }
+
+        public static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
+
+        public static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
 
         public static string GetString(ConfigNode n, string key, string defaultValue = null) => n.HasValue(key) ? n.GetValue(key) : defaultValue;
 

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace KerbalHealth
 {
-    public class BodyProperties
+    public class BodyHealthConfig
     {
         /// <summary>
         /// Celestial body name (non-localized)
@@ -16,7 +16,7 @@ namespace KerbalHealth
 
         public bool HasMagneticField { get; set; }
 
-        public double MagneticFieldStrength { get; set; } = 1;
+        public double MagneticFieldStrength { get; set; }
 
         public ConfigNode ConfigNode
         {
@@ -29,11 +29,20 @@ namespace KerbalHealth
                     return;
                 }
                 if (Body == null) Core.Log("Body '" + Name + "' not found.", Core.LogLevel.Important);
-                HasMagneticField = Core.GetBool(value, "hasMagneticField", true);
-                MagneticFieldStrength = Core.GetDouble(value, "magneticField", 1);
+                HasMagneticField = Core.GetBool(value, "hasMagneticField", HasMagneticField);
+                MagneticFieldStrength = Core.GetDouble(value, "magneticField", MagneticFieldStrength);
             }
         }
 
-        public BodyProperties(ConfigNode node) => ConfigNode = node;
+        public override string ToString() => Name + "\r\nMagnetic Field: " + (HasMagneticField ? "Yes" : "No") + "\r\nMagnetic Field Strength:" + MagneticFieldStrength.ToString("P0");
+
+        public BodyHealthConfig(CelestialBody body)
+        {
+            Name = body.bodyName;
+            HasMagneticField = Core.IsPlanet(body);
+            MagneticFieldStrength = 1;
+        }
+
+        public BodyHealthConfig(ConfigNode node) => ConfigNode = node;
     }
 }
