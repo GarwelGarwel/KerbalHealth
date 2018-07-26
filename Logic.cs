@@ -121,7 +121,7 @@ namespace KerbalHealth
             set
             {
                 string s = Core.GetString(value, "operator") ?? Core.GetString(value, "logic");
-                switch (s)
+                switch (s?.ToLower())
                 {
                     case "and":
                     case "all":
