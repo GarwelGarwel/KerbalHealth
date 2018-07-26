@@ -409,7 +409,8 @@ namespace KerbalHealth
                         s = Core.ParseUT(khs.TimeToNextCondition(), true, 100);
                         if (ch < 0)
                         {
-                            formatTag = "<color=\"red\">";
+                            if (khs.TimeToNextCondition() < KSPUtil.dateTimeFormatter.Day) formatTag = "<color=\"red\">";
+                            else formatTag = "<color=\"yellow\">";
                             formatUntag = "</color>";
                         }
                     }
