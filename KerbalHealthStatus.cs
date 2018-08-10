@@ -486,14 +486,12 @@ namespace KerbalHealth
         /// </summary>
         public double LastExposure { get; set; } = 0;
 
-        //public static double GetExposure(double shielding, double crewCap) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
-
         static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
 
         /// <summary>
         /// Returns level of current cosmic radiation for this kerbal, before exposure
         /// </summary>
-        /// <returns>Cosmic radiation level in bananas/day</returns>
+        /// <returns>Cosmic radiation level in bananas/day (kerbal)</returns>
         public double GetCosmicRadiation()
         {
             double cosmicRadiationRate = 1, distanceToSun = 0;
@@ -530,7 +528,7 @@ namespace KerbalHealth
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) * KSPUtil.dateTimeFormatter.Day / 21600;
+            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation);
         }
 
         #endregion
@@ -650,7 +648,7 @@ namespace KerbalHealth
 
             if (Core.RadiationEnabled && ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen))
             {
-                Radiation = LastExposure * (partsRadiation + GetCosmicRadiation());
+                Radiation = LastExposure * (partsRadiation + GetCosmicRadiation()) * KSPUtil.dateTimeFormatter.Day / 21600;
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
