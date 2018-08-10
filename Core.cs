@@ -92,13 +92,13 @@ namespace KerbalHealth
             return null;
         }
 
-        public static Dictionary<CelestialBody, BodyHealthConfig> BodyConfigs { get; set; }
+        public static Dictionary<CelestialBody, PlanetHealthConfig> PlanetConfigs { get; set; }
 
-        public static BodyHealthConfig GetBodyConfig(string name)
+        public static PlanetHealthConfig GetPlanetConfig(string name)
         {
             CelestialBody cb = FlightGlobals.GetBodyByName(name);
-            if ((cb == null) || !BodyConfigs.ContainsKey(cb)) return null;
-            return BodyConfigs[cb];
+            if ((cb == null) || !PlanetConfigs.ContainsKey(cb)) return null;
+            return PlanetConfigs[cb];
         }
 
         public static void LoadConfig()
@@ -115,19 +115,19 @@ namespace KerbalHealth
                 Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
-            BodyConfigs = new Dictionary<CelestialBody, BodyHealthConfig>(FlightGlobals.Bodies.Count);
-            foreach (CelestialBody b in FlightGlobals.Bodies) BodyConfigs.Add(b, new BodyHealthConfig(b));
+            PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
+            foreach (CelestialBody b in FlightGlobals.Bodies) PlanetConfigs.Add(b, new PlanetHealthConfig(b));
             int i = 0;
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("BODY_CONFIG"))
+            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("PLANET_HEALTH_CONFIG"))
             {
-                BodyHealthConfig bc = GetBodyConfig(GetString(n, "name"));
+                PlanetHealthConfig bc = GetPlanetConfig(GetString(n, "name"));
                 if (bc != null)
                 {
                     bc.ConfigNode = n;
                     i++;
                 }
             }
-            Core.Log(i + " body configs out of " + BodyConfigs.Count + " bodies loaded.", LogLevel.Important);
+            Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
 
             Loaded = true;
         }

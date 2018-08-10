@@ -504,7 +504,7 @@ namespace KerbalHealth
                 return 0;
             }
             Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
-            Core.Log("Configs for " + v.mainBody.bodyName + ":\r\n" + Core.BodyConfigs[v.mainBody] ?? "NOT FOUND");
+            Core.Log("Configs for " + v.mainBody.bodyName + ":\r\n" + Core.PlanetConfigs[v.mainBody] ?? "NOT FOUND");
 
             if (v.mainBody != Sun.Instance.sun)
             {
@@ -512,15 +512,14 @@ namespace KerbalHealth
                 double a = v.altitude;
                 for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
                 {
-                    if (Core.BodyConfigs[v.mainBody].HasMagneticField)
-                        if (a < b.scienceValues.spaceAltitudeThreshold)
-                            cosmicRadiationRate *= Core.InSpaceLowCoefficient;
-                        else cosmicRadiationRate *= Core.InSpaceHighCoefficient;
+                    if (a < b.scienceValues.spaceAltitudeThreshold)
+                        cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                    else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
                     a = b.orbit.altitude;
                 }
                 if (v.mainBody.atmosphere)
-                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Core.TroposphereCoefficient;
-                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Core.StratoCoefficient;
+                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
                 double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
                 Core.Log("At an altitude of " + v.altitude + " m and R = " + v.mainBody.Radius + " m, occlusion coefficient is " + occlusionCoefficient.ToString("P2") + ".");
                 cosmicRadiationRate *= occlusionCoefficient;
