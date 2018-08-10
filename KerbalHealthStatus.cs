@@ -512,12 +512,13 @@ namespace KerbalHealth
                 double a = v.altitude;
                 for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
                 {
-                    if (a < b.scienceValues.spaceAltitudeThreshold)
-                        cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
-                    else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                    if (Core.PlanetConfigs[b].Magnetosphere != 0)
+                        if (a < b.scienceValues.spaceAltitudeThreshold)
+                            cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                        else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
                     a = b.orbit.altitude;
                 }
-                if (v.mainBody.atmosphere)
+                if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
                     if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
                     else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
                 double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
