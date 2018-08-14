@@ -44,6 +44,7 @@ namespace KerbalHealth
             GameEvents.onKerbalAdded.Add(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
             GameEvents.onKerbalNameChanged.Add(OnKerbalNameChanged);
+            GameEvents.OnProgressComplete.Add(OnProgressComplete);
 
             if (!DFWrapper.InstanceExists)
             {
@@ -109,6 +110,7 @@ namespace KerbalHealth
             GameEvents.onKerbalAdded.Remove(OnKerbalAdded);
             GameEvents.onKerbalRemoved.Remove(OnKerbalRemoved);
             GameEvents.onKerbalNameChange.Remove(OnKerbalNameChanged);
+            GameEvents.OnProgressComplete.Remove(OnProgressComplete);
             EventData<Part, ProtoCrewMember> dfEvent;
             dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
             if (dfEvent != null) dfEvent.Remove(OnKerbalFrozen);
@@ -122,7 +124,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Marks the kerbal as being on EVA, to apply EVA-only effects
+        /// Marks the kerbal as being on EVA to apply EVA-only effects
         /// </summary>
         /// <param name="action"></param>
         public void OnKerbalEva(GameEvents.FromToAction<Part, Part> action)
@@ -191,6 +193,33 @@ namespace KerbalHealth
             Core.Log("OnKerbalThaw('" + part.name + "', '" + pcm.name + "')", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(pcm).RemoveCondition("Frozen");
             dirty = true;
+        }
+
+        /// <summary>
+        /// Checks if an anomaly has just been discovered and awards quirks to a random discoverer
+        /// </summary>
+        /// <param name="n"></param>
+        public void OnProgressComplete(ProgressNode n)
+        {
+            Core.Log("OnProgressCompleted(" + n.Id + ")");
+            if (n is KSPAchievements.PointOfInterest)
+            {
+                KSPAchievements.PointOfInterest poi = (KSPAchievements.PointOfInterest)n;
+                Core.Log("Reached anomaly: " + poi.Id + " on " + poi.body, Core.LogLevel.Important);
+                if ((Core.rand.NextDouble() < HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AnomalyQuirkChance) && (FlightGlobals.ActiveVessel.GetCrewCount() > 0))
+                {
+                    List<ProtoCrewMember> crew = FlightGlobals.ActiveVessel.GetVesselCrew();
+                    ProtoCrewMember pcm = crew[Core.rand.Next(crew.Count)];
+                    Quirk q = Core.KerbalHealthList.Find(pcm).AddRandomQuirk();
+                    if (q != null) Core.Log(pcm.name + " was awarded " + q.Title + " quirk for discovering an anomaly.", Core.LogLevel.Important);
+                }
+                //foreach (ProtoCrewMember pcm in FlightGlobals.ActiveVessel.GetVesselCrew())
+                //    if (Core.rand.NextDouble() < HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AnomalyQuirkChance)
+                //    {
+                //        Quirk q = Core.KerbalHealthList.Find(pcm).AddRandomQuirk();
+                //        if (q != null) Core.Log(pcm.name + " was awarded " + q.Title + " quirk for discovering an anomaly.", Core.LogLevel.Important);
+                //    }
+            }
         }
 
         /// <summary>

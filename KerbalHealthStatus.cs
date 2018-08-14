@@ -294,14 +294,15 @@ namespace KerbalHealth
             return null;
         }
 
-        public void AddRandomQuirk(int level)
+        public Quirk AddRandomQuirk(int level)
         {
             Quirk q = GetRandomQuirk(level);
             Quirks.Add(q);
             Core.ShowMessage(Name + " acquired a new quirk: " + q, true, false);
+            return q;
         }
 
-        public void AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
+        public Quirk AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
 
         public void AwardQuirks()
         {
