@@ -11,7 +11,7 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - If a kerbal's health goes under 20%, he/she is exhausted and becomes a Tourist. They will go back to work when health grows back to 25%.
 - If a kerbal's health falls to 0, he/she dies!
 - Kerbals experience radiation, both cosmic and artificial, which permanently affects their maximum health.
-- You can protect from radiation by using shielding and choosing safer mission profiles.
+- You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation with their magnetic fields, atmospheres and occlusion, to various degrees.
 - When kerbals level up, they can acquire quirks that affect their health reactions, to the better or to the worse.
 - Kerbals may fall sick, have health accidents or panic attacks: prepare for contingences!
 - Health Monitor lets you check on all your kerbals in KSC and in flight.
@@ -35,7 +35,7 @@ The following factors may affect kerbal's health:
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
-Certain parts (Hitchhiker, crew cabins, and the Cupola) can additionally reduce the effect of a health factor (Crowded in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
+Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) can additionally reduce the effect of a health factor (Crowded in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
 
 **Health Recuperation and Health Decay**
 
@@ -51,17 +51,15 @@ Decay is the opposite to Recuperation: for every percentage point of Decay, your
 
 **Radiation**
 
-All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 25%; 4e7 bananas kill a kerbal. Currently, there is no way to reduce the dose and, if it is added in the future, it's going to be really hard.
+All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 25%; 4e7 bananas kill a kerbal. Currently, there is no way to reduce the dose.
 
-The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Planetary magnetic fields and atmospheres reduce radiation substantially; being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's surface is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
+The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
 
-You may use this [tool to calculate radiation effects](https://docs.google.com/spreadsheets/d/1uAGrzg9ACDa8Uhtq9Fa45t2zmLikVAC9YH13eZiFzHw/edit?usp=sharing). Copy it to your Google Drive or download as XLSX to edit.
-
 **Quirks**
 
-Whenever a kerbal levels up, there is a 25% chance that he or she will acquire one of quirks. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. A kerbal can have up to two quirks. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
+Whenever a kerbal levels up, there is a 25% chance that he or she will acquire a health quirk (unless he/she already has two). Discovering an anomaly can also grant a free quirk. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
 
 **Random events**
 
@@ -93,6 +91,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [KSP-AVC](http://ksp-avc.cybutek.net)
 - [KSP Interstellar Extended](https://forum.kerbalspaceprogram.com/index.php?/topic/155255-12213-kspi-extended)
 - [Malemute](https://forum.kerbalspaceprogram.com/index.php?/topic/139668-13-the-malemute-rover-020/)
+- [Outer Planets Mod](https://forum.kerbalspaceprogram.com/index.php?/topic/165854-ksp-142-outer-planets-mod221-15-april-2018/)
 - [RLA Reborn](https://forum.kerbalspaceprogram.com/index.php?/topic/175512-14-rla-reborn/)
 - [Spacetux Recycled Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-131-spacetux-industries-recycled-parts/) (Atomic Age, FTmN, FTmN-New, RSCapsuledyne)
 - [SpaceY Heavy Lifters](https://forum.kerbalspaceprogram.com/index.php?/topic/90545-12213-spacey-heavy-lifter-parts-pack-v116-2017-01-30/)
@@ -107,13 +106,14 @@ Making History expansion is fully supported, but not required.
 
 **Conflicts & Incompatibilities**
 
-- Any mod (including USI-LS), which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then rutn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
+- Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
+- Compatibility with Kerbalism hasn't been tested. This mod changes much of game's internal mechanics, so it can be incompatible.
 
 **Future features**
 
-- New mechanics: individual planet configuration, injuries, medical supplies, quarantine, and whatnot...
+- New mechanics: more various diseases, radioactive planets, injuries, medical supplies, quarantine, and whatnot...
 - Solar weather and/or radiation events
 - UI improvement
 - API for collaboration with other mods
