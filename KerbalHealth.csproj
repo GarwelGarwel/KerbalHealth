@@ -93,37 +93,39 @@
     <Compile Include="HealthModifierSet.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icon.png" />
+    <Content Include="GameData\KerbalHealth\icon.png" />
+    <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="KerbalHealth.cfg" />
+    <None Include="GameData\KerbalHealth\KerbalHealth.cfg" />
     <None Include="KerbalHealth.netkan" />
-    <None Include="KerbalHealth.version" />
-    <None Include="LICENSE" />
-    <None Include="Patches\General.cfg" />
-    <None Include="Patches\KHAtomicAge.cfg" />
-    <None Include="Patches\KHBDB.cfg" />
-    <None Include="Patches\KHDeepFreeze.cfg" />
-    <None Include="Patches\KHDSEV.cfg" />
-    <None Include="Patches\KHFASA.cfg" />
-    <None Include="Patches\KHB9.cfg" />
-    <None Include="Patches\KHDeadlyReentry.cfg" />
-    <None Include="Patches\KHFTmN.cfg" />
-    <None Include="Patches\KHFTmN_New.cfg" />
-    <None Include="Patches\KHIE.cfg" />
-    <None Include="Patches\KHKerbalAtomics.cfg" />
-    <None Include="Patches\KHKPBS.cfg" />
-    <None Include="Patches\KHMakingHistory.cfg" />
-    <None Include="Patches\KHMKS.cfg" />
-    <None Include="Patches\KHRLA.cfg" />
-    <None Include="Patches\KHRSCapsuledyne.cfg" />
-    <None Include="Patches\KHSpaceY.cfg" />
-    <None Include="Patches\KHSSTU.cfg" />
-    <None Include="Patches\KHStock.cfg" />
-    <None Include="Patches\KHUSILS.cfg" />
+    <None Include="GameData\KerbalHealth\KerbalHealth.version" />
+    <None Include="GameData\KerbalHealth\LICENSE" />
+    <None Include="GameData\KerbalHealth\Patches\General.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHAtomicAge.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHBDB.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHDeepFreeze.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHDSEV.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHFASA.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHB9.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHDeadlyReentry.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHFTmN.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHFTmN_New.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHIE.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHKerbalAtomics.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHKPBS.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHMakingHistory.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHMKS.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHRLA.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHRSCapsuledyne.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHSpaceY.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHSSTU.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHStock.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHUSILS.cfg" />
     <None Include="README.md" />
-    <None Include="Resources.cfg" />
+    <None Include="GameData\KerbalHealth\Resources.cfg" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
