@@ -38,7 +38,7 @@
             }
         }
 
-        public override string ToString() => Name + "\r\nMagnetosphere: " + Magnetosphere.ToString("F2") + "\r\nAtmospheric Absorption" + AtmosphericAbsorption.ToString("F2");
+        public override string ToString() => Name + "\r\nMagnetosphere: " + Magnetosphere.ToString("F2") + "\r\nAtmospheric Absorption: " + AtmosphericAbsorption.ToString("F2");
 
         public PlanetHealthConfig(CelestialBody body)
         {

@@ -107,7 +107,7 @@ namespace KerbalHealth
 
         public override void OnStart(StartState state)
         {
-            Core.Log("ModuleKerbalHealth.OnStart(" + state + ")");
+            Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
             if (IsAlwaysActive)
             {
