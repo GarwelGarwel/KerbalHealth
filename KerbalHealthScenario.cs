@@ -83,15 +83,27 @@ namespace KerbalHealth
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
 
+            // Automatically updating settings from older versions
             Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != v)
                 Core.Log("Current mod version " + v + " is different from v" + version + " used to save the game. Most likely, Kerbal Health has been recently updated.", Core.LogLevel.Important);
             else Core.Log("Kerbal Health v" + version);
-            if ((version < new Version(1, 1, 0)) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
+            if ((version < new Version("1.1.0")) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
             {
-                Core.Log("Crowded Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor + " instead of -3. Sending a warning to the player.");
+                Core.Log("Crowded Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor + " instead of -3. Automatically fixing.");
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor = -3;
-                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
+                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true, true);
+            }
+            if (version <= new Version("1.2.1"))
+            {
+                Core.Log("Pre-1.2.1 radiation settings: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation.ToString("F0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation.ToString("F0"));
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = 0.5f;
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = 0.3f;
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = 0.2f;
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.02f;
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 3000;
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 3000;
+                Core.ShowMessage("Kerbal Health has been update to v" + v.ToString(3) + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true, true);
             }
             version = v;
 
@@ -509,7 +521,7 @@ namespace KerbalHealth
             if (!Core.Loaded) Core.LoadConfig();
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
-            version = new Version(node.HasValue("version") ? node.GetValue("version") : "0.0");
+            version = new Version(Core.GetString(node, "version", "0.0"));
             nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
             Core.KerbalHealthList.Clear();
             int i = 0;
