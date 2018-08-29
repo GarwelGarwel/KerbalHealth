@@ -485,38 +485,54 @@ namespace KerbalHealth
         /// <summary>
         /// Proportion of radiation that gets absorbed by the kerbal
         /// </summary>
-        public double LastExposure { get; set; } = 0;
+        public double LastExposure { get; set; } = 1;
 
         static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
+
+        public static double GetMagnetosphereCoefficient(Vessel v)
+        {
+            double cosmicRadiationRate = 1;
+            double a = v.altitude;
+            for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
+            {
+                if (Core.PlanetConfigs[b].Magnetosphere != 0)
+                    if (a < b.scienceValues.spaceAltitudeThreshold)
+                        cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                    else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                a = b.orbit.altitude;
+            }
+            return cosmicRadiationRate;
+        }
 
         /// <summary>
         /// Returns level of current cosmic radiation for this kerbal, before exposure
         /// </summary>
         /// <returns>Cosmic radiation level in bananas/day (kerbal)</returns>
-        public double GetCosmicRadiation()
+        public static double GetCosmicRadiation(Vessel v)
         {
             double cosmicRadiationRate = 1, distanceToSun = 0;
-            Vessel v = Core.KerbalVessel(PCM);
+            //Vessel v = Core.KerbalVessel(PCM);
             if (v == null)
             {
-                Core.Log(Name + "'s vessel not found. No radiation added.", Core.LogLevel.Important);
+                Core.Log("Vessel is null. No radiation added.", Core.LogLevel.Important);
                 return 0;
             }
-            Core.Log(Name + " is in " + v.vesselName + " in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
+            Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
             Core.Log("Configs for " + v.mainBody.bodyName + ":\r\n" + Core.PlanetConfigs[v.mainBody] ?? "NOT FOUND");
 
             if (v.mainBody != Sun.Instance.sun)
             {
                 distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude;
-                double a = v.altitude;
-                for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
-                {
-                    if (Core.PlanetConfigs[b].Magnetosphere != 0)
-                        if (a < b.scienceValues.spaceAltitudeThreshold)
-                            cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
-                        else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
-                    a = b.orbit.altitude;
-                }
+                cosmicRadiationRate = GetMagnetosphereCoefficient(v);
+                //double a = v.altitude;
+                //for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
+                //{
+                //    if (Core.PlanetConfigs[b].Magnetosphere != 0)
+                //        if (a < b.scienceValues.spaceAltitudeThreshold)
+                //            cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                //        else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
+                //    a = b.orbit.altitude;
+                //}
                 if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
                     if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
                     else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
@@ -649,7 +665,7 @@ namespace KerbalHealth
 
             if (Core.RadiationEnabled && ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen))
             {
-                Radiation = LastExposure * (partsRadiation + GetCosmicRadiation()) * KSPUtil.dateTimeFormatter.Day / 21600;
+                Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(Core.KerbalVessel(PCM))) * KSPUtil.dateTimeFormatter.Day / 21600;
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
@@ -699,7 +715,7 @@ namespace KerbalHealth
                 n.AddValue("dose", Dose);
                 if (Radiation != 0) n.AddValue("radiation", Radiation);
                 if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
-                if (LastExposure != 0) n.AddValue("exposure", LastExposure);
+                if (LastExposure != 1) n.AddValue("exposure", LastExposure);
                 foreach (HealthCondition hc in Conditions)
                     n.AddNode(hc.ConfigNode);
                 foreach (Quirk q in Quirks)
@@ -720,7 +736,7 @@ namespace KerbalHealth
                 Dose = Core.GetDouble(value, "dose");
                 Radiation = Core.GetDouble(value, "radiation");
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
-                LastExposure = Core.GetDouble(value, "exposure");
+                LastExposure = Core.GetDouble(value, "exposure", 1);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     AddCondition(new HealthCondition(n));
                 foreach (string s in value.GetValues("quirk"))
