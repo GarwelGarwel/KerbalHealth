@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssignedFactor.cs" />
+    <Compile Include="ModuleHealthEnvironmentSensor.cs" />
     <Compile Include="PlanetHealthConfig.cs" />
     <Compile Include="ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
@@ -94,10 +95,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="GameData\KerbalHealth\icon.png" />
+    <None Include="GameData\KerbalHealth\Patches\KHDMOS.cfg" />
     <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GameData\KerbalHealth\KerbalHealth.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\TundraBFR_KH.cfg" />
     <None Include="KerbalHealth.netkan" />
     <None Include="GameData\KerbalHealth\KerbalHealth.version" />
     <None Include="GameData\KerbalHealth\LICENSE" />
