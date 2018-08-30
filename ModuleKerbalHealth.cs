@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace KerbalHealth
 {
     public class ModuleKerbalHealth : PartModule, IResourceConsumer
     {
         [KSPField]
-        string title = "";  // Module title displayed in right-click menu (empty string for auto)
+        public string title = "";  // Module title displayed in right-click menu (empty string for auto)
 
         [KSPField]
         public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
