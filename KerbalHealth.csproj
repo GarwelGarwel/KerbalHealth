@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GameData\KerbalHealth\KerbalHealth.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHSEP.cfg" />
     <None Include="GameData\KerbalHealth\Patches\TundraBFR_KH.cfg" />
     <None Include="KerbalHealth.netkan" />
     <None Include="GameData\KerbalHealth\KerbalHealth.version" />
