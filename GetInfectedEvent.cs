@@ -35,7 +35,7 @@ namespace KerbalHealth
         protected override void Run()
         {
             Core.Log("Infecting " + khs.Name + "...");
-            khs.AddCondition(new HealthCondition("Infected", false));
+            khs.AddCondition("Infected");
             if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().IncubationDuration <= 0)
                 new GetSickEvent().Process(khs);
         }

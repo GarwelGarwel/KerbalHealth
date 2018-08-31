@@ -49,7 +49,7 @@ namespace KerbalHealth
             Core.Log("Curing " + khs.Name + "'s sickness...");
             khs.RemoveCondition("Sick");
             if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ImmunityDuration > 0)
-                khs.AddCondition(new HealthCondition("Immune", false));
+                khs.AddCondition("Immune");
         }
     }
 }

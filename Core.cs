@@ -42,11 +42,18 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="id">Factor id</param>
         /// <returns></returns>
-        public static HealthFactor FindFactor(string id)
+        public static HealthFactor GetHealthFactor(string id)
         {
             foreach (HealthFactor f in Factors) if (f.Name == id) return f;
             return null;
         }
+
+        /// <summary>
+        /// List sof all possible health conditions
+        /// </summary>
+        public static Dictionary<string, HealthCondition> HealthConditions;
+
+        public static HealthCondition GetHealthCondition(string s) => HealthConditions.ContainsKey(s) ? HealthConditions[s] : null;
 
         static List<Event> events = new List<Event>()
         {
@@ -104,6 +111,13 @@ namespace KerbalHealth
         public static void LoadConfig()
         {
             Log("Loading config...", LogLevel.Important);
+
+            HealthConditions = new Dictionary<string, HealthCondition>();
+            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_CONDITION"))
+                HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
+            Core.Log(HealthConditions.Count + " health conditions loaded:");
+            foreach (HealthCondition hc in HealthConditions.Values)
+                Core.Log(hc.ToString());
 
             ResourceShielding = new Dictionary<int, double>();
             foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_SHIELDING"))

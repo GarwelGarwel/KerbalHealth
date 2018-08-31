@@ -16,7 +16,8 @@ namespace KerbalHealth
         {
             Core.Log("Adding sickness to " + khs.Name + "...");
             khs.RemoveCondition("Infected");
-            khs.AddCondition(new HealthCondition("Sick"));
+            khs.AddCondition("Sick");
+            //khs.AddCondition(new HealthCondition("Sick"));
         }
     }
 }

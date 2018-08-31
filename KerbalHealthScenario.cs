@@ -196,7 +196,7 @@ namespace KerbalHealth
         public void OnKerbalFrozen(Part part, ProtoCrewMember pcm)
         {
             Core.Log("OnKerbalFrozen('" + part.name + "', '" + pcm.name + "')", Core.LogLevel.Important);
-            Core.KerbalHealthList.Find(pcm).AddCondition(new KerbalHealth.HealthCondition("Frozen"));
+            Core.KerbalHealthList.Find(pcm).AddCondition("Frozen");
             dirty = true;
         }
 
@@ -214,9 +214,8 @@ namespace KerbalHealth
         public void OnProgressComplete(ProgressNode n)
         {
             Core.Log("OnProgressCompleted(" + n.Id + ")");
-            if (n is KSPAchievements.PointOfInterest)
+            if (n is KSPAchievements.PointOfInterest poi)
             {
-                KSPAchievements.PointOfInterest poi = (KSPAchievements.PointOfInterest)n;
                 Core.Log("Reached anomaly: " + poi.Id + " on " + poi.body, Core.LogLevel.Important);
                 if ((Core.rand.NextDouble() < HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AnomalyQuirkChance) && (FlightGlobals.ActiveVessel.GetCrewCount() > 0))
                 {
@@ -225,12 +224,6 @@ namespace KerbalHealth
                     Quirk q = Core.KerbalHealthList.Find(pcm).AddRandomQuirk();
                     if (q != null) Core.Log(pcm.name + " was awarded " + q.Title + " quirk for discovering an anomaly.", Core.LogLevel.Important);
                 }
-                //foreach (ProtoCrewMember pcm in FlightGlobals.ActiveVessel.GetVesselCrew())
-                //    if (Core.rand.NextDouble() < HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AnomalyQuirkChance)
-                //    {
-                //        Quirk q = Core.KerbalHealthList.Find(pcm).AddRandomQuirk();
-                //        if (q != null) Core.Log(pcm.name + " was awarded " + q.Title + " quirk for discovering an anomaly.", Core.LogLevel.Important);
-                //    }
             }
         }
 

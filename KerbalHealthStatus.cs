@@ -113,26 +113,32 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="condition">Condition to add</param>
         /// <param name="additive">If true, the condition will be added even if it already exists (false by default)</param>
-        public void AddCondition(HealthCondition condition, bool additive = false)
+        public void AddCondition(string condition, bool additive = false)
         {
-            Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
-            if (!additive && HasCondition(condition.Name)) return;
-            Conditions.Add(condition);
-            switch (condition.Name)
+            Core.Log("Adding " + condition + " condition to " + Name + "...");
+            if (!additive && HasCondition(condition)) return;
+            HealthCondition hc = Core.GetHealthCondition(condition);
+            if (hc == null)
             {
-                case "OK":
-                    Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
-                    if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
-                    PCM.type = ProtoCrewMember.KerbalType.Crew;
-                    PCM.trait = Trait;
-                    break;
+                Core.Log("Condition " + condition + " not found!", Core.LogLevel.Error);
+                return;
+            }
+            Conditions.Add(hc);
+            switch (hc.Name)
+            {
+                //case "OK":
+                //    Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
+                //    if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
+                //    PCM.type = ProtoCrewMember.KerbalType.Crew;
+                //    PCM.trait = Trait;
+                //    break;
                 case "Exhausted":
                     Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
                     Trait = PCM.trait;
                     PCM.type = ProtoCrewMember.KerbalType.Tourist;
                     break;
             }
-            Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
+            Core.Log(hc.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
         }
 
         /// <summary>
@@ -505,13 +511,12 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns level of current cosmic radiation for this kerbal, before exposure
+        /// Returns level of cosmic radiation reaching the given vessel
         /// </summary>
-        /// <returns>Cosmic radiation level in bananas/day (kerbal)</returns>
+        /// <returns>Cosmic radiation level in bananas/day</returns>
         public static double GetCosmicRadiation(Vessel v)
         {
             double cosmicRadiationRate = 1, distanceToSun = 0;
-            //Vessel v = Core.KerbalVessel(PCM);
             if (v == null)
             {
                 Core.Log("Vessel is null. No radiation added.", Core.LogLevel.Important);
@@ -524,15 +529,6 @@ namespace KerbalHealth
             {
                 distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude;
                 cosmicRadiationRate = GetMagnetosphereCoefficient(v);
-                //double a = v.altitude;
-                //for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
-                //{
-                //    if (Core.PlanetConfigs[b].Magnetosphere != 0)
-                //        if (a < b.scienceValues.spaceAltitudeThreshold)
-                //            cosmicRadiationRate *= Math.Pow(Core.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
-                //        else cosmicRadiationRate *= Math.Pow(Core.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
-                //    a = b.orbit.altitude;
-                //}
                 if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
                     if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
                     else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
@@ -698,7 +694,7 @@ namespace KerbalHealth
             }
             else if (HP < ExhaustionStartHP)
             {
-                AddCondition(new HealthCondition("Exhausted"));
+                AddCondition("Exhausted");
                 Core.ShowMessage(Name + " is exhausted!", PCM);
             }
         }
@@ -716,8 +712,7 @@ namespace KerbalHealth
                 if (Radiation != 0) n.AddValue("radiation", Radiation);
                 if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
                 if (LastExposure != 1) n.AddValue("exposure", LastExposure);
-                foreach (HealthCondition hc in Conditions)
-                    n.AddNode(hc.ConfigNode);
+                foreach (HealthCondition hc in Conditions) n.AddValue("condition", hc.Name);
                 foreach (Quirk q in Quirks)
                     n.AddValue("quirk", q.Name);
                 if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
@@ -737,8 +732,11 @@ namespace KerbalHealth
                 Radiation = Core.GetDouble(value, "radiation");
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
                 LastExposure = Core.GetDouble(value, "exposure", 1);
+                foreach (string s in value.GetValues("condition"))
+                    AddCondition(s);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
-                    AddCondition(new HealthCondition(n));
+                    AddCondition(Core.GetString(n, "name"));
+                    //AddCondition(new HealthCondition(n));
                 foreach (string s in value.GetValues("quirk"))
                     AddQuirk(s);
                 QuirkLevel = Core.GetInt(value, "quirkLevel");

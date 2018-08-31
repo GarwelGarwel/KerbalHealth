@@ -26,38 +26,45 @@
         /// </summary>
         public bool IsVisible { get; set; } = true;
 
+        /// <summary>
+        /// HP change per day when this condition is active
+        /// </summary>
+        public double HPChange { get; set; } = 0;
+
+        public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + IsVisible + "\r\nHP change: " + HPChange;
+
         public virtual ConfigNode ConfigNode
         {
-            get
-            {
-                ConfigNode n = new ConfigNode("HealthCondition");
-                n.AddValue("name", Name);
-                if ((title != null) && (title != "") && (title != Name)) n.AddValue("title", Title);
-                n.AddValue("visible", IsVisible);
-                return n;
-            }
+            //get
+            //{
+            //    ConfigNode n = new ConfigNode("HealthCondition");
+            //    n.AddValue("name", Name);
+            //    if ((title != null) && (title != "") && (title != Name)) n.AddValue("title", Title);
+            //    n.AddValue("visible", IsVisible);
+            //    return n;
+            //}
             set
             {
                 Name = value.GetValue("name");
                 if (value.HasValue("title")) Title = value.GetValue("title");
                 IsVisible = Core.GetBool(value, "visible", true);
+                HPChange = Core.GetDouble(value, "hpChange");
             }
         }
 
-        public HealthCondition(ConfigNode n)
-        { ConfigNode = n; }
+        public HealthCondition(ConfigNode n) => ConfigNode = n;
 
-        public HealthCondition(string name, string title = null, bool isVisible = true)
-        {
-            Name = name;
-            Title = title;
-            IsVisible = isVisible;
-        }
+        //public HealthCondition(string name, string title = null, bool isVisible = true)
+        //{
+        //    Name = name;
+        //    Title = title;
+        //    IsVisible = isVisible;
+        //}
 
-        public HealthCondition(string name, bool isVisible)
-        {
-            Name = name;
-            IsVisible = isVisible;
-        }
+        //public HealthCondition(string name, bool isVisible)
+        //{
+        //    Name = name;
+        //    IsVisible = isVisible;
+        //}
     }
 }
