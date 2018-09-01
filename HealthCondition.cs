@@ -24,7 +24,12 @@
         /// <summary>
         /// Whether this condition should be visible to the player
         /// </summary>
-        public bool IsVisible { get; set; } = true;
+        public bool Visible { get; set; } = true;
+
+        /// <summary>
+        /// Whether this condition can be added multiple times
+        /// </summary>
+        public bool Stackable { get; set; } = false;
 
         /// <summary>
         /// HP change per day when this condition is active
@@ -36,7 +41,12 @@
         /// </summary>
         public bool Incapacitated { get; set; } = false;
 
-        public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + IsVisible + "\r\nHP change/day: " + HPPerDay;
+        /// <summary>
+        /// Base chance of this condition randomly appearing every day
+        /// </summary>
+        public double ChancePerDay { get; set; } = 0;
+
+        public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + Visible + "\r\nHP change/day: " + HPPerDay;
 
         public virtual ConfigNode ConfigNode
         {
@@ -44,9 +54,11 @@
             {
                 Name = value.GetValue("name");
                 if (value.HasValue("title")) Title = value.GetValue("title");
-                IsVisible = Core.GetBool(value, "visible", true);
+                Visible = Core.GetBool(value, "visible", true);
+                Stackable = Core.GetBool(value, "stackable");
                 HPPerDay = Core.GetDouble(value, "hpPerDay");
                 Incapacitated = Core.GetBool(value, "incapacitated");
+                ChancePerDay = Core.GetDouble(value, "chancePerDay");
             }
         }
 

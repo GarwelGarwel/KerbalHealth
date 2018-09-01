@@ -109,32 +109,31 @@ namespace KerbalHealth
         public bool HasCondition(string condition) => GetCondition(condition) != null;
 
         /// <summary>
+        /// Returns true if a given condition exists for the kerbal
+        /// </summary>
+        /// <param name="hc"></param>
+        /// <returns></returns>
+        public bool HasCondition(HealthCondition hc) => Conditions.Contains(hc);
+
+        /// <summary>
         /// Adds a new health condition
         /// </summary>
         /// <param name="condition">Condition to add</param>
-        /// <param name="additive">If true, the condition will be added even if it already exists (false by default)</param>
-        public void AddCondition(string condition, bool additive = false)
+        public void AddCondition(HealthCondition condition)
         {
-            Core.Log("Adding " + condition + " condition to " + Name + "...");
-            if (!additive && HasCondition(condition)) return;
-            HealthCondition hc = Core.GetHealthCondition(condition);
-            if (hc == null)
+            Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
+            if (condition == null)
             {
-                Core.Log("Condition " + condition + " not found!", Core.LogLevel.Error);
+                Core.Log("Condition not found!", Core.LogLevel.Error);
                 return;
             }
-            Conditions.Add(hc);
-            //switch (hc.Name)
-            //{
-            //    case "Exhausted":
-            //        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
-            //        Trait = PCM.trait;
-            //        PCM.type = ProtoCrewMember.KerbalType.Tourist;
-            //        break;
-            //}
-            Core.Log(hc.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
-            if (hc.Incapacitated) MakeIncapacitated();
+            if (!condition.Stackable && HasCondition(condition)) return;
+            Conditions.Add(condition);
+            Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
+            if (condition.Incapacitated) MakeIncapacitated();
         }
+
+        public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
 
         /// <summary>
         /// Removes a condition with from the kerbal
@@ -159,26 +158,7 @@ namespace KerbalHealth
                 found = n > 0;
             }
             else found = Conditions.Remove(hc);
-            //foreach (HealthCondition hc in Conditions)
-            //    if (hc.Name == condition)
-            //    {
-            //        found = true;
-            //        cond = hc;
-            //        Conditions.Remove(hc);
-            //        if (!removeAll) break;
-            //    }
-            if (found)
-            {
-                if (hc.Incapacitated && IsCapable) MakeCapable();
-                //switch (condition)
-                //{
-                //    case "Exhausted":
-                //        if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
-                //        PCM.type = ProtoCrewMember.KerbalType.Crew;
-                //        PCM.trait = Trait;
-                //        break;
-                //}
-            }
+            if (found && hc.Incapacitated && IsCapable) MakeCapable();
         }
 
         /// <summary>
@@ -190,7 +170,7 @@ namespace KerbalHealth
             {
                 string res = "";
                 foreach (HealthCondition hc in Conditions)
-                    if (hc.IsVisible)
+                    if (hc.Visible)
                     {
                         if (res != "") res += ", ";
                         res += hc.Title;

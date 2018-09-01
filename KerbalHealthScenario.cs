@@ -253,6 +253,13 @@ namespace KerbalHealth
                     {
                         Core.Log("Processing events...");
                         Core.KerbalHealthList.ProcessEvents();
+                        foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
+                        {
+                            if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(khs.PCM)) continue;
+                            foreach (HealthCondition hc in Core.HealthConditions.Values)
+                                if ((hc.ChancePerDay > 0) && (hc.Stackable || !khs.HasCondition(hc)) && (Core.rand.NextDouble() < hc.ChancePerDay))
+                                    khs.AddCondition(hc);
+                        }
                         nextEventTime += GetNextEventInterval();
                         Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                     }
