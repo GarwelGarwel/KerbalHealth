@@ -1,4 +1,6 @@
-﻿namespace KerbalHealth
+﻿using System.Collections.Generic;
+
+namespace KerbalHealth
 {
     /// <summary>
     /// Holds information about a certain health condition (such as exhaustion, sickness, etc.)
@@ -32,6 +34,20 @@
         public bool Stackable { get; set; } = false;
 
         /// <summary>
+        /// If either of these conditions exist, this one will not be randomly acquired
+        /// </summary>
+        public List<string> IncompatibleConditions { get; set; } = new List<string>();
+
+        public bool IsCompatibleWith(string condition) => !IncompatibleConditions.Contains(condition);
+
+        public bool IsCompatibleWith(List<HealthCondition> conditions)
+        {
+            foreach (HealthCondition hc in conditions)
+                if (IncompatibleConditions.Contains(hc.Name)) return false;
+            return true;
+        }
+
+        /// <summary>
         /// HP change per day when this condition is active
         /// </summary>
         public double HPPerDay { get; set; } = 0;
@@ -56,6 +72,8 @@
                 if (value.HasValue("title")) Title = value.GetValue("title");
                 Visible = Core.GetBool(value, "visible", true);
                 Stackable = Core.GetBool(value, "stackable");
+                foreach (string s in value.GetValues("incompatibleCondition"))
+                    IncompatibleConditions.Add(s);
                 HPPerDay = Core.GetDouble(value, "hpPerDay");
                 Incapacitated = Core.GetBool(value, "incapacitated");
                 ChancePerDay = Core.GetDouble(value, "chancePerDay");
