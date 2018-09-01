@@ -48,6 +48,11 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Logic required for this health condition to randomly appear
+        /// </summary>
+        public Logic Logic { get; set; } = new Logic();
+
+        /// <summary>
         /// HP change per day when this condition is active
         /// </summary>
         public double HPPerDay { get; set; } = 0;
@@ -64,7 +69,7 @@ namespace KerbalHealth
 
         public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + Visible + "\r\nHP change/day: " + HPPerDay;
 
-        public virtual ConfigNode ConfigNode
+        public ConfigNode ConfigNode
         {
             set
             {
@@ -74,6 +79,7 @@ namespace KerbalHealth
                 Stackable = Core.GetBool(value, "stackable");
                 foreach (string s in value.GetValues("incompatibleCondition"))
                     IncompatibleConditions.Add(s);
+                Logic.ConfigNode = value;
                 HPPerDay = Core.GetDouble(value, "hpPerDay");
                 Incapacitated = Core.GetBool(value, "incapacitated");
                 ChancePerDay = Core.GetDouble(value, "chancePerDay");
