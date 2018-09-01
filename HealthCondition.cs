@@ -31,6 +31,11 @@
         /// </summary>
         public double HPPerDay { get; set; } = 0;
 
+        /// <summary>
+        /// Whether this condition turns the kerbal into a Tourist
+        /// </summary>
+        public bool Incapacitated { get; set; } = false;
+
         public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + IsVisible + "\r\nHP change/day: " + HPPerDay;
 
         public virtual ConfigNode ConfigNode
@@ -41,6 +46,7 @@
                 if (value.HasValue("title")) Title = value.GetValue("title");
                 IsVisible = Core.GetBool(value, "visible", true);
                 HPPerDay = Core.GetDouble(value, "hpPerDay");
+                Incapacitated = Core.GetBool(value, "incapacitated");
             }
         }
 

@@ -124,21 +124,16 @@ namespace KerbalHealth
                 return;
             }
             Conditions.Add(hc);
-            switch (hc.Name)
-            {
-                //case "OK":
-                //    Core.Log("Reviving " + Name + " as " + Trait + "...", Core.LogLevel.Important);
-                //    if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
-                //    PCM.type = ProtoCrewMember.KerbalType.Crew;
-                //    PCM.trait = Trait;
-                //    break;
-                case "Exhausted":
-                    Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
-                    Trait = PCM.trait;
-                    PCM.type = ProtoCrewMember.KerbalType.Tourist;
-                    break;
-            }
+            //switch (hc.Name)
+            //{
+            //    case "Exhausted":
+            //        Core.Log(Name + " (" + Trait + ") is exhausted.", Core.LogLevel.Important);
+            //        Trait = PCM.trait;
+            //        PCM.type = ProtoCrewMember.KerbalType.Tourist;
+            //        break;
+            //}
             Core.Log(hc.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
+            if (hc.Incapacitated) MakeIncapacitated();
         }
 
         /// <summary>
@@ -150,24 +145,39 @@ namespace KerbalHealth
         {
             bool found = false;
             Core.Log("Removing " + condition + " condition from " + Name + "...");
-            foreach (HealthCondition hc in Conditions)
-                if (hc.Name == condition)
-                {
-                    found = true;
-                    Conditions.Remove(hc);
-                    if (!removeAll) break;
-                }
+            HealthCondition hc = Core.GetHealthCondition(condition);
+            if (hc == null)
+            {
+                Core.Log("Condition " + condition + " not found!", Core.LogLevel.Error);
+                return;
+            }
+            if (removeAll)
+            {
+                int n = 0;
+                while (Conditions.Remove(hc)) n++;
+                Core.Log(n + " instance(s) of " + hc.Name + " removed.");
+                found = n > 0;
+            }
+            else found = Conditions.Remove(hc);
+            //foreach (HealthCondition hc in Conditions)
+            //    if (hc.Name == condition)
+            //    {
+            //        found = true;
+            //        cond = hc;
+            //        Conditions.Remove(hc);
+            //        if (!removeAll) break;
+            //    }
             if (found)
             {
-                Core.Log(condition + " condition removed from " + Name + ".", Core.LogLevel.Important);
-                switch (condition)
-                {
-                    case "Exhausted":
-                        if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
-                        PCM.type = ProtoCrewMember.KerbalType.Crew;
-                        PCM.trait = Trait;
-                        break;
-                }
+                if (hc.Incapacitated && IsCapable) MakeCapable();
+                //switch (condition)
+                //{
+                //    case "Exhausted":
+                //        if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
+                //        PCM.type = ProtoCrewMember.KerbalType.Crew;
+                //        PCM.trait = Trait;
+                //        break;
+                //}
             }
         }
 
@@ -188,6 +198,39 @@ namespace KerbalHealth
                 if (res == "") res = "OK";
                 return res;
             }
+        }
+
+        /// <summary>
+        /// Returns false if at least one of kerbal's current health conditions makes him/her incapacitated (i.e. turns into a Tourist), true otherwise
+        /// </summary>
+        public bool IsCapable
+        {
+            get
+            {
+                foreach (HealthCondition hc in Conditions)
+                    if (hc.Incapacitated) return false;
+                return true;
+            }
+        }
+
+        void MakeIncapacitated()
+        {
+            if ((Trait != null) && (PCM.type == ProtoCrewMember.KerbalType.Tourist))
+            {
+                Core.Log(Name + " is already incapacitated.", Core.LogLevel.Important);
+                return;
+            }
+            Core.Log(Name + " (" + Trait + ") is incapacitated.", Core.LogLevel.Important);
+            Trait = PCM.trait;
+            PCM.type = ProtoCrewMember.KerbalType.Tourist;
+        }
+
+        void MakeCapable()
+        {
+            if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
+            PCM.type = ProtoCrewMember.KerbalType.Crew;
+            PCM.trait = Trait ?? "Tourist";
+            Trait = null;
         }
 
         /// <summary>
