@@ -25,6 +25,18 @@ namespace KerbalHealth
         /// </summary>
         public double ChancePerDay { get; set; } = 0;
 
+        /// <summary>
+        /// List of all chance modifiers for this outcome
+        /// </summary>
+        public List<ChanceModifier> ChanceModifiers { get; set; } = new List<ChanceModifier>();
+
+        /// <summary>
+        /// Returns actual chance per day of this outcome considering all modifiers
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
+
         public ConfigNode ConfigNode
         {
             set
@@ -32,6 +44,8 @@ namespace KerbalHealth
                 Condition = Core.GetString(value, "condition", "");
                 RemoveOldCondition = Core.GetBool(value, "removeOldCondition", true);
                 ChancePerDay = Core.GetDouble(value, "chancePerDay");
+                foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
+                    ChanceModifiers.Add(new ChanceModifier(n));
             }
         }
 
