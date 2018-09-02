@@ -121,12 +121,8 @@ namespace KerbalHealth
         /// <param name="condition">Condition to add</param>
         public void AddCondition(HealthCondition condition)
         {
+            if (condition == null) return;
             Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
-            if (condition == null)
-            {
-                Core.Log("Condition not found!", Core.LogLevel.Error);
-                return;
-            }
             if (!condition.Stackable && HasCondition(condition)) return;
             Conditions.Add(condition);
             HP += condition.HP;
@@ -144,13 +140,9 @@ namespace KerbalHealth
         /// <param name="removeAll">If true, all conditions with the same name will be removed. Makes sense for additive conditions. Default is false</param>
         public void RemoveCondition(HealthCondition condition, bool removeAll = false)
         {
-            Core.Log("Removing " + condition + " condition from " + Name + "...");
-            if (condition == null)
-            {
-                Core.Log("Condition " + condition + " not found!", Core.LogLevel.Important);
-                return;
-            }
-                int n = 0;
+            if (condition == null) return;
+            Core.Log("Removing " + condition.Name + " condition from " + Name + "...");
+            int n = 0;
             if (removeAll)
             {
                 while (Conditions.Remove(condition)) n++;
@@ -740,8 +732,7 @@ namespace KerbalHealth
                 if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
                 if (LastExposure != 1) n.AddValue("exposure", LastExposure);
                 foreach (HealthCondition hc in Conditions) n.AddValue("condition", hc.Name);
-                foreach (Quirk q in Quirks)
-                    n.AddValue("quirk", q.Name);
+                foreach (Quirk q in Quirks) n.AddValue("quirk", q.Name);
                 if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
                 if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
@@ -760,10 +751,11 @@ namespace KerbalHealth
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
                 LastExposure = Core.GetDouble(value, "exposure", 1);
                 foreach (string s in value.GetValues("condition"))
-                    AddCondition(s);
+                    Conditions.Add(Core.GetHealthCondition(s));
+                    //AddCondition(s);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
-                    AddCondition(Core.GetString(n, "name"));
-                    //AddCondition(new HealthCondition(n));
+                    Conditions.Add(Core.GetHealthCondition(Core.GetString(n, "name")));
+                    //AddCondition(Core.GetString(n, "name"));
                 foreach (string s in value.GetValues("quirk"))
                     AddQuirk(s);
                 QuirkLevel = Core.GetInt(value, "quirkLevel");

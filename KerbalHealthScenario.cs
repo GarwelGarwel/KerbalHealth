@@ -251,21 +251,31 @@ namespace KerbalHealth
                 if (Core.EventsEnabled)
                     while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
                     {
-                        Core.Log("Processing events...");
-                        Core.KerbalHealthList.ProcessEvents();
+                        Core.Log("Processing conditions...");
+                        //Core.KerbalHealthList.ProcessEvents();
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                         {
-                            if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(khs.PCM)) continue;
-                            foreach (HealthCondition hc in khs.Conditions)
+                            ProtoCrewMember pcm = khs.PCM;
+                            if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(pcm)) continue;
+                            for (int i = 0; i < khs.Conditions.Count; i++)
+                            {
+                                HealthCondition hc = khs.Conditions[i];
+                                //foreach (HealthCondition hc in khs.Conditions)
                                 foreach (Outcome o in hc.Outcomes)
-                                    if (Core.rand.NextDouble() < o.ChancePerDay)
+                                    if (Core.rand.NextDouble() < o.GetChancePerDay(pcm))
                                     {
                                         Core.Log("Condition " + hc.Name + " has outcome: " + o);
                                         khs.AddCondition(o.Condition);
-                                        if (o.RemoveOldCondition) khs.RemoveCondition(hc);
+                                        if (o.RemoveOldCondition)
+                                        {
+                                            khs.RemoveCondition(hc);
+                                            i--;
+                                            break;
+                                        }
                                     }
+                            }
                             foreach (HealthCondition hc in Core.HealthConditions.Values)
-                                if ((hc.ChancePerDay > 0) && (Core.rand.NextDouble() < hc.GetChancePerDay(khs.PCM)) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(khs.PCM))
+                                if ((hc.ChancePerDay > 0) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(pcm) && (Core.rand.NextDouble() < hc.GetChancePerDay(pcm)))
                                 {
                                     Core.Log(khs.Name + " acquires " + hc.Name + " condition.");
                                     khs.AddCondition(hc);
