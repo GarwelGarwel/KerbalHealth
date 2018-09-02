@@ -22,6 +22,7 @@ namespace KerbalHealth
         public string Gender { get; set; } = null;
         public string GenderPresent { get; set; } = null;
         public string TraitPresent { get; set; } = null;
+        public string ConditionPresent { get; set; } = null;
 
         public List<Logic> Operands { get; set; } = new List<Logic>();
 
@@ -88,7 +89,7 @@ namespace KerbalHealth
             if (Gender != null)
             {
                 ProtoCrewMember.Gender g = pcm.gender;
-                Core.Log("Gender should be " + Gender + " and " + pcm.name + " is " + g);
+                Core.Log("Checking condition 'gender = " + Gender + "'. " + pcm.name + " is " + g);
                 switch (Gender.ToLower())
                 {
                     case "female": Op(ref res, g == ProtoCrewMember.Gender.Female); break;
@@ -112,7 +113,7 @@ namespace KerbalHealth
                 bool found = false;
                 if (v != null)
                     foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
-                        if (crewmate.gender == g)
+                        if ((crewmate.gender == g) && (crewmate != pcm))
                         {
                             found = true;
                             break;
@@ -126,12 +127,26 @@ namespace KerbalHealth
                 bool found = false;
                 if (v != null)
                     foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
-                        if (crewmate.trait.ToLower() == TraitPresent.ToLower())
+                        if ((crewmate.trait.ToLower() == TraitPresent.ToLower()) && (crewmate != pcm))
                         {
                             found = true;
                             break;
                         }
                 Core.Log(TraitPresent + " crewmates " + (found ? "" : "not ") + "found.");
+                Op(ref res, found);
+            }
+            if (ConditionPresent != null)
+            {
+                Core.Log("Checking condition 'conditionPresent = " + ConditionPresent + "'.");
+                bool found = false;
+                if (v != null)
+                    foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
+                        if ((Core.KerbalHealthList.Find(crewmate.name).HasCondition(ConditionPresent)) && (crewmate != pcm))
+                        {
+                            found = true;
+                            break;
+                        }
+                Core.Log("Crewmates with " + ConditionPresent + (found ? "" : " not") + " found.");
                 Op(ref res, found);
             }
             foreach (Logic l in Operands)
@@ -152,6 +167,7 @@ namespace KerbalHealth
             if (Gender != null) res += "\n" + indent2 + "Kerbal is " + Gender;
             if (GenderPresent != null) res += "\n" + indent2 + GenderPresent + " gender kerbal(s) present in the vessel";
             if (TraitPresent != null) res += "\n" + indent2 + TraitPresent + " kerbal(s) present in the vessel";
+            if (ConditionPresent != null) res += "\n" + indent2 + "Kerbal(s) with " + ConditionPresent + " present in the vessel";
             foreach (Logic l in Operands) res += "\n" + l.Description(level + 1, pad);
             if (Core.CountChars(res, '\n') >= 2)
                 res = indent1 + " " + (Operator == OperatorType.And ? (Inverse ? "One or more" : "All") : (Inverse ? "Any" : "None")) + " of the following conditions are " + ((Operator == OperatorType.And) && Inverse ? "false" : "true") + ":" + res;
@@ -191,6 +207,7 @@ namespace KerbalHealth
                 Gender = Core.GetString(value, "gender");
                 GenderPresent = Core.GetString(value, "genderPresent");
                 TraitPresent = Core.GetString(value, "traitPresent");
+                ConditionPresent = Core.GetString(value, "conditionPresent");
                 foreach (ConfigNode node in value.GetNodes("LOGIC"))
                     Operands.Add(new Logic(node));
             }
