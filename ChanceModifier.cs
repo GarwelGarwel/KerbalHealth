@@ -22,6 +22,8 @@ namespace KerbalHealth
         /// </summary>
         public double Value { get; set; } = 1;
 
+        public string UseAttribute { get; set; } = null;
+
         /// <summary>
         /// Logic that defines if the modifier is applied
         /// </summary>
@@ -36,13 +38,20 @@ namespace KerbalHealth
         public double Calculate(double baseValue, ProtoCrewMember pcm)
         {
             if (!Logic.Test(pcm)) return baseValue;
+            double v = Value;
+            if (UseAttribute != null)
+                switch (UseAttribute.ToLower())
+                {
+                    case "courage": v *= pcm.courage; break;
+                    case "stupidity": v *= pcm.stupidity; break;
+                }
             switch (Modification)
             {
-                case Modifications.Multiply: return baseValue * Value;
-                case Modifications.Add: return baseValue + Value;
-                case Modifications.Power: return Math.Pow(baseValue, Value);
+                case Modifications.Multiply: v *= baseValue; break;
+                case Modifications.Add: v += baseValue; break;
+                case Modifications.Power: v = Math.Pow(baseValue, v); break;
             }
-            return baseValue;
+            return v;
         }
 
         /// <summary>
@@ -68,6 +77,7 @@ namespace KerbalHealth
                 if (value.HasValue("modification"))
                     Modification = (Modifications)Enum.Parse(typeof(Modifications), value.GetValue("modification"), true);
                 Value = Core.GetDouble(value, "value", Modification == Modifications.Add ? 0 : 1);
+                UseAttribute = Core.GetString(value, "useAttribute");
                 Logic.ConfigNode = value;
             }
         }
