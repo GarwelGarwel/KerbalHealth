@@ -256,6 +256,14 @@ namespace KerbalHealth
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                         {
                             if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(khs.PCM)) continue;
+                            foreach (HealthCondition hc in khs.Conditions)
+                                foreach (Outcome o in hc.Outcomes)
+                                    if (Core.rand.NextDouble() < o.ChancePerDay)
+                                    {
+                                        Core.Log("Condition " + hc.Name + " has outcome: " + o);
+                                        khs.AddCondition(o.Condition);
+                                        if (o.RemoveOldCondition) khs.RemoveCondition(hc);
+                                    }
                             foreach (HealthCondition hc in Core.HealthConditions.Values)
                                 if ((hc.ChancePerDay > 0) && (Core.rand.NextDouble() < hc.ChancePerDay) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(khs.PCM))
                                 {

@@ -67,6 +67,11 @@ namespace KerbalHealth
         /// </summary>
         public double ChancePerDay { get; set; } = 0;
 
+        /// <summary>
+        /// Possible outcomes of the condition; it is recommended to have at least one so that it may disappear
+        /// </summary>
+        public List<Outcome> Outcomes { get; set; } = new List<Outcome>();
+
         public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + Visible + "\r\nHP change/day: " + HPPerDay;
 
         public ConfigNode ConfigNode
@@ -83,6 +88,8 @@ namespace KerbalHealth
                 HPPerDay = Core.GetDouble(value, "hpPerDay");
                 Incapacitated = Core.GetBool(value, "incapacitated");
                 ChancePerDay = Core.GetDouble(value, "chancePerDay");
+                foreach (ConfigNode n in value.GetNodes("OUTCOME"))
+                    Outcomes.Add(new Outcome(n));
             }
         }
 

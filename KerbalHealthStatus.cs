@@ -140,26 +140,27 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="condition">Name of condition to remove</param>
         /// <param name="removeAll">If true, all conditions with the same name will be removed. Makes sense for additive conditions. Default is false</param>
-        public void RemoveCondition(string condition, bool removeAll = false)
+        public void RemoveCondition(HealthCondition condition, bool removeAll = false)
         {
             bool found = false;
             Core.Log("Removing " + condition + " condition from " + Name + "...");
-            HealthCondition hc = Core.GetHealthCondition(condition);
-            if (hc == null)
+            if (condition == null)
             {
-                Core.Log("Condition " + condition + " not found!", Core.LogLevel.Error);
+                Core.Log("Condition " + condition + " not found!", Core.LogLevel.Important);
                 return;
             }
             if (removeAll)
             {
                 int n = 0;
-                while (Conditions.Remove(hc)) n++;
-                Core.Log(n + " instance(s) of " + hc.Name + " removed.");
+                while (Conditions.Remove(condition)) n++;
+                Core.Log(n + " instance(s) of " + condition.Name + " removed.");
                 found = n > 0;
             }
-            else found = Conditions.Remove(hc);
-            if (found && hc.Incapacitated && IsCapable) MakeCapable();
+            else found = Conditions.Remove(condition);
+            if (found && condition.Incapacitated && IsCapable) MakeCapable();
         }
+
+        public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
 
         /// <summary>
         /// Returns a comma-separated list of visible conditions or "OK" if there are no visible conditions

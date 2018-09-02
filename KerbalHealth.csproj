@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="AssignedFactor.cs" />
     <Compile Include="ModuleHealthEnvironmentSensor.cs" />
+    <Compile Include="Outcome.cs" />
     <Compile Include="PlanetHealthConfig.cs" />
     <Compile Include="ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
