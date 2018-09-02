@@ -265,7 +265,7 @@ namespace KerbalHealth
                                         if (o.RemoveOldCondition) khs.RemoveCondition(hc);
                                     }
                             foreach (HealthCondition hc in Core.HealthConditions.Values)
-                                if ((hc.ChancePerDay > 0) && (Core.rand.NextDouble() < hc.ChancePerDay) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(khs.PCM))
+                                if ((hc.ChancePerDay > 0) && (Core.rand.NextDouble() < hc.GetChancePerDay(khs.PCM)) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(khs.PCM))
                                 {
                                     Core.Log(khs.Name + " acquires " + hc.Name + " condition.");
                                     khs.AddCondition(hc);

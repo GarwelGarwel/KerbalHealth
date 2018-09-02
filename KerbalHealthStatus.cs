@@ -129,8 +129,10 @@ namespace KerbalHealth
             }
             if (!condition.Stackable && HasCondition(condition)) return;
             Conditions.Add(condition);
+            HP += condition.HP;
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
             if (condition.Incapacitated) MakeIncapacitated();
+            if (condition.Visible) Core.ShowMessage(Name + " has acquired " + condition.Title + " condition!\r\n" + condition, PCM);
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -142,22 +144,23 @@ namespace KerbalHealth
         /// <param name="removeAll">If true, all conditions with the same name will be removed. Makes sense for additive conditions. Default is false</param>
         public void RemoveCondition(HealthCondition condition, bool removeAll = false)
         {
-            bool found = false;
             Core.Log("Removing " + condition + " condition from " + Name + "...");
             if (condition == null)
             {
                 Core.Log("Condition " + condition + " not found!", Core.LogLevel.Important);
                 return;
             }
+                int n = 0;
             if (removeAll)
             {
-                int n = 0;
                 while (Conditions.Remove(condition)) n++;
                 Core.Log(n + " instance(s) of " + condition.Name + " removed.");
-                found = n > 0;
             }
-            else found = Conditions.Remove(condition);
-            if (found && condition.Incapacitated && IsCapable) MakeCapable();
+            else n = Conditions.Remove(condition) ? 1 : 0;
+            HP -= condition.HP * n;
+            if ((n > 0) && condition.Incapacitated && IsCapable) MakeCapable();
+            if ((n > 0) && condition.Visible)
+                Core.ShowMessage(Name + " has lost " + condition.Title + " condition!", PCM);
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);

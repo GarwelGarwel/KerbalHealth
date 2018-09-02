@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssignedFactor.cs" />
+    <Compile Include="ChanceModifier.cs" />
     <Compile Include="ModuleHealthEnvironmentSensor.cs" />
     <Compile Include="Outcome.cs" />
     <Compile Include="PlanetHealthConfig.cs" />

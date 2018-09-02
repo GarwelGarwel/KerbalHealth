@@ -18,7 +18,7 @@
             if (khs == null) return 0;
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)
-                res += hc.HPPerDay;
+                res += hc.HPChangePerDay;
             Core.Log("Conditions HP chande per day: " + res);
             return Core.IsInEditor ? (IsEnabledInEditor() ? res : 0) : res;
         }

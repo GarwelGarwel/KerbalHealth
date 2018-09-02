@@ -55,7 +55,12 @@ namespace KerbalHealth
         /// <summary>
         /// HP change per day when this condition is active
         /// </summary>
-        public double HPPerDay { get; set; } = 0;
+        public double HPChangePerDay { get; set; } = 0;
+
+        /// <summary>
+        /// While this condition is active, kerbal's HP is changed by this amount
+        /// </summary>
+        public double HP { get; set; } = 0;
 
         /// <summary>
         /// Whether this condition turns the kerbal into a Tourist
@@ -68,11 +73,23 @@ namespace KerbalHealth
         public double ChancePerDay { get; set; } = 0;
 
         /// <summary>
+        /// List of all chance modifiers for this condition
+        /// </summary>
+        public List<ChanceModifier> ChanceModifiers { get; set; } = new List<ChanceModifier>();
+
+        /// <summary>
+        /// Returns actual chance per day of this condition considering all modifiers
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
+
+        /// <summary>
         /// Possible outcomes of the condition; it is recommended to have at least one so that it may disappear
         /// </summary>
         public List<Outcome> Outcomes { get; set; } = new List<Outcome>();
 
-        public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + Visible + "\r\nHP change/day: " + HPPerDay;
+        public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + Visible + "\r\nHP change/day: " + HPChangePerDay;
 
         public ConfigNode ConfigNode
         {
@@ -85,9 +102,12 @@ namespace KerbalHealth
                 foreach (string s in value.GetValues("incompatibleCondition"))
                     IncompatibleConditions.Add(s);
                 Logic.ConfigNode = value;
-                HPPerDay = Core.GetDouble(value, "hpPerDay");
+                HPChangePerDay = Core.GetDouble(value, "hpChangePerDay");
+                HP = Core.GetDouble(value, "hp");
                 Incapacitated = Core.GetBool(value, "incapacitated");
                 ChancePerDay = Core.GetDouble(value, "chancePerDay");
+                foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
+                    ChanceModifiers.Add(new ChanceModifier(n));
                 foreach (ConfigNode n in value.GetNodes("OUTCOME"))
                     Outcomes.Add(new Outcome(n));
             }
