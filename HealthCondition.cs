@@ -24,6 +24,11 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Text description of the condition, shown when it is acquired
+        /// </summary>
+        public string Description { get; set; } = "";
+
+            /// <summary>
         /// Whether this condition should be visible to the player
         /// </summary>
         public bool Visible { get; set; } = true;
@@ -63,6 +68,11 @@ namespace KerbalHealth
         public double HP { get; set; } = 0;
 
         /// <summary>
+        /// Whether to bring HP back to its original level when the condition is removed
+        /// </summary>
+        public bool RestoreHP { get; set; } = false;
+
+        /// <summary>
         /// Whether this condition turns the kerbal into a Tourist
         /// </summary>
         public bool Incapacitated { get; set; } = false;
@@ -89,14 +99,15 @@ namespace KerbalHealth
         /// </summary>
         public List<Outcome> Outcomes { get; set; } = new List<Outcome>();
 
-        public override string ToString() => Title + " (" + Name + ")\r\nVisible: " + Visible + "\r\nHP change/day: " + HPChangePerDay;
+        public override string ToString() => Title + " (" + Name + "): " + Description;
 
         public ConfigNode ConfigNode
         {
             set
             {
                 Name = value.GetValue("name");
-                if (value.HasValue("title")) Title = value.GetValue("title");
+                Title = Core.GetString(value, "title");
+                Description = Core.GetString(value, "description", "");
                 Visible = Core.GetBool(value, "visible", true);
                 Stackable = Core.GetBool(value, "stackable");
                 foreach (string s in value.GetValues("incompatibleCondition"))
@@ -104,6 +115,7 @@ namespace KerbalHealth
                 Logic.ConfigNode = value;
                 HPChangePerDay = Core.GetDouble(value, "hpChangePerDay");
                 HP = Core.GetDouble(value, "hp");
+                RestoreHP = Core.GetBool(value, "restoreHP");
                 Incapacitated = Core.GetBool(value, "incapacitated");
                 ChancePerDay = Core.GetDouble(value, "chancePerDay");
                 foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))

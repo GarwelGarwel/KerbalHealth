@@ -128,7 +128,7 @@ namespace KerbalHealth
             HP += condition.HP;
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
             if (condition.Incapacitated) MakeIncapacitated();
-            if (condition.Visible) Core.ShowMessage(Name + " has acquired " + condition.Title + " condition!\r\n" + condition, PCM);
+            if (condition.Visible) Core.ShowMessage(Name + " has acquired " + condition.Title + " condition!\r\n" + condition.Description, PCM);
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -149,7 +149,7 @@ namespace KerbalHealth
                 Core.Log(n + " instance(s) of " + condition.Name + " removed.");
             }
             else n = Conditions.Remove(condition) ? 1 : 0;
-            HP -= condition.HP * n;
+            if (condition.RestoreHP) HP -= condition.HP * n;
             if ((n > 0) && condition.Incapacitated && IsCapable) MakeCapable();
             if ((n > 0) && condition.Visible)
                 Core.ShowMessage(Name + " has lost " + condition.Title + " condition!", PCM);
