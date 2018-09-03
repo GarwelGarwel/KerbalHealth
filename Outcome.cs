@@ -49,7 +49,7 @@ namespace KerbalHealth
             }
         }
 
-        public override string ToString() => RemoveOldCondition ? (Condition == "" ? "Remove current condition" : ("Change to " + Condition + " condition")) : ("Add " + Condition + " condition") + " with a chance of " + ChancePerDay;
+        public override string ToString() => RemoveOldCondition ? (Condition == "" ? "Remove current condition" : ("Change to " + Condition + " condition")) : ("Add " + Condition + " condition") + " with a chance of " + ChancePerDay + " with " + ChanceModifiers.Count + " chance modifiers";
 
         public Outcome(ConfigNode node) => ConfigNode = node;
     }

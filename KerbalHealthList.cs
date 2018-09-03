@@ -85,19 +85,6 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Checks all events for every trackable kerbal
-        /// </summary>
-        public void ProcessEvents()
-        {
-            foreach (KerbalHealthStatus khs in Values)
-            {
-                if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(khs.PCM)) continue;
-                Core.Log("Processing " + Core.Events.Count + " potential events for " + khs.Name + "...");
-                foreach (Event e in Core.Events) e.Process(khs);
-            }
-        }
-
-        /// <summary>
         /// Returns KerbalHealthStatus for a given kerbal
         /// </summary>
         /// <param name="name"></param>

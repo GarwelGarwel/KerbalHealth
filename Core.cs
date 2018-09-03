@@ -55,25 +55,6 @@ namespace KerbalHealth
 
         public static HealthCondition GetHealthCondition(string s) => HealthConditions.ContainsKey(s) ? HealthConditions[s] : null;
 
-        static List<Event> events = new List<Event>()
-        {
-            new AccidentEvent(),
-            new PanicAttackEvent(),
-            new CureEvent(),
-            new GetSickEvent(),
-            new GetInfectedEvent(),
-            new LoseImmunityEvent()
-        };
-
-        /// <summary>
-        /// List of all possible health events to be checked
-        /// </summary>
-        public static List<Event> Events
-        {
-            get => events;
-            set => events = value;
-        }
-
         /// <summary>
         /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
         /// </summary>

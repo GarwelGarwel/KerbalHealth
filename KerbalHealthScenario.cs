@@ -252,7 +252,6 @@ namespace KerbalHealth
                     while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
                     {
                         Core.Log("Processing conditions...");
-                        //Core.KerbalHealthList.ProcessEvents();
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                         {
                             ProtoCrewMember pcm = khs.PCM;
@@ -260,12 +259,11 @@ namespace KerbalHealth
                             for (int i = 0; i < khs.Conditions.Count; i++)
                             {
                                 HealthCondition hc = khs.Conditions[i];
-                                //foreach (HealthCondition hc in khs.Conditions)
                                 foreach (Outcome o in hc.Outcomes)
                                     if (Core.rand.NextDouble() < o.GetChancePerDay(pcm))
                                     {
                                         Core.Log("Condition " + hc.Name + " has outcome: " + o);
-                                        khs.AddCondition(o.Condition);
+                                        if (o.Condition != "") khs.AddCondition(o.Condition);
                                         if (o.RemoveOldCondition)
                                         {
                                             khs.RemoveCondition(hc);
