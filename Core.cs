@@ -139,15 +139,6 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Use message system as opposed to displaying screen messages
-        /// </summary>
-        public static bool UseMessageSystem
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().useMessageSystem = value;
-        }
-
-        /// <summary>
         /// Use Blizzy's Toolbar mod instead of stock app launcher
         /// </summary>
         public static bool UseBlizzysToolbar
@@ -231,19 +222,10 @@ namespace KerbalHealth
         /// <summary>
         /// Random events can happen
         /// </summary>
-        public static bool EventsEnabled
+        public static bool ConditionsEnabled
         {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().EventsEnabled = value;
-        }
-
-        /// <summary>
-        /// Sickness-related events can fire, Sickness factor affects kerbals
-        /// </summary>
-        public static bool SicknessEnabled
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().SicknessEnabled = value;
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ConditionsEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ConditionsEnabled = value;
         }
 
         /// <summary>
@@ -568,19 +550,17 @@ namespace KerbalHealth
             return res.TrimEnd();
         }
 
-        public static void ShowMessage(string msg, bool useMessageSystem, bool unwarpTime)
+        public static void ShowMessage(string msg, bool unwarpTime)
         {
-            if (useMessageSystem) KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
-            else ScreenMessages.PostScreenMessage(msg);
-            if (unwarpTime) TimeWarp.SetRate(0, false, useMessageSystem);
+            KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+            //else ScreenMessages.PostScreenMessage(msg);
+            if (unwarpTime) TimeWarp.SetRate(0, false, true);
         }
-
-        public static void ShowMessage(string msg, bool unwarpTime) => ShowMessage(msg, UseMessageSystem, unwarpTime);
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
             if (!HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().KSCNotificationsEnabled && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) return;
-            ShowMessage(msg, UseMessageSystem, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
+            ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 
         /// <summary>

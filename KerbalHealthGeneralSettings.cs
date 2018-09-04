@@ -35,8 +35,8 @@
         [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
         public bool modEnabled = true;
 
-        [GameParameters.CustomParameterUI("Use Message System", toolTip = "Post alerts about important health events as opposed to displaying screen messages")]
-        public bool useMessageSystem = true;
+        //[GameParameters.CustomParameterUI("Use Message System", toolTip = "Post alerts about important health events as opposed to displaying screen messages")]
+        //public bool useMessageSystem = true;
 
         [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
         public bool UseBlizzysToolbar = true;
@@ -62,7 +62,7 @@
         [GameParameters.CustomParameterUI("Death Enabled", toolTip = "Allow kerbals to die of poor health")]
         public bool DeathEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("Exhaustion Start Health", toolTip = "Health level when kerbals turn Exhausted (becomes Tourist)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Exhaustion Start Health", toolTip = "Health level when kerbals turn Exhausted (become Tourists)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float ExhaustionStartHealth = 0.2f;
 
         [GameParameters.CustomFloatParameterUI("Exhaustion End Health", toolTip = "Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]

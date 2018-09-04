@@ -13,7 +13,7 @@
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (!Core.SicknessEnabled) return 0;
+            if (!Core.ConditionsEnabled) return 0;
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             if (khs == null) return 0;
             double res = 0;

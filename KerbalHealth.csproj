@@ -62,11 +62,6 @@
     <Compile Include="ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="DFWrapper.cs" />
-    <Compile Include="Event.cs" />
-    <Compile Include="AccidentEvent.cs" />
-    <Compile Include="GetInfectedEvent.cs" />
-    <Compile Include="GetSickEvent.cs" />
-    <Compile Include="CureEvent.cs" />
     <Compile Include="HealthCondition.cs" />
     <Compile Include="HealthEffect.cs" />
     <Compile Include="KerbalHealthEventsSettings.cs" />
@@ -79,7 +74,6 @@
     <Compile Include="Logic.cs" />
     <Compile Include="LonelinessFactor.cs" />
     <Compile Include="HomeFactor.cs" />
-    <Compile Include="LoseImmunityEvent.cs" />
     <Compile Include="MicrogravityFactor.cs" />
     <Compile Include="ModuleKerbalHealth.cs" />
     <Compile Include="KerbalHealthEditorReport.cs" />
@@ -87,7 +81,6 @@
     <Compile Include="KerbalHealthList.cs" />
     <Compile Include="KerbalHealthScenario.cs" />
     <Compile Include="CrowdedFactor.cs" />
-    <Compile Include="PanicAttackEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KerbalHealthGeneralSettings.cs" />
     <Compile Include="ConditionsFactor.cs" />

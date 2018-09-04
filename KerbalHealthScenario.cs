@@ -92,7 +92,7 @@ namespace KerbalHealth
             {
                 Core.Log("Crowded Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor + " instead of -3. Automatically fixing.");
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor = -3;
-                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true, true);
+                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
             }
             if (version <= new Version("1.2.1"))
             {
@@ -103,7 +103,7 @@ namespace KerbalHealth
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.02f;
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 3000;
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 3000;
-                Core.ShowMessage("Kerbal Health has been update to v" + v.ToString(3) + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true, true);
+                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
             }
             version = v;
 
@@ -248,7 +248,7 @@ namespace KerbalHealth
                 Core.ClearCache();
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
-                if (Core.EventsEnabled)
+                if (Core.ConditionsEnabled)
                     while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
                     {
                         Core.Log("Processing conditions...");
