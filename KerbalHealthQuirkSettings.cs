@@ -4,10 +4,31 @@
     {
         public override string Title => "Conditions & Quirks";
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
-        public override bool HasPresets => false;
+        public override bool HasPresets => true;
         public override string Section => "Kerbal Health";
         public override string DisplaySection => Section;
         public override int SectionOrder => 3;
+
+        public override void SetDifficultyPreset(GameParameters.Preset preset)
+        {
+            switch (preset)
+            {
+                case GameParameters.Preset.Easy:
+                    ConditionsEnabled = false;
+                    break;
+                case GameParameters.Preset.Normal:
+                    ConditionsEnabled = true;
+                    ConditionsChance = 0.5f;
+                    ConditionsEffect = 0.5f;
+                    break;
+                case GameParameters.Preset.Moderate:
+                case GameParameters.Preset.Hard:
+                    ConditionsEnabled = true;
+                    ConditionsChance = 1;
+                    ConditionsEffect = 1;
+                    break;
+            }
+        }
 
         [GameParameters.CustomParameterUI("Conditions Enabled", toolTip = "If checked, special health conditions affect health and can randomly appear in kerbals")]
         public bool ConditionsEnabled = true;
