@@ -125,7 +125,7 @@ namespace KerbalHealth
             Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
             if (!condition.Stackable && HasCondition(condition)) return;
             Conditions.Add(condition);
-            HP += condition.HP;
+            if (Core.ConditionsEnabled) HP += condition.HP;
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
             if (condition.Incapacitated) MakeIncapacitated();
             if (condition.Visible) Core.ShowMessage(Name + " has acquired " + condition.Title + " condition!\r\n" + condition.Description, PCM);
@@ -149,7 +149,7 @@ namespace KerbalHealth
                 Core.Log(n + " instance(s) of " + condition.Name + " removed.");
             }
             else n = Conditions.Remove(condition) ? 1 : 0;
-            if (condition.RestoreHP) HP -= condition.HP * n;
+            if (Core.ConditionsEnabled && condition.RestoreHP) HP -= condition.HP * n;
             if ((n > 0) && condition.Incapacitated && IsCapable) MakeCapable();
             if ((n > 0) && condition.Visible)
                 Core.ShowMessage(Name + " has lost " + condition.Title + " condition!", PCM);
@@ -323,7 +323,7 @@ namespace KerbalHealth
         {
             Quirk q = GetRandomQuirk(level);
             Quirks.Add(q);
-            Core.ShowMessage(Name + " acquired a new quirk: " + q, true, false);
+            Core.ShowMessage(Name + " acquired a new quirk: " + q, PCM);
             return q;
         }
 

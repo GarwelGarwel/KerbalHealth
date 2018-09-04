@@ -5,7 +5,7 @@
         public override string Name => "Conditions";
 
         // Not applicable to this factor
-        public override double BaseChangePerDay => 0;//HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().SicknessFactor;
+        public override double BaseChangePerDay => 0;
 
         public override bool Cachable => false;
 

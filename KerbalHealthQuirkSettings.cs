@@ -2,12 +2,21 @@
 {
     class KerbalHealthQuirkSettings : GameParameters.CustomParameterNode
     {
-        public override string Title => "Quirks";
+        public override string Title => "Conditions & Quirks";
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
         public override bool HasPresets => false;
-        public override string Section => "Kerbal Health (2)";
+        public override string Section => "Kerbal Health";
         public override string DisplaySection => Section;
-        public override int SectionOrder => 2;
+        public override int SectionOrder => 3;
+
+        [GameParameters.CustomParameterUI("Conditions Enabled", toolTip = "If checked, special health conditions affect health and can randomly appear in kerbals")]
+        public bool ConditionsEnabled = true;
+
+        [GameParameters.CustomParameterUI("Notify of Events in KSC", toolTip = "If checked, notifications will be given of health condition-related events with kerbals not on mission")]
+        public bool KSCNotificationsEnabled = false;
+
+        [GameParameters.CustomFloatParameterUI("Relative Conditions Chances", toolTip = "Relative chance of acquiring a random condition", minValue = 0, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 31)]
+        public float ConditionsChance = 1;
 
         [GameParameters.CustomParameterUI("Quirks Enabled", toolTip = "Quirks can be awarded to kerbals and affect their health stats")]
         public bool QuirksEnabled = true;

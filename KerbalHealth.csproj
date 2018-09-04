@@ -64,7 +64,6 @@
     <Compile Include="DFWrapper.cs" />
     <Compile Include="HealthCondition.cs" />
     <Compile Include="HealthEffect.cs" />
-    <Compile Include="KerbalHealthEventsSettings.cs" />
     <Compile Include="KerbalHealthFactorsSettings.cs" />
     <Compile Include="HealthFactor.cs" />
     <Compile Include="EVAFactor.cs" />

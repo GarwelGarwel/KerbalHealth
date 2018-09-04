@@ -35,9 +35,6 @@
         [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
         public bool modEnabled = true;
 
-        //[GameParameters.CustomParameterUI("Use Message System", toolTip = "Post alerts about important health events as opposed to displaying screen messages")]
-        //public bool useMessageSystem = true;
-
         [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
         public bool UseBlizzysToolbar = true;
 

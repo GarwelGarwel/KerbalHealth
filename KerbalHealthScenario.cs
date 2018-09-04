@@ -260,7 +260,7 @@ namespace KerbalHealth
                             {
                                 HealthCondition hc = khs.Conditions[i];
                                 foreach (Outcome o in hc.Outcomes)
-                                    if (Core.rand.NextDouble() < o.GetChancePerDay(pcm))
+                                    if (Core.rand.NextDouble() < o.GetChancePerDay(pcm) * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().ConditionsChance)
                                     {
                                         Core.Log("Condition " + hc.Name + " has outcome: " + o);
                                         if (o.Condition != "") khs.AddCondition(o.Condition);
@@ -273,7 +273,7 @@ namespace KerbalHealth
                                     }
                             }
                             foreach (HealthCondition hc in Core.HealthConditions.Values)
-                                if ((hc.ChancePerDay > 0) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(pcm) && (Core.rand.NextDouble() < hc.GetChancePerDay(pcm)))
+                                if ((hc.ChancePerDay > 0) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(pcm) && (Core.rand.NextDouble() < hc.GetChancePerDay(pcm) * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().ConditionsChance))
                                 {
                                     Core.Log(khs.Name + " acquires " + hc.Name + " condition.");
                                     khs.AddCondition(hc);

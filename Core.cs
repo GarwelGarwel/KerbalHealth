@@ -224,8 +224,53 @@ namespace KerbalHealth
         /// </summary>
         public static bool ConditionsEnabled
         {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ConditionsEnabled;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().ConditionsEnabled = value;
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().ConditionsEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().ConditionsEnabled = value;
+        }
+
+        /// <summary>
+        /// Quirks can be awarded to kerbals and affect their health stats
+        /// </summary>
+        public static bool QuirksEnabled
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksEnabled = value;
+        }
+
+        /// <summary>
+        /// Maximum number of quirks for a kerbal
+        /// </summary>
+        public static int MaxQuirks
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().MaxQuirks;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().MaxQuirks = value;
+        }
+
+        /// <summary>
+        /// Chance of a kerbal being awarded a quirk when he/she levels up
+        /// </summary>
+        public static float QuirkChance
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirkChance;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirkChance = value;
+        }
+
+        /// <summary>
+        /// Quirks are only awarded when kerbals level up at KSC, not during missions
+        /// </summary>
+        public static bool AwardQuirksOnMissions
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AwardQuirksOnMissions;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AwardQuirksOnMissions = value;
+        }
+
+        /// <summary>
+        /// Chances of getting some quirks depend on Courage and Stupidity of the kerbal
+        /// </summary>
+        public static bool StatsAffectQuirkWeights
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().StatsAffectQuirkWeights;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().StatsAffectQuirkWeights = value;
         }
 
         /// <summary>
@@ -316,51 +361,6 @@ namespace KerbalHealth
         {
             get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation;
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = value;
-        }
-
-        /// <summary>
-        /// Quirks can be awarded to kerbals and affect their health stats
-        /// </summary>
-        public static bool QuirksEnabled
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksEnabled;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirksEnabled = value;
-        }
-
-        /// <summary>
-        /// Maximum number of quirks for a kerbal
-        /// </summary>
-        public static int MaxQuirks
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().MaxQuirks;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().MaxQuirks = value;
-        }
-
-        /// <summary>
-        /// Chance of a kerbal being awarded a quirk when he/she levels up
-        /// </summary>
-        public static float QuirkChance
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirkChance;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().QuirkChance = value;
-        }
-
-        /// <summary>
-        /// Quirks are only awarded when kerbals level up at KSC, not during missions
-        /// </summary>
-        public static bool AwardQuirksOnMissions
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AwardQuirksOnMissions;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().AwardQuirksOnMissions = value;
-        }
-
-        /// <summary>
-        /// Chances of getting some quirks depend on Courage and Stupidity of the kerbal
-        /// </summary>
-        public static bool StatsAffectQuirkWeights
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().StatsAffectQuirkWeights;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().StatsAffectQuirkWeights = value;
         }
 
         #endregion
@@ -559,7 +559,7 @@ namespace KerbalHealth
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
-            if (!HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthEventsSettings>().KSCNotificationsEnabled && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) return;
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().KSCNotificationsEnabled && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) return;
             ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 

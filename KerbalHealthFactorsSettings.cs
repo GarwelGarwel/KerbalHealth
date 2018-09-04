@@ -18,7 +18,6 @@
                     LonelinessFactor = 0;
                     MicrogravityFactor = 0;
                     EVAFactor = 0;
-                    SicknessFactor = 0;
                     ConnectedFactor = 0;
                     HomeFactor = 5;
                     KSCFactor = 10;
@@ -28,7 +27,6 @@
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
                     EVAFactor = -5;
-                    SicknessFactor = 0;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
                     KSCFactor = 5;
@@ -38,7 +36,6 @@
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
                     EVAFactor = -10;
-                    SicknessFactor = 0;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
                     KSCFactor = 5;
@@ -48,7 +45,6 @@
                     LonelinessFactor = -1;
                     MicrogravityFactor = -0.5f;
                     EVAFactor = -10;
-                    SicknessFactor = -2;
                     ConnectedFactor = 0.5f;
                     HomeFactor = 2;
                     KSCFactor = 5;
@@ -70,9 +66,6 @@
 
         [GameParameters.CustomFloatParameterUI("EVA", toolTip = "HP change per day when on EVA", minValue = -50, maxValue = 0, stepCount = 11)]
         public float EVAFactor = -10;
-
-        [GameParameters.CustomFloatParameterUI("Sickness", toolTip = "HP change per day when a kerbal is sick", minValue = -20, maxValue = 0, stepCount = 21)]
-        public float SicknessFactor = -5;
 
         [GameParameters.CustomFloatParameterUI("Connected", toolTip = "HP change per day when connected to Kerbin", minValue = 0, maxValue = 20, displayFormat = "F1", stepCount = 41)]
         public float ConnectedFactor = 0.5f;
