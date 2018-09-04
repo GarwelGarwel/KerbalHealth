@@ -16,9 +16,10 @@
             if (!Core.ConditionsEnabled) return 0;
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             if (khs == null) return 0;
+            float k = Core.ConditionsEffect;
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)
-                res += hc.HPChangePerDay;
+                res += hc.HPChangePerDay * k;
             Core.Log("Conditions HP chande per day: " + res);
             return Core.IsInEditor ? (IsEnabledInEditor() ? res : 0) : res;
         }

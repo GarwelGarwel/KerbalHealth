@@ -229,6 +229,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Relative effect of conditions on health
+        /// </summary>
+        public static float ConditionsEffect
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().ConditionsEffect;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().ConditionsEffect = value;
+        }
+
+        /// <summary>
         /// Quirks can be awarded to kerbals and affect their health stats
         /// </summary>
         public static bool QuirksEnabled

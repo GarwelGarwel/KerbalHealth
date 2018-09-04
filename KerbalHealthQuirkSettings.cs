@@ -18,6 +18,9 @@
         [GameParameters.CustomFloatParameterUI("Relative Conditions Chances", toolTip = "Relative chance of acquiring a random condition", minValue = 0, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 31)]
         public float ConditionsChance = 1;
 
+        [GameParameters.CustomFloatParameterUI("Conditions Health Effect", toolTip = "Relative effect of conditions on health (the lower the easier)", minValue = 0, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 31)]
+        public float ConditionsEffect = 1;
+
         [GameParameters.CustomParameterUI("Quirks Enabled", toolTip = "Quirks can be awarded to kerbals and affect their health stats")]
         public bool QuirksEnabled = true;
 
