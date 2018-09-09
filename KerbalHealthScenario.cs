@@ -7,7 +7,7 @@ using KSP.UI.Screens;
 namespace KerbalHealth
 {
     /// <summary>
-    /// Main class for processing kerbals' health and health changes
+    /// Main class for processing kerbals' health
     /// </summary>
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT)]
     public class KerbalHealthScenario : ScenarioModule
@@ -94,7 +94,7 @@ namespace KerbalHealth
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor = -3;
                 Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
             }
-            if (version <= new Version("1.2.1"))
+            if (version <= new Version("1.2.1.1"))
             {
                 Core.Log("Pre-1.3 radiation settings: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation.ToString("F0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation.ToString("F0"));
                 HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect = 0.1f;
