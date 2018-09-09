@@ -43,7 +43,7 @@
         [GameParameters.CustomParameterUI("Radiation Enabled", toolTip = "Degrade max health based on accumulated dose")]
         public bool RadiationEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("Radiation Effect", toolTip = "Percentage of max health drained by 1e7 (10M) doses. 0 to disable effect", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
+        [GameParameters.CustomFloatParameterUI("Radiation Effect", toolTip = "Percentage of max health drained by 1e7 (10M) doses. 0 to disable effect", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 41)]
         public float RadiationEffect = 0.1f;
 
         [GameParameters.CustomFloatParameterUI("Shielding Multiplier", toolTip = "Efficiency of radiation shielding provided by parts and resources", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
@@ -67,7 +67,7 @@
         [GameParameters.CustomFloatParameterUI("Solar Radiation (Nominal)", toolTip = "Solar radiation in interplanetary space at 1 AU, banana doses/day", minValue = 0, maxValue = 10000, displayFormat = "N0", stepCount = 21)]
         public float SolarRadiation = 5000;
 
-        [GameParameters.CustomFloatParameterUI("Galactic Radiation", toolTip = "Galactic cosmic radiation in interplanetary space, banana doses/day", minValue = 0, maxValue = 10000, displayFormat = "N0", stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("Galactic Radiation", toolTip = "Galactic cosmic radiation in interplanetary space, banana doses/day", minValue = 0, maxValue = 30000, displayFormat = "N0", stepCount = 31)]
         public float GalacticRadiation = 15000;
     }
 }
