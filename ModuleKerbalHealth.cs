@@ -30,7 +30,7 @@ namespace KerbalHealth
         public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
 
         [KSPField]
-        public double space = 0;  // Points of living space provided by the part (used to calculate Crowded factor)
+        public double space = 0;  // Points of living space provided by the part (used to calculate Confinement factor)
 
         [KSPField]
         public float shielding = 0;  // Number of halving-thicknesses
@@ -137,13 +137,13 @@ namespace KerbalHealth
                 if (title != "") return title;
                 if (recuperation > 0) return "R&R";
                 if (decay > 0) return "Health Poisoning";
-                switch (multiplyFactor)
+                switch (multiplyFactor.ToLower())
                 {
-                    case "Crowded": return "Comforts";
-                    case "Loneliness": return "Meditation";
-                    case "Microgravity": return "Paragravity";
-                    case "Connected": return "TV Set";
-                    case "Sickness": return "Sick Bay";
+                    case "confinement": return "Comforts";
+                    case "loneliness": return "Meditation";
+                    case "microgravity": return (multiplier <= 0.25) ? "Paragravity" : "Exercise Equipment";
+                    case "connected": return "TV Set";
+                    case "sickness": return "Sick Bay";
                 }
                 if (space > 0) return "Living Space";
                 if (shielding > 0) return "RadShield";

@@ -24,7 +24,7 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 
 The following factors may affect kerbal's health:
 - Assigned (kerbal is on a mission): -0.5 HP/day
-- Crowded (scaled effect): -3 x <Crew> / <Living Space> HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
+- Confinement (scaled effect): -3 x <Crew> / <Living Space> HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
 - Loneliness (only 1 kerbal in the vessel, badass kerbals are immune): -1 HP/day
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
 - EVA: -10 HP/day
@@ -35,7 +35,7 @@ The following factors may affect kerbal's health:
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
-Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) can additionally reduce the effect of a health factor (Crowded in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
+Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
 
 **Health Recuperation and Health Decay**
 

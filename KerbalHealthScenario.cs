@@ -88,11 +88,11 @@ namespace KerbalHealth
             if (version != v)
                 Core.Log("Current mod version " + v + " is different from v" + version + " used to save the game. Most likely, Kerbal Health has been recently updated.", Core.LogLevel.Important);
             else Core.Log("Kerbal Health v" + version);
-            if ((version < new Version("1.1.0")) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
+            if ((version < new Version("1.1.0")) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
             {
-                Core.Log("Crowded Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor + " instead of -3. Automatically fixing.");
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().CrowdedBaseFactor = -3;
-                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Crowded factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
+                Core.Log("Confinement Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor + " instead of -3. Automatically fixing.");
+                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor = -3;
+                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
             }
             if (version <= new Version("1.2.1.1"))
             {

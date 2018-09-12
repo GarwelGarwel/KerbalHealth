@@ -18,7 +18,7 @@ namespace KerbalHealth
 
         static List<HealthFactor> factors = new List<HealthFactor>() {
             new AssignedFactor(),
-            new CrowdedFactor(),
+            new ConfinementFactor(),
             new LonelinessFactor(),
             new MicrogravityFactor(),
             new EVAFactor(),

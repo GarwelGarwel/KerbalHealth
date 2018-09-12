@@ -18,7 +18,7 @@ namespace KerbalHealth
         public double Decay { get; set; } = 0;  // Will decrease by this % of (HP - MinHP) per day
         public string MultiplyFactor { get; set; } = "All";  // Name of factor whose effect is multiplied
         public double Multiplier { get; set; } = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
-        public double Space { get; set; } = 0;  // Points of living space provided by the part (used to calculate Crowded factor)
+        public double Space { get; set; } = 0;  // Points of living space provided by the part (used to calculate Confinement factor)
         public double Shielding { get; set; } = 0;  // Number of halving-thicknesses
         public double Radioactivity { get; set; } = 0;  // Radioactive emission, bananas/day
 

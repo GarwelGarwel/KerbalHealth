@@ -79,7 +79,7 @@
     <Compile Include="KerbalHealthStatus.cs" />
     <Compile Include="KerbalHealthList.cs" />
     <Compile Include="KerbalHealthScenario.cs" />
-    <Compile Include="CrowdedFactor.cs" />
+    <Compile Include="ConfinementFactor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KerbalHealthGeneralSettings.cs" />
     <Compile Include="ConditionsFactor.cs" />
