@@ -38,6 +38,9 @@
         [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
         public bool UseBlizzysToolbar = true;
 
+        [GameParameters.CustomIntParameterUI("Sort Kerbals by Location", toolTip = "Kerbals in Health Monitor will be displayed depending on their current location, otherwise sort by name")]
+        public bool SortByLocation = true;
+
         [GameParameters.CustomIntParameterUI("Lines per Page in Health Monitor", toolTip = "How many kerbals to show on one page of Health Monitor", minValue = 5, maxValue = 20, stepSize = 5)]
         public int LinesPerPage = 10;
 

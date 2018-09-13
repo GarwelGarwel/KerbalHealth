@@ -340,16 +340,10 @@ namespace KerbalHealth
             {
                 Core.Log("No kerbal selected, showing overall list.");
 
-                kerbals = new SortedList<ProtoCrewMember, KerbalHealthStatus>(new KerbalComparer(true));
-                List<KerbalHealthStatus> khsList = new List<KerbalHealthStatus>(Core.KerbalHealthList.Values);
-                //for (int i = 0; i < Core.KerbalHealthList.Count; i++)
+                // Preparing a sorted list of kerbals
+                kerbals = new SortedList<ProtoCrewMember, KerbalHealthStatus>(new KerbalComparer(HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().SortByLocation));
                 foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
-                {
                     kerbals.Add(khs.PCM, khs);
-                    //Core.Log("Adding " + khsList[i].Name + " to the list, which currently contains " + kerbals.Count + " elements...");
-                    //if (khsList[i].PCM != null) kerbals.Add(khsList[i].PCM, khsList[i]);
-                    //else Core.Log("The PCM for " + khsList[i].Name + " is null. No adding!", Core.LogLevel.Error);
-                }
 
                 DialogGUILayoutBase layout = new DialogGUIVerticalLayout(true, true);
                 if (page > PageCount) page = PageCount;
@@ -360,6 +354,7 @@ namespace KerbalHealth
                     new DialogGUIButton(">", PageDown, () => (page < PageCount), false),
                     new DialogGUIButton(">>", LastPage, () => (page < PageCount), true)));
                 gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain);
+
                 // Creating column titles
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Name</color></b>", true));
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Location</color></b>", true));
@@ -369,8 +364,8 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Time Left</color></b>", true));
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Radiation</color></b>", true));
                 gridContents.Add(new DialogGUILabel("", true));
+
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
-                // List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
                 for (int i = FirstLine; i < FirstLine + LineCount; i++)
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
