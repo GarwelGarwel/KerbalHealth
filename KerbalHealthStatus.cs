@@ -79,6 +79,23 @@ namespace KerbalHealth
             return false;
         }
 
+        public string LocationString
+        {
+            get
+            {
+                switch (PCM.rosterStatus)
+                {
+                    case ProtoCrewMember.RosterStatus.Available: return "KSC";
+                    case ProtoCrewMember.RosterStatus.Dead: return "Dead";
+                    case ProtoCrewMember.RosterStatus.Missing: return "Unknown";
+                }
+                Vessel v = Core.KerbalVessel(PCM);
+                if (v == null) return "???";
+                if (v.isEVA) return "EVA (" + v.mainBody.bodyName + ")";
+                return v.vesselName;
+            }
+        }
+
         public HealthModifierSet VesselModifiers { get; set; } = new HealthModifierSet();
 
         #endregion

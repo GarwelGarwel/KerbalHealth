@@ -18,8 +18,9 @@ namespace KerbalHealth
 
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
+        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;// = new SortedList<ProtoCrewMember, KerbalHealthStatus>(KerbalComparer.Default);
         bool dirty = false, crewChanged = false;
-        const int colNumMain = 7, colNumDetails = 6;  // # of columns in Health Monitor
+        const int colNumMain = 8, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
         const int colSpacing = 10;
         const int gridWidthMain = colNumMain * (colWidth + colSpacing) - colSpacing,
@@ -86,28 +87,29 @@ namespace KerbalHealth
             // Automatically updating settings from older versions
             Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != v)
+            {
                 Core.Log("Current mod version " + v + " is different from v" + version + " used to save the game. Most likely, Kerbal Health has been recently updated.", Core.LogLevel.Important);
+                if ((version < new Version("1.1.0")) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
+                {
+                    Core.Log("Confinement Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor + " instead of -3. Automatically fixing.");
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor = -3;
+                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
+                }
+                if (version < new Version("1.2.1.2"))
+                {
+                    Core.Log("Pre-1.3 radiation settings: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation.ToString("F0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation.ToString("F0"));
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect = 0.1f;
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = 0.3f;
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = 0.2f;
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = 0.2f;
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.01f;
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 5000;
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 15000;
+                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
+                }
+                version = v;
+            }
             else Core.Log("Kerbal Health v" + version);
-            if ((version < new Version("1.1.0")) && (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
-            {
-                Core.Log("Confinement Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor + " instead of -3. Automatically fixing.");
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor = -3;
-                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
-            }
-            if (version <= new Version("1.2.1.1"))
-            {
-                Core.Log("Pre-1.3 radiation settings: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient.ToString("P0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation.ToString("F0") + " / " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation.ToString("F0"));
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadiationEffect = 0.1f;
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceHighCoefficient = 0.3f;
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = 0.2f;
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = 0.2f;
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.01f;
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 5000;
-                HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 15000;
-                Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
-            }
-            version = v;
-
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
@@ -337,6 +339,18 @@ namespace KerbalHealth
             if (selectedKHS == null)
             {
                 Core.Log("No kerbal selected, showing overall list.");
+
+                kerbals = new SortedList<ProtoCrewMember, KerbalHealthStatus>(new KerbalComparer(true));
+                List<KerbalHealthStatus> khsList = new List<KerbalHealthStatus>(Core.KerbalHealthList.Values);
+                //for (int i = 0; i < Core.KerbalHealthList.Count; i++)
+                foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
+                {
+                    kerbals.Add(khs.PCM, khs);
+                    //Core.Log("Adding " + khsList[i].Name + " to the list, which currently contains " + kerbals.Count + " elements...");
+                    //if (khsList[i].PCM != null) kerbals.Add(khsList[i].PCM, khsList[i]);
+                    //else Core.Log("The PCM for " + khsList[i].Name + " is null. No adding!", Core.LogLevel.Error);
+                }
+
                 DialogGUILayoutBase layout = new DialogGUIVerticalLayout(true, true);
                 if (page > PageCount) page = PageCount;
                 if (ShowPages) layout.AddChild(new DialogGUIHorizontalLayout(true, false,
@@ -348,6 +362,7 @@ namespace KerbalHealth
                 gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain);
                 // Creating column titles
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Name</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Location</color></b>", true));
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Condition</color></b>", true));
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Health</color></b>", true));
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Change/day</color></b>", true));
@@ -355,12 +370,12 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("<b><color=\"white\">Radiation</color></b>", true));
                 gridContents.Add(new DialogGUILabel("", true));
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
-                List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
+                // List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
                 for (int i = FirstLine; i < FirstLine + LineCount; i++)
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
                         gridContents.Add(new DialogGUILabel("", true));
-                    gridContents.Add(new DialogGUIButton<int>("Details", (n) => { selectedKHS = kerbals[n]; Invalidate(); }, i));
+                    gridContents.Add(new DialogGUIButton<int>("Details", (n) => { selectedKHS = kerbals.Values[n]; Invalidate(); }, i));
                 }
                 layout.AddChild(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray()));
                 monitorPosition.width = gridWidthMain + 10;
@@ -454,11 +469,11 @@ namespace KerbalHealth
                     Invalidate();
                     crewChanged = false;
                 }
+                Core.Log(kerbals.Count + " kerbals in Health Monitor list.");
                 // Fill the Health Monitor's grid with kerbals' health data
                 for (int i = 0; i < LineCount; i++)
                 {
-                    List<KerbalHealthStatus> kerbals = new List<KerbalHealth.KerbalHealthStatus>(Core.KerbalHealthList.Values);
-                    KerbalHealthStatus khs = kerbals[FirstLine + i];
+                    KerbalHealthStatus khs = kerbals.Values[FirstLine + i];
                     bool frozen = khs.HasCondition("Frozen");
                     double ch = khs.LastChangeTotal;
                     double b = khs.GetBalanceHP();
@@ -476,11 +491,12 @@ namespace KerbalHealth
                         }
                     }
                     gridContents[(i + 1) * colNumMain].SetOptionText(formatTag + khs.Name + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.ConditionString + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 2].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + ((frozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + s + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : "") + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((frozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : "") + formatUntag);
                 }
             }
             else  // Showing details for one particular kerbal
@@ -553,5 +569,42 @@ namespace KerbalHealth
             lastUpdated = Planetarium.GetUniversalTime();
             Core.Log("" + i + " kerbal(s) loaded.", Core.LogLevel.Important);
         }
+    }
+
+    /// <summary>
+    /// Class used for ordering vessels in Health Monitor
+    /// </summary>
+    public class KerbalComparer : Comparer<ProtoCrewMember>
+    {
+        bool sortByLocation;
+
+        public int CompareLocation(ProtoCrewMember x, ProtoCrewMember y)
+        {
+            if (x.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return y.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? 1 : 0;
+            if (y.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return -1;
+            Vessel xv = Core.KerbalVessel(x), yv = Core.KerbalVessel(y);
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                if (xv.isActiveVessel) return yv.isActiveVessel ? 0 : -1;
+                if (yv.isActiveVessel) return 1;
+            }
+            if (xv.isEVA) return yv.isEVA ? 0 : -1;
+            if (yv.isEVA) return 1;
+            return string.Compare(xv.vesselName, yv.vesselName, true);
+        }
+
+        public override int Compare(ProtoCrewMember x, ProtoCrewMember y)
+        {
+            if (sortByLocation)
+            {
+                int l = CompareLocation(x, y);
+                Core.Log("Location comparison result: " + x.name + " " + (l < 0 ? "<" : (l > 0 ? ">" : "=")) + " " + y.name);
+                if (l == 0) Core.Log("Name comparison: " + string.Compare(x.name, y.name, true));
+                return (l != 0) ? l : string.Compare(x.name, y.name, true);
+            }
+            return string.Compare(x.name, y.name, true);
+        }
+
+        public KerbalComparer(bool sortByLocation) => this.sortByLocation = sortByLocation;
     }
 }
