@@ -51,7 +51,7 @@ Decay is the opposite to Recuperation: for every percentage point of Decay, your
 
 **Radiation**
 
-All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 25%; 4e7 bananas kill a kerbal. Currently, there is no way to reduce the dose.
+All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal. Currently, there is no way to reduce the dose, so plan missions carefully.
 
 The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
@@ -61,21 +61,23 @@ You can protect kerbals from radiation (both cosmic and artificial) by adding sh
 
 Whenever a kerbal levels up, there is a 25% chance that he or she will acquire a health quirk (unless he/she already has two). Discovering an anomaly can also grant a free quirk. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
 
-**Random events**
+**Conditions and Random Events**
 
-Kerbals' organisms, like ours own, are not always predictable. Sometimes, quite rarely, you may see random events that can impact your whole mission. Now you need to prepare for contingencies like real space programs do. You may completely disable or fine-tune the event system in settings.
+Kerbals' organisms, like ours own, are not always predictable. Sometimes, not very often, you may see unexpected events that can impact your whole mission. Kerbals acquire (or lose) certain conditions as a result of these events. Having parts with a Sick Bay (such as the stock Science Lab) helps alleviate the symptoms.
 
-- Sickness/Curing: a kerbal can become sick and start losing health quickly. This condition heals itself after some time, but you may have to evacuate the kerbal to KSC (or bar him/her from flights) before their health falls too low. On average, kerbals catch flu once every 200 days and cure after 20 days or so. Note that these diseases have incubation periods, so it may be wise to quarantine kerbals for several weeks before sending them on an interplanetary trip.
+- Sickness: A kerbal can become sick and start losing health quickly. His/her crewmates may catch the disease too, including during the incubation period. This condition usually heals itself after some time, but it can also lead to a pneumonia, a really dangerous condition. Having Scientists or Medics aboard helps.
 
-- Panic Attack: when your kerbal's is on a mission, he/she may epxerience a panic attack and become uncontrollable for up to 3 hours. This event's probability depends on the kerbal's health (the lower, the more likely) and courage (the lower, again, the more likely) of the kerbal, the maximum average frequency is once per 100 days.
+- Injuries: A kerbal can immediately lose some health in an accident. Stupid kerbals are naturally predisposed to this condition. It may cause sepsis, which is mortally dangerous. Bring your kerbal home immediately or pray Kraken it will heal on its own.
 
-- Accident: your kerbals loses a random percentage of their current health (20 to 50%). This event's chance depends on kerbal's stupidity, but generally happens very rarely (every 1,000 days on average with 50% stupidity). However, it can become an important factor for very long missions.
+- Food poisoning: Kerbals are known for their love of snacks and they don't always wash their hands. Food poisoning may not be as bad as some other conditions on its own, but if dehydration develops, they will become unable to do any work at all and effectively turn into space Tourists until it passes.
+
+Conditions can be disabled or their chances and effects changed in game settings. You can also easily add, modify or remove conditions (see wiki for details).
 
 **Requirements**
 
 - [Module Manager](https://forum.kerbalspaceprogram.com/threads/55219)
 
-**Supported mods**
+**Supported Mods**
 
 Kerbal Health should work well alongside most other mods and will try to adapt to them with smart MM patches. Some have better, manually balanced support though:
 
@@ -85,6 +87,8 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Deadly Reentry Continued](https://forum.kerbalspaceprogram.com/index.php?/topic/50296-122-deadly-reentry-v760-june-9-2017-the-ariel-edition/)
 - [DeepFreeze Continued](http://forum.kerbalspaceprogram.com/index.php?/topic/112328-11-deepfreeze-continued)
 - [Deep Space Exploration Vehicles](https://forum.kerbalspaceprogram.com/index.php?/topic/122162-14x-deep-space-exploration-vessels-build-nasa-inspired-ships-in-ksp/)
+- [DMagic Orbital Science](https://forum.kerbalspaceprogram.com/index.php?/topic/59009-14x-dmagic-orbital-science-new-science-parts-v1312-3152018/)
+- [Extraplanetary Launchpads](https://forum.kerbalspaceprogram.com/index.php?/topic/54284-*)
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
@@ -96,26 +100,30 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Spacetux Recycled Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-131-spacetux-industries-recycled-parts/) (Atomic Age, FTmN, FTmN-New, RSCapsuledyne)
 - [SpaceY Heavy Lifters](https://forum.kerbalspaceprogram.com/index.php?/topic/90545-12213-spacey-heavy-lifter-parts-pack-v116-2017-01-30/)
 - [SSTU](https://github.com/shadowmage45/SSTULabs)
+- [Stockalike Station Parts Expansion Redux](https://forum.kerbalspaceprogram.com/index.php?/topic/170211-*) (mostly embedded in and maintained by that mod)
+- [Surface Experiment Pack](https://forum.kerbalspaceprogram.com/index.php?/topic/155382-14x-surface-experiment-pack-deployable-science-for-kiskas-v26-20mar18/&tab=comments#comment-2930055)
+- [Tantares](http://forum.kerbalspaceprogram.com/index.php?/topic/73686-Tantares)
 - [Tundra Exploration](https://forum.kerbalspaceprogram.com/index.php?/topic/166915-143-tundra-exploration-v113-may-31st-stockalike-spacex-falcon-9-dragon-v2-and-bfr/)
 - [USI Kolonization Systems (MKS/OKS)](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 
 If you would like to include special support for your (or your favorite) mod, let me know. Or, better yet, provide a PR.
 
-Making History expansion is fully supported, but not required.
+Making History expansion is fully supported too but not required.
 
-**Conflicts & Incompatibilities**
+**Conflicts and Incompatibilities**
 
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
 - Compatibility with Kerbalism hasn't been tested. This mod changes much of game's internal mechanics, so it can be incompatible.
 
-**Future features**
+**Future Features**
 
-- New mechanics: more various diseases, radioactive planets, injuries, medical supplies, quarantine, and whatnot...
-- Solar weather and/or radiation events
-- UI improvement
+- New mechanics: more various conditions, more quirks, radioactive planets, medical supplies, quarantine, and whatnot...
+- More fine-tuned effect of health on kerbals' capabilities
+- Maybe a different microgravity system
+- Radiation cure (very hard)
 - API for collaboration with other mods
 
 **Copyright and License**
