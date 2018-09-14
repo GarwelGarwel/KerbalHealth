@@ -72,6 +72,8 @@ Kerbals' organisms, like ours own, are not always predictable. Sometimes, not ve
 
 - Food poisoning: Kerbals are known for their love of snacks and they don't always wash their hands. Food poisoning may not be as bad as some other conditions on its own, but if dehydration develops, they will become unable to do any work at all and effectively turn into space Tourists until it passes.
 
+- Panic attacks: Though not posing danger to health per se, panic prevents kerbals from doing any useful work. At least it doesn't last long and courageous kerbals are less prone to it.
+
 Conditions can be disabled or their chances and effects changed in game settings. You can also easily add, modify or remove conditions (see wiki for details).
 
 **Requirements**
