@@ -12,8 +12,8 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - If a kerbal's health falls to 0, he/she dies!
 - Kerbals experience radiation, both cosmic and artificial, which permanently affects their maximum health.
 - You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation with their magnetic fields, atmospheres and occlusion, to various degrees.
+- Kerbals may fall sick, have health accidents, panic attacks and other contingences
 - When kerbals level up, they can acquire quirks that affect their health reactions, to the better or to the worse.
-- Kerbals may fall sick, have health accidents or panic attacks: prepare for contingences!
 - Health Monitor lets you check on all your kerbals in KSC and in flight.
 - Health Report in Editor helps design comfy and healthy craft.
 - A configurable low health alert will warn you when you are about to lose a kerbal.
@@ -28,7 +28,6 @@ The following factors may affect kerbal's health:
 - Loneliness (only 1 kerbal in the vessel, badass kerbals are immune): -1 HP/day
 - Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
 - EVA: -10 HP/day
-- Sickness (the kerbal is marked as Sick, cures after some time): -5 HP/day
 - Connected (having a working CommNet connection to home): +0.5 HP/day
 - Home (on Kerbin below 18 km altitude): +2 HP/day
 - KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
@@ -53,7 +52,9 @@ Decay is the opposite to Recuperation: for every percentage point of Decay, your
 
 All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal. Currently, there is no way to reduce the dose, so plan missions carefully.
 
-The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
+The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. To check environment before sending astronauts, you can use magnetometers and Geiger counters provided by supported mods or embedded in advanced stock probe cores.
+
+Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
 
