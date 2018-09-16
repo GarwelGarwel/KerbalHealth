@@ -206,6 +206,9 @@ namespace KerbalHealth
             }
         }
 
+        /// <summary>
+        /// Turn a kerbal into a Tourist
+        /// </summary>
         void MakeIncapacitated()
         {
             if ((Trait != null) && (PCM.type == ProtoCrewMember.KerbalType.Tourist))
@@ -219,6 +222,9 @@ namespace KerbalHealth
             KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
         }
 
+        /// <summary>
+        /// Revives a kerbal after being incapacitated
+        /// </summary>
         void MakeCapable()
         {
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
@@ -753,7 +759,7 @@ namespace KerbalHealth
                 foreach (HealthCondition hc in Conditions) n.AddValue("condition", hc.Name);
                 foreach (Quirk q in Quirks) n.AddValue("quirk", q.Name);
                 if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
-                if (HasCondition("Exhausted")) n.AddValue("trait", Trait);
+                if (!IsCapable) n.AddValue("trait", Trait);
                 if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
                 if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
                 if (LastDecay != 0) n.AddValue("lastDecay", LastDecay);
@@ -771,14 +777,12 @@ namespace KerbalHealth
                 LastExposure = Core.GetDouble(value, "exposure", 1);
                 foreach (string s in value.GetValues("condition"))
                     Conditions.Add(Core.GetHealthCondition(s));
-                    //AddCondition(s);
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     Conditions.Add(Core.GetHealthCondition(Core.GetString(n, "name")));
-                    //AddCondition(Core.GetString(n, "name"));
                 foreach (string s in value.GetValues("quirk"))
                     AddQuirk(s);
                 QuirkLevel = Core.GetInt(value, "quirkLevel");
-                if (HasCondition("Exhausted")) Trait = value.GetValue("trait");
+                Trait = value.GetValue("trait");
                 CachedChange = Core.GetDouble(value, "cachedChange");
                 LastRecuperation = Core.GetDouble(value, "lastRecuperation");
                 LastDecay = Core.GetDouble(value, "lastDecay");
