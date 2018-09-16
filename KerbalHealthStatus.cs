@@ -52,14 +52,12 @@ namespace KerbalHealth
             get
             {
                 if (pcmCached != null) return pcmCached;
-                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Crew)
-                    if (pcm.name == Name) return pcmCached = pcm;
-                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Tourist)
-                    if (pcm.name == Name) return pcmCached = pcm;
-                foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Unowned)
-                    if (pcm.name == Name) return pcmCached = pcm;
-                Core.Log("Could not find ProtoCrewMember for " + Name + ". KerbalHealth kerbal list contains " + Core.KerbalHealthList.Count + " records:\r\n" + Core.KerbalHealthList);
-                return null;
+                try { return pcmCached = HighLogic.fetch.currentGame.CrewRoster[Name]; }
+                catch (Exception)
+                {
+                    Core.Log("Could not find ProtoCrewMember for " + Name + ". KerbalHealth kerbal list contains " + Core.KerbalHealthList.Count + " records:\r\n" + Core.KerbalHealthList);
+                    return null;
+                }
             }
             set
             {
@@ -228,9 +226,12 @@ namespace KerbalHealth
         void MakeCapable()
         {
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
-            Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.");
-            PCM.type = ProtoCrewMember.KerbalType.Crew;
-            KerbalRoster.SetExperienceTrait(PCM, Trait);
+            Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.", Core.LogLevel.Important);
+            if ((Trait != null) && (Trait != "Tourist"))
+            {
+                PCM.type = ProtoCrewMember.KerbalType.Crew;
+                KerbalRoster.SetExperienceTrait(PCM, Trait);
+            }
             Trait = null;
         }
 
