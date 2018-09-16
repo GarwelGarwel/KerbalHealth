@@ -158,12 +158,12 @@ namespace KerbalHealth
         public void RemoveCondition(HealthCondition condition, bool removeAll = false)
         {
             if (condition == null) return;
-            Core.Log("Removing " + condition.Name + " condition from " + Name + "...");
+            Core.Log("Removing " + condition.Name + " condition from " + Name + ".", Core.LogLevel.Important);
             int n = 0;
             if (removeAll)
             {
                 while (Conditions.Remove(condition)) n++;
-                Core.Log(n + " instance(s) of " + condition.Name + " removed.");
+                Core.Log(n + " instance(s) of " + condition.Name + " removed.", Core.LogLevel.Important);
             }
             else n = Conditions.Remove(condition) ? 1 : 0;
             if (Core.ConditionsEnabled && condition.RestoreHP) HP -= condition.HP * n * Core.ConditionsEffect;
@@ -216,13 +216,15 @@ namespace KerbalHealth
             Core.Log(Name + " (" + Trait + ") is incapacitated.", Core.LogLevel.Important);
             Trait = PCM.trait;
             PCM.type = ProtoCrewMember.KerbalType.Tourist;
+            KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
         }
 
         void MakeCapable()
         {
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
+            Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.");
             PCM.type = ProtoCrewMember.KerbalType.Crew;
-            PCM.trait = Trait ?? "Tourist";
+            KerbalRoster.SetExperienceTrait(PCM, Trait);
             Trait = null;
         }
 
