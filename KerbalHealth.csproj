@@ -95,6 +95,7 @@
   <ItemGroup>
     <None Include="GameData\KerbalHealth\KerbalHealth.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHEPL.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHNFA.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHNFE.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSEP.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSSPX.cfg" />
