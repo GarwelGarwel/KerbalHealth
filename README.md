@@ -2,7 +2,7 @@
 
 This mod introduces many aspects of astronauts' health management to KSP. It makes the game more challenging but also more realistic, encourages smarter mission planning, and adds to the fun. It works well alongside most popular mods.
 
-**Features**
+## Features
 
 - Every kerbal has Health Points (HP).
 - Maximum HP increases with kerbals' level. A newbie has 100 HP while a 5-level kerbal has 150.
@@ -20,23 +20,23 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - Compatibility patches support a range of parts mods (see below).
 - All of these settings are easily changed or disabled in-game and with ModuleManager patches.
 
-**Health factors**
+## Health factors
 
 The following factors may affect kerbal's health:
-- Assigned (kerbal is on a mission): -0.5 HP/day
-- Confinement (scaled effect): -3 x <Crew> / <Living Space> HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
-- Loneliness (only 1 kerbal in the vessel, badass kerbals are immune): -1 HP/day
-- Microgravity (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
-- EVA: -10 HP/day
-- Connected (having a working CommNet connection to home): +0.5 HP/day
-- Home (on Kerbin below 18 km altitude): +2 HP/day
-- KSC (kerbal is recuperating in KSC, i.e. available): +5 HP/day
+- **Assigned** (kerbal is on a mission): -0.5 HP/day
+- **Confinement** (scaled effect): -3 x <Crew> / <Living Space> HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
+- **Loneliness** (only 1 kerbal in the vessel, badass kerbals are immune): -1 HP/day
+- **Microgravity** (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
+- **EVA**: -10 HP/day
+- **Connected** (having a working CommNet connection to home): +0.5 HP/day
+- **Home** (on Kerbin below 18 km altitude): +2 HP/day
+- **KSC** (kerbal is recuperating in KSC, i.e. available): +5 HP/day
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
 Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
 
-**Health Recuperation and Health Decay**
+## Health Recuperation and Health Decay
 
 Certain parts (such as the Cupola) provide Recuperation bonuses. If a kerbal receives, say, a 1% recuperation bonus, he/she will recover 1% of their lacking health (i.e. of the difference between their current HP and the maximum HP) every day. This change works in parallel with the normal health factors above.
 
@@ -48,9 +48,9 @@ Note that, since v1.1, Recuperation is not stacked and has crew cap. It means th
 
 Decay is the opposite to Recuperation: for every percentage point of Decay, your kerbal will lose 1% of their remaining health per day. Fortunately, it is very rare.
 
-**Radiation**
+## Radiation
 
-All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (about 1e-7 Sv), or simply bananas. 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal. Currently, there is no way to reduce the dose, so plan missions carefully.
+All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (when you eat a banana, you get approximately 1e-7 Sv of radiation). 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal. Currently, there is no way to reduce the dose, so plan missions carefully.
 
 The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. To check environment before sending astronauts, you can use magnetometers and Geiger counters provided by supported mods or embedded in advanced stock probe cores.
 
@@ -58,29 +58,26 @@ Being on EVA takes away all the protection your ship provides and dramatically i
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
 
-**Quirks**
+## Quirks
 
 Whenever a kerbal levels up, there is a 25% chance that he or she will acquire a health quirk (unless he/she already has two). Discovering an anomaly can also grant a free quirk. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
 
-**Conditions and Random Events**
+## Conditions and Random Events
 
 Kerbals' organisms, like ours own, are not always predictable. Sometimes, not very often, you may see unexpected events that can impact your whole mission. Kerbals acquire (or lose) certain conditions as a result of these events. Having parts with a Sick Bay (such as the stock Science Lab) helps alleviate the symptoms.
 
-- Sickness: A kerbal can become sick and start losing health quickly. His/her crewmates may catch the disease too, including during the incubation period. This condition usually heals itself after some time, but it can also lead to a pneumonia, a really dangerous condition. Having Scientists or Medics aboard helps.
-
-- Injuries: A kerbal can immediately lose some health in an accident. Stupid kerbals are naturally predisposed to this condition. It may cause sepsis, which is mortally dangerous. Bring your kerbal home immediately or pray Kraken it will heal on its own.
-
-- Food poisoning: Kerbals are known for their love of snacks and they don't always wash their hands. Food poisoning may not be as bad as some other conditions on its own, but if dehydration develops, they will become unable to do any work at all and effectively turn into space Tourists until it passes.
-
-- Panic attacks: Though not posing danger to health per se, panic prevents kerbals from doing any useful work. At least it doesn't last long and courageous kerbals are less prone to it.
+- **Sickness**: A kerbal can become sick and start losing health quickly. His/her crewmates may catch the disease too, including during the incubation period. This condition usually heals itself after some time, but it can also lead to a pneumonia, a really dangerous condition. Having Scientists or Medics aboard helps.
+- **Injuries**: A kerbal can immediately lose some health in an accident. Stupid kerbals are naturally predisposed to this condition. It may cause sepsis, which is mortally dangerous. Bring your kerbal home immediately or pray Kraken it will heal on its own.
+- **Food poisoning**: Kerbals are known for their love of snacks and they don't always wash their hands. Food poisoning may not be as bad as some other conditions on its own, but if dehydration develops, they will become unable to do any work at all and effectively turn into space Tourists until it passes.
+- **Panic attacks**: Though not posing danger to health per se, panic prevents kerbals from doing any useful work. At least it doesn't last long and courageous kerbals are less prone to it.
 
 Conditions can be disabled or their chances and effects changed in game settings. You can also easily add, modify or remove conditions (see wiki for details).
 
-**Requirements**
+## Requirements
 
 - [Module Manager](https://forum.kerbalspaceprogram.com/threads/55219)
 
-**Supported Mods**
+## Supported Mods
 
 Kerbal Health should work well alongside most other mods and will try to adapt to them with smart MM patches. Some have better, manually balanced support though:
 
@@ -111,18 +108,18 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [USI Kolonization Systems (MKS/OKS)](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 
-If you would like to include special support for your (or your favorite) mod, let me know. Or, better yet, provide a PR.
-
 Making History expansion is fully supported too but not required.
 
-**Conflicts and Incompatibilities**
+If you would like to include special support for your (or your favorite) mod, let me know. Or, better yet, provide a PR.
+
+## Conflicts and Incompatibilities
 
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
 - Compatibility with Kerbalism hasn't been tested. This mod changes much of game's internal mechanics, so it can be incompatible.
 
-**Future Features**
+## Future Features
 
 - New mechanics: more various conditions, more quirks, radioactive planets, medical supplies, quarantine, and whatnot...
 - More fine-tuned effect of health on kerbals' capabilities
@@ -130,6 +127,6 @@ Making History expansion is fully supported too but not required.
 - Radiation cure (very hard)
 - API for collaboration with other mods
 
-**Copyright and License**
+## Copyright and License
 
-This mod has been created by [Garwel](https://forum.kerbalspaceprogram.com/index.php?/profile/141813-garwel/) and is distributed under MIT license.
+This mod has been created by [Garwel](https://forum.kerbalspaceprogram.com/index.php?/profile/141813-garwel/) and is distributed under [MIT license](https://opensource.org/licenses/MIT).
