@@ -496,6 +496,24 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string SignValue(double v, string format) => ((v > 0) ? "+" : "") + v.ToString(format);
 
+        static string[] prefixes = { "", "K", "M", "G", "T" };
+
+        /// <summary>
+        /// Converts a number into a string with a multiplicative character (K, M, G or T), if applicable
+        /// </summary>
+        /// <param name="value">The value to convert</param>
+        /// <param name="allowedDigits">Max number of digits to allow before the prefix (must be 3 or more)</param>
+        /// <returns></returns>
+        public static string PrefixFormat(double value, int allowedDigits = 3, bool mandatorySign = false)
+        {
+            double v = Math.Abs(value);
+            if (v < 0.5) return "0";
+            int n, m = (int)Math.Pow(10, allowedDigits);
+            for (n = 0; (v >= m) && (n < prefixes.Length - 1); n++)
+                v /= 1000;
+            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("N0") + prefixes[n];
+        }
+
         /// <summary>
         /// Returns the number of occurences of a character in a string
         /// </summary>

@@ -17,7 +17,7 @@
                 case "radiation":
                     Fields["displayData"].guiName = "Radiation";
                     Fields["displayData"].guiUnits = "/day";
-                    Fields["displayData"].guiFormat = "F0";
+                    Fields["displayData"].guiFormat = "N0";
                     break;
                 case "magnetosphere":
                     Fields["displayData"].guiName = "Magnetosphere Shielding";
