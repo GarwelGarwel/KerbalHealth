@@ -582,12 +582,21 @@ namespace KerbalHealth
                 cosmicRadiationRate *= occlusionCoefficient;
             }
             else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
+            double naturalRadiation = Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation);
+            Core.Log("Body's natural radiation = " + naturalRadiation);
+            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) + naturalRadiation;
         }
+
+        /// <summary>
+        /// Body-emitted radiation reaching the given vessel
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double GetNaturalRadiation(Vessel v) => Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
 
         #endregion
         #region HEALTH UPDATE
