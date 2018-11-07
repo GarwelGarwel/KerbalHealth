@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace KerbalHealth
 {
@@ -113,10 +112,7 @@ namespace KerbalHealth
             {
                 isActive = true;
                 Events["OnToggleActive"].guiActive = false;
-            }
-            else if(!Mathf.Approximately(multiplier, 1.0f))
-            {
-                Events["OnToggleActive"].guiActiveEditor = true;
+                Events["OnToggleActive"].guiActiveEditor = false;
             }
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
@@ -160,7 +156,7 @@ namespace KerbalHealth
 
         void UpdateGUIName() => Events["OnToggleActive"].guiName = (isActive ? "Disable " : "Enable ") + Title;
         
-        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
+        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
         public void OnToggleActive()
         {
             isActive = IsAlwaysActive || !isActive;
