@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace KerbalHealth
 {
@@ -113,7 +114,7 @@ namespace KerbalHealth
                 isActive = true;
                 Events["OnToggleActive"].guiActive = false;
             }
-            else if (!Title.Equals("Health Module"))
+            else if(!Mathf.Approximately(multiplier, 1.0f))
             {
                 Events["OnToggleActive"].guiActiveEditor = true;
             }
