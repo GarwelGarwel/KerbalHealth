@@ -113,6 +113,10 @@ namespace KerbalHealth
                 isActive = true;
                 Events["OnToggleActive"].guiActive = false;
             }
+            else if (!Title.Equals("Health Module"))
+            {
+                Events["OnToggleActive"].guiActiveEditor = true;
+            }
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
         }
