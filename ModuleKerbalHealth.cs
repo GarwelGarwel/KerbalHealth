@@ -112,6 +112,7 @@ namespace KerbalHealth
             {
                 isActive = true;
                 Events["OnToggleActive"].guiActive = false;
+                Events["OnToggleActive"].guiActiveEditor = false;
             }
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
@@ -155,7 +156,7 @@ namespace KerbalHealth
 
         void UpdateGUIName() => Events["OnToggleActive"].guiName = (isActive ? "Disable " : "Enable ") + Title;
         
-        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = false)]
+        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
         public void OnToggleActive()
         {
             isActive = IsAlwaysActive || !isActive;
