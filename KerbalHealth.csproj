@@ -96,8 +96,11 @@
     <None Include="GameData\KerbalHealth\KerbalHealth.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHEPL.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHFelineUtilityRover.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHFTT.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHKaribou.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHNFA.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHNFE.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHMalemute.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSEP.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSSPX.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHTantares.cfg" />
