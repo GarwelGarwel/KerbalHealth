@@ -104,8 +104,8 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Stockalike Station Parts Expansion Redux](https://forum.kerbalspaceprogram.com/index.php?/topic/170211-*)
 - [Surface Experiment Pack](https://forum.kerbalspaceprogram.com/index.php?/topic/155382-14x-surface-experiment-pack-deployable-science-for-kiskas-v26-20mar18/&tab=comments#comment-2930055)
 - [Tantares](http://forum.kerbalspaceprogram.com/index.php?/topic/73686-Tantares)
-- [Tundra Exploration](https://forum.kerbalspaceprogram.com/index.php?/topic/166915-143-tundra-exploration-v113-may-31st-stockalike-spacex-falcon-9-dragon-v2-and-bfr/)
-- [USI Kolonization Systems (MKS/OKS)](https://github.com/BobPalmer/MKS)
+- [USI Freight Transportation Technologies](https://forum.kerbalspaceprogram.com/index.php?/topic/82730-13-freight-transport-technologies-v060/)
+- [USI Kolonization Systems (MKS/OKS) + Karibou](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 
 Making History expansion is fully supported too but not required.
