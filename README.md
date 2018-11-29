@@ -90,6 +90,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [DMagic Orbital Science](https://forum.kerbalspaceprogram.com/index.php?/topic/59009-14x-dmagic-orbital-science-new-science-parts-v1312-3152018/)
 - [Extraplanetary Launchpads](https://forum.kerbalspaceprogram.com/index.php?/topic/54284-*)
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
+- [Feline Utility Rovers](https://forum.kerbalspaceprogram.com/index.php?/topic/155344-13x14x-feline-utility-rovers-v128-10october-2018/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
