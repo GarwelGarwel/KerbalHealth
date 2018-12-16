@@ -372,6 +372,14 @@ namespace KerbalHealth
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = value;
         }
 
+        /// <summary>
+        /// How much radiation dose is removed per day during decontamination
+        /// </summary>
+        public static float  DecontaminationRate
+        {
+            get => 100000;
+        }
+
         #endregion
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)

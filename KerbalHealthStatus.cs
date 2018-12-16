@@ -598,6 +598,28 @@ namespace KerbalHealth
         /// <returns></returns>
         public static double GetNaturalRadiation(Vessel v) => Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
 
+        /// <summary>
+        /// Returns true if the kerbal can start decontamination now
+        /// </summary>
+        public bool IsReadyForDecontamination() => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Conditions.Count == 0);
+
+        public void StartDecontamination()
+        {
+            if (!IsReadyForDecontamination())
+            {
+                Core.ShowMessage(Name + " cannot be decontaminated.", PCM);
+                return;
+            }
+            Core.ShowMessage(Name + " began decontamination.", PCM);
+            AddCondition("Decontaminating");
+        }
+
+        public void StopDecontamination()
+        {
+            Core.ShowMessage(Name + " ended decontamination.", PCM);
+            RemoveCondition("Decontaminating");
+        }
+
         #endregion
         #region HEALTH UPDATE
 
@@ -713,13 +735,22 @@ namespace KerbalHealth
 
             bool frozen = HasCondition("Frozen");
 
+            if (HasCondition("Decontaminating"))
+                if ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Dose > 0))
+                    Radiation = -Core.DecontaminationRate;
+                else
+                {
+                    Core.Log(Name + " is " + PCM.rosterStatus + ". Stopping decontamination.");
+                    StopDecontamination();
+                }
             if (Core.RadiationEnabled && ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen))
             {
                 Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(Core.KerbalVessel(PCM))) * KSPUtil.dateTimeFormatter.Day / 21600;
-                Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
                 Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
             }
             else Radiation = 0;
+            Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
+            if (Dose < 0) Dose = 0;
 
             if (frozen)
             {
