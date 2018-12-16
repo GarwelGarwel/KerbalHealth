@@ -411,6 +411,7 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Rad HP Loss:"));
                 gridContents.Add(new DialogGUILabel(""));
+                gridContents.Add(new DialogGUIButton("Decontaminate", selectedKHS.StartDecontamination, selectedKHS.IsReadyForDecontamination, true));
                 monitorPosition.width = gridWidthDetails + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Details", HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton("Back", () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);
             }
