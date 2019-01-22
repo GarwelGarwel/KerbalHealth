@@ -104,6 +104,7 @@
     <None Include="GameData\KerbalHealth\Patches\KHSEP.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSSPX.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHTantares.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHTokamak.cfg" />
     <None Include="KerbalHealth.netkan" />
     <None Include="GameData\KerbalHealth\KerbalHealth.version" />
     <None Include="GameData\KerbalHealth\LICENSE" />
