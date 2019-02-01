@@ -375,9 +375,19 @@ namespace KerbalHealth
         /// <summary>
         /// How much radiation dose is removed per day during decontamination
         /// </summary>
-        public static float  DecontaminationRate
+        public static float DecontaminationRate
         {
-            get => 100000;
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRate;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRate = value;
+        }
+
+        /// <summary>
+        /// How much Health is lost while decontamination process takes place
+        /// </summary>
+        public static float DecontaminationHealthLoss
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationHealthLoss;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationHealthLoss = value;
         }
 
         #endregion
@@ -588,7 +598,6 @@ namespace KerbalHealth
         public static void ShowMessage(string msg, bool unwarpTime)
         {
             KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
-            //else ScreenMessages.PostScreenMessage(msg);
             if (unwarpTime) TimeWarp.SetRate(0, false, true);
         }
 

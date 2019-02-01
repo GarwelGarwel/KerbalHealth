@@ -69,5 +69,11 @@
 
         [GameParameters.CustomFloatParameterUI("Galactic Radiation", toolTip = "Galactic cosmic radiation in interplanetary space, banana doses/day", minValue = 0, maxValue = 30000, displayFormat = "N0", stepCount = 31)]
         public float GalacticRadiation = 15000;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Rate per Day", toolTip = "How much radiation is lost per day during decontamination", minValue = 1000, maxValue = 1000000, displayFormat = "N0", logBase = 10)]
+        public float DecontaminationRate = 100000;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Health Loss", toolTip = "How much health is lost while the kerbal is decontaminating", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true)]
+        public float DecontaminationHealthLoss = 0.75f;
     }
 }
