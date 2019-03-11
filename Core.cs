@@ -390,6 +390,33 @@ namespace KerbalHealth
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationHealthLoss = value;
         }
 
+        /// <summary>
+        /// How much Funds each decontamination procedure costs (Career only)
+        /// </summary>
+        public static float DecontaminationFundsCost
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationFundsCost;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationFundsCost = value;
+        }
+
+        /// <summary>
+        /// How much Science each decontamination procedure costs (Career & Science modes)
+        /// </summary>
+        public static float DecontaminationScienceCost
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationScienceCost;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationScienceCost = value;
+        }
+
+        /// <summary>
+        /// The decontaminated kerbal loses 1 experience level
+        /// </summary>
+        public static bool DecontaminationLevelLoss
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss = value;
+        }
+
         #endregion
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)

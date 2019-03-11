@@ -75,5 +75,14 @@
 
         [GameParameters.CustomFloatParameterUI("Decontamination Health Loss", toolTip = "How much health is lost while the kerbal is decontaminating", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true)]
         public float DecontaminationHealthLoss = 0.75f;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Funds Cost", toolTip = "How much Funds each decontamination procedure costs (Career only)", minValue = 0, maxValue = 1000000, displayFormat = "N0")]
+        public float DecontaminationFundsCost = 100000;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Science Cost", toolTip = "How much Science each decontamination procedure costs (Career & Science modes)", minValue = 0, maxValue = 10000, displayFormat = "N0")]
+        public float DecontaminationScienceCost = 1000;
+
+        [GameParameters.CustomParameterUI("Decontamination Causes Level Loss", toolTip = "The decontaminated kerbal loses 1 experience level")]
+        public bool DecontaminationLevelLoss = true;
     }
 }
