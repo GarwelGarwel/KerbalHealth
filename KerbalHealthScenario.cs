@@ -199,14 +199,14 @@ namespace KerbalHealth
         public void OnKerbalFrozen(Part part, ProtoCrewMember pcm)
         {
             Core.Log("OnKerbalFrozen('" + part.name + "', '" + pcm.name + "')", Core.LogLevel.Important);
-            Core.KerbalHealthList.Find(pcm).AddCondition("Frozen");
+            Core.KerbalHealthList.Find(pcm).IsFrozen = true;
             dirty = true;
         }
 
         public void OnKerbalThaw(Part part, ProtoCrewMember pcm)
         {
             Core.Log("OnKerbalThaw('" + part.name + "', '" + pcm.name + "')", Core.LogLevel.Important);
-            Core.KerbalHealthList.Find(pcm).RemoveCondition("Frozen");
+            Core.KerbalHealthList.Find(pcm).IsFrozen = false;
             dirty = true;
         }
 
@@ -216,7 +216,7 @@ namespace KerbalHealth
         /// <param name="n"></param>
         public void OnProgressComplete(ProgressNode n)
         {
-            Core.Log("OnProgressCompleted(" + n.Id + ")");
+            Core.Log("OnProgressComplete(" + n.Id + ")");
             if (n is KSPAchievements.PointOfInterest poi)
             {
                 Core.Log("Reached anomaly: " + poi.Id + " on " + poi.body, Core.LogLevel.Important);
@@ -258,7 +258,7 @@ namespace KerbalHealth
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                         {
                             ProtoCrewMember pcm = khs.PCM;
-                            if (khs.HasCondition("Frozen") || !Core.IsKerbalTrackable(pcm)) continue;
+                            if (khs.IsFrozen || khs.IsDecontaminating || !Core.IsKerbalTrackable(pcm)) continue;
                             for (int i = 0; i < khs.Conditions.Count; i++)
                             {
                                 HealthCondition hc = khs.Conditions[i];
@@ -470,12 +470,12 @@ namespace KerbalHealth
                 for (int i = 0; i < LineCount; i++)
                 {
                     KerbalHealthStatus khs = kerbals.Values[FirstLine + i];
-                    bool frozen = khs.HasCondition("Frozen");
+                    bool healthFrozen = khs.IsFrozen || khs.IsDecontaminating;
                     double ch = khs.LastChangeTotal;
                     double b = khs.GetBalanceHP();
                     string formatTag = "", formatUntag = "";
                     string s = "";
-                    if (frozen || (b > khs.NextConditionHP())) s = "—";
+                    if (healthFrozen || (b > khs.NextConditionHP())) s = "—";
                     else
                     {
                         s = Core.ParseUT(khs.TimeToNextCondition(), true, 100);
@@ -490,10 +490,9 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
                     gridContents[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
                     gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((frozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
                     gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
                     gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 5) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 4, true) + "/day)" : "") + formatUntag);
-                    //gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + khs.Dose.ToString("N0") + (khs.Radiation != 0 ? " (+" + khs.Radiation.ToString("N0") + "/day)" : "") + formatUntag);
                 }
             }
             else  // Showing details for one particular kerbal
@@ -504,9 +503,9 @@ namespace KerbalHealth
                     selectedKHS = null;
                     Invalidate();
                 }
-                bool frozen = selectedKHS.HasCondition("Frozen");
+                bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
                 gridContents[1].SetOptionText("<color=\"white\">" + selectedKHS.Name + "</color>");
-                gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel.ToString() + "</color>");
+                gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel + "</color>");
                 gridContents[5].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks)
@@ -515,15 +514,15 @@ namespace KerbalHealth
                 gridContents[7].SetOptionText("<color=\"white\">" + s + "</color>");
                 gridContents[9].SetOptionText("<color=\"white\">" + selectedKHS.MaxHP.ToString("F2") + "</color>");
                 gridContents[11].SetOptionText("<color=\"white\">" + selectedKHS.HP.ToString("F2") + " (" + selectedKHS.Health.ToString("P2") + ")" + "</color>");
-                gridContents[13].SetOptionText("<color=\"white\">" + (frozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2")) + "</color>");
+                gridContents[13].SetOptionText("<color=\"white\">" + (healthFrozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2")) + "</color>");
                 int i = 15;
-                if (Core.IsKerbalLoaded(selectedKHS.PCM) && !frozen)
+                if (Core.IsKerbalLoaded(selectedKHS.PCM) && !healthFrozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].SetOptionText("<color=\"white\">" + (frozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
+                gridContents[i].SetOptionText("<color=\"white\">" + (healthFrozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
                 gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N0") + "</color>");
@@ -573,7 +572,7 @@ namespace KerbalHealth
     /// </summary>
     public class KerbalComparer : Comparer<ProtoCrewMember>
     {
-        bool sortByLocation;
+        readonly bool sortByLocation;
 
         public int CompareLocation(ProtoCrewMember x, ProtoCrewMember y)
         {
@@ -586,8 +585,7 @@ namespace KerbalHealth
                 if (yv.isActiveVessel) return 1;
             }
             if (xv.isEVA) return yv.isEVA ? 0 : -1;
-            if (yv.isEVA) return 1;
-            return string.Compare(xv.vesselName, yv.vesselName, true);
+            return yv.isEVA ? 1 : string.Compare(xv.vesselName, yv.vesselName, true);
         }
 
         public override int Compare(ProtoCrewMember x, ProtoCrewMember y)
@@ -595,8 +593,6 @@ namespace KerbalHealth
             if (sortByLocation)
             {
                 int l = CompareLocation(x, y);
-                Core.Log("Location comparison result: " + x.name + " " + (l < 0 ? "<" : (l > 0 ? ">" : "=")) + " " + y.name);
-                if (l == 0) Core.Log("Name comparison: " + string.Compare(x.name, y.name, true));
                 return (l != 0) ? l : string.Compare(x.name, y.name, true);
             }
             return string.Compare(x.name, y.name, true);
