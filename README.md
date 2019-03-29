@@ -113,7 +113,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 
 Making History expansion is fully supported too but not required.
 
-If you would like to include special support for your (or your favorite) mod, let me know. Or, better yet, provide a PR.
+If you would like to include special support for your (or your favorite) mod, let me know.
 
 ## Conflicts and Incompatibilities
 
@@ -124,10 +124,9 @@ If you would like to include special support for your (or your favorite) mod, le
 
 ## Future Features
 
-- New mechanics: more various conditions, more quirks, radioactive planets, medical supplies, quarantine, and whatnot...
+- New mechanics: more various conditions, more quirks, medical supplies, quarantine, and whatnot...
 - More fine-tuned effect of health on kerbals' capabilities
 - Maybe a different microgravity system
-- Radiation cure (very hard)
 - API for collaboration with other mods
 
 ## Copyright and License
