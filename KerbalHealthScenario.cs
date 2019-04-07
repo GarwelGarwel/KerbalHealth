@@ -379,6 +379,7 @@ namespace KerbalHealth
 
             else
             {
+                // Creating the grid for detailed view, which will be filled in Update method
                 Core.Log("Showing details for " + selectedKHS.Name + ".");
                 gridContents = new List<DialogGUIBase>();
                 gridContents.Add(new DialogGUILabel("Name:"));
@@ -408,10 +409,12 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("Radiation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Lifetime Dose:"));
-                gridContents.Add(new DialogGUILabel(""));
+                gridContents.Add(new DialogGUIHorizontalLayout(
+                    new DialogGUILabel(""),
+                    new DialogGUIButton("Clean", OnDecontamination)));
                 gridContents.Add(new DialogGUILabel("Rad HP Loss:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUIButton("Decontaminate", selectedKHS.StartDecontamination, selectedKHS.IsReadyForDecontamination, true));
+                //gridContents.Add(new DialogGUIButton("Decontamination", OnDecontamination));
                 monitorPosition.width = gridWidthDetails + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Details", HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton("Back", () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);
             }
@@ -435,6 +438,27 @@ namespace KerbalHealth
         {
             UndisplayData();
             DisplayData();
+        }
+
+        void OnDecontamination()
+        {
+            if (selectedKHS == null) return;
+            string msg = "";
+            Callback ok = null;
+            if (selectedKHS.IsDecontaminating)
+            {
+                Core.Log("User ordered to stop decontamination of " + selectedKHS.Name);
+                msg = selectedKHS.Name + " is decontaminating. If you stop it, the process will stop and they will slowly regain health.";
+                ok = () => { selectedKHS.StopDecontamination(); Invalidate(); };
+            }
+            else if (selectedKHS.IsReadyForDecontamination())
+            {
+                if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)) msg = "Decontamination will cost " + (HighLogic.CurrentGame.Mode == Game.Modes.CAREER ? (Core.DecontaminationFundsCost.ToString("N0") + " funds and ") : "") + Core.DecontaminationScienceCost.ToString("N0") + " science. ";
+                msg += selectedKHS.Name + "'s health will be reduced by " + Core.DecontaminationHealthLoss.ToString("P0") + " during decontamination. At a rate of " + Core.DecontaminationRate.ToString("N0") + " banana doses/day, it is expected to take about " + KSPUtil.PrintDateDelta(Math.Ceiling(selectedKHS.Dose / Core.DecontaminationRate) * 21600, false) + ".";
+                ok = () => { selectedKHS.StartDecontamination(); Invalidate(); };
+            }
+            else msg = "To start decontamination, the kerbal must be at KSC at full health, with no health conditions, and you need at least " + Core.DecontaminationFundsCost.ToString("N0") + " funds (in Career mode) and " + Core.DecontaminationScienceCost.ToString("N0") + " science (in Career and Science mode).";
+            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Decontamination", msg, "Decontamination", HighLogic.UISkin, new DialogGUIButton("OK", ok, selectedKHS.IsReadyForDecontamination, true), new DialogGUIButton("Cancel", null, true)), false, HighLogic.UISkin);
         }
 
         /// <summary>
@@ -475,7 +499,7 @@ namespace KerbalHealth
                     double b = khs.GetBalanceHP();
                     string formatTag = "", formatUntag = "";
                     string s = "";
-                    if (healthFrozen || (b > khs.NextConditionHP())) s = "—";
+                    if (healthFrozen || ((b - khs.NextConditionHP()) * ch <= 0)) s = "—";
                     else
                     {
                         s = Core.ParseUT(khs.TimeToNextCondition(), true, 100);
@@ -492,7 +516,7 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
                     gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
                     gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 5) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 4, true) + "/day)" : "") + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 6].children[0].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 5) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 4, true) + "/day)" : "") + formatUntag);
                 }
             }
             else  // Showing details for one particular kerbal

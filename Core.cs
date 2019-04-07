@@ -89,6 +89,9 @@ namespace KerbalHealth
             return PlanetConfigs[cb];
         }
 
+        /// <summary>
+        /// Loads necessary mod data from KerbalHealth.cfg and 
+        /// </summary>
         public static void LoadConfig()
         {
             Log("Loading config...", LogLevel.Important);
@@ -123,6 +126,9 @@ namespace KerbalHealth
                 }
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
+
+            // Initializing decontamination XP penalties - DOESN'T WORK
+            //KerbalRoster.AddExperienceType("Decontamination", "Decontamination", -2, -2);
 
             Loaded = true;
         }
