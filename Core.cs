@@ -423,6 +423,24 @@ namespace KerbalHealth
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss = value;
         }
 
+        /// <summary>
+        /// Min level of the Astronaut Complex for Decontamination
+        /// </summary>
+        public static int DecontaminationAstronautComplexLevel
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationAstronautComplexLevel;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationAstronautComplexLevel = value;
+        }
+
+        /// <summary>
+        /// Min level of the R&D Facility for Decontamination
+        /// </summary>
+        public static int DecontaminationRNDLevel
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRNDLevel;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRNDLevel = value;
+        }
+
         #endregion
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)

@@ -614,7 +614,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal can start decontamination now
         /// </summary>
-        public bool IsReadyForDecontamination() => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 1) && (Conditions.Count == 0) && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(Core.DecontaminationFundsCost)) && (((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) && ((HighLogic.CurrentGame.Mode != Game.Modes.SCIENCE_SANDBOX)) || ResearchAndDevelopment.CanAfford(Core.DecontaminationScienceCost)));
+        public bool IsReadyForDecontamination => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 1) && (Conditions.Count == 0) && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(Core.DecontaminationFundsCost)) && (((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) && ((HighLogic.CurrentGame.Mode != Game.Modes.SCIENCE_SANDBOX)) || ResearchAndDevelopment.CanAfford(Core.DecontaminationScienceCost))) && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= Core.DecontaminationAstronautComplexLevel) && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) >= Core.DecontaminationRNDLevel);
 
         /// <summary>
         /// Returns true if the kerbal is currently decontaminating (i.e. has 'Decontaminating' condition)
@@ -632,7 +632,7 @@ namespace KerbalHealth
         public void StartDecontamination()
         {
             Core.Log("StartDecontamination for " + Name);
-            if (!IsReadyForDecontamination())
+            if (!IsReadyForDecontamination)
             {
                 Core.Log(Name + " is " + PCM.rosterStatus + "; HP: " + HP + "/" + MaxHP + "; has " + Conditions.Count + " condition(s)", Core.LogLevel.Error);
                 return;

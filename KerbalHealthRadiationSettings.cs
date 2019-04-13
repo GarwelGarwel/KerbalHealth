@@ -82,6 +82,12 @@
         [GameParameters.CustomFloatParameterUI("Decontamination Science Cost", toolTip = "How much Science each decontamination procedure costs (Career & Science modes)", minValue = 0, maxValue = 10000, displayFormat = "N0")]
         public float DecontaminationScienceCost = 1000;
 
+        [GameParameters.CustomIntParameterUI("Astronaut Complex Level for Decon", toolTip = "Min level of the Astronaut Complex for Decontamination", minValue = 0, maxValue = 3)]
+        public int DecontaminationAstronautComplexLevel = 3;
+
+        [GameParameters.CustomIntParameterUI("R&D Level for Decon", toolTip = "Min level of the Research & Development Facility for Decontamination", minValue = 0, maxValue = 3)]
+        public int DecontaminationRNDLevel = 3;
+
         //[GameParameters.CustomParameterUI("Decontamination Causes Level Loss", toolTip = "The decontaminated kerbal loses 1 experience level")]
         public bool DecontaminationLevelLoss = false;
     }
