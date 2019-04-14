@@ -253,3 +253,4 @@ paket-files/
 *.gsheet
 /FactorModifier.cs
 *.xlsx
+/Misc
