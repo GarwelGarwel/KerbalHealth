@@ -89,6 +89,9 @@ namespace KerbalHealth
             return PlanetConfigs[cb];
         }
 
+        /// <summary>
+        /// Loads necessary mod data from KerbalHealth.cfg and 
+        /// </summary>
         public static void LoadConfig()
         {
             Log("Loading config...", LogLevel.Important);
@@ -123,6 +126,9 @@ namespace KerbalHealth
                 }
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
+
+            // Initializing decontamination XP penalties - DOESN'T WORK
+            //KerbalRoster.AddExperienceType("Decontamination", "Decontamination", -2, -2);
 
             Loaded = true;
         }
@@ -372,6 +378,69 @@ namespace KerbalHealth
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = value;
         }
 
+        /// <summary>
+        /// How much radiation dose is removed per day during decontamination
+        /// </summary>
+        public static float DecontaminationRate
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRate;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRate = value;
+        }
+
+        /// <summary>
+        /// How much Health is lost while decontamination process takes place
+        /// </summary>
+        public static float DecontaminationHealthLoss
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationHealthLoss;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationHealthLoss = value;
+        }
+
+        /// <summary>
+        /// How much Funds each decontamination procedure costs (Career only)
+        /// </summary>
+        public static float DecontaminationFundsCost
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationFundsCost;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationFundsCost = value;
+        }
+
+        /// <summary>
+        /// How much Science each decontamination procedure costs (Career & Science modes)
+        /// </summary>
+        public static float DecontaminationScienceCost
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationScienceCost;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationScienceCost = value;
+        }
+
+        /// <summary>
+        /// The decontaminated kerbal loses 1 experience level
+        /// </summary>
+        public static bool DecontaminationLevelLoss
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss = value;
+        }
+
+        /// <summary>
+        /// Min level of the Astronaut Complex for Decontamination
+        /// </summary>
+        public static int DecontaminationAstronautComplexLevel
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationAstronautComplexLevel;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationAstronautComplexLevel = value;
+        }
+
+        /// <summary>
+        /// Min level of the R&D Facility for Decontamination
+        /// </summary>
+        public static int DecontaminationRNDLevel
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRNDLevel;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationRNDLevel = value;
+        }
+
         #endregion
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
@@ -580,7 +649,6 @@ namespace KerbalHealth
         public static void ShowMessage(string msg, bool unwarpTime)
         {
             KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
-            //else ScreenMessages.PostScreenMessage(msg);
             if (unwarpTime) TimeWarp.SetRate(0, false, true);
         }
 
