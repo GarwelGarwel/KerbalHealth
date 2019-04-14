@@ -19,7 +19,7 @@
                 Core.Log("MicrogravityFactor.ChangePerDay: Core.KerbalVessel(pcm) is null for " + pcm.name + "! EVA is " + Core.KerbalHealthList.Find(pcm).IsOnEVA, Core.LogLevel.Error);
                 return 0;
             }
-            if ((Core.KerbalVessel(pcm).situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL)) != 0)
+            if ((Core.KerbalVessel(pcm).situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL | Vessel.Situations.ESCAPING)) != 0)
             {
                 Core.Log("Microgravity is on due to being in a " + Core.KerbalVessel(pcm).situation + " situation.");
                 return BaseChangePerDay;

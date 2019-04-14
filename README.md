@@ -24,13 +24,13 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 
 The following factors may affect kerbal's health:
 - **Assigned** (kerbal is on a mission): -0.5 HP/day
-- **Confinement** (scaled effect): -3 x <Crew> / <Living Space> HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
-- **Loneliness** (only 1 kerbal in the vessel, badass kerbals are immune): -1 HP/day
-- **Microgravity** (orbital or suborbital flight or under 0.1 g conditions, e.g. Minmus): -0.5 HP/day
+- **Confinement** (scaled effect): -3 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
+- **Loneliness** (only 1 kerbal in the vessel): -1 HP/day
+- **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -0.5 HP/day
 - **EVA**: -10 HP/day
 - **Connected** (having a working CommNet connection to home): +0.5 HP/day
 - **Home** (on Kerbin below 18 km altitude): +2 HP/day
-- **KSC** (kerbal is recuperating in KSC, i.e. available): +5 HP/day
+- **KSC** (kerbal is recuperating at KSC, i.e. available): +5 HP/day
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
@@ -50,13 +50,15 @@ Decay is the opposite to Recuperation: for every percentage point of Decay, your
 
 ## Radiation
 
-All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (when you eat a banana, you get approximately 1e-7 Sv of radiation). 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal. Currently, there is no way to reduce the dose, so plan missions carefully.
+All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (when you eat a banana, you get approximately 1e-7 Sv of radiation). 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal.
 
 The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. To check environment before sending astronauts, you can use magnetometers and Geiger counters provided by supported mods or embedded in advanced stock probe cores.
 
 Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
+
+You can now cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
 
 ## Quirks
 
@@ -90,6 +92,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [DMagic Orbital Science](https://forum.kerbalspaceprogram.com/index.php?/topic/59009-14x-dmagic-orbital-science-new-science-parts-v1312-3152018/)
 - [Extraplanetary Launchpads](https://forum.kerbalspaceprogram.com/index.php?/topic/54284-*)
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
+- [Feline Utility Rovers](https://forum.kerbalspaceprogram.com/index.php?/topic/155344-13x14x-feline-utility-rovers-v128-10october-2018/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
@@ -104,13 +107,14 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Stockalike Station Parts Expansion Redux](https://forum.kerbalspaceprogram.com/index.php?/topic/170211-*)
 - [Surface Experiment Pack](https://forum.kerbalspaceprogram.com/index.php?/topic/155382-14x-surface-experiment-pack-deployable-science-for-kiskas-v26-20mar18/&tab=comments#comment-2930055)
 - [Tantares](http://forum.kerbalspaceprogram.com/index.php?/topic/73686-Tantares)
-- [Tundra Exploration](https://forum.kerbalspaceprogram.com/index.php?/topic/166915-143-tundra-exploration-v113-may-31st-stockalike-spacex-falcon-9-dragon-v2-and-bfr/)
-- [USI Kolonization Systems (MKS/OKS)](https://github.com/BobPalmer/MKS)
+- [Tokamak Insustries Refurbished Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/163166-151-tokamak-industries-refurbished-parts-featuring-porkjets-hab-pack/)
+- [USI Freight Transportation Technologies](https://forum.kerbalspaceprogram.com/index.php?/topic/82730-13-freight-transport-technologies-v060/)
+- [USI Kolonization Systems (MKS/OKS) + Karibou](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
 
 Making History expansion is fully supported too but not required.
 
-If you would like to include special support for your (or your favorite) mod, let me know. Or, better yet, provide a PR.
+If you would like to include special support for your (or your favorite) mod, let me know.
 
 ## Conflicts and Incompatibilities
 
@@ -121,10 +125,9 @@ If you would like to include special support for your (or your favorite) mod, le
 
 ## Future Features
 
-- New mechanics: more various conditions, more quirks, radioactive planets, medical supplies, quarantine, and whatnot...
+- New mechanics: more various conditions, more quirks, medical supplies, quarantine, and whatnot...
 - More fine-tuned effect of health on kerbals' capabilities
 - Maybe a different microgravity system
-- Radiation cure (very hard)
 - API for collaboration with other mods
 
 ## Copyright and License

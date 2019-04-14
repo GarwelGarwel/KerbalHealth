@@ -131,6 +131,19 @@ namespace KerbalHealth
         public bool HasCondition(HealthCondition hc) => Conditions.Contains(hc);
 
         /// <summary>
+        /// Whether the kerbal is frozen by DeepFreeze mod (has 'Frozen' condition)
+        /// </summary>
+        public bool IsFrozen
+        {
+            get => HasCondition("Frozen");
+            set
+            {
+                if (value) AddCondition("Frozen");
+                else RemoveCondition("Frozen");
+            }
+        }
+
+        /// <summary>
         /// Adds a new health condition
         /// </summary>
         /// <param name="condition">Condition to add</param>
@@ -225,7 +238,7 @@ namespace KerbalHealth
         /// </summary>
         void MakeCapable()
         {
-            if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has been revived by another mod
+            if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has already been revived by another mod
             Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.", Core.LogLevel.Important);
             if ((Trait != null) && (Trait != "Tourist"))
             {
@@ -582,11 +595,84 @@ namespace KerbalHealth
                 cosmicRadiationRate *= occlusionCoefficient;
             }
             else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
+            double naturalRadiation = Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
             Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
             Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
             Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
             Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation);
+            Core.Log("Body's natural radiation = " + naturalRadiation);
+            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) + naturalRadiation;
+        }
+
+        /// <summary>
+        /// Body-emitted radiation reaching the given vessel
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double GetNaturalRadiation(Vessel v) => Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
+
+        /// <summary>
+        /// Returns true if the kerbal can start decontamination now
+        /// </summary>
+        public bool IsReadyForDecontamination => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 1) && (Conditions.Count == 0) && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(Core.DecontaminationFundsCost)) && (((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) && ((HighLogic.CurrentGame.Mode != Game.Modes.SCIENCE_SANDBOX)) || ResearchAndDevelopment.CanAfford(Core.DecontaminationScienceCost))) && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= Core.DecontaminationAstronautComplexLevel) && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) >= Core.DecontaminationRNDLevel);
+
+        /// <summary>
+        /// Returns true if the kerbal is currently decontaminating (i.e. has 'Decontaminating' condition)
+        /// </summary>
+        public bool IsDecontaminating => HasCondition("Decontaminating");
+
+        void ShowXP()
+        {
+            Core.Log("XP level: " + PCM.experienceLevel + " (delta " + PCM.ExperienceLevelDelta + ")");
+            Core.Log("Experience: " + PCM.experience);
+            Core.Log("Extra XP: " + PCM.ExtraExperience);
+            Core.Log("Full XP: " + PCM.CalculateExperiencePoints(HighLogic.CurrentGame));
+        }
+
+        public void StartDecontamination()
+        {
+            Core.Log("StartDecontamination for " + Name);
+            if (!IsReadyForDecontamination)
+            {
+                Core.Log(Name + " is " + PCM.rosterStatus + "; HP: " + HP + "/" + MaxHP + "; has " + Conditions.Count + " condition(s)", Core.LogLevel.Error);
+                return;
+            }
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+            {
+                Core.Log("Taking " + Core.DecontaminationFundsCost + " funds our of " + Funding.Instance.Funds.ToString("N0") + " available for decontamination.");
+                Funding.Instance.AddFunds(-Core.DecontaminationFundsCost, TransactionReasons.None);
+            }
+            if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX))
+            {
+                Core.Log("Taking " + Core.DecontaminationScienceCost + " science points for decontamination.");
+                ResearchAndDevelopment.Instance.AddScience(-Core.DecontaminationScienceCost, TransactionReasons.None);
+            }
+            if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) && Core.DecontaminationLevelLoss)  // Not implemented (always false)
+            {
+                Core.Log("Removing XP from " + Name + " (" + PCM.experience + " XP, level " + PCM.experienceLevel + ") for decontamination.");
+                ShowXP();
+                //PCM.experienceLevel--;
+                //PCM.ExtraExperience -= PCM.experience / 2;
+                Core.Log("Flight log for " + Name + " has " + PCM.flightLog.Count + " entries.");
+                PCM.flightLog.AddEntry("Decontamination", Planetarium.fetch.Home.bodyName);
+                Core.Log("Flight log for " + Name + " has " + PCM.flightLog.Count + " entries.");
+                ShowXP();
+                Core.Log("Archiving flight log...");
+                PCM.ArchiveFlightLog();
+                ShowXP();
+                Core.Log("Updating experience...");
+                PCM.UpdateExperience();
+                ShowXP();
+            }
+            HP *= 1 - Core.DecontaminationHealthLoss;
+            AddCondition("Decontaminating");
+            Radiation = -Core.DecontaminationRate;
+        }
+
+        public void StopDecontamination()
+        {
+            Core.Log("StopDecontamination for " + Name);
+            RemoveCondition("Decontaminating");
         }
 
         #endregion
@@ -605,9 +691,9 @@ namespace KerbalHealth
                 return 0;
             }
 
-            if (HasCondition("Frozen"))
+            if (IsFrozen || IsDecontaminating)
             {
-                Core.Log(Name + " is frozen, health does not change.");
+                Core.Log(Name + " is frozen or decontaminating, health does not change.");
                 return 0;
             }
 
@@ -645,6 +731,7 @@ namespace KerbalHealth
                 mods.MaxRecuperaction = mods.RecuperationPower = LastRecuperation;
                 mods.Decay = LastDecay;
                 mods.ExposureMultiplier = LastExposure;
+                mods.PartsRadiation = partsRadiation;
             }
 
             // Applying quirks
@@ -702,15 +789,26 @@ namespace KerbalHealth
 
             if (Core.QuirksEnabled) AwardQuirks();
 
-            bool frozen = HasCondition("Frozen");
+            bool frozen = IsFrozen;
+            bool decontaminating = IsDecontaminating;
 
-            if (Core.RadiationEnabled && ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen))
+            if (Core.RadiationEnabled)
             {
-                Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(Core.KerbalVessel(PCM))) * KSPUtil.dateTimeFormatter.Day / 21600;
+                if ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen)
+                {
+                    Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(Core.KerbalVessel(PCM))) * KSPUtil.dateTimeFormatter.Day / 21600;
+                    Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
+                    if (decontaminating) StopDecontamination();
+                }
+                else if (!decontaminating) Radiation = 0;
+
                 Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
-                Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
+                if (Dose < 0)
+                {
+                    Dose = 0;
+                    if (decontaminating) StopDecontamination();
+                }
             }
-            else Radiation = 0;
 
             if (frozen)
             {
@@ -718,7 +816,8 @@ namespace KerbalHealth
                 return;
             }
 
-            HP += HealthChangePerDay() / KSPUtil.dateTimeFormatter.Day * interval;
+            if (!decontaminating)
+                HP += HealthChangePerDay() / KSPUtil.dateTimeFormatter.Day * interval;
 
             if ((HP <= 0) && Core.DeathEnabled)
             {

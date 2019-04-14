@@ -251,6 +251,5 @@ paket-files/
 .idea/
 *.sln.iml
 *.gsheet
-/FactorModifier.cs
 *.xlsx
 /Misc

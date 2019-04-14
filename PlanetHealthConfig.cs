@@ -1,5 +1,8 @@
 ﻿namespace KerbalHealth
 {
+    /// <summary>
+    /// Used for custom configuration of celestial bodies' radiation shielding & emission
+    /// </summary>
     public class PlanetHealthConfig
     {
         /// <summary>
@@ -22,6 +25,11 @@
         /// </summary>
         public double AtmosphericAbsorption { get; set; } = 1;
 
+        /// <summary>
+        /// Natural radiation level at sea level
+        /// </summary>
+        public double Radioactivity { get; set; } = 0;
+
         public ConfigNode ConfigNode
         {
             set
@@ -35,10 +43,11 @@
                 if (Body == null) Core.Log("Body '" + Name + "' not found.", Core.LogLevel.Important);
                 Magnetosphere = Core.GetDouble(value, "magnetosphere", Magnetosphere);
                 AtmosphericAbsorption = Core.GetDouble(value, "atmosphericAbsorption", AtmosphericAbsorption);
+                Radioactivity = Core.GetDouble(value, "radioactivity", Radioactivity);
             }
         }
 
-        public override string ToString() => Name + "\r\nMagnetosphere: " + Magnetosphere.ToString("F2") + "\r\nAtmospheric Absorption: " + AtmosphericAbsorption.ToString("F2");
+        public override string ToString() => Name + "\r\nMagnetosphere: " + Magnetosphere.ToString("F2") + "\r\nAtmospheric Absorption: " + AtmosphericAbsorption.ToString("F2") + "\r\nRadioactivity: " + Radioactivity.ToString("F0");
 
         public PlanetHealthConfig(CelestialBody body)
         {
