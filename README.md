@@ -58,7 +58,7 @@ Being on EVA takes away all the protection your ship provides and dramatically i
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
 
-You can now cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need a fully upgraded Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
+You can now cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
 
 ## Quirks
 
@@ -107,6 +107,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Stockalike Station Parts Expansion Redux](https://forum.kerbalspaceprogram.com/index.php?/topic/170211-*)
 - [Surface Experiment Pack](https://forum.kerbalspaceprogram.com/index.php?/topic/155382-14x-surface-experiment-pack-deployable-science-for-kiskas-v26-20mar18/&tab=comments#comment-2930055)
 - [Tantares](http://forum.kerbalspaceprogram.com/index.php?/topic/73686-Tantares)
+- [Tokamak Insustries Refurbished Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/163166-151-tokamak-industries-refurbished-parts-featuring-porkjets-hab-pack/)
 - [USI Freight Transportation Technologies](https://forum.kerbalspaceprogram.com/index.php?/topic/82730-13-freight-transport-technologies-v060/)
 - [USI Kolonization Systems (MKS/OKS) + Karibou](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS)
