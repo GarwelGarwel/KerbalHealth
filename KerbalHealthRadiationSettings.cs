@@ -69,5 +69,26 @@
 
         [GameParameters.CustomFloatParameterUI("Galactic Radiation", toolTip = "Galactic cosmic radiation in interplanetary space, banana doses/day", minValue = 0, maxValue = 30000, displayFormat = "N0", stepCount = 31)]
         public float GalacticRadiation = 15000;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Rate per Day", toolTip = "How much radiation is lost per day during decontamination", minValue = 1000, maxValue = 1000000, displayFormat = "N0", logBase = 10)]
+        public float DecontaminationRate = 100000;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Health Loss", toolTip = "How much health is lost while the kerbal is decontaminating", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true)]
+        public float DecontaminationHealthLoss = 0.75f;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Funds Cost", toolTip = "How much Funds each decontamination procedure costs (Career only)", minValue = 0, maxValue = 1000000, displayFormat = "N0")]
+        public float DecontaminationFundsCost = 100000;
+
+        [GameParameters.CustomFloatParameterUI("Decontamination Science Cost", toolTip = "How much Science each decontamination procedure costs (Career & Science modes)", minValue = 0, maxValue = 10000, displayFormat = "N0")]
+        public float DecontaminationScienceCost = 1000;
+
+        [GameParameters.CustomIntParameterUI("Astronaut Complex Level for Decon", toolTip = "Min level of the Astronaut Complex for Decontamination", minValue = 0, maxValue = 3)]
+        public int DecontaminationAstronautComplexLevel = 3;
+
+        [GameParameters.CustomIntParameterUI("R&D Level for Decon", toolTip = "Min level of the Research & Development Facility for Decontamination", minValue = 0, maxValue = 3)]
+        public int DecontaminationRNDLevel = 3;
+
+        //[GameParameters.CustomParameterUI("Decontamination Causes Level Loss", toolTip = "The decontaminated kerbal loses 1 experience level")]
+        public bool DecontaminationLevelLoss = false;
     }
 }

@@ -15,6 +15,8 @@ namespace KerbalHealth
         public OperatorType Operator { get; set; } = OperatorType.And;
         public bool Inverse { get; set; } = false;
 
+        public static string Padding = "-";
+
         public string Situation { get; set; } = null;
         public string InSOI { get; set; } = null;
         public string KerbalStatus { get; set; } = null;
@@ -154,13 +156,15 @@ namespace KerbalHealth
             return res ^ Inverse;
         }
 
-        public string Description(int level, string pad = "-")
+        public string Description(int level)
         {
             string res = "";
             string indent1 = "";
-            for (int i = 0; i < level; i++) indent1 += pad;
-            string indent2 = indent1 + pad + " ";
-            if (Situation != null) res += "\nIs " + Situation;
+            for (int i = 0; i < level; i++) indent1 += Padding;
+            string indent2 = indent1 + Padding + " ";
+            if (level > 0) indent1 += " ";
+
+            if (Situation != null) res += "\n" + indent2 + "Is " + Situation;
             if (InSOI != null) res += "\n" + indent2 + "Kerbal is in the SOI of " + InSOI;
             if (KerbalStatus != null) res += "\n" + indent2 + "Kerbal is" + KerbalStatus;
             if (!Double.IsNaN(MissionTime)) res += "\n" + indent2 + "Mission lasts at least " + Core.ParseUT(MissionTime, false, 100);
@@ -168,10 +172,10 @@ namespace KerbalHealth
             if (GenderPresent != null) res += "\n" + indent2 + GenderPresent + " gender kerbal(s) present in the vessel";
             if (TraitPresent != null) res += "\n" + indent2 + TraitPresent + " kerbal(s) present in the vessel";
             if (ConditionPresent != null) res += "\n" + indent2 + "Kerbal(s) with " + ConditionPresent + " present in the vessel";
-            foreach (Logic l in Operands) res += "\n" + l.Description(level + 1, pad);
+            foreach (Logic l in Operands) res += "\n" + l.Description(level + 1);
             if (Core.CountChars(res, '\n') >= 2)
-                res = indent1 + " " + (Operator == OperatorType.And ? (Inverse ? "One or more" : "All") : (Inverse ? "Any" : "None")) + " of the following conditions are " + ((Operator == OperatorType.And) && Inverse ? "false" : "true") + ":" + res;
-            else if ((res != "") && Inverse) res = indent1 + " This is FALSE:" + res;
+                res = indent1 + (Operator == OperatorType.And ? (Inverse ? "One" : "All") : (Inverse ? "None" : "One")) + " of the following conditions is " + ((Operator == OperatorType.And) && Inverse ? "false" : "true") + ":" + res;
+            else if ((res != "") && Inverse) res = indent1 + "This is FALSE:" + res;
             else res = res.Trim('\n');
             return res;
         }
