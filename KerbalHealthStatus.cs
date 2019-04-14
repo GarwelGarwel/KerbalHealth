@@ -731,6 +731,7 @@ namespace KerbalHealth
                 mods.MaxRecuperaction = mods.RecuperationPower = LastRecuperation;
                 mods.Decay = LastDecay;
                 mods.ExposureMultiplier = LastExposure;
+                mods.PartsRadiation = partsRadiation;
             }
 
             // Applying quirks
