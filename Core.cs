@@ -480,7 +480,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalTrackable(ProtoCrewMember pcm) => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available));
+        public static bool IsKerbalTrackable(ProtoCrewMember pcm) => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001));
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
@@ -500,7 +500,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         {
-            if ((pcm == null) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) return null;
+            if ((pcm == null) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available)) return null;
             if (kerbalVesselsCache.ContainsKey(pcm.name)) return kerbalVesselsCache[pcm.name];
             foreach (Vessel v in FlightGlobals.Vessels)
                 foreach (ProtoCrewMember k in v.GetVesselCrew())
@@ -654,7 +654,7 @@ namespace KerbalHealth
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
-            if (!HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().KSCNotificationsEnabled && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)) return;
+            if (!HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>().KSCNotificationsEnabled && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001))) return;
             ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 

@@ -68,7 +68,7 @@ namespace KerbalHealth
             foreach (KerbalHealthStatus khs in Values)
             {
                 ProtoCrewMember pcm = khs.PCM;
-                if (!Core.IsKerbalTrackable(pcm) && !khs.HasCondition("Frozen"))
+                if (!Core.IsKerbalTrackable(pcm) && !khs.IsFrozen)
                 {
                     Core.Log(khs.Name + " is not trackable anymore. Marking for removal.");
                     toRemove.Add(khs.Name);

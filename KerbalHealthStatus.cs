@@ -86,6 +86,7 @@ namespace KerbalHealth
                     case ProtoCrewMember.RosterStatus.Available: return "KSC";
                     case ProtoCrewMember.RosterStatus.Dead: return "Dead";
                     case ProtoCrewMember.RosterStatus.Missing: return "Unknown";
+                    case (ProtoCrewMember.RosterStatus﻿)9001: return "On Vacation";
                 }
                 Vessel v = Core.KerbalVessel(PCM);
                 if (v == null) return "???";
@@ -156,7 +157,7 @@ namespace KerbalHealth
             if (Core.ConditionsEnabled) HP += condition.HP * Core.ConditionsEffect;
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
             if (condition.Incapacitated) MakeIncapacitated();
-            if (condition.Visible) Core.ShowMessage(Name + " has acquired " + condition.Title + " condition!\r\n" + condition.Description, PCM);
+            if (condition.Visible) Core.ShowMessage("<color=\"white\">" + Name + " has acquired " + condition.Title + "</color> condition!\r\n\n" + condition.Description, PCM);
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -180,7 +181,7 @@ namespace KerbalHealth
             if (Core.ConditionsEnabled && condition.RestoreHP) HP -= condition.HP * n * Core.ConditionsEffect;
             if ((n > 0) && condition.Incapacitated && IsCapable) MakeCapable();
             if ((n > 0) && condition.Visible)
-                Core.ShowMessage(Name + " has lost " + condition.Title + " condition!", PCM);
+                Core.ShowMessage("<color=\"white\">" + Name + "</color> has lost <color=\"white\">" + condition.Title + "</color> condition!", PCM);
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
@@ -362,7 +363,7 @@ namespace KerbalHealth
         {
             Quirk q = GetRandomQuirk(level);
             Quirks.Add(q);
-            Core.ShowMessage(Name + " acquired a new quirk: " + q, PCM);
+            Core.ShowMessage("<color=\"white\">" + Name + "</color> acquired a new quirk: " + q, PCM);
             return q;
         }
 
@@ -403,7 +404,7 @@ namespace KerbalHealth
                 else hp = value;
                 if (!IsWarned && Health < Core.LowHealthAlert)
                 {
-                    Core.ShowMessage(Name + "'s health is dangerously low!", true);
+                    Core.ShowMessage("<color=\"white\">" + Name + "</color>'s health is dangerously low!", PCM);
                     IsWarned = true;
                 }
                 else if (IsWarned && Health >= Core.LowHealthAlert) IsWarned = false;
@@ -825,7 +826,7 @@ namespace KerbalHealth
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
-                Core.ShowMessage(Name + " has died of poor health!", true);
+                Core.ShowMessage("<color=\"white\">" + Name + "</color> has died of poor health!", true);
             }
 
             if (HasCondition("Exhausted"))
@@ -833,13 +834,13 @@ namespace KerbalHealth
                 if (HP >= ExhaustionEndHP)
                 {
                     RemoveCondition("Exhausted");
-                    Core.ShowMessage(Name + " is no longer exhausted.", PCM);
+                    Core.ShowMessage("<color=\"white\">" + Name + "</color> is no longer exhausted.", PCM);
                 }
             }
             else if (HP < ExhaustionStartHP)
             {
                 AddCondition("Exhausted");
-                Core.ShowMessage(Name + " is exhausted!", PCM);
+                Core.ShowMessage("<color=\"white\">" + Name + "</color> is exhausted!", PCM);
             }
         }
         #endregion

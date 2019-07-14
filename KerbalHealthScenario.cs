@@ -578,7 +578,7 @@ namespace KerbalHealth
             if (!Core.Loaded) Core.LoadConfig();
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
-            version = new Version(Core.GetString(node, "version", "0.0"));
+            version = new Version(Core.GetString(node, "version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
             nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
             Core.KerbalHealthList.Clear();
             int i = 0;
