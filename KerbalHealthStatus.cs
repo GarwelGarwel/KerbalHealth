@@ -404,7 +404,7 @@ namespace KerbalHealth
                 else hp = value;
                 if (!IsWarned && Health < Core.LowHealthAlert)
                 {
-                    Core.ShowMessage(Name + "'s health is dangerously low!", true);
+                    Core.ShowMessage("<color=\"white\">" + Name + "</color>'s health is dangerously low!", PCM);
                     IsWarned = true;
                 }
                 else if (IsWarned && Health >= Core.LowHealthAlert) IsWarned = false;
