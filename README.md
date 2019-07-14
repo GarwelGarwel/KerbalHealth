@@ -26,11 +26,11 @@ The following factors may affect kerbal's health:
 - **Assigned** (kerbal is on a mission): -0.5 HP/day
 - **Confinement** (scaled effect): -3 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
 - **Loneliness** (only 1 kerbal in the vessel): -1 HP/day
-- **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -0.5 HP/day
+- **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
 - **EVA**: -10 HP/day
 - **Connected** (having a working CommNet connection to home): +0.5 HP/day
 - **Home** (on Kerbin below 18 km altitude): +2 HP/day
-- **KSC** (kerbal is recuperating at KSC, i.e. available): +5 HP/day
+- **KSC** (kerbal is recuperating at KSC, i.e. available): +4 HP/day
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
@@ -40,11 +40,11 @@ Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) 
 
 Certain parts (such as the Cupola) provide Recuperation bonuses. If a kerbal receives, say, a 1% recuperation bonus, he/she will recover 1% of their lacking health (i.e. of the difference between their current HP and the maximum HP) every day. This change works in parallel with the normal health factors above.
 
-*Example: A 5-star kerbal (maximum HP = 150) currently has 40 Health Points and is in a vessel that gives him 1% recuperation. The vessel has 10 units of living space and he has connection and he has a crewmate. Therefore he recovers (150 - 40) x 1% = 1.1 HP per day and loses also (0.5 + 3 x 2 / 10 + 0.5 - 0.5) = 1.15 HP per day. It means that the marginal change balances out the "normal" change and his health will stay around 40 HP (27%) until the situation changes.*
+*Example: A 5-star kerbal (maximum HP = 150) currently has 70 Health Points and is in a vessel that gives him 2% recuperation. The vessel has 10 units of living space and he has connection and he has a crewmate. Therefore he recovers (150 - 70) x 2% = 1.6 HP per day and loses also (0.5 + 3 x 2 / 10 + 1 - 0.5) = 1.6 HP per day. It means that the marginal change balances out the "normal" change and his health will stay around 80 HP (53%) until the situation changes.*
 
 As you see, this mechanics may allow some kerbals to stay relatively healthy indefinitely. It may look cheaty, but the point is that: (1) there should be a way to design long-term missions without spamming crew space, (2) it requires a lot of heavy parts and therefore still difficult, (3) the balanced health level is usually far from 100% and may fall lower if circumstances change (e.g., new crew arrives and fills the station), (4) these bonuses require a lot of EC, (5) radiation still keeps mounting (see below).
 
-Note that, since v1.1, Recuperation is not stacked and has crew cap. It means that one Cupola provides 1% Recup for 2 kerbals, 2 Cupolas give 1% for 4 kerbals (not 2%!), etc. If you have more kerbals than the crew cap, Recuperation will be split among them evenly (e.g. 4 kerbals with 1 Cupola will get 0.5% Recup).
+Recuperation is not stacked and has crew cap. It means that one Cupola provides 1% Recup for 2 kerbals, 2 Cupolas give 1% for 4 kerbals (not 2%!), etc. If you have more kerbals than the crew cap, Recuperation will be split among them evenly (e.g. 4 kerbals with 1 Cupola will get 0.5% Recup).
 
 Decay is the opposite to Recuperation: for every percentage point of Decay, your kerbal will lose 1% of their remaining health per day. Fortunately, it is very rare.
 
@@ -58,7 +58,7 @@ Being on EVA takes away all the protection your ship provides and dramatically i
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
 
-You can now cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
+It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
 
 ## Quirks
 
@@ -86,6 +86,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [B9 Aerospace](https://github.com/blowfishpro/B9-Aerospace)
 - [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [Bluedog Design Bureau](https://forum.kerbalspaceprogram.com/index.php?/topic/122020-131-bluedog-design-bureau-stockalike-saturn-apollo-and-more-v141-атлас-1jan2018)
+- [Crew R&R](https://forum.kerbalspaceprogram.com/index.php?/topic/159299-151-161-172-crew-rr-crew-rest-rotation/)
 - [Deadly Reentry Continued](https://forum.kerbalspaceprogram.com/index.php?/topic/50296-122-deadly-reentry-v760-june-9-2017-the-ariel-edition/)
 - [DeepFreeze Continued](http://forum.kerbalspaceprogram.com/index.php?/topic/112328-11-deepfreeze-continued)
 - [Deep Space Exploration Vehicles](https://forum.kerbalspaceprogram.com/index.php?/topic/122162-14x-deep-space-exploration-vessels-build-nasa-inspired-ships-in-ksp/)
@@ -93,6 +94,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Extraplanetary Launchpads](https://forum.kerbalspaceprogram.com/index.php?/topic/54284-*)
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
 - [Feline Utility Rovers](https://forum.kerbalspaceprogram.com/index.php?/topic/155344-13x14x-feline-utility-rovers-v128-10october-2018/)
+- [JNSQ](https://forum.kerbalspaceprogram.com/index.php?/topic/184880-17x-jnsq-07-17-june-2019/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
 - [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
@@ -122,13 +124,6 @@ If you would like to include special support for your (or your favorite) mod, le
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
 - Compatibility with Kerbalism hasn't been tested. This mod changes much of game's internal mechanics, so it can be incompatible.
-
-## Future Features
-
-- New mechanics: more various conditions, more quirks, medical supplies, quarantine, and whatnot...
-- More fine-tuned effect of health on kerbals' capabilities
-- Maybe a different microgravity system
-- API for collaboration with other mods
 
 ## Copyright and License
 
