@@ -53,6 +53,9 @@ namespace KerbalHealth
         [KSPField(isPersistant = true)]
         public bool starving = false;  // Determines if the module is disabled due to the lack of the resource
 
+        [KSPField(guiActive = true, guiActiveEditor = true)]
+        public float ecPerSec = 0;
+
         double lastUpdated;
 
         public HealthFactor MultiplyFactor
@@ -115,6 +118,7 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
             UpdateGUIName();
+            if (Core.IsInEditor && (resource == "ElectricCharge")) ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
             lastUpdated = Planetarium.GetUniversalTime();
         }
 
@@ -124,10 +128,13 @@ namespace KerbalHealth
             double time = Planetarium.GetUniversalTime();
             if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
-                double res = (resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount) * (time - lastUpdated), res2;
+                ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+                double res = ecPerSec * (time - lastUpdated), res2;
+                if (resource != "ElectricCharge") ecPerSec = 0;
                 starving = (res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res;
                 if (starving) Core.Log(Title + " Module is starving of " + resource + " (" + res + " needed, " + res2 + " provided).");
             }
+            else ecPerSec = 0;
             lastUpdated = time;
         }
 
