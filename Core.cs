@@ -500,7 +500,15 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         {
-            if ((pcm == null) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available)) return null;
+            if (pcm == null) return null;
+            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
+            {
+                Vessel v = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
+                Log(pcm.name + " found in FrozenKerbals.");
+                kerbalVesselsCache.Add(pcm.name, v);
+                return v;
+            }
+            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return null;
             if (kerbalVesselsCache.ContainsKey(pcm.name)) return kerbalVesselsCache[pcm.name];
             foreach (Vessel v in FlightGlobals.Vessels)
                 foreach (ProtoCrewMember k in v.GetVesselCrew())
@@ -509,13 +517,6 @@ namespace KerbalHealth
                         kerbalVesselsCache.Add(pcm.name, v);
                         return v;
                     }
-            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
-            {
-                Vessel v = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
-                Log(pcm.name + " found in FrozenKerbals.");
-                kerbalVesselsCache.Add(pcm.name, v);
-                return v;
-            }
             Log(pcm.name + " is " + pcm.rosterStatus + " and was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Important);
             return null;
         }
