@@ -40,7 +40,7 @@ Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) 
 
 Certain parts (such as the Cupola) provide Recuperation bonuses. If a kerbal receives, say, a 1% recuperation bonus, he/she will recover 1% of their lacking health (i.e. of the difference between their current HP and the maximum HP) every day. This change works in parallel with the normal health factors above.
 
-*Example: A 5-star kerbal (maximum HP = 150) currently has 70 Health Points and is in a vessel that gives him 2% recuperation. The vessel has 10 units of living space and he has connection and he has a crewmate. Therefore he recovers (150 - 70) x 2% = 1.6 HP per day and loses also (0.5 + 3 x 2 / 10 + 1 - 0.5) = 1.6 HP per day. It means that the marginal change balances out the "normal" change and his health will stay around 80 HP (53%) until the situation changes.*
+*Example: A 5-star kerbal (maximum HP = 150) currently has 70 Health Points and is in a vessel that gives him 2% recuperation. The vessel has 10 units of living space and he has connection and he has a crewmate. Therefore he recovers (150 - 70) x 2% = 1.6 HP per day and loses also (0.5 + 3 x 2 / 10 + 1 - 0.5) = 1.6 HP per day. It means that the marginal change balances out the "normal" change and his health will stay around 70 HP (47%) until the situation changes.*
 
 As you see, this mechanics may allow some kerbals to stay relatively healthy indefinitely. It may look cheaty, but the point is that: (1) there should be a way to design long-term missions without spamming crew space, (2) it requires a lot of heavy parts and therefore still difficult, (3) the balanced health level is usually far from 100% and may fall lower if circumstances change (e.g., new crew arrives and fills the station), (4) these bonuses require a lot of EC, (5) radiation still keeps mounting (see below).
 
@@ -103,6 +103,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Near Future Technologies](http://forum.kerbalspaceprogram.com/index.php?/topic/155465-122-near-future-technologies)
 - [Outer Planets Mod](https://forum.kerbalspaceprogram.com/index.php?/topic/165854-ksp-142-outer-planets-mod221-15-april-2018/)
 - [RLA Reborn](https://forum.kerbalspaceprogram.com/index.php?/topic/175512-14-rla-reborn/)
+- [Sin Phi Heavy Industries](https://forum.kerbalspaceprogram.com/index.php?/topic/162654-130-sin-phi-heavy-industries-centrifuge-habitat-halberd/)
 - [Spacetux Recycled Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-131-spacetux-industries-recycled-parts/) (Atomic Age, FTmN, FTmN-New, RSCapsuledyne)
 - [SpaceY Heavy Lifters](https://forum.kerbalspaceprogram.com/index.php?/topic/90545-12213-spacey-heavy-lifter-parts-pack-v116-2017-01-30/)
 - [SSTU](https://github.com/shadowmage45/SSTULabs)
