@@ -389,6 +389,31 @@ namespace KerbalHealth
         }
 
         #endregion
+        #region TRAINING
+
+        /// <summary>
+        /// List of vesselIds the kerbal is trained for and training progress (0 to 1)
+        /// </summary>
+        public Dictionary<uint, double> TrainedVessels { get; set; } = new Dictionary<uint, double>();
+
+        /// <summary>
+        /// Id of the vessel the kerbal is currently training for
+        /// </summary>
+        public uint TrainingFor { get; set; } = 0;
+
+        public bool CanTrain => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 1);
+
+        public bool StartTraining(uint vesselId)
+        {
+            if (!CanTrain) return false;
+            TrainingFor = vesselId;
+            if (!TrainedVessels.ContainsKey(vesselId)) TrainedVessels[vesselId] = 0;
+            AddCondition("Training");
+            return true;
+        }
+
+        #endregion
+
         #region HP
         double hp;
         /// <summary>
@@ -829,6 +854,10 @@ namespace KerbalHealth
                 Core.ShowMessage("<color=\"white\">" + Name + "</color> has died of poor health!", true);
             }
 
+            if (HasCondition("Training"))
+                if (CanTrain && TrainedVessels[TrainingFor] < Core.MaxTraining) TrainedVessels[TrainingFor] = Math.Min(TrainedVessels[TrainingFor] + 0.1 / KSPUtil.dateTimeFormatter.Day * interval, Core.MaxTraining);
+                else RemoveCondition("Training");
+
             if (HasCondition("Exhausted"))
             {
                 if (HP >= ExhaustionEndHP)
@@ -865,6 +894,15 @@ namespace KerbalHealth
                 if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
                 if (LastDecay != 0) n.AddValue("lastDecay", LastDecay);
                 if (IsOnEVA) n.AddValue("onEva", true);
+                if (TrainingFor != 0) n.AddValue("trainingFor", TrainingFor);
+                foreach (KeyValuePair<uint, double> t in TrainedVessels)
+                    if (t.Key != 0)
+                    {
+                        ConfigNode n2 = new ConfigNode("TRAINED_VESSEL");
+                        n2.AddValue("vesselId", t.Key);
+                        n2.AddValue("progress", t.Value);
+                        n.AddNode(n2);
+                    }
                 return n;
             }
             set
@@ -888,6 +926,12 @@ namespace KerbalHealth
                 LastRecuperation = Core.GetDouble(value, "lastRecuperation");
                 LastDecay = Core.GetDouble(value, "lastDecay");
                 IsOnEVA = Core.GetBool(value, "onEva");
+                TrainingFor = Core.GetUInt(value, "trainingFor");
+                foreach (ConfigNode n in value.GetNodes("TRAINED_VESSEL"))
+                {
+                    uint v = Core.GetUInt(n, "vesselId");
+                    if (v != 0) TrainedVessels[v] = Core.GetDouble(n, "progress", Core.MaxTraining);
+                }
             }
         }
 

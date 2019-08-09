@@ -521,6 +521,20 @@ namespace KerbalHealth
             return null;
         }
 
+        public static double MaxTraining
+        {
+            get
+            {
+                switch ((int)ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex))
+                {
+                    case 1: return 0.25;
+                    case 2: return 0.5;
+                    case 3: return 0.75;
+                }
+                return 0.5;
+            }
+        }
+
         public static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
         public static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
@@ -539,6 +553,14 @@ namespace KerbalHealth
         {
             int res;
             try { res = Int32.Parse(n.GetValue(key)); }
+            catch (Exception) { res = defaultValue; }
+            return res;
+        }
+
+        public static uint GetUInt(ConfigNode n, string key, uint defaultValue = 0)
+        {
+            uint res;
+            try { res = UInt32.Parse(n.GetValue(key)); }
             catch (Exception) { res = defaultValue; }
             return res;
         }

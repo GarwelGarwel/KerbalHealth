@@ -92,7 +92,8 @@ namespace KerbalHealth
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel("Factors", true),
-                        new DialogGUIButton("Reset", OnResetButtonSelected, false)),
+                        new DialogGUIButton("Reset", OnResetButtonSelected, false),
+                        new DialogGUIButton("Train", OnTrainButtonSelected, false)),
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(140, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
                 false,
                 HighLogic.UISkin,
@@ -108,6 +109,25 @@ namespace KerbalHealth
                 f.ResetEnabledInEditor();
             healthModulesEnabled = true;
             Invalidate();
+        }
+
+        public void OnTrainButtonSelected()
+        {
+            KerbalHealthStatus khs;
+            Core.Log("OnTrainButtonSelected()");
+            uint shipId = ShipConstruction.LoadShip().persistentId;
+            Core.Log("Ship id = " + shipId);
+            foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
+            {
+                if (pcm == null) continue;
+                khs = Core.KerbalHealthList.Find(pcm);
+                if (khs == null) continue;
+                if (khs.StartTraining(shipId))
+                {
+                    Core.Log(pcm.name + " started training.", Core.LogLevel.Important);
+                }
+                else Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", Core.LogLevel.Important);
+            }
         }
 
         string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).VesselModifiers.Shielding.ToString("F1") : "N/A";

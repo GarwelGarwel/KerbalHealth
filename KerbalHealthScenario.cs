@@ -335,6 +335,7 @@ namespace KerbalHealth
         public void DisplayData()
         {
             Core.Log("KerbalHealthScenario.DisplayData", Core.LogLevel.Important);
+            if (HighLogic.LoadedSceneIsFlight) Core.Log("Current vessel id = " + FlightGlobals.ActiveVessel.persistentId);
             UpdateKerbals(true);
             if (selectedKHS == null)
             {
