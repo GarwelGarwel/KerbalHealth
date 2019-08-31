@@ -13,8 +13,8 @@
             uint vesselId = Core.IsInEditor ? ShipConstruction.LoadShip().persistentId : Core.KerbalVessel(pcm).persistentId;
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             double trainingLevel = khs.TrainedVessels.ContainsKey(vesselId) ? khs.TrainedVessels[vesselId] : 0;
-            Core.Log("VesselId for Assigned Factor: " + vesselId + "; training level = " + trainingLevel);
-            return BaseChangePerDay * trainingLevel;
+            Core.Log("VesselId for Assigned Factor: " + vesselId + "; training level = " + trainingLevel.ToString("P1"));
+            return BaseChangePerDay * (1 - trainingLevel);
         }
 
         public override double ChangePerDay(ProtoCrewMember pcm)
