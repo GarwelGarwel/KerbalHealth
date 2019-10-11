@@ -11,7 +11,7 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         bool dirty = false;
-        Rect reportPosition = new Rect(0.5f, 0.5f, 300, 50);
+        Rect reportPosition = new Rect(0.5f, 0.5f, 400, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl;
@@ -117,6 +117,8 @@ namespace KerbalHealth
             Core.Log("OnTrainButtonSelected()");
             uint shipId = ShipConstruction.LoadShip().persistentId;
             Core.Log("Ship id = " + shipId);
+            List<string> s = new List<string>();
+            List<string> f = new List<string>();
             foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
             {
                 if (pcm == null) continue;
@@ -125,9 +127,38 @@ namespace KerbalHealth
                 if (khs.StartTraining(shipId))
                 {
                     Core.Log(pcm.name + " started training.", Core.LogLevel.Important);
+                    s.Add(pcm.name);
+                    //Core.ShowMessage(pcm.name + " started training for vessel #" + shipId + ".", false);
                 }
-                else Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", Core.LogLevel.Important);
+                else
+                {
+                    Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", Core.LogLevel.Important);
+                    f.Add(pcm.name);
+                    //Core.ShowMessage(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", false);
+                }
             }
+            string msg = "";
+            if (s.Count > 0)
+                if (s.Count == 1) msg = s[0] + " started training.";
+                else
+                {
+                    msg = "The following kerbals started training:";
+                    foreach (string k in s)
+                        msg += "\r\n- " + k;
+                }
+            if (f.Count > 0)
+            {
+                if (msg != "") msg += "\r\n\n";
+                if (f.Count == 1) msg = "<color=\"red\">" + f[0] + " can't train.</color>";
+                else
+                {
+                    msg = "<color=\"red\">The following kerbals can't train:";
+                    foreach (string k in f)
+                        msg += "\r\n- " + k;
+                    msg += "</color>";
+                }
+            }
+            Core.ShowMessage(msg, false);
         }
 
         string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).VesselModifiers.Shielding.ToString("F1") : "N/A";
