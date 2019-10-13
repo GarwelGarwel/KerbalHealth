@@ -570,7 +570,6 @@ namespace KerbalHealth
             if (!Core.IsInEditor) UpdateKerbals(true);
             node.AddValue("version", version.ToString());
             node.AddValue("nextEventTime", nextEventTime);
-            node.AddValue("maxPartId", ModuleKerbalHealth.maxId);
             int i = 0;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
@@ -588,7 +587,6 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             version = new Version(Core.GetString(node, "version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
             nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
-            ModuleKerbalHealth.maxId = Core.GetInt(node, "maxPartId");
             Core.KerbalHealthList.Clear();
             int i = 0;
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))

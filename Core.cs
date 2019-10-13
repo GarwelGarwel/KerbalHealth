@@ -127,9 +127,6 @@ namespace KerbalHealth
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
 
-            // Initializing decontamination XP penalties - DOESN'T WORK
-            //KerbalRoster.AddExperienceType("Decontamination", "Decontamination", -2, -2);
-
             Loaded = true;
         }
 
@@ -521,18 +518,42 @@ namespace KerbalHealth
             return null;
         }
 
+        /// <summary>
+        /// Max amount of stress reduced by training depending on Astronaut Complex's level
+        /// </summary>
         public static double MaxTraining
         {
             get
             {
                 switch ((int)ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex))
                 {
-                    case 1: return 0.25;
+                    case 1: return 0.3;
                     case 2: return 0.5;
-                    case 3: return 0.75;
+                    case 3: return 0.6;
                 }
                 return 0.5;
             }
+        }
+
+        /// <summary>
+        /// Returns list of IDs of parts that are used in training and stress calculations
+        /// </summary>
+        /// <param name="allParts"></param>
+        /// <returns></returns>
+        public static List<Part> GetTrainingCapableParts(List<Part> allParts)
+        {
+            List<Part> res = new List<Part>();
+            foreach (Part p in allParts)
+            {
+                List<ModuleKerbalHealth> modules = p.FindModulesImplementing<ModuleKerbalHealth>();
+                foreach (ModuleKerbalHealth mkh in modules)
+                    if (mkh.trainingCapable)
+                    {
+                        res.Add(p);
+                        break;
+                    }
+            }
+            return res;
         }
 
         public static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;

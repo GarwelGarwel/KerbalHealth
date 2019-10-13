@@ -392,28 +392,63 @@ namespace KerbalHealth
         #region TRAINING
 
         /// <summary>
-        /// List of vesselIds the kerbal is trained for and training progress (0 to 1)
+        /// List of partIds the kerbal is trained for and training progress (0 to 1)
         /// </summary>
-        public Dictionary<uint, double> TrainedVessels { get; set; } = new Dictionary<uint, double>();
+        public Dictionary<uint, double> TrainedParts { get; set; } = new Dictionary<uint, double>();
 
         /// <summary>
-        /// Id of the vessel the kerbal is currently training for
+        /// Ids of parts the kerbal is currently training for
         /// </summary>
-        public uint TrainingFor { get; set; } = 0;
+        public List<uint> TrainingFor { get; set; } = new List<uint>();
+        //public uint TrainingFor { get; set; } = 0;
 
-        public bool CanTrain => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 1);
+        public bool CanTrain => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 0.9);
 
-        public bool StartTraining(uint vesselId)
+        public bool StartTraining(List<Part> parts)
         {
             if (!CanTrain) return false;
-            TrainingFor = vesselId;
-            if (!TrainedVessels.ContainsKey(vesselId)) TrainedVessels[vesselId] = 0;
+            TrainingFor.Clear();
+            foreach (Part p in Core.GetTrainingCapableParts(parts))
+            {
+                TrainingFor.Add(p.persistentId);
+                if (!TrainedParts.ContainsKey(p.persistentId)) TrainedParts.Add(p.persistentId, 0);
+                Core.Log("Now training for " + p.name + " with id " + p.persistentId);
+            }
+            Core.Log("Training " + name + " for " + TrainingFor.Count + " parts.");
             AddCondition("Training");
             return true;
         }
 
-        #endregion
+        void Train(double interval)
+        {
+            Core.Log("Train(" + interval.ToString("N2") + ") for " + name);
+            bool trainingComplete = true;
+            Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
+            double t;
+            foreach (uint partId in TrainingFor)
+            {
+                try { t = TrainedParts[partId]; }
+                catch (KeyNotFoundException)
+                {
+                    TrainedParts.Add(partId, 0);
+                    t = 0;
+                }
+                Core.Log("Training for part " + partId + ". Previous training level was " + t.ToString("P2"));
+                t = Math.Min(t + 0.1 / 21600 * interval, Core.MaxTraining);  // 0.1 is a placeholder for daily training progress
+                if (t < Core.MaxTraining) trainingComplete = false;
+                Core.Log("New training level is " + t.ToString("P2"));
+                TrainedParts[partId] = t;
+            }
+            if (trainingComplete)
+            {
+                Core.Log("Training of " + name + " is complete.");
+                Core.ShowMessage("Training of " + name + " is complete!", PCM);
+                RemoveCondition("Training");
+                TrainingFor.Clear();
+            }
+        }
 
+        #endregion
         #region HP
         double hp;
         /// <summary>
@@ -854,9 +889,13 @@ namespace KerbalHealth
                 Core.ShowMessage("<color=\"white\">" + Name + "</color> has died of poor health!", true);
             }
 
-            if (HasCondition("Training"))
-                if (CanTrain && TrainedVessels[TrainingFor] < Core.MaxTraining) TrainedVessels[TrainingFor] = Math.Min(TrainedVessels[TrainingFor] + 0.1 / KSPUtil.dateTimeFormatter.Day * interval, Core.MaxTraining);
-                else RemoveCondition("Training");
+            if (HasCondition("Training") && !CanTrain)
+            {
+                Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
+                RemoveCondition("Training");
+            }
+            if ((((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition("Training"))))
+                Train(interval);
 
             if (HasCondition("Exhausted"))
             {
@@ -878,6 +917,7 @@ namespace KerbalHealth
         {
             get
             {
+                Core.Log("KerbalHealthStatus.ConfigNode.get for " + name);
                 ConfigNode n = new ConfigNode("KerbalHealthStatus");
                 n.AddValue("name", Name);
                 n.AddValue("health", HP);
@@ -894,19 +934,22 @@ namespace KerbalHealth
                 if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
                 if (LastDecay != 0) n.AddValue("lastDecay", LastDecay);
                 if (IsOnEVA) n.AddValue("onEva", true);
-                if (TrainingFor != 0) n.AddValue("trainingFor", TrainingFor);
-                foreach (KeyValuePair<uint, double> t in TrainedVessels)
+                foreach (KeyValuePair<uint, double> t in TrainedParts)
                     if (t.Key != 0)
                     {
-                        ConfigNode n2 = new ConfigNode("TRAINED_VESSEL");
+                        ConfigNode n2 = new ConfigNode("TRAINED_PART");
                         n2.AddValue("vesselId", t.Key);
                         n2.AddValue("progress", t.Value);
                         n.AddNode(n2);
                     }
+                Core.Log("Training " + name + " for " + TrainingFor.Count + " parts.");
+                foreach (uint id in TrainingFor)
+                    n.AddValue("trainingFor", id);
                 return n;
             }
             set
             {
+                Core.Log("KerbalHealthStatus.ConfigNode.set for " + name);
                 Name = value.GetValue("name");
                 HP = Core.GetDouble(value, "health", MaxHP);
                 MaxHPModifier = Core.GetDouble(value, "maxHPModifier");
@@ -926,11 +969,17 @@ namespace KerbalHealth
                 LastRecuperation = Core.GetDouble(value, "lastRecuperation");
                 LastDecay = Core.GetDouble(value, "lastDecay");
                 IsOnEVA = Core.GetBool(value, "onEva");
-                TrainingFor = Core.GetUInt(value, "trainingFor");
-                foreach (ConfigNode n in value.GetNodes("TRAINED_VESSEL"))
+                foreach (ConfigNode n in value.GetNodes("TRAINED_PART"))
                 {
-                    uint v = Core.GetUInt(n, "vesselId");
-                    if (v != 0) TrainedVessels[v] = Core.GetDouble(n, "progress", Core.MaxTraining);
+                    uint id = Core.GetUInt(n, "vesselId");
+                    if (id != 0) TrainedParts[id] = Core.GetDouble(n, "progress", Core.MaxTraining);
+                }
+                Core.Log("Training " + name + " for " + TrainingFor.Count + " parts.");
+                foreach (string s in value.GetValues("trainingFor"))
+                {
+                    try { TrainingFor.Add(UInt32.Parse(s)); }
+                    catch (Exception) { }
+
                 }
             }
         }

@@ -47,6 +47,9 @@ namespace KerbalHealth
         [KSPField]
         public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
 
+        [KSPField]
+        public bool trainingCapable = false;  // Whether this part is used in training and stress calculations
+
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
@@ -111,6 +114,7 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
+            trainingCapable = trainingCapable || part.CrewCapacity > 0;
             if (IsAlwaysActive)
             {
                 isActive = true;
@@ -183,6 +187,7 @@ namespace KerbalHealth
             if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F2") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
+            if (trainingCapable) res += "\n<color=\"yellow\">Used in training</color>";
             if (res == "") return "";
             return "Module type: " + Title + res;
         }
