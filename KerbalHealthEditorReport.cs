@@ -115,8 +115,6 @@ namespace KerbalHealth
         {
             KerbalHealthStatus khs;
             Core.Log("OnTrainButtonSelected()");
-            uint shipId = ShipConstruction.LoadShip().persistentId;
-            Core.Log("Ship id = " + shipId);
             List<string> s = new List<string>();
             List<string> f = new List<string>();
             foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
@@ -124,17 +122,15 @@ namespace KerbalHealth
                 if (pcm == null) continue;
                 khs = Core.KerbalHealthList.Find(pcm);
                 if (khs == null) continue;
-                if (khs.StartTraining(shipId))
+                if (khs.StartTraining(EditorLogic.SortedShipList))
                 {
                     Core.Log(pcm.name + " started training.", Core.LogLevel.Important);
                     s.Add(pcm.name);
-                    //Core.ShowMessage(pcm.name + " started training for vessel #" + shipId + ".", false);
                 }
                 else
                 {
                     Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", Core.LogLevel.Important);
                     f.Add(pcm.name);
-                    //Core.ShowMessage(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", false);
                 }
             }
             string msg = "";
