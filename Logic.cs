@@ -40,7 +40,6 @@ namespace KerbalHealth
 
         public bool Test(ProtoCrewMember pcm)
         {
-            Core.Log("Logic.Test('" + pcm.name + "')");
             bool res = true;
             if (pcm == null)
             {
@@ -51,7 +50,6 @@ namespace KerbalHealth
             if (Situation != null)
                 if (v != null)
                 {
-                    Core.Log("Checking 'situation = " + Situation + "'. " + v.vesselName + " is " + v.situation);
                     switch (Situation.ToLower())
                     {
                         case "prelaunch": Op(ref res, v.situation == Vessel.Situations.PRELAUNCH); break;
@@ -69,29 +67,24 @@ namespace KerbalHealth
             if (InSOI != null)
                 if (v != null)
                 {
-                    Core.Log("Checking 'inSOI = " + InSOI + "' rule. " + pcm.name + " is in " + v.mainBody?.name + "'s SOI.");
                     Op(ref res, InSOI.Equals(v.mainBody.name, StringComparison.CurrentCultureIgnoreCase));
                 }
                 else
                 {
-                    Core.Log("Checking 'inSOI = " + InSOI + "' rule. " + pcm.name + " is not in a vessel => this logic is false.");
                     Op(ref res, false);
                 }
             if (KerbalStatus != null)
             {
-                Core.Log("Checking 'kerbalStatus = " + KerbalStatus + "'. " + pcm.name + " is " + pcm.rosterStatus);
                 Op(ref res, KerbalStatus.Equals(pcm.rosterStatus.ToString(), StringComparison.CurrentCultureIgnoreCase));
             }
             if (!Double.IsNaN(MissionTime))
             {
-                Core.Log("Checking 'missionTime = " + MissionTime + "'. MET is " + v?.missionTime + ".");
                 if (v != null) Op(ref res, v.missionTime >= MissionTime);
                 else Op(ref res, false);
             }
             if (Gender != null)
             {
                 ProtoCrewMember.Gender g = pcm.gender;
-                Core.Log("Checking condition 'gender = " + Gender + "'. " + pcm.name + " is " + g);
                 switch (Gender.ToLower())
                 {
                     case "female": Op(ref res, g == ProtoCrewMember.Gender.Female); break;
@@ -111,7 +104,6 @@ namespace KerbalHealth
                         Core.Log("Unrecognized value for gender in 'genderPresent = " + GenderPresent + "'. Assuming 'other'.");
                         goto case "other";
                 }
-                Core.Log("Checking condition 'genderPresent = " + GenderPresent + "'. Looking for " + g + " crewmates.");
                 bool found = false;
                 if (v != null)
                     foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
@@ -120,12 +112,10 @@ namespace KerbalHealth
                             found = true;
                             break;
                         }
-                Core.Log(g + " crewmates " + (found ? "" : "not ") + "found.");
                 Op(ref res, found);
             }
             if (TraitPresent != null)
             {
-                Core.Log("Checking condition 'traitPresent = " + TraitPresent + "'.");
                 bool found = false;
                 if (v != null)
                     foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
@@ -134,12 +124,10 @@ namespace KerbalHealth
                             found = true;
                             break;
                         }
-                Core.Log(TraitPresent + " crewmates " + (found ? "" : "not ") + "found.");
                 Op(ref res, found);
             }
             if (ConditionPresent != null)
             {
-                Core.Log("Checking condition 'conditionPresent = " + ConditionPresent + "'.");
                 bool found = false;
                 if (v != null)
                     foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
@@ -148,7 +136,6 @@ namespace KerbalHealth
                             found = true;
                             break;
                         }
-                Core.Log("Crewmates with " + ConditionPresent + (found ? "" : " not") + " found.");
                 Op(ref res, found);
             }
             foreach (Logic l in Operands)
