@@ -2,13 +2,13 @@
 
 namespace KerbalHealth
 {
-    public class AssignedFactor : HealthFactor
+    public class StressFactor : HealthFactor
     {
-        public override string Name => "Assigned";
+        public override string Name => "Stress";
 
-        public override string Title => "Assigned";
+        public override string Title => "Stress";
 
-        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().AssignedFactor;
+        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor;
 
         double ChangePerDayWithTraining(ProtoCrewMember pcm)
         {

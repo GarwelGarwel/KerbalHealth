@@ -14,7 +14,7 @@
             switch (preset)
             {
                 case GameParameters.Preset.Easy:
-                    AssignedFactor = -0.5f;
+                    StressFactor = -0.5f;
                     LonelinessFactor = 0;
                     MicrogravityFactor = 0;
                     EVAFactor = 0;
@@ -23,7 +23,7 @@
                     KSCFactor = 10;
                     break;
                 case GameParameters.Preset.Normal:
-                    AssignedFactor = -0.5f;
+                    StressFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -1;
                     EVAFactor = -5;
@@ -32,7 +32,7 @@
                     KSCFactor = 4;
                     break;
                 case GameParameters.Preset.Moderate:
-                    AssignedFactor = -0.5f;
+                    StressFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
@@ -41,7 +41,7 @@
                     KSCFactor = 4;
                     break;
                 case GameParameters.Preset.Hard:
-                    AssignedFactor = -0.5f;
+                    StressFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
@@ -52,8 +52,8 @@
             }
         }
 
-        [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
-        public float AssignedFactor = -0.5f;
+        [GameParameters.CustomFloatParameterUI("Stress", toolTip = "HP change per day when the kerbal is assigned; can be lowered through training and/or upgrading Astronaut Complex", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
+        public float StressFactor = -1;
 
         [GameParameters.CustomFloatParameterUI("Confinement", toolTip = "HP change per day in a vessel with 1 living space per kerbal", minValue = -10, maxValue = 0, stepCount = 41)]
         public float ConfinementBaseFactor = -3;
@@ -78,7 +78,5 @@
 
         [GameParameters.CustomParameterUI("Training Enabled", toolTip = "Turn on/off the need to train kerbals to reduce stress")]
         public bool TrainingEnabled = true;
-
-
     }
 }
