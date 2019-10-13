@@ -540,16 +540,16 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="allParts"></param>
         /// <returns></returns>
-        public static List<Part> GetTrainingCapableParts(List<Part> allParts)
+        public static List<ModuleKerbalHealth> GetTrainingCapableParts(List<Part> allParts)
         {
-            List<Part> res = new List<Part>();
+            List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
             foreach (Part p in allParts)
             {
                 List<ModuleKerbalHealth> modules = p.FindModulesImplementing<ModuleKerbalHealth>();
                 foreach (ModuleKerbalHealth mkh in modules)
                     if (mkh.trainingCapable)
                     {
-                        res.Add(p);
+                        res.Add(mkh);
                         break;
                     }
             }

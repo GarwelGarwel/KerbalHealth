@@ -404,24 +404,21 @@ namespace KerbalHealth
 
         public bool CanTrain => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 0.9);
 
-        public bool StartKSCTraining(List<Part> parts)
+        public void StartTraining(List<Part> parts)
         {
-            if (!CanTrain) return false;
             TrainingFor.Clear();
-            foreach (Part p in Core.GetTrainingCapableParts(parts))
+            foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
             {
-                TrainingFor.Add(p.persistentId);
-                if (!TrainedParts.ContainsKey(p.persistentId)) TrainedParts.Add(p.persistentId, 0);
-                Core.Log("Now training for " + p.name + " with id " + p.persistentId);
+                TrainingFor.Add(mkh.id);
+                if (!TrainedParts.ContainsKey(mkh.id)) TrainedParts.Add(mkh.id, 0);
+                Core.Log("Now training for " + mkh.part.name + " with id " + mkh.id);
             }
             Core.Log("Training " + name + " for " + TrainingFor.Count + " parts.");
-            AddCondition("Training");
-            return true;
         }
 
         void Train(double interval)
         {
-            Core.Log("Train(" + interval.ToString("N2") + ") for " + name);
+            Core.Log("Train(" + interval + ") for " + name);
             bool trainingComplete = true;
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             double t;
@@ -889,12 +886,19 @@ namespace KerbalHealth
                 Core.ShowMessage("<color=\"white\">" + Name + "</color> has died of poor health!", true);
             }
 
+            // If KSC training no longer possible, stop it
             if (HasCondition("Training") && !CanTrain)
             {
                 Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
                 RemoveCondition("Training");
                 TrainingFor.Clear();
             }
+
+            // Stop training after the kerbal has been recovered
+            if ((TrainingFor.Count > 0) && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) && !HasCondition("Training"))
+                TrainingFor.Clear();
+
+            // Train
             if ((((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition("Training"))))
                 Train(interval);
 

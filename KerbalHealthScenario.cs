@@ -19,7 +19,7 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
-        bool dirty = false, crewChanged = false;
+        bool dirty = false, crewChanged = false, vesselChanged = false;
         const int colNumMain = 8, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
         const int colSpacing = 10;
@@ -42,6 +42,10 @@ namespace KerbalHealth
             }
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
+            vesselChanged = true;
+
+            lastUpdated = Planetarium.GetUniversalTime();
+            nextEventTime = lastUpdated + GetNextEventInterval();
 
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             GameEvents.onCrewKilled.Add(OnCrewKilled);
@@ -51,6 +55,7 @@ namespace KerbalHealth
             GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
             GameEvents.onKerbalNameChanged.Add(OnKerbalNameChanged);
             GameEvents.OnProgressComplete.Add(OnProgressComplete);
+            GameEvents.onVesselWasModified.Add(onVesselWasModified);
 
             if (!DFWrapper.InstanceExists)
             {
@@ -86,8 +91,6 @@ namespace KerbalHealth
                 icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
                 appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             }
-            lastUpdated = Planetarium.GetUniversalTime();
-            nextEventTime = lastUpdated + GetNextEventInterval();
 
             // Automatically updating settings from older versions
             Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
@@ -153,6 +156,7 @@ namespace KerbalHealth
             if (!Core.ModEnabled) return;
             Core.Log(action.to.protoModuleCrew[0].name + " went on EVA from " + action.from.name + ".", Core.LogLevel.Important);
             Core.KerbalHealthList.Find(action.to.protoModuleCrew[0]).IsOnEVA = true;
+            vesselChanged = true;
             UpdateKerbals(true);
         }
 
@@ -236,6 +240,19 @@ namespace KerbalHealth
             }
         }
 
+        public void TrainVessel(Vessel v)
+        {
+            if (v == null) return;
+            foreach (ProtoCrewMember pcm in v.GetVesselCrew())
+                Core.KerbalHealthList.Find(pcm).StartTraining(v.Parts);
+        }
+
+        public void onVesselWasModified(Vessel v)
+        {
+            Core.Log("onVesselWasModified('" + v.name + "')");
+            vesselChanged = true;
+        }
+
         /// <summary>
         /// Next event update is scheduled after a random period of time, between 0 and 2 days
         /// </summary>
@@ -255,6 +272,12 @@ namespace KerbalHealth
             {
                 Core.Log("UT is " + time + ". Updating for " + timePassed + " seconds.");
                 Core.ClearCache();
+                if (HighLogic.LoadedSceneIsFlight && vesselChanged)
+                {
+                    Core.Log("Vessel has changed or just loaded. Ordering kerbals to train for it in-flight.");
+                    foreach (Vessel v in FlightGlobals.VesselsLoaded) TrainVessel(v);
+                    vesselChanged = false;
+                }
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
                 if (Core.ConditionsEnabled)

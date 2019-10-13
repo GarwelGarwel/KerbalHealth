@@ -8,6 +8,9 @@ namespace KerbalHealth
         [KSPField]
         public string title = "";  // Module title displayed in right-click menu (empty string for auto)
 
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+        public uint id = 0;
+
         [KSPField]
         public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
 
@@ -115,6 +118,8 @@ namespace KerbalHealth
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
             trainingCapable = trainingCapable || part.CrewCapacity > 0;
+            if (trainingCapable && (id == 0))
+                id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;
