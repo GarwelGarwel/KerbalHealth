@@ -404,7 +404,7 @@ namespace KerbalHealth
 
         public bool CanTrain => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 0.9);
 
-        public bool StartTraining(List<Part> parts)
+        public bool StartKSCTraining(List<Part> parts)
         {
             if (!CanTrain) return false;
             TrainingFor.Clear();
@@ -893,6 +893,7 @@ namespace KerbalHealth
             {
                 Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
                 RemoveCondition("Training");
+                TrainingFor.Clear();
             }
             if ((((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition("Training"))))
                 Train(interval);

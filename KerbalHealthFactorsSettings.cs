@@ -75,5 +75,10 @@
 
         [GameParameters.CustomFloatParameterUI("At KSC", toolTip = "HP change per day when the kerbal is at KSC (available)", minValue = 0, maxValue = 20, stepCount = 41)]
         public float KSCFactor = 5;
+
+        [GameParameters.CustomParameterUI("Training Enabled", toolTip = "Turn on/off the need to train kerbals to reduce stress")]
+        public bool TrainingEnabled = true;
+
+
     }
 }
