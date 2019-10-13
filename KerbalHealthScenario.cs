@@ -9,7 +9,7 @@ namespace KerbalHealth
     /// <summary>
     /// Main class for processing kerbals' health
     /// </summary>
-    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT, GameScenes.EDITOR)]
     public class KerbalHealthScenario : ScenarioModule
     {
         static double lastUpdated;  // UT at last health update
@@ -35,6 +35,11 @@ namespace KerbalHealth
         {
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.Start", Core.LogLevel.Important);
+            if (Core.IsInEditor)
+            {
+                Core.Log("Skipping KerbalHealthScenario initialization in Editor.", Core.LogLevel.Important);
+                return;
+            }
             Core.Log(Core.Factors.Count + " factors initialized.");
             Core.KerbalHealthList.RegisterKerbals();
 
@@ -116,6 +121,7 @@ namespace KerbalHealth
         public void OnDisable()
         {
             Core.Log("KerbalHealthScenario.OnDisable", Core.LogLevel.Important);
+            if (Core.IsInEditor) return;
             UndisplayData();
 
             GameEvents.onCrewOnEva.Remove(OnKerbalEva);
@@ -290,7 +296,7 @@ namespace KerbalHealth
         }
 
         public void FixedUpdate()
-        { if (Core.ModEnabled) UpdateKerbals(false); }
+        { if (Core.ModEnabled && !Core.IsInEditor) UpdateKerbals(false); }
 
         int LinesPerPage => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().LinesPerPage;
 
@@ -561,9 +567,10 @@ namespace KerbalHealth
         {
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthScenario.OnSave", Core.LogLevel.Important);
-            UpdateKerbals(true);
+            if (!Core.IsInEditor) UpdateKerbals(true);
             node.AddValue("version", version.ToString());
             node.AddValue("nextEventTime", nextEventTime);
+            node.AddValue("maxPartId", ModuleKerbalHealth.maxId);
             int i = 0;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
@@ -581,6 +588,7 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
             version = new Version(Core.GetString(node, "version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
             nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
+            ModuleKerbalHealth.maxId = Core.GetInt(node, "maxPartId");
             Core.KerbalHealthList.Clear();
             int i = 0;
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
