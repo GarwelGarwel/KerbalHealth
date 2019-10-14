@@ -565,7 +565,10 @@ namespace KerbalHealth
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
         {
             double res;
-            try { res = Double.Parse(n.GetValue(key)); }
+            try {
+                res = Double.Parse(n.GetValue(key));
+                if (Double.IsNaN(res)) throw new Exception();
+            }
             catch (Exception) { res = defaultValue; }
             return res;
         }
