@@ -493,6 +493,12 @@ namespace KerbalHealth
             DisplayData();
         }
 
+        void OnTrainingInfo()
+        {
+            if (selectedKHS == null) return;
+
+        }
+
         void OnDecontamination()
         {
             if (selectedKHS == null) return;
@@ -601,7 +607,7 @@ namespace KerbalHealth
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].children[0].SetOptionText("<color=\"white\">" + selectedKHS.TrainingLevel.ToString("N1") + "%/" + Core.MaxTraining.ToString("N0") + "%</color>");
+                gridContents[i].children[0].SetOptionText("<color=\"white\">" + (selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + (healthFrozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
                 gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");

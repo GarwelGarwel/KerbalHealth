@@ -521,7 +521,7 @@ namespace KerbalHealth
         /// <summary>
         /// Max amount of stress reduced by training depending on Astronaut Complex's level
         /// </summary>
-        public static double MaxTraining
+        public static double TrainingCap
         {
             get
             {

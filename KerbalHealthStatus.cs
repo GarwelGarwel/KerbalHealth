@@ -421,8 +421,8 @@ namespace KerbalHealth
             bool trainingComplete = true;
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             double t;
-            double p = 1 / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / 21600 * Core.MaxTraining;
-            Core.Log("Training progress per second: " + (p * 100) + "%. Training cap: " + Core.MaxTraining);
+            double p = 1 / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / 21600 * Core.TrainingCap;
+            Core.Log("Training progress per second: " + (p * 100) + "%. Training cap: " + Core.TrainingCap);
             foreach (uint partId in TrainingFor)
             {
                 try { t = TrainedParts[partId]; }
@@ -432,8 +432,8 @@ namespace KerbalHealth
                     t = 0;
                 }
                 Core.Log("Training for part " + partId + ". Previous training level was " + t.ToString("P2"));
-                t = Math.Min(t + p * interval, Core.MaxTraining);
-                if (t < Core.MaxTraining) trainingComplete = false;
+                t = Math.Min(t + p * interval, Core.TrainingCap);
+                if (t < Core.TrainingCap) trainingComplete = false;
                 Core.Log("New training level is " + t.ToString("P2"));
                 TrainedParts[partId] = t;
             }
@@ -450,7 +450,7 @@ namespace KerbalHealth
             get
             {
                 double trainingLevel;
-                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled && !Core.IsInEditor)
+                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled && !Core.IsInEditor && (TrainingFor.Count > 0))
                 {
                     double sumTraining = 0;
                     foreach (uint id in TrainingFor)
@@ -458,11 +458,11 @@ namespace KerbalHealth
                         Core.Log(name + " has " + TrainedParts[id].ToString("P3") + " training for part id " + id);
                         sumTraining += TrainedParts[id];
                     }
-                    trainingLevel = (TrainingFor.Count > 0) ? sumTraining / TrainingFor.Count : 0;
+                    trainingLevel = sumTraining / TrainingFor.Count;
                     Core.Log("Overall training level for " + TrainingFor.Count + " parts is " + trainingLevel.ToString("P2"));
                     return trainingLevel;
                 }
-                return Core.MaxTraining;
+                return Core.TrainingCap;
             }
         }
 
@@ -995,7 +995,7 @@ namespace KerbalHealth
                 foreach (ConfigNode n in value.GetNodes("TRAINED_PART"))
                 {
                     uint id = Core.GetUInt(n, "vesselId");
-                    if (id != 0) TrainedParts[id] = Core.GetDouble(n, "progress", Core.MaxTraining);
+                    if (id != 0) TrainedParts[id] = Core.GetDouble(n, "progress", Core.TrainingCap);
                 }
                 foreach (string s in value.GetValues("trainingFor"))
                 {
