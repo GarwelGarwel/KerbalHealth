@@ -525,13 +525,13 @@ namespace KerbalHealth
         {
             get
             {
-                switch ((int)ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex))
+                switch ((int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex)))
                 {
                     case 1: return 0.3;
                     case 2: return 0.5;
                     case 3: return 0.6;
                 }
-                return 0.5;
+                return 0;
             }
         }
 

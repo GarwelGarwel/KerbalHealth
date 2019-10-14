@@ -400,7 +400,6 @@ namespace KerbalHealth
         /// Ids of parts the kerbal is currently training for
         /// </summary>
         public List<uint> TrainingFor { get; set; } = new List<uint>();
-        //public uint TrainingFor { get; set; } = 0;
 
         public bool CanTrain => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 0.9);
 
@@ -422,6 +421,8 @@ namespace KerbalHealth
             bool trainingComplete = true;
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             double t;
+            double p = 1 / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / 21600 * Core.MaxTraining;
+            Core.Log("Training progress per second: " + (p * 100) + "%. Training cap: " + Core.MaxTraining);
             foreach (uint partId in TrainingFor)
             {
                 try { t = TrainedParts[partId]; }
@@ -431,7 +432,7 @@ namespace KerbalHealth
                     t = 0;
                 }
                 Core.Log("Training for part " + partId + ". Previous training level was " + t.ToString("P2"));
-                t = Math.Min(t + 0.1 / 21600 * interval, Core.MaxTraining);  // 0.1 is a placeholder for daily training progress
+                t = Math.Min(t + p * interval, Core.MaxTraining);
                 if (t < Core.MaxTraining) trainingComplete = false;
                 Core.Log("New training level is " + t.ToString("P2"));
                 TrainedParts[partId] = t;
@@ -442,6 +443,26 @@ namespace KerbalHealth
                 Core.ShowMessage("Training of " + name + " is complete!", PCM);
                 RemoveCondition("Training");
                 TrainingFor.Clear();
+            }
+        }
+        public double TrainingLevel
+        {
+            get
+            {
+                double trainingLevel;
+                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled && !Core.IsInEditor)
+                {
+                    double sumTraining = 0;
+                    foreach (uint id in TrainingFor)
+                    {
+                        Core.Log(name + " has " + TrainedParts[id].ToString("P3") + " training for part id " + id);
+                        sumTraining += TrainedParts[id];
+                    }
+                    trainingLevel = (TrainingFor.Count > 0) ? sumTraining / TrainingFor.Count : 0;
+                    Core.Log("Overall training level for " + TrainingFor.Count + " parts is " + trainingLevel.ToString("P2"));
+                    return trainingLevel;
+                }
+                return Core.MaxTraining;
             }
         }
 
@@ -891,7 +912,7 @@ namespace KerbalHealth
             {
                 Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
                 RemoveCondition("Training");
-                TrainingFor.Clear();
+                if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) TrainingFor.Clear();
             }
 
             // Stop training after the kerbal has been recovered
@@ -922,7 +943,6 @@ namespace KerbalHealth
         {
             get
             {
-                Core.Log("KerbalHealthStatus.ConfigNode.get for " + name);
                 ConfigNode n = new ConfigNode("KerbalHealthStatus");
                 n.AddValue("name", Name);
                 n.AddValue("health", HP);
@@ -947,14 +967,12 @@ namespace KerbalHealth
                         n2.AddValue("progress", t.Value);
                         n.AddNode(n2);
                     }
-                Core.Log("Training " + name + " for " + TrainingFor.Count + " parts.");
                 foreach (uint id in TrainingFor)
                     n.AddValue("trainingFor", id);
                 return n;
             }
             set
             {
-                Core.Log("KerbalHealthStatus.ConfigNode.set for " + name);
                 Name = value.GetValue("name");
                 HP = Core.GetDouble(value, "health", MaxHP);
                 MaxHPModifier = Core.GetDouble(value, "maxHPModifier");
@@ -979,7 +997,6 @@ namespace KerbalHealth
                     uint id = Core.GetUInt(n, "vesselId");
                     if (id != 0) TrainedParts[id] = Core.GetDouble(n, "progress", Core.MaxTraining);
                 }
-                Core.Log("Training " + name + " for " + TrainingFor.Count + " parts.");
                 foreach (string s in value.GetValues("trainingFor"))
                 {
                     try { TrainingFor.Add(UInt32.Parse(s)); }

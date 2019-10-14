@@ -146,10 +146,10 @@ namespace KerbalHealth
             if (f.Count > 0)
             {
                 if (msg != "") msg += "\r\n\n";
-                if (f.Count == 1) msg = "<color=\"red\">" + f[0] + " can't train.</color>";
+                if (f.Count == 1) msg += "<color=\"red\">" + f[0] + " can't train.</color>";
                 else
                 {
-                    msg = "<color=\"red\">The following kerbals can't train:";
+                    msg += "<color=\"red\">The following kerbals can't train:";
                     foreach (string k in f)
                         msg += "\r\n- " + k;
                     msg += "</color>";

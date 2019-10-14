@@ -78,5 +78,11 @@
 
         [GameParameters.CustomParameterUI("Training Enabled", toolTip = "Turn on/off the need to train kerbals to reduce stress")]
         public bool TrainingEnabled = true;
+
+        [GameParameters.CustomIntParameterUI("KSC Training Time", toolTip = "How many days it takes to train kerbal to max level at KSC", minValue = 1, maxValue = 30)]
+        public int KSCTrainingTime = 10;
+
+        [GameParameters.CustomIntParameterUI("In-Flight Training Time", toolTip = "How many days it takes to train kerbal to max level on the go (during the mission)", minValue = 1, maxValue = 100)]
+        public int InFlightTrainingTime = 50;
     }
 }
