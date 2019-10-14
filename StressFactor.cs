@@ -8,6 +8,8 @@ namespace KerbalHealth
 
         public override string Title => "Stress";
 
+        public override bool Cachable => false;
+
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor;
 
         double ChangePerDayWithTraining(ProtoCrewMember pcm) => BaseChangePerDay * (1 - Core.KerbalHealthList.Find(pcm).TrainingLevel);
