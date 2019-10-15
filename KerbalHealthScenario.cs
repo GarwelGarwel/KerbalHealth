@@ -270,7 +270,7 @@ namespace KerbalHealth
         {
             if (v == null) return;
             foreach (ProtoCrewMember pcm in v.GetVesselCrew())
-                Core.KerbalHealthList.Find(pcm).StartTraining(v.Parts);
+                Core.KerbalHealthList.Find(pcm).StartTraining(v.Parts, v.vesselName);
         }
 
         /// <summary>
@@ -455,7 +455,7 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("Training:"));
                 gridContents.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
-                    new DialogGUIButton("?", null, 20, 20, true)));
+                    new DialogGUIButton("?", OnTrainingInfo, 20, 20, true)));
                 gridContents.Add(new DialogGUILabel("Recuperation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Exposure:"));
@@ -496,7 +496,13 @@ namespace KerbalHealth
         void OnTrainingInfo()
         {
             if (selectedKHS == null) return;
-
+            string msg;
+            if (selectedKHS.TrainingVessel != null)
+                msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts). Progress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.";
+            else msg = selectedKHS.Name + " is not training.";
+            foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
+                msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";
+            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Training Info", msg, "Training Info", HighLogic.UISkin, new DialogGUIButton("Close", null, true)), false, HighLogic.UISkin);
         }
 
         void OnDecontamination()
@@ -627,7 +633,6 @@ namespace KerbalHealth
             int i = 0;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
-                Core.Log("Saving " + khs.Name + "'s health.");
                 node.AddNode(khs.ConfigNode);
                 i++;
             }
