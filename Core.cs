@@ -96,27 +96,29 @@ namespace KerbalHealth
         {
             Log("Loading config...", LogLevel.Important);
 
+            ConfigNode config = GameDatabase.Instance.GetConfigNodes("KERBALHEALTH_CONFIG")[0];
+
             HealthConditions = new Dictionary<string, HealthCondition>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_CONDITION"))
+            foreach (ConfigNode n in  config.GetNodes("HEALTH_CONDITION"))
                 HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
             Core.Log(HealthConditions.Count + " health conditions loaded:");
             foreach (HealthCondition hc in HealthConditions.Values)
                 Core.Log(hc.ToString());
 
             ResourceShielding = new Dictionary<int, double>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_SHIELDING"))
+            foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.", LogLevel.Important);
 
             Quirks = new List<Quirk>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_QUIRK"))
+            foreach (ConfigNode n in config.GetNodes("HEALTH_QUIRK"))
                 Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
             PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
             foreach (CelestialBody b in FlightGlobals.Bodies) PlanetConfigs.Add(b, new PlanetHealthConfig(b));
             int i = 0;
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("PLANET_HEALTH_CONFIG"))
+            foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
             {
                 PlanetHealthConfig bc = GetPlanetConfig(GetString(n, "name"));
                 if (bc != null)
@@ -126,6 +128,14 @@ namespace KerbalHealth
                 }
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
+
+            trainingCaps = new List<double>(3) { 0.3, 0.5, 0.6 };
+            foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
+            {
+                int j = Core.GetInt(n, "level");
+                if (j == 0) continue;
+                trainingCaps[j - 1] = Core.GetDouble(n, "trainingCap");
+            }
 
             Loaded = true;
         }
@@ -518,22 +528,12 @@ namespace KerbalHealth
             return null;
         }
 
+        static List<double> trainingCaps;
+
         /// <summary>
         /// Max amount of stress reduced by training depending on Astronaut Complex's level
         /// </summary>
-        public static double TrainingCap
-        {
-            get
-            {
-                switch ((int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex)))
-                {
-                    case 1: return 0.3;
-                    case 2: return 0.5;
-                    case 3: return 0.6;
-                }
-                return 0;
-            }
-        }
+        public static double TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
 
         /// <summary>
         /// Returns list of IDs of parts that are used in training and stress calculations
