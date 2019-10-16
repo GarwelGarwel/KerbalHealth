@@ -79,10 +79,13 @@
         [GameParameters.CustomParameterUI("Training Enabled", toolTip = "Turn on/off the need to train kerbals to reduce stress")]
         public bool TrainingEnabled = true;
 
-        [GameParameters.CustomIntParameterUI("KSC Training Time", toolTip = "How many days it takes to train kerbal to max level at KSC", minValue = 1, maxValue = 30)]
+        [GameParameters.CustomIntParameterUI("KSC Training Time", toolTip = "Min # of days it takes to train kerbal to max level at KSC", minValue = 1, maxValue = 30)]
         public int KSCTrainingTime = 10;
 
-        [GameParameters.CustomIntParameterUI("In-Flight Training Time", toolTip = "How many days it takes to train kerbal to max level on the go (during the mission)", minValue = 1, maxValue = 100)]
+        [GameParameters.CustomIntParameterUI("In-Flight Training Time", toolTip = "Min # of days it takes to train kerbal to max level during a mission", minValue = 1, maxValue = 100)]
         public int InFlightTrainingTime = 50;
+
+        [GameParameters.CustomFloatParameterUI("Stupidity Penalty", toolTip = "How much longer it takes to train a stupid kerbal compared to a smart one", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]
+        public float StupidityPenalty = 0.5f;
     }
 }

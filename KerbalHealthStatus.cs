@@ -419,15 +419,17 @@ namespace KerbalHealth
             Core.Log("Training " + name + " for " + vesselName + " (" + TrainingFor.Count + " parts).");
         }
 
+        public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / 21600 / (1 + PCM.stupidity * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StupidityPenalty);
+
         void Train(double interval)
         {
             Core.Log("Train(" + interval + ") for " + name);
             bool trainingComplete = true;
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             double t;
-            double p = 1 / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / 21600 * Core.TrainingCap;
+            double p = interval * TrainingPerDay / 21600;
             double s = 0;
-            Core.Log("Training progress per second: " + (p * 100) + "%. Training cap: " + Core.TrainingCap);
+            Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + Core.TrainingCap);
             foreach (uint partId in TrainingFor)
             {
                 try { t = TrainedParts[partId]; }
@@ -436,11 +438,10 @@ namespace KerbalHealth
                     TrainedParts.Add(partId, 0);
                     t = 0;
                 }
-                Core.Log("Training for part " + partId + ". Previous training level was " + t.ToString("P2"));
-                t = Math.Min(t + p * interval, Core.TrainingCap);
+                t = Math.Min(t + p, Core.TrainingCap);
                 s += t;
                 if (t < Core.TrainingCap) trainingComplete = false;
-                Core.Log("New training level is " + t.ToString("P2"));
+                Core.Log("Training level for part id " + partId + " is " + t.ToString("P2"));
                 TrainedParts[partId] = t;
             }
             if (trainingComplete)
