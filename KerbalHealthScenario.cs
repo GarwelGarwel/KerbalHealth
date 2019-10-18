@@ -455,7 +455,7 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel("Training:"));
                 gridContents.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
-                    new DialogGUIButton("?", OnTrainingInfo, 20, 20, true)));
+                    new DialogGUIButton("?", OnTrainingInfo, 20, 20, false)));
                 gridContents.Add(new DialogGUILabel("Recuperation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Exposure:"));
@@ -498,7 +498,13 @@ namespace KerbalHealth
             if (selectedKHS == null) return;
             string msg;
             if (selectedKHS.TrainingVessel != null)
-                msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts). Progress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.";
+            {
+                double min = Core.TrainingCap;
+                foreach (uint id in selectedKHS.TrainingFor)
+                    min = Math.Min(min, selectedKHS.TrainedParts[id]);
+                Core.Log("Min training level: " + (min * 100) + "%");
+                msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts).\r\nProgress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.\r\n" + Core.ParseUT((Core.TrainingCap - min) / selectedKHS.TrainingPerDay * 21600, false, 2) + " to go.";
+            }
             else msg = selectedKHS.Name + " is not training.";
             foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
                 msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";
@@ -613,7 +619,7 @@ namespace KerbalHealth
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].children[0].SetOptionText("<color=\"white\">" + (selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%</color>");
+                gridContents[i].children[0].SetOptionText("<color=\"white\">" + ((selectedKHS.TrainingVessel != null) ? ((selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%") : "N/A") + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + (healthFrozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
                 gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
