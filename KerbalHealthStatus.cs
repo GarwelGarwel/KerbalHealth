@@ -408,6 +408,7 @@ namespace KerbalHealth
         public void StartTraining(List<Part> parts, string vesselName)
         {
             TrainingFor.Clear();
+            if (IsOnEVA) return;
             foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
             {
                 TrainingFor.Add(mkh.id);
@@ -419,11 +420,16 @@ namespace KerbalHealth
             Core.Log("Training " + name + " for " + vesselName + " (" + TrainingFor.Count + " parts).");
         }
 
-        public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / 21600 / (1 + PCM.stupidity * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StupidityPenalty);
+        public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / (1 + PCM.stupidity * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StupidityPenalty);
 
         void Train(double interval)
         {
             Core.Log("Train(" + interval + ") for " + name);
+            if (IsOnEVA)
+            {
+                Core.Log(name + " is on EVA. No training.");
+                return;
+            }
             bool trainingComplete = true;
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             double t;
@@ -971,8 +977,8 @@ namespace KerbalHealth
                     if (t.Key != 0)
                     {
                         ConfigNode n2 = new ConfigNode("TRAINED_PART");
-                        n2.AddValue("vesselId", t.Key);
-                        n2.AddValue("progress", t.Value);
+                        n2.AddValue("id", t.Key);
+                        n2.AddValue("trainingLevel", t.Value);
                         n.AddNode(n2);
                     }
                 foreach (KeyValuePair<string, double> kvp in TrainedVessels)
@@ -1010,13 +1016,13 @@ namespace KerbalHealth
                 TrainedParts.Clear();
                 foreach (ConfigNode n in value.GetNodes("TRAINED_PART"))
                 {
-                    uint id = Core.GetUInt(n, "vesselId");
-                    if (id != 0) TrainedParts[id] = Core.GetDouble(n, "progress", Core.TrainingCap);
+                    uint id = Core.GetUInt(n, "id");
+                    if (id != 0) TrainedParts[id] = Core.GetDouble(n, "trainingLevel", Core.TrainingCap);
                 }
                 foreach (ConfigNode n in value.GetNodes("TRAINED_VESSEL"))
                 {
-                    string name = Core.GetString(value, "name");
-                    if (name != null) TrainedVessels.Add(name, Core.GetDouble(value, "trainingLevel"));
+                    string name = Core.GetString(n, "name");
+                    if (name != null) TrainedVessels.Add(name, Core.GetDouble(n, "trainingLevel"));
                 }
                 TrainingFor.Clear();
                 foreach (string s in value.GetValues("trainingFor"))
