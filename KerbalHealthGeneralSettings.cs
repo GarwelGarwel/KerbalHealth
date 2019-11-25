@@ -1,8 +1,9 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     class KerbalHealthGeneralSettings : GameParameters.CustomParameterNode
     {
-        public override string Title => "General Settings";
+        public override string Title => Localizer.Format("#KH_GS_title");//"General Settings"
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
         public override bool HasPresets => true;
         public override string Section => "Kerbal Health";
@@ -32,43 +33,43 @@
             }
         }
 
-        [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
+        [GameParameters.CustomParameterUI("#KH_GS_modEnabled", toolTip = "#KH_GS_modEnabled_desc")]//Mod Enabled""Turn Kerbal Health mechanics on/off
         public bool modEnabled = true;
 
-        [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
+        [GameParameters.CustomParameterUI("#KH_GS_UseToolbar", toolTip = "#KH_GS_UseToolbar_desc")]//Use Blizzy's Toolbar""Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change
         public bool UseBlizzysToolbar = true;
 
-        [GameParameters.CustomIntParameterUI("Sort Kerbals by Location", toolTip = "Kerbals in Health Monitor will be displayed depending on their current location, otherwise sort by name")]
+        [GameParameters.CustomIntParameterUI("#KH_GS_SortByLocation", toolTip = "#KH_GS_SortByLocation_desc")]//Sort Kerbals by Location""Kerbals in Health Monitor will be displayed depending on their current location, otherwise sort by name
         public bool SortByLocation = true;
 
-        [GameParameters.CustomIntParameterUI("Lines per Page in Health Monitor", toolTip = "How many kerbals to show on one page of Health Monitor", minValue = 5, maxValue = 20, stepSize = 5)]
+        [GameParameters.CustomIntParameterUI("#KH_GS_LinesPerPage", toolTip = "#KH_GS_LinesPerPage_desc", minValue = 5, maxValue = 20, stepSize = 5)]//Lines per Page in Health Monitor""How many kerbals to show on one page of Health Monitor
         public int LinesPerPage = 10;
 
-        [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of GAME seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_UpdateInterval", toolTip = "#KH_GS_UpdateInterval_desc", minValue = 0.04f, maxValue = 60)]//Update Interval""Number of GAME seconds between health updates\nDoesn't affect health rates. Increase if performance too slow
         public float UpdateInterval = 10;
 
-        [GameParameters.CustomFloatParameterUI("Minimum Update Interval", toolTip = "Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval", minValue = 0.04f, maxValue = 60)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_MinUpdateInterval", toolTip = "#KH_GS_MinUpdateInterval_desc", minValue = 0.04f, maxValue = 60)]//Minimum Update Interval""Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval
         public float MinUpdateInterval = 1;
 
-        [GameParameters.CustomFloatParameterUI("Base Max HP", toolTip = "Max number of Health Points for 0-star kerbals", minValue = 10, maxValue = 200, stepCount = 20)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_BaseMaxHP", toolTip = "#KH_GS_BaseMaxHP_desc", minValue = 10, maxValue = 200, stepCount = 20)]//Base Max HP""Max number of Health Points for 0-star kerbals
         public float BaseMaxHP = 100;
 
-        [GameParameters.CustomFloatParameterUI("HP per Level", toolTip = "Health Points increase per level (star) of a kerbal", minValue = 0, maxValue = 50, stepCount = 51)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_HPPerLevel", toolTip = "#KH_GS_HPPerLevel_desc", minValue = 0, maxValue = 50, stepCount = 51)]//HP per Level""Health Points increase per level (star) of a kerbal
         public float HPPerLevel = 10;
 
-        [GameParameters.CustomFloatParameterUI("Low Health Alert", toolTip = "Health level when a low health alert is shown", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_LowHealthAlert", toolTip = "#KH_GS_LowHealthAlert_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Low Health Alert""Health level when a low health alert is shown
         public float LowHealthAlert = 0.3f;
 
-        [GameParameters.CustomParameterUI("Death Enabled", toolTip = "Allow kerbals to die of poor health")]
+        [GameParameters.CustomParameterUI("#KH_GS_DeathEnabled", toolTip = "#KH_GS_DeathEnabled_desc")]//Death Enabled""Allow kerbals to die of poor health
         public bool DeathEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("Exhaustion Start Health", toolTip = "Health level when kerbals turn Exhausted (become Tourists)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionStartHealth", toolTip = "#KH_GS_ExhaustionStartHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion Start Health""Health level when kerbals turn Exhausted (become Tourists)
         public float ExhaustionStartHealth = 0.2f;
 
-        [GameParameters.CustomFloatParameterUI("Exhaustion End Health", toolTip = "Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionEndHealth", toolTip = "#KH_GS_ExhaustionEndHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion End Health""Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)
         public float ExhaustionEndHealth = 0.25f;
 
-        [GameParameters.CustomParameterUI("Debug Mode", toolTip = "Controls amount of logging")]
+        [GameParameters.CustomParameterUI("#KH_GS_DebugMode", toolTip = "#KH_GS_DebugMode_desc")]//Debug Mode""Controls amount of logging
         public bool DebugMode = false;
     }
 }

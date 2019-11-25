@@ -118,7 +118,8 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
             UpdateGUIName();
-            if (Core.IsInEditor && (resource == "ElectricCharge")) ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+            if (Core.IsInEditor && (resource == "ElectricCharge")) 
+                ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
             lastUpdated = Planetarium.GetUniversalTime();
         }
 
