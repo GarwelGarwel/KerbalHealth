@@ -106,7 +106,7 @@ namespace KerbalHealth
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.01f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 5000;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 15000;
-                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);//
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg2", v.ToString()), true);//"Kerbal Health has been updated to v" + + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
                 }
                 version = v;
             }
@@ -371,7 +371,7 @@ namespace KerbalHealth
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
                         gridContents.Add(new DialogGUILabel("", true));
-                    gridContents.Add(new DialogGUIButton<int>(Localizer.Format(""), (n) => { selectedKHS = kerbals.Values[n]; Invalidate(); }, i));//"Details"
+                    gridContents.Add(new DialogGUIButton<int>(Localizer.Format("#KH_HM_Details"), (n) => { selectedKHS = kerbals.Values[n]; Invalidate(); }, i));//"Details"
                 }
                 layout.AddChild(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray()));
                 monitorPosition.width = gridWidthList + 10;

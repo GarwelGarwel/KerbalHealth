@@ -1,10 +1,11 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     public class AssignedFactor : HealthFactor
     {
         public override string Name => "Assigned";
 
-        public override string Title => "Assigned";
+        public override string Title => Localizer.Format("#KH_Assigned");//"Assigned"
 
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().AssignedFactor;
 

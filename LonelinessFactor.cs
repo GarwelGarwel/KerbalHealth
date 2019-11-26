@@ -1,8 +1,10 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     class LonelinessFactor : HealthFactor
     {
         public override string Name => "Loneliness";
+        public override string Title => Localizer.Format("#KH_Loneliness");//Loneliness
 
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().LonelinessFactor;
 
