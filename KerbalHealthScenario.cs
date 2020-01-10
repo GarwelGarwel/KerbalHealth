@@ -498,13 +498,7 @@ namespace KerbalHealth
             if (selectedKHS == null) return;
             string msg;
             if (selectedKHS.TrainingVessel != null)
-            {
-                double min = Core.TrainingCap;
-                foreach (uint id in selectedKHS.TrainingFor)
-                    min = Math.Min(min, selectedKHS.TrainedParts[id].TrainingLevel);
-                Core.Log("Min training level: " + (min * 100) + "%");
-                msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts).\r\nProgress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.\r\n" + Core.ParseUT((Core.TrainingCap - min) / selectedKHS.TrainingPerDay * 21600, false, 2) + " to go.";
-            }
+                msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts).\r\nProgress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.\r\n" + Core.ParseUT(selectedKHS.LongestTrainingTime() * 21600, false, 2) + " to go.";
             else msg = selectedKHS.Name + " is not training.";
             foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
                 msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";

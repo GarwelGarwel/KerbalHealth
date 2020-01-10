@@ -444,35 +444,80 @@ namespace KerbalHealth
                 Core.Log(name + " is on EVA. No training.");
                 return;
             }
-            bool trainingComplete = true;
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             TrainingPart t;
-            double p = interval * TrainingPerDay / 21600;
-            double s = 0, c = 0;
-            Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + Core.TrainingCap);
+            double c = TotalTrainingComplexity();
+            if (c == 0)
+            {
+                Core.Log("No training-complexity enabled parts found. No training.", Core.LogLevel.Important);
+                return;
+            }
+
+            bool trainingComplete = true;
+            double s = 0, p = interval * TrainingPerDay / 21600 / c;  // Training progress is inverse proportional to total complexity of parts
+            Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + (Core.TrainingCap * 100) + "%.");
             foreach (uint partId in TrainingFor)
             {
-                try { t = TrainedParts[partId]; }
-                catch (KeyNotFoundException)
-                {
-                    Core.Log(name + " is training for part #" + partId + ", but it's not found in TrainedParts.", Core.LogLevel.Error);
-                    TrainedParts.Add(partId, t = new TrainingPart(partId));
-                }
+                t = TrainedParts[partId];
                 t.TrainingLevel = Math.Min(t.TrainingLevel + p, Core.TrainingCap);
                 s += t.TrainingLevel * t.Complexity;
-                c += t.Complexity;
                 if (t.TrainingLevel < Core.TrainingCap) trainingComplete = false;
-                Core.Log("Training level for part id " + partId + " is " + t.TrainingLevel.ToString("P2") + " with complexity " + t.Complexity.ToString("P2"));
+                Core.Log("Training level for part id " + partId + " is " + t.TrainingLevel.ToString("P2") + " with complexity " + t.Complexity.ToString("P0"));
             }
             if (trainingComplete)
             {
                 Core.Log("Training of " + name + " is complete.");
-                Core.ShowMessage("Training of " + name + " is complete!", PCM);
+                Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
                 RemoveCondition("Training");
                 TrainingFor.Clear();
             }
             if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s / c;
         }
+
+        public double TotalTrainingComplexity()
+        {
+            double c = 0;
+            TrainingPart p;
+            foreach (uint partId in TrainingFor)
+            {
+                try { p = TrainedParts[partId]; }
+                catch (KeyNotFoundException)
+                {
+                    Core.Log(name + " is training for part #" + partId + ", but it's not found in TrainedParts.", Core.LogLevel.Error);
+                    TrainedParts.Add(partId, p = new TrainingPart(partId));
+                }
+                c += p.Complexity;
+            }
+            return c;
+        }
+
+        public double TotalWeighedTrainingLevel()
+        {
+            double c = 0;
+            TrainingPart p;
+            foreach (uint partId in TrainingFor)
+            {
+                try { p = TrainedParts[partId]; }
+                catch (KeyNotFoundException)
+                {
+                    Core.Log(name + " is training for part #" + partId + ", but it's not found in TrainedParts.", Core.LogLevel.Error);
+                    TrainedParts.Add(partId, p = new TrainingPart(partId));
+                }
+                c += p.TrainingLevel * p.Complexity;
+            }
+            return c;
+        }
+
+        public double TrainingTime(uint id) => ((Core.TrainingCap - TrainedParts[id].TrainingLevel) * TrainedParts[id].Complexity) / TrainingPerDay / TotalTrainingComplexity();
+
+        public double LongestTrainingTime()
+        {
+            double max = 0;
+            foreach (uint id in TrainingFor)
+                max = Math.Max(max, TrainingTime(id));
+            return max;
+        }
+
         public double TrainingLevel
         {
             get
