@@ -122,7 +122,7 @@ namespace KerbalHealth
                 if (pcm == null) continue;
                 khs = Core.KerbalHealthList.Find(pcm);
                 if (khs == null) continue;
-                if (khs.CanTrain)
+                if (khs.CanTrainAtKSC)
                 {
                     khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.autoShipName);
                     khs.AddCondition("Training");

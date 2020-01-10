@@ -86,6 +86,7 @@
     <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
     <Compile Include="HealthModifierSet.cs" />
+    <Compile Include="TrainingPart.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="GameData\KerbalHealth\icon.png" />
