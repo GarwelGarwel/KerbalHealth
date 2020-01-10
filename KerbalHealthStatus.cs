@@ -426,7 +426,7 @@ namespace KerbalHealth
             foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
             {
                 TrainingFor.Add(mkh.id);
-                if (!TrainedParts.ContainsKey(mkh.id)) TrainedParts.Add(mkh.id, new TrainingPart(mkh.id));
+                if (!TrainedParts.ContainsKey(mkh.id)) TrainedParts.Add(mkh.id, new TrainingPart(mkh.id, mkh.trainingComplexity));
                 Core.Log("Now training for " + mkh.part.name + " with id " + mkh.id);
             }
             TrainingVessel = vesselName;

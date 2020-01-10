@@ -547,7 +547,7 @@ namespace KerbalHealth
             {
                 List<ModuleKerbalHealth> modules = p.FindModulesImplementing<ModuleKerbalHealth>();
                 foreach (ModuleKerbalHealth mkh in modules)
-                    if (mkh.trainingCapable)
+                    if (mkh.trainingComplexity != 0)
                     {
                         res.Add(mkh);
                         break;
