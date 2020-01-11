@@ -16,7 +16,7 @@ namespace KerbalHealth
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (Core.IsInEditor) return IsEnabledInEditor() ? ChangePerDayWithTraining(pcm) : 0;
+            if (Core.IsInEditor) return IsEnabledInEditor() ? BaseChangePerDay * (1 - Core.TrainingCap) : 0;
             return (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? ChangePerDayWithTraining(pcm) : 0;
         }
     }

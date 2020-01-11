@@ -168,7 +168,7 @@ namespace KerbalHealth
             if (reportWindow != null)
             {
                 Vector3 v = reportWindow.RTrf.position;
-                reportPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 300, 50);
+                reportPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 400, 50);
                 reportWindow.Dismiss();
             }
         }
@@ -177,7 +177,7 @@ namespace KerbalHealth
         {
             double c = 0;
             foreach (ModuleKerbalHealth mkh in parts)
-                c += mkh.trainingComplexity;
+                c += (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh);
             return c / khs.TrainingPerDay * 21600;
         }
 
