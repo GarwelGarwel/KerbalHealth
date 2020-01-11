@@ -269,6 +269,7 @@ namespace KerbalHealth
         public void TrainVessel(Vessel v)
         {
             if (v == null) return;
+            Core.Log("KerbalHealthScenario.TrainVessel('" + v.vesselName + "')");
             foreach (ProtoCrewMember pcm in v.GetVesselCrew())
                 Core.KerbalHealthList.Find(pcm).StartTraining(v.Parts, v.vesselName);
         }
@@ -499,9 +500,19 @@ namespace KerbalHealth
             string msg;
             if (selectedKHS.TrainingVessel != null)
                 msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts).\r\nProgress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.\r\n" + Core.ParseUT(selectedKHS.TrainingETA, false, 10) + " to go.";
-            else msg = selectedKHS.Name + " is not training.";
-            foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
-                msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";
+            else msg = selectedKHS.Name + " is not currently training.";
+            if (selectedKHS.TrainedVessels.Count > 0)
+            {
+                msg += "\r\n" + selectedKHS.Name + " is trained for the following vessels:";
+                foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
+                    msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";
+            }
+            if (selectedKHS.FamiliarPartTypes.Count > 0)
+            {
+                msg += "\r\n" + selectedKHS + " is familiar with the following part types:";
+                foreach (string s in selectedKHS.FamiliarPartTypes)
+                    msg += "\r\n- " + s;
+            }
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Training Info", msg, "Training Info", HighLogic.UISkin, new DialogGUIButton("Close", null, true)), false, HighLogic.UISkin);
         }
 
