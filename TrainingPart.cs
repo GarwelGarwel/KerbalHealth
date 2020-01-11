@@ -8,6 +8,7 @@ namespace KerbalHealth
     public class TrainingPart
     {
         public uint Id { get; set; }
+        public string Name { get; set; }
         public double Complexity { get; set; } = 1;
         public double TrainingLevel { get; set; } = 0;
 
@@ -17,6 +18,7 @@ namespace KerbalHealth
             {
                 ConfigNode n = new ConfigNode("TRAINED_PART");
                 n.AddValue("id", Id);
+                n.AddValue("name", Name);
                 n.AddValue("complexity", Complexity);
                 n.AddValue("trainingLevel", TrainingLevel);
                 return n;
@@ -29,17 +31,19 @@ namespace KerbalHealth
                     Core.Log("Incorrect part id 0 for training part.", Core.LogLevel.Error);
                     return;
                 }
-                Complexity = Core.GetDouble(value, "complexity");
+                Name = Core.GetString(value, "name", "");
+                Complexity = Core.GetDouble(value, "complexity", 1);
                 TrainingLevel = Core.GetDouble(value, "trainingLevel");
             }
         }
 
         public TrainingPart(ConfigNode n) => ConfigNode = n;
 
-        public TrainingPart(uint id, double complexity = 1, double trainingLevel = 0)
+        public TrainingPart(uint id, string name, double complexity = 1, double trainingLevel = 0)
         {
             Id = id;
             Complexity = complexity;
+            Name = name;
             TrainingLevel = trainingLevel;
         }
     }

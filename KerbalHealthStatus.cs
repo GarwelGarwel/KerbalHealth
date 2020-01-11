@@ -416,8 +416,23 @@ namespace KerbalHealth
         /// </summary>
         public string TrainingVessel { get; set; }
 
+        /// <summary>
+        /// Returns true if the kerbal satisfies all conditions to be trained at KSC
+        /// </summary>
         public bool CanTrainAtKSC => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 0.9);
 
+        /// <summary>
+        /// Returns true if the kerbal has completed at least one training for the given part type
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public bool IsFamiliarWithPartType(string partName) => FamiliarPartTypes.Contains(partName);
+
+        /// <summary>
+        /// Start training the kerbal for a set of parts; also abandons all previous trainings
+        /// </summary>
+        /// <param name="parts"></param>
+        /// <param name="vesselName"></param>
         public void StartTraining(List<Part> parts, string vesselName)
         {
             Core.Log("KerbalHealthStatus.StartTraining(" + parts.Count + " parts, '" + vesselName + "') for " + name);
@@ -426,12 +441,20 @@ namespace KerbalHealth
             foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
             {
                 TrainingFor.Add(mkh.id);
-                if (!TrainedParts.ContainsKey(mkh.id)) TrainedParts.Add(mkh.id, new TrainingPart(mkh.id, mkh.trainingComplexity));
+                if (!TrainedParts.ContainsKey(mkh.id)) TrainedParts.Add(mkh.id, new TrainingPart(mkh.id, mkh.part.name, mkh.trainingComplexity));
                 Core.Log("Now training for " + mkh.part.name + " with id " + mkh.id);
             }
             TrainingVessel = vesselName;
             if (!TrainedVessels.ContainsKey(vesselName)) TrainedVessels.Add(vesselName, TrainingLevel);
             Core.Log("Training " + name + " for " + vesselName + " (" + TrainingFor.Count + " parts).");
+        }
+
+        public void FinishTraining()
+        {
+            Core.Log("Training of " + name + " is complete.");
+            Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
+            RemoveCondition("Training");
+            TrainingFor.Clear();
         }
 
         public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / (1 + PCM.stupidity * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StupidityPenalty);
@@ -445,49 +468,49 @@ namespace KerbalHealth
                 return;
             }
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
-            TrainingPart t;
-            double c = GetTotalTrainingComplexity();
+            TrainingPart tp;
+            double c = 0;
+            foreach (uint partId in TrainingFor)
+            {
+                tp = TrainedParts[partId];
+                if (tp.TrainingLevel < Core.TrainingCap)
+                    c += tp.Complexity * (IsFamiliarWithPartType(tp.Name) ? 1 : 2);
+            }
+
             if (c == 0)
             {
-                Core.Log("No training-complexity enabled parts found. No training.", Core.LogLevel.Important);
+                Core.Log("No parts in need of training found.", Core.LogLevel.Important);
+                FinishTraining();
                 return;
             }
 
             bool trainingComplete = true;
             double s = 0, p = interval * TrainingPerDay / 21600 / c;  // Training progress is inverse proportional to total complexity of parts
             Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + (Core.TrainingCap * 100) + "%.");
+            c = 0;
             foreach (uint partId in TrainingFor)
             {
-                t = TrainedParts[partId];
-                t.TrainingLevel = Math.Min(t.TrainingLevel + p, Core.TrainingCap);
-                s += t.TrainingLevel * t.Complexity;
-                if (t.TrainingLevel < Core.TrainingCap) trainingComplete = false;
-                Core.Log("Training level for part id " + partId + " is " + t.TrainingLevel.ToString("P2") + " with complexity " + t.Complexity.ToString("P0"));
-            }
-            if (trainingComplete)
-            {
-                Core.Log("Training of " + name + " is complete.");
-                Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
-                RemoveCondition("Training");
-                TrainingFor.Clear();
+                tp = TrainedParts[partId];
+                tp.TrainingLevel = Math.Min(tp.TrainingLevel + p, Core.TrainingCap);
+                s += tp.TrainingLevel * tp.Complexity;
+                c += tp.Complexity;
+                if (tp.TrainingLevel < Core.TrainingCap) trainingComplete = false;
+                else
+                {
+                    Core.Log("Training for part " + tp.Name + " with id " + tp.Id + " complete.");
+                    FamiliarPartTypes.Add(tp.Name);
+                }
+                Core.Log("Training level for part id " + partId + " is " + tp.TrainingLevel.ToString("P2") + " with complexity " + tp.Complexity.ToString("P0"));
             }
             if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s / c;
+            if (trainingComplete) FinishTraining();
         }
 
-        public double GetTotalTrainingComplexity()
+        public double GetTotalComplexity()
         {
             double c = 0;
-            TrainingPart p;
             foreach (uint partId in TrainingFor)
-            {
-                try { p = TrainedParts[partId]; }
-                catch (KeyNotFoundException)
-                {
-                    Core.Log(name + " is training for part #" + partId + ", but it's not found in TrainedParts.", Core.LogLevel.Error);
-                    TrainedParts.Add(partId, p = new TrainingPart(partId));
-                }
-                c += p.Complexity;
-            }
+                c += TrainedParts[partId].Complexity;
             return c;
         }
 
@@ -501,14 +524,14 @@ namespace KerbalHealth
                 catch (KeyNotFoundException)
                 {
                     Core.Log(name + " is training for part #" + partId + ", but it's not found in TrainedParts.", Core.LogLevel.Error);
-                    TrainedParts.Add(partId, p = new TrainingPart(partId));
+                    TrainedParts.Add(partId, p = new TrainingPart(partId, ""));
                 }
                 c += p.TrainingLevel * p.Complexity;
             }
             return c;
         }
 
-        public double GetTrainingTime(uint id) => ((Core.TrainingCap - TrainedParts[id].TrainingLevel) * TrainedParts[id].Complexity) / TrainingPerDay / GetTotalTrainingComplexity() * 21600;
+        public double GetTrainingTime(uint id) => ((Core.TrainingCap - TrainedParts[id].TrainingLevel) * TrainedParts[id].Complexity) / TrainingPerDay / GetTotalComplexity() * 21600;
 
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
@@ -528,22 +551,8 @@ namespace KerbalHealth
         {
             get
             {
-                //double trainingLevel;
                 if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled && !Core.IsInEditor && (TrainingFor.Count > 0))
-                {
-                    //double sumTraining = 0, sumComplexity = 0;
-                    //foreach (uint id in TrainingFor)
-                    //    try
-                    //    {
-                    //        Core.Log(name + " has " + TrainedParts[id].TrainingLevel.ToString("P3") + " training for part id " + id);
-                    //        sumTraining += TrainedParts[id].TrainingLevel * TrainedParts[id].Complexity;
-                    //        sumComplexity += TrainedParts[id].Complexity;
-                    //    }
-                    //    catch (KeyNotFoundException) { Core.Log(Name + " is training for part #" + id + ", but it's not found in TrainedParts.", Core.LogLevel.Error); }
-                    return GetTotalWeighedTrainingLevel() / GetTotalTrainingComplexity();
-                    //Core.Log("Overall training level for " + TrainingFor.Count + " parts is " + trainingLevel.ToString("P2"));
-                    //return trainingLevel;
-                }
+                    return GetTotalWeighedTrainingLevel() / GetTotalComplexity();
                 return Core.TrainingCap;
             }
         }
