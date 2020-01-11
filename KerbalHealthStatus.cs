@@ -1004,7 +1004,10 @@ namespace KerbalHealth
 
             // Stop training after the kerbal has been recovered
             if ((TrainingFor.Count > 0) && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) && !HasCondition("Training"))
+            {
                 TrainingFor.Clear();
+                TrainingVessel = null;
+            }
 
             // Train
             if ((((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition("Training"))))
