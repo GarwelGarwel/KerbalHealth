@@ -446,7 +446,7 @@ namespace KerbalHealth
             }
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
             TrainingPart t;
-            double c = TotalTrainingComplexity();
+            double c = GetTotalTrainingComplexity();
             if (c == 0)
             {
                 Core.Log("No training-complexity enabled parts found. No training.", Core.LogLevel.Important);
@@ -474,7 +474,7 @@ namespace KerbalHealth
             if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s / c;
         }
 
-        public double TotalTrainingComplexity()
+        public double GetTotalTrainingComplexity()
         {
             double c = 0;
             TrainingPart p;
@@ -491,7 +491,7 @@ namespace KerbalHealth
             return c;
         }
 
-        public double TotalWeighedTrainingLevel()
+        public double GetTotalWeighedTrainingLevel()
         {
             double c = 0;
             TrainingPart p;
@@ -508,35 +508,41 @@ namespace KerbalHealth
             return c;
         }
 
-        public double TrainingTime(uint id) => ((Core.TrainingCap - TrainedParts[id].TrainingLevel) * TrainedParts[id].Complexity) / TrainingPerDay / TotalTrainingComplexity();
+        public double GetTrainingTime(uint id) => ((Core.TrainingCap - TrainedParts[id].TrainingLevel) * TrainedParts[id].Complexity) / TrainingPerDay / GetTotalTrainingComplexity() * 21600;
 
-        public double LongestTrainingTime()
+        /// <summary>
+        /// Estimated time (in seconds) until training for all parts is complete
+        /// </summary>
+        public double TrainingETA
         {
-            double max = 0;
-            foreach (uint id in TrainingFor)
-                max = Math.Max(max, TrainingTime(id));
-            return max;
+            get
+            {
+                double max = 0;
+                foreach (uint id in TrainingFor)
+                    max = Math.Max(max, GetTrainingTime(id));
+                return max;
+            }
         }
 
         public double TrainingLevel
         {
             get
             {
-                double trainingLevel;
+                //double trainingLevel;
                 if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled && !Core.IsInEditor && (TrainingFor.Count > 0))
                 {
-                    double sumTraining = 0, sumComplexity = 0;
-                    foreach (uint id in TrainingFor)
-                        try
-                        {
-                            Core.Log(name + " has " + TrainedParts[id].TrainingLevel.ToString("P3") + " training for part id " + id);
-                            sumTraining += TrainedParts[id].TrainingLevel * TrainedParts[id].Complexity;
-                            sumComplexity += TrainedParts[id].Complexity;
-                        }
-                        catch (KeyNotFoundException) { Core.Log(Name + " is training for part #" + id + ", but it's not found in TrainedParts.", Core.LogLevel.Error); }
-                    trainingLevel = sumTraining / sumComplexity;
-                    Core.Log("Overall training level for " + TrainingFor.Count + " parts is " + trainingLevel.ToString("P2"));
-                    return trainingLevel;
+                    //double sumTraining = 0, sumComplexity = 0;
+                    //foreach (uint id in TrainingFor)
+                    //    try
+                    //    {
+                    //        Core.Log(name + " has " + TrainedParts[id].TrainingLevel.ToString("P3") + " training for part id " + id);
+                    //        sumTraining += TrainedParts[id].TrainingLevel * TrainedParts[id].Complexity;
+                    //        sumComplexity += TrainedParts[id].Complexity;
+                    //    }
+                    //    catch (KeyNotFoundException) { Core.Log(Name + " is training for part #" + id + ", but it's not found in TrainedParts.", Core.LogLevel.Error); }
+                    return GetTotalWeighedTrainingLevel() / GetTotalTrainingComplexity();
+                    //Core.Log("Overall training level for " + TrainingFor.Count + " parts is " + trainingLevel.ToString("P2"));
+                    //return trainingLevel;
                 }
                 return Core.TrainingCap;
             }

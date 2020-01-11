@@ -86,6 +86,6 @@
         public int InFlightTrainingTime = 50;
 
         [GameParameters.CustomFloatParameterUI("Stupidity Penalty", toolTip = "How much longer it takes to train a stupid kerbal compared to a smart one", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]
-        public float StupidityPenalty = 0.5f;
+        public float StupidityPenalty = 0;
     }
 }

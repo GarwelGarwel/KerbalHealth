@@ -15,7 +15,7 @@ namespace KerbalHealth
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl;
-        int colNum = 3;  // # of columns in Health Report
+        int colNum = 4;  // # of columns in Health Report
         static bool healthModulesEnabled = true;
 
         public void Start()
@@ -57,8 +57,9 @@ namespace KerbalHealth
                 // Creating column titles
                 new DialogGUILabel("<b><color=\"white\">Name</color></b>", true),
                 new DialogGUILabel("<b><color=\"white\">Trend</color></b>", true),
-                new DialogGUILabel("<b><color=\"white\">Time Left</color></b>", true)
-            };
+                new DialogGUILabel("<b><color=\"white\">Mission Duration</color></b>", true),
+                 new DialogGUILabel("<b><color=\"white\">Training Time</color></b>", true)
+           };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));
@@ -172,6 +173,14 @@ namespace KerbalHealth
             }
         }
 
+        double TrainingTime(KerbalHealthStatus khs, List<ModuleKerbalHealth> parts)
+        {
+            double c = 0;
+            foreach (ModuleKerbalHealth mkh in parts)
+                c += mkh.trainingComplexity;
+            return c / khs.TrainingPerDay * 21600;
+        }
+
         public void Update()
         {
             if (!Core.ModEnabled)
@@ -196,6 +205,9 @@ namespace KerbalHealth
                 int i = 0;
                 KerbalHealthStatus khs = null;
                 HealthModifierSet.VesselCache.Clear();
+
+                List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
+
                 foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
                 {
                     if (pcm == null) continue;
@@ -217,6 +229,7 @@ namespace KerbalHealth
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
+                    gridContents[(i + 1) * colNum + 3].SetOptionText(Core.ParseUT(TrainingTime(khs, trainingParts), false, 10));
                     i++;
                 }
                 spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Space.ToString("F1") + "</color>");
