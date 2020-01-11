@@ -168,7 +168,8 @@ namespace KerbalHealth
         {
             if (!Core.ModEnabled) return;
             Core.Log("onCrewBoardVessel(<'" + action.from.name + "', '" + action.to.name + "'>)");
-            Core.KerbalHealthList.Find(action.from.protoModuleCrew[0]).IsOnEVA = false;
+            foreach (ProtoCrewMember pcm in action.to.protoModuleCrew)
+                Core.KerbalHealthList.Find(pcm).IsOnEVA = false;
             vesselChanged = true;
             UpdateKerbals(true);
         }
