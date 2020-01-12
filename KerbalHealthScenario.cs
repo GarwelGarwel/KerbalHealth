@@ -504,15 +504,15 @@ namespace KerbalHealth
             else msg = selectedKHS.Name + " is not currently training.";
             if (selectedKHS.TrainedVessels.Count > 0)
             {
-                msg += "\r\n" + selectedKHS.Name + " is trained for the following vessels:";
+                msg += "\r\n\n" + selectedKHS.Name + " is trained for the following vessels:";
                 foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
                     msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";
             }
             if (selectedKHS.FamiliarPartTypes.Count > 0)
             {
-                msg += "\r\n" + selectedKHS + " is familiar with the following part types:";
+                msg += "\r\n\n" + selectedKHS.Name + " is familiar with the following part types:";
                 foreach (string s in selectedKHS.FamiliarPartTypes)
-                    msg += "\r\n- " + s;
+                    msg += "\r\n- " + (PartLoader.getPartInfoByName(s)?.title ?? s);
             }
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Training Info", msg, "Training Info", HighLogic.UISkin, new DialogGUIButton("Close", null, true)), false, HighLogic.UISkin);
         }
