@@ -475,13 +475,14 @@ namespace KerbalHealth
             }
             TrainingVessel = vesselName;
             TrainedVessels[vesselName] = TrainingLevel;
+            if (TrainedVessels[vesselName] >= Core.TrainingCap) FinishTraining(true);
             Core.Log("Training " + name + " for " + vesselName + " (" + TrainingFor.Count + " parts).");
         }
 
-        public void FinishTraining()
+        public void FinishTraining(bool silent = false)
         {
             Core.Log("Training of " + name + " is complete.");
-            Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
+            if (!silent) Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
             RemoveCondition("Training");
             TrainingFor.Clear();
             TrainingVessel = null;
