@@ -233,6 +233,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Kerbals must train for vessels/parts
+        /// </summary>
+        public static bool TrainingEnabled
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled = value;
+        }
+
+        /// <summary>
         /// Random events can happen
         /// </summary>
         public static bool ConditionsEnabled
