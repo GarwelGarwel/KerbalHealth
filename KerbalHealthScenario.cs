@@ -116,6 +116,13 @@ namespace KerbalHealth
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 15000;
                     Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
                 }
+                if (version < new Version("1.3.8.1"))
+                {
+                    Core.Log("Pre-1.3.9 Stress factor: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor);
+                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor = -2;
+                    Core.TrainingEnabled = false;
+                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Stress factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
+                }
                 version = v;
             }
             else Core.Log("Kerbal Health v" + version);
@@ -578,7 +585,7 @@ namespace KerbalHealth
                     double b = khs.GetBalanceHP();
                     string formatTag = "", formatUntag = "";
                     string s = "";
-                    if (healthFrozen || ((b - khs.NextConditionHP()) * ch <= 0)) s = "—";
+                    if (healthFrozen || (ch == 0) || ((b - khs.NextConditionHP()) * ch < 0)) s = "—";
                     else
                     {
                         s = Core.ParseUT(khs.TimeToNextCondition(), true, 100);
