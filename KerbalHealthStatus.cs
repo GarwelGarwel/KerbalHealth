@@ -444,11 +444,7 @@ namespace KerbalHealth
             {
                 double c = 0;
                 foreach (TrainingPart tp in TrainingFor)
-                    //if (TrainingLevels[tp.Id] < Core.TrainingCap)
-                    {
-                        //max = Math.Max(max, (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp));
-                        c += (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp);
-                    }
+                    c += (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp);
                 return c / TrainingPerDay * 21600;
             }
         }
@@ -538,7 +534,7 @@ namespace KerbalHealth
         {
             get
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled)
+                if (Core.TrainingEnabled)
                 {
                     double s = 0, c = 0;
                     foreach (TrainingPart tp in TrainingFor)
@@ -690,8 +686,8 @@ namespace KerbalHealth
         {
             Core.Log(Name + "'s last change: " + LastChange + ". Recuperation: " + LastRecuperation + "%. Decay: " + LastDecay + "%.");
             if (LastChange == 0) HealthChangePerDay();
-            if (LastRecuperation <= LastDecay) return 0;
-            return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation - LastDecay);
+            if (LastRecuperation + LastDecay == 0) return LastChange < 0 ? 0 : MaxHP;
+            return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation + LastDecay);
         }
 
         #endregion
@@ -1084,6 +1080,7 @@ namespace KerbalHealth
                     Conditions.Add(Core.GetHealthCondition(s));
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     Conditions.Add(Core.GetHealthCondition(Core.GetString(n, "name")));
+                if (!Core.TrainingEnabled && HasCondition("Training")) RemoveCondition("Training", true);
                 foreach (string s in value.GetValues("quirk"))
                     AddQuirk(s);
                 QuirkLevel = Core.GetInt(value, "quirkLevel");
@@ -1108,10 +1105,6 @@ namespace KerbalHealth
                 TrainingFor.Clear();
                 foreach (ConfigNode n in value.GetNodes("TRAINING_PART"))
                     TrainingFor.Add(new TrainingPart(n));
-                //{
-                //    try { TrainingFor.Add(UInt32.Parse(s)); }
-                //    catch (Exception) { Core.Log("Warning: Incorrect value \"" + s + "\" of a trainingFor record for " + Name + " KHS. Please report to devs.", Core.LogLevel.Important); }
-                //}
                 TrainingVessel = Core.GetString(value, "trainingVessel");
             }
         }
