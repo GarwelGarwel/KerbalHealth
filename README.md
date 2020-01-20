@@ -23,7 +23,7 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 ## Health factors
 
 The following factors may affect kerbal's health:
-- **Assigned** (kerbal is on a mission): -0.5 HP/day
+- **Stress** (kerbal is on a mission): -2 x (1 - *Training Level*) HP/day (max Training Level depends on your Astronaut Complex level; if training is enabled, you should first assign your crew to training in the Editor)
 - **Confinement** (scaled effect): -3 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
 - **Loneliness** (only 1 kerbal in the vessel): -1 HP/day
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
@@ -35,6 +35,19 @@ The following factors may affect kerbal's health:
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
 Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
+
+## Stress and Training
+
+One of the drains on kerbals' health is Stress. If you have training disabled (recommended for new players), Stress is reducced based on your Astronaut Complex facility level:
+- Level 1: 60% reduction (i.e. -0.8 HP/day)
+- Level 2: 75% reduction (i.e. -0.5 HP/day)
+- Level 3: 85% reduction (i.e. -0.3 HP/day)
+
+If you have training enabled, you should first train your kerbals for missions. In the Editor, assign crew to the ship you are going to launch, open the Health Report and click Train button. All kerbals in the list will start training, if they are at least 90% healthy. You can check the time required for training and the effects of training in the Health Report. Then save the vessel and exit the Editor (don't launch it yet!).
+
+Wait for the kerbals to finish their training. Training time depends on the number of trainable parts (as of now, it is those with crew capacity) and whether the kerbal has previously been trained for this part type. After the crew has been trained, load the vessel and launch it.
+
+Untrained kerbals will slowly get used to a vessel they are in, but it will take more time than in KSC (and they will suffer from higher Stress all that time).
 
 ## Health Recuperation and Health Decay
 
