@@ -16,7 +16,7 @@ namespace KerbalHealth
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl;
         int colNum = 4;  // # of columns in Health Report
-        static bool healthModulesEnabled = true;
+        static bool healthModulesEnabled = true, trainingEnabled = true;
 
         public void Start()
         {
@@ -57,7 +57,7 @@ namespace KerbalHealth
                 // Creating column titles
                 new DialogGUILabel("<b><color=\"white\">Name</color></b>", true),
                 new DialogGUILabel("<b><color=\"white\">Trend</color></b>", true),
-                new DialogGUILabel("<b><color=\"white\">Mission Duration</color></b>", true),
+                new DialogGUILabel("<b><color=\"white\">Mission Time</color></b>", true),
                  new DialogGUILabel("<b><color=\"white\">Training Time</color></b>", true)
            };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
@@ -68,6 +68,8 @@ namespace KerbalHealth
             List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
             foreach (HealthFactor f in Core.Factors)
                 checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, (state) => { f.SetEnabledInEditor(state); Invalidate(); }));
+            if (Core.TrainingEnabled)
+                checklist.Add(new DialogGUIToggle(true, "Trained", (state) => { trainingEnabled = state; Invalidate(); }));
             checklist.Add(new DialogGUIToggle(true, "Health modules", (state) => { healthModulesEnabled = state; Invalidate(); }));
 
             reportWindow = PopupDialog.SpawnPopupDialog(
@@ -94,8 +96,8 @@ namespace KerbalHealth
                         new DialogGUILabel("", true),
                         new DialogGUILabel("Factors", true),
                         new DialogGUIButton("Reset", OnResetButtonSelected, false),
-                        new DialogGUIButton("Train", OnTrainButtonSelected, false)),
-                    new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(140, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
+                        new DialogGUIButton("Train", OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false)),
+                    new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(190, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
                 false,
                 HighLogic.UISkin,
                 false);
@@ -103,6 +105,8 @@ namespace KerbalHealth
         }
 
         public static bool HealthModulesEnabled => healthModulesEnabled;
+
+        public static bool TrainingEnabled => trainingEnabled;
 
         public void OnResetButtonSelected()
         {
@@ -116,6 +120,7 @@ namespace KerbalHealth
         {
             KerbalHealthStatus khs;
             Core.Log("OnTrainButtonSelected()");
+            if (!Core.TrainingEnabled) return;
             List<string> s = new List<string>();
             List<string> f = new List<string>();
             foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
@@ -125,7 +130,7 @@ namespace KerbalHealth
                 if (khs == null) continue;
                 if (khs.CanTrainAtKSC)
                 {
-                    khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.autoShipName);
+                    khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
                     khs.AddCondition("Training");
                     s.Add(pcm.name);
                 }
@@ -229,7 +234,7 @@ namespace KerbalHealth
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
-                    gridContents[(i + 1) * colNum + 3].SetOptionText(Core.ParseUT(TrainingTime(khs, trainingParts), false, 10));
+                    gridContents[(i + 1) * colNum + 3].SetOptionText(Core.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 10) : "N/A");
                     i++;
                 }
                 spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Space.ToString("F1") + "</color>");
