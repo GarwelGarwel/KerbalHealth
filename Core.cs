@@ -129,7 +129,7 @@ namespace KerbalHealth
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
 
-            trainingCaps = new List<double>(3) { 0.3, 0.5, 0.7 };
+            trainingCaps = new List<double>(3) { 0.6, 0.75, 0.85 };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
                 int j = Core.GetInt(n, "level");
