@@ -51,7 +51,7 @@ namespace KerbalHealth
         public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
 
         [KSPField]
-        public float trainingComplexity = 0;  // 0 if no training needed for this part, 1 for standard training complexity
+        public float complexity = 0;  // 0 if no training needed for this part, 1 for standard training complexity
 
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
@@ -117,10 +117,8 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
-            if ((trainingComplexity == 0) && (part.CrewCapacity > 0))
-                trainingComplexity = 1;
-            if ((trainingComplexity != 0) && (id == 0))
-                id = part.persistentId;
+            Core.Log("Complexity of " + part.partName + ": " + complexity.ToString("P0"), Core.LogLevel.Important);
+            if ((complexity != 0) && (id == 0)) id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;
@@ -194,7 +192,7 @@ namespace KerbalHealth
             if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F2") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
-            if (trainingComplexity != 0) res += "\nTraining complexity: " + (trainingComplexity * 100).ToString("N0") + "%";
+            if (complexity != 0) res += "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%";
             if (res == "") return "";
             return "Module type: " + Title + res;
         }

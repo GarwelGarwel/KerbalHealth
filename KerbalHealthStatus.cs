@@ -433,7 +433,7 @@ namespace KerbalHealth
         public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / (1 + PCM.stupidity * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StupidityPenalty);
 
         public double GetPartTrainingComplexity(TrainingPart tp) => IsFamiliarWithPartType(tp.Name) ? tp.Complexity : (tp.Complexity * 2);
-        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh) => IsFamiliarWithPartType(mkh.part.name) ? mkh.trainingComplexity : (mkh.trainingComplexity * 2);
+        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh) => IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity : (mkh.complexity * 2);
 
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
@@ -466,7 +466,7 @@ namespace KerbalHealth
             foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
             {
                 if (!TrainingLevels.ContainsKey(mkh.id)) TrainingLevels.Add(mkh.id, 0);
-                TrainingFor.Add(new TrainingPart(mkh.id, mkh.part.name, mkh.trainingComplexity));
+                TrainingFor.Add(new TrainingPart(mkh.id, mkh.part.name, mkh.complexity));
                 Core.Log("Now training for " + mkh.part.name + " with id " + mkh.id);
             }
             TrainingVessel = vesselName;
