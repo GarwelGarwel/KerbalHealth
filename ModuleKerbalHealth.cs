@@ -8,6 +8,9 @@ namespace KerbalHealth
         [KSPField]
         public string title = "";  // Module title displayed in right-click menu (empty string for auto)
 
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+        public uint id = 0;
+
         [KSPField]
         public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
 
@@ -46,6 +49,9 @@ namespace KerbalHealth
 
         [KSPField]
         public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
+
+        [KSPField]
+        public float complexity = 0;  // 0 if no training needed for this part, 1 for standard training complexity
 
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
@@ -111,6 +117,8 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
+            Core.Log("Complexity of " + part.partName + ": " + complexity.ToString("P0"), Core.LogLevel.Important);
+            if ((complexity != 0) && (id == 0)) id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;
@@ -147,6 +155,7 @@ namespace KerbalHealth
                 if (decay > 0) return "Health Poisoning";
                 switch (multiplyFactor.ToLower())
                 {
+                    case "stress": return "Stress Relief";
                     case "confinement": return "Comforts";
                     case "loneliness": return "Meditation";
                     case "microgravity": return (multiplier <= 0.25) ? "Paragravity" : "Exercise Equipment";
@@ -183,6 +192,7 @@ namespace KerbalHealth
             if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F2") + "/sec.";
             if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
             if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
+            if (complexity != 0) res += "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%";
             if (res == "") return "";
             return "Module type: " + Title + res;
         }

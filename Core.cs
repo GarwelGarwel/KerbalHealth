@@ -17,7 +17,7 @@ namespace KerbalHealth
         public static KerbalHealthList KerbalHealthList { get; set; } = new KerbalHealthList();
 
         static List<HealthFactor> factors = new List<HealthFactor>() {
-            new AssignedFactor(),
+            new StressFactor(),
             new ConfinementFactor(),
             new LonelinessFactor(),
             new MicrogravityFactor(),
@@ -96,27 +96,29 @@ namespace KerbalHealth
         {
             Log("Loading config...", LogLevel.Important);
 
+            ConfigNode config = GameDatabase.Instance.GetConfigNodes("KERBALHEALTH_CONFIG")[0];
+
             HealthConditions = new Dictionary<string, HealthCondition>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_CONDITION"))
+            foreach (ConfigNode n in  config.GetNodes("HEALTH_CONDITION"))
                 HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
             Core.Log(HealthConditions.Count + " health conditions loaded:");
             foreach (HealthCondition hc in HealthConditions.Values)
                 Core.Log(hc.ToString());
 
             ResourceShielding = new Dictionary<int, double>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("RESOURCE_SHIELDING"))
+            foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.", LogLevel.Important);
 
             Quirks = new List<Quirk>();
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("HEALTH_QUIRK"))
+            foreach (ConfigNode n in config.GetNodes("HEALTH_QUIRK"))
                 Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
             PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
             foreach (CelestialBody b in FlightGlobals.Bodies) PlanetConfigs.Add(b, new PlanetHealthConfig(b));
             int i = 0;
-            foreach (ConfigNode n in GameDatabase.Instance.GetConfigNodes("PLANET_HEALTH_CONFIG"))
+            foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
             {
                 PlanetHealthConfig bc = GetPlanetConfig(GetString(n, "name"));
                 if (bc != null)
@@ -127,8 +129,13 @@ namespace KerbalHealth
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
 
-            // Initializing decontamination XP penalties - DOESN'T WORK
-            //KerbalRoster.AddExperienceType("Decontamination", "Decontamination", -2, -2);
+            trainingCaps = new List<double>(3) { 0.6, 0.75, 0.85 };
+            foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
+            {
+                int j = Core.GetInt(n, "level");
+                if (j == 0) continue;
+                trainingCaps[j - 1] = Core.GetDouble(n, "cap");
+            }
 
             Loaded = true;
         }
@@ -223,6 +230,15 @@ namespace KerbalHealth
         {
             get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth;
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ExhaustionEndHealth = value;
+        }
+
+        /// <summary>
+        /// Kerbals must train for vessels/parts
+        /// </summary>
+        public static bool TrainingEnabled
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled = value;
         }
 
         /// <summary>
@@ -521,6 +537,34 @@ namespace KerbalHealth
             return null;
         }
 
+        static List<double> trainingCaps;
+
+        /// <summary>
+        /// Max amount of stress reduced by training depending on Astronaut Complex's level
+        /// </summary>
+        public static double TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
+
+        /// <summary>
+        /// Returns list of IDs of parts that are used in training and stress calculations
+        /// </summary>
+        /// <param name="allParts"></param>
+        /// <returns></returns>
+        public static List<ModuleKerbalHealth> GetTrainingCapableParts(List<Part> allParts)
+        {
+            List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
+            foreach (Part p in allParts)
+            {
+                List<ModuleKerbalHealth> modules = p.FindModulesImplementing<ModuleKerbalHealth>();
+                foreach (ModuleKerbalHealth mkh in modules)
+                    if (mkh.complexity != 0)
+                    {
+                        res.Add(mkh);
+                        break;
+                    }
+            }
+            return res;
+        }
+
         public static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
         public static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
@@ -530,7 +574,10 @@ namespace KerbalHealth
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
         {
             double res;
-            try { res = Double.Parse(n.GetValue(key)); }
+            try {
+                res = Double.Parse(n.GetValue(key));
+                if (Double.IsNaN(res)) throw new Exception();
+            }
             catch (Exception) { res = defaultValue; }
             return res;
         }
@@ -539,6 +586,14 @@ namespace KerbalHealth
         {
             int res;
             try { res = Int32.Parse(n.GetValue(key)); }
+            catch (Exception) { res = defaultValue; }
+            return res;
+        }
+
+        public static uint GetUInt(ConfigNode n, string key, uint defaultValue = 0)
+        {
+            uint res;
+            try { res = UInt32.Parse(n.GetValue(key)); }
             catch (Exception) { res = defaultValue; }
             return res;
         }

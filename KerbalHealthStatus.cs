@@ -389,6 +389,168 @@ namespace KerbalHealth
         }
 
         #endregion
+        #region TRAINING
+
+        /// <summary>
+        /// List of part ids and their training levels
+        /// </summary>
+        public Dictionary<uint, double> TrainingLevels { get; set; } = new Dictionary<uint, double>();
+
+        /// <summary>
+        /// List of part type ids (e.g. mk1pod) the kerbal has completed training for at least once (speeds up further training for similar types)
+        /// </summary>
+        public HashSet<string> FamiliarPartTypes { get; set; } = new HashSet<string>();
+
+        /// <summary>
+        /// List of vessels the kerbal has trained for (information only)
+        /// </summary>
+        public Dictionary<string, double> TrainedVessels { get; set; } = new Dictionary<string, double>();
+
+        /// <summary>
+        /// Ids of parts the kerbal is currently training for
+        /// </summary>
+        public List<TrainingPart> TrainingFor { get; set; } = new List<TrainingPart>();
+
+        /// <summary>
+        /// Name of the vessel the kerbal is currently training for (information only)
+        /// </summary>
+        public string TrainingVessel { get; set; }
+
+        /// <summary>
+        /// Returns true if the kerbal satisfies all conditions to be trained at KSC
+        /// </summary>
+        public bool CanTrainAtKSC => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 0.9);
+
+        /// <summary>
+        /// Returns true if the kerbal has completed at least one training for the given part type
+        /// </summary>
+        /// <param name="partName"></param>
+        /// <returns></returns>
+        public bool IsFamiliarWithPartType(string partName) => FamiliarPartTypes.Contains(partName);
+
+        public double TrainingLevelForPart(uint id) => TrainingLevels.ContainsKey(id) ? TrainingLevels[id] : 0;
+
+        public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().InFlightTrainingTime : HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCTrainingTime) / (1 + PCM.stupidity * HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StupidityPenalty);
+
+        public double GetPartTrainingComplexity(TrainingPart tp) => IsFamiliarWithPartType(tp.Name) ? tp.Complexity : (tp.Complexity * 2);
+        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh) => IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity : (mkh.complexity * 2);
+
+        /// <summary>
+        /// Estimated time (in seconds) until training for all parts is complete
+        /// </summary>
+        public double TrainingETA
+        {
+            get
+            {
+                double c = 0;
+                foreach (TrainingPart tp in TrainingFor)
+                    c += (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp);
+                return c / TrainingPerDay * 21600;
+            }
+        }
+
+        /// <summary>
+        /// Start training the kerbal for a set of parts; also abandons all previous trainings
+        /// </summary>
+        /// <param name="parts"></param>
+        /// <param name="vesselName"></param>
+        public void StartTraining(List<Part> parts, string vesselName)
+        {
+            Core.Log("KerbalHealthStatus.StartTraining(" + parts.Count + " parts, '" + vesselName + "') for " + name);
+            TrainingFor.Clear();
+            if (IsOnEVA)
+            {
+                TrainingVessel = null;
+                return;
+            }
+            foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
+            {
+                if (!TrainingLevels.ContainsKey(mkh.id)) TrainingLevels.Add(mkh.id, 0);
+                TrainingFor.Add(new TrainingPart(mkh.id, mkh.part.name, mkh.complexity));
+                Core.Log("Now training for " + mkh.part.name + " with id " + mkh.id);
+            }
+            TrainingVessel = vesselName;
+            TrainedVessels[vesselName] = TrainingLevel;
+            if (TrainedVessels[vesselName] >= Core.TrainingCap) FinishTraining(true);
+            Core.Log("Training " + name + " for " + vesselName + " (" + TrainingFor.Count + " parts).");
+        }
+
+        public void FinishTraining(bool silent = false)
+        {
+            Core.Log("Training of " + name + " is complete.");
+            if (!silent) Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
+            RemoveCondition("Training");
+            TrainingFor.Clear();
+            TrainingVessel = null;
+        }
+
+        void Train(double interval)
+        {
+            Core.Log("KerbalHealthStatus.Train(" + interval + ") for " + name);
+            if (IsOnEVA)
+            {
+                Core.Log(name + " is on EVA. No training.");
+                return;
+            }
+            Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
+
+            // Step 1: Calculating training complexity of all not yet trained-for parts
+            double c = 0;
+            foreach (TrainingPart tp in TrainingFor)
+            {
+                if (TrainingLevels[tp.Id] < Core.TrainingCap)
+                    c += GetPartTrainingComplexity(tp);
+            }
+            if (c == 0)
+            {
+                Core.Log("No parts in need of training found.", Core.LogLevel.Important);
+                FinishTraining();
+                return;
+            }
+            bool trainingComplete = true;
+            double s = 0, p = interval * TrainingPerDay / 21600 / c;  // Training progress is inverse proportional to total complexity of parts
+            Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + (Core.TrainingCap * 100) + "%.");
+
+            // Step 1: Updating parts' training progress and calculating their base complexity to update vessel's training level
+            c = 0;
+            foreach (TrainingPart tp in TrainingFor)
+            {
+                TrainingLevels[tp.Id] = Math.Min(TrainingLevels[tp.Id] + p, Core.TrainingCap);
+                s += TrainingLevels[tp.Id] * tp.Complexity;
+                c += tp.Complexity;
+                if (TrainingLevels[tp.Id] < Core.TrainingCap) trainingComplete = false;
+                else
+                {
+                    Core.Log("Training for part " + tp.Name + " with id " + tp.Id + " complete.");
+                    FamiliarPartTypes.Add(tp.Name);
+                }
+                Core.Log("Training level for part " + tp.Name + " with id " + tp.Id + " is " + TrainingLevels[tp.Id].ToString("P2") + " with complexity " + tp.Complexity.ToString("P0"));
+            }
+            if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s / c;
+            if (trainingComplete) FinishTraining();
+        }
+
+        public double TrainingLevel
+        {
+            get
+            {
+                if (Core.TrainingEnabled)
+                {
+                    double s = 0, c = 0;
+                    foreach (TrainingPart tp in TrainingFor)
+                    {
+                        s += TrainingLevels[tp.Id] * tp.Complexity;
+                        c += tp.Complexity;
+                    }
+                    s = (c != 0) ? s / c : Core.TrainingCap;
+                    if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s;
+                    return s;
+                }
+                return Core.TrainingCap;
+            }
+        }
+
+        #endregion
         #region HP
         double hp;
         /// <summary>
@@ -524,8 +686,8 @@ namespace KerbalHealth
         {
             Core.Log(Name + "'s last change: " + LastChange + ". Recuperation: " + LastRecuperation + "%. Decay: " + LastDecay + "%.");
             if (LastChange == 0) HealthChangePerDay();
-            if (LastRecuperation <= LastDecay) return 0;
-            return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation - LastDecay);
+            if (LastRecuperation + LastDecay == 0) return LastChange < 0 ? 0 : MaxHP;
+            return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation + LastDecay);
         }
 
         #endregion
@@ -829,6 +991,25 @@ namespace KerbalHealth
                 Core.ShowMessage("<color=\"white\">" + Name + "</color> has died of poor health!", true);
             }
 
+            // If KSC training no longer possible, stop it
+            if (HasCondition("Training") && !CanTrainAtKSC)
+            {
+                Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
+                RemoveCondition("Training");
+                if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) TrainingFor.Clear();
+            }
+
+            // Stop training after the kerbal has been recovered
+            if ((TrainingFor.Count > 0) && (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) && !HasCondition("Training"))
+            {
+                TrainingFor.Clear();
+                TrainingVessel = null;
+            }
+
+            // Train
+            if ((((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition("Training"))))
+                Train(interval);
+
             if (HasCondition("Exhausted"))
             {
                 if (HP >= ExhaustionEndHP)
@@ -865,6 +1046,25 @@ namespace KerbalHealth
                 if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
                 if (LastDecay != 0) n.AddValue("lastDecay", LastDecay);
                 if (IsOnEVA) n.AddValue("onEva", true);
+                foreach (KeyValuePair<uint, double> t in TrainingLevels)
+                {
+                    ConfigNode n2 = new ConfigNode("TRAINED_PART");
+                    n2.AddValue("id", t.Key);
+                    n2.AddValue("trainingLevel", t.Value);
+                    n.AddNode(n2);
+                }
+                foreach (string s in FamiliarPartTypes)
+                    n.AddValue("familiarPartType", s);
+                foreach (KeyValuePair<string, double> kvp in TrainedVessels)
+                {
+                    ConfigNode n2 = new ConfigNode("TRAINED_VESSEL");
+                    n2.AddValue("name", kvp.Key);
+                    n2.AddValue("trainingLevel", kvp.Value);
+                    n.AddNode(n2);
+                }
+                foreach (TrainingPart tp in TrainingFor)
+                    n.AddNode(tp.ConfigNode);
+                if (TrainingVessel != null) n.AddValue("trainingVessel", TrainingVessel);
                 return n;
             }
             set
@@ -880,6 +1080,7 @@ namespace KerbalHealth
                     Conditions.Add(Core.GetHealthCondition(s));
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     Conditions.Add(Core.GetHealthCondition(Core.GetString(n, "name")));
+                if (!Core.TrainingEnabled && HasCondition("Training")) RemoveCondition("Training", true);
                 foreach (string s in value.GetValues("quirk"))
                     AddQuirk(s);
                 QuirkLevel = Core.GetInt(value, "quirkLevel");
@@ -888,6 +1089,23 @@ namespace KerbalHealth
                 LastRecuperation = Core.GetDouble(value, "lastRecuperation");
                 LastDecay = Core.GetDouble(value, "lastDecay");
                 IsOnEVA = Core.GetBool(value, "onEva");
+                TrainingLevels.Clear();
+                foreach (ConfigNode n in value.GetNodes("TRAINED_PART"))
+                {
+                    uint id = Core.GetUInt(n, "id");
+                    if (id != 0) TrainingLevels[id] = Core.GetDouble(n, "trainingLevel");
+                }
+                foreach (string s in value.GetValues("familiarPartType"))
+                    FamiliarPartTypes.Add(s);
+                foreach (ConfigNode n in value.GetNodes("TRAINED_VESSEL"))
+                {
+                    string name = Core.GetString(n, "name");
+                    if (name != null) TrainedVessels.Add(name, Core.GetDouble(n, "trainingLevel"));
+                }
+                TrainingFor.Clear();
+                foreach (ConfigNode n in value.GetNodes("TRAINING_PART"))
+                    TrainingFor.Add(new TrainingPart(n));
+                TrainingVessel = Core.GetString(value, "trainingVessel");
             }
         }
 

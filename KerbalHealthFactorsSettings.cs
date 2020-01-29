@@ -14,46 +14,34 @@
             switch (preset)
             {
                 case GameParameters.Preset.Easy:
-                    AssignedFactor = -0.5f;
                     LonelinessFactor = 0;
                     MicrogravityFactor = 0;
                     EVAFactor = 0;
                     ConnectedFactor = 0;
-                    HomeFactor = 5;
-                    KSCFactor = 10;
                     break;
                 case GameParameters.Preset.Normal:
-                    AssignedFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -1;
-                    EVAFactor = -5;
+                    EVAFactor = -10;
                     ConnectedFactor = 0.5f;
-                    HomeFactor = 2;
-                    KSCFactor = 4;
                     break;
                 case GameParameters.Preset.Moderate:
-                    AssignedFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
                     ConnectedFactor = 0.5f;
-                    HomeFactor = 2;
-                    KSCFactor = 4;
                     break;
                 case GameParameters.Preset.Hard:
-                    AssignedFactor = -0.5f;
                     LonelinessFactor = -1;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
                     ConnectedFactor = 0.5f;
-                    HomeFactor = 2;
-                    KSCFactor = 4;
                     break;
             }
         }
 
-        [GameParameters.CustomFloatParameterUI("Assigned", toolTip = "HP change per day when the kerbal is assigned", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
-        public float AssignedFactor = -0.5f;
+        [GameParameters.CustomFloatParameterUI("Stress", toolTip = "HP change per day when the kerbal is assigned; can be lowered through training and/or upgrading Astronaut Complex", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
+        public float StressFactor = -2;
 
         [GameParameters.CustomFloatParameterUI("Confinement", toolTip = "HP change per day in a vessel with 1 living space per kerbal", minValue = -10, maxValue = 0, stepCount = 41)]
         public float ConfinementBaseFactor = -3;
@@ -74,6 +62,18 @@
         public float HomeFactor = 2;
 
         [GameParameters.CustomFloatParameterUI("At KSC", toolTip = "HP change per day when the kerbal is at KSC (available)", minValue = 0, maxValue = 20, stepCount = 41)]
-        public float KSCFactor = 5;
+        public float KSCFactor = 4;
+
+        [GameParameters.CustomParameterUI("Training Enabled", toolTip = "Turn on/off the need to train kerbals to reduce stress")]
+        public bool TrainingEnabled = true;
+
+        [GameParameters.CustomIntParameterUI("KSC Training Time", toolTip = "Min # of days it takes to train kerbal to max level at KSC", minValue = 1, maxValue = 50)]
+        public int KSCTrainingTime = 20;
+
+        [GameParameters.CustomIntParameterUI("In-Flight Training Time", toolTip = "Min # of days it takes to train kerbal to max level during a mission", minValue = 1, maxValue = 100)]
+        public int InFlightTrainingTime = 50;
+
+        [GameParameters.CustomFloatParameterUI("Stupidity Penalty", toolTip = "How much longer it takes to train a stupid kerbal compared to a smart one", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]
+        public float StupidityPenalty = 0;
     }
 }
