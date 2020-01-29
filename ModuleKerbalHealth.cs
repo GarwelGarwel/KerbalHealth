@@ -155,7 +155,7 @@ namespace KerbalHealth
                 if (decay > 0) return "Health Poisoning";
                 switch (multiplyFactor.ToLower())
                 {
-                    case "stress": return "Relax Room";
+                    case "stress": return "Stress Relief";
                     case "confinement": return "Comforts";
                     case "loneliness": return "Meditation";
                     case "microgravity": return (multiplier <= 0.25) ? "Paragravity" : "Exercise Equipment";
