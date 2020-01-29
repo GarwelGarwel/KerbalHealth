@@ -632,7 +632,7 @@ namespace KerbalHealth
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
                         i += 2;
                     }
-                gridContents[i].children[0].SetOptionText("<color=\"white\">" + ((selectedKHS.TrainingVessel != null) ? ((selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%") : "N/A") + "</color>");
+                gridContents[i].children[0].SetOptionText("<color=\"white\">" + (((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? ((selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%") : "N/A") + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + (healthFrozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
                 gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
