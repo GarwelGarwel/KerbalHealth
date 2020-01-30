@@ -14,20 +14,12 @@
             switch (preset)
             {
                 case GameParameters.Preset.Easy:
-                    DeathEnabled = false;
-                    ExhaustionStartHealth = 0.1f;
-                    ExhaustionEndHealth = 0.15f;
-                    break;
                 case GameParameters.Preset.Normal:
                     DeathEnabled = false;
-                    ExhaustionStartHealth = 0.2f;
-                    ExhaustionEndHealth = 0.25f;
                     break;
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
                     DeathEnabled = true;
-                    ExhaustionStartHealth = 0.2f;
-                    ExhaustionEndHealth = 0.25f;
                     break;
             }
         }
@@ -68,7 +60,7 @@
         [GameParameters.CustomFloatParameterUI("Exhaustion End Health", toolTip = "Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float ExhaustionEndHealth = 0.25f;
 
-        [GameParameters.CustomParameterUI("Debug Mode", toolTip = "Controls amount of logging")]
+        [GameParameters.CustomParameterUI("Debug Logging", toolTip = "Controls amount of logging")]
         public bool DebugMode = false;
     }
 }
