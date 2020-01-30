@@ -183,7 +183,7 @@ namespace KerbalHealth
             double c = 0;
             foreach (ModuleKerbalHealth mkh in parts)
                 c += (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh);
-            return c / khs.TrainingPerDay * 21600;
+            return c / khs.TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
         }
 
         public void Update()

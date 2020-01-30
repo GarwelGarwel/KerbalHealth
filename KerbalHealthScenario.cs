@@ -121,7 +121,7 @@ namespace KerbalHealth
                     Core.Log("Pre-1.3.9 Stress factor: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor);
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor = -2;
                     Core.TrainingEnabled = false;
-                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Stress factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
+                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Stress (formerly Assigned) factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
                 }
                 version = v;
             }
@@ -539,7 +539,7 @@ namespace KerbalHealth
             {
                 if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) msg += "Your Astronaut Complex has to be <color=\"yellow\">level " + Core.DecontaminationAstronautComplexLevel + "</color> and your R&D Facility <color=\"yellow\">level " + Core.DecontaminationRNDLevel + "</color> to allow decontamination.\r\n\r\n";
                 if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)) msg += "Decontamination will cost <color=\"yellow\">" + (HighLogic.CurrentGame.Mode == Game.Modes.CAREER ? (Core.DecontaminationFundsCost.ToString("N0") + " funds and ") : "") + Core.DecontaminationScienceCost.ToString("N0") + " science</color>. ";
-                msg += selectedKHS.Name + " needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by " + (Core.DecontaminationHealthLoss * 100).ToString("N0") + "% during decontamination.\r\n\r\nAt a rate of " + Core.DecontaminationRate.ToString("N0") + " banana doses/day, it is expected to take about <color=\"yellow\">" + Core.ParseUT(selectedKHS.Dose / Core.DecontaminationRate * 21600, false, 2) + "</color>.";
+                msg += selectedKHS.Name + " needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by " + (Core.DecontaminationHealthLoss * 100).ToString("N0") + "% during decontamination.\r\n\r\nAt a rate of " + Core.DecontaminationRate.ToString("N0") + " banana doses/day, it is expected to take about <color=\"yellow\">" + Core.ParseUT(selectedKHS.Dose / Core.DecontaminationRate * KSPUtil.dateTimeFormatter.Day, false, 2) + "</color>.";
                 if (selectedKHS.IsReadyForDecontamination)
                     ok = () => { selectedKHS.StartDecontamination(); Invalidate(); };
                 else msg += "</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>";

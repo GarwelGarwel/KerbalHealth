@@ -445,7 +445,7 @@ namespace KerbalHealth
                 double c = 0;
                 foreach (TrainingPart tp in TrainingFor)
                     c += (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp);
-                return c / TrainingPerDay * 21600;
+                return c / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
             }
         }
 
@@ -508,7 +508,7 @@ namespace KerbalHealth
                 return;
             }
             bool trainingComplete = true;
-            double s = 0, p = interval * TrainingPerDay / 21600 / c;  // Training progress is inverse proportional to total complexity of parts
+            double s = 0, p = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / c;  // Training progress is inverse proportional to total complexity of parts
             Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + (Core.TrainingCap * 100) + "%.");
 
             // Step 1: Updating parts' training progress and calculating their base complexity to update vessel's training level
