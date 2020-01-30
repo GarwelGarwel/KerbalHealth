@@ -27,8 +27,8 @@
         [GameParameters.CustomParameterUI("Mod Enabled", toolTip = "Turn Kerbal Health mechanics on/off")]
         public bool modEnabled = true;
 
-        [GameParameters.CustomParameterUI("Use Blizzy's Toolbar", toolTip = "Use Blizzy's Toolbar mod (is installed) instead of stock app launcher. May need a scene change")]
-        public bool UseBlizzysToolbar = true;
+        [GameParameters.CustomParameterUI("AppLauncher Button", toolTip = "Show stock AppLauncher (sidebar) buttons in addition to Blizzy's Toolbar. May need a scene change")]
+        public bool ShowAppLauncherButton = true;
 
         [GameParameters.CustomIntParameterUI("Sort Kerbals by Location", toolTip = "Kerbals in Health Monitor will be displayed depending on their current location, otherwise sort by name")]
         public bool SortByLocation = true;

@@ -76,7 +76,14 @@ namespace KerbalHealth
                 else Core.Log("Could not find onKerbalThaw event!", Core.LogLevel.Error);
             }
 
-            if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
+            if (Core.ShowAppLauncherButton)
+            {
+                Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
+                Texture2D icon = new Texture2D(38, 38);
+                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
+                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            }
+            if (ToolbarManager.ToolbarAvailable)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
                 toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthMonitor");
@@ -84,13 +91,6 @@ namespace KerbalHealth
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
                 toolbarButton.ToolTip = "Kerbal Health";
                 toolbarButton.OnClick += (e) => { if (monitorWindow == null) DisplayData(); else UndisplayData(); };
-            }
-            else
-            {
-                Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
-                Texture2D icon = new Texture2D(38, 38);
-                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             }
 
             // Automatically updating settings from older versions

@@ -25,7 +25,14 @@ namespace KerbalHealth
             GameEvents.onEditorShipModified.Add(delegate(ShipConstruct sc) { Invalidate(); });
             GameEvents.onEditorPodDeleted.Add(Invalidate);
             GameEvents.onEditorScreenChange.Add(delegate(EditorScreen s) { Invalidate(); });
-            if (ToolbarManager.ToolbarAvailable && Core.UseBlizzysToolbar)
+            if (Core.ShowAppLauncherButton)
+            {
+                Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
+                Texture2D icon = new Texture2D(38, 38);
+                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
+                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            }
+            if (ToolbarManager.ToolbarAvailable)
             {
                 Core.Log("Registering Blizzy's Toolbar button...", Core.LogLevel.Important);
                 toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthReport");
@@ -33,13 +40,6 @@ namespace KerbalHealth
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
                 toolbarButton.ToolTip = "Kerbal Health";
                 toolbarButton.OnClick += (e) => { if (reportWindow == null) DisplayData(); else UndisplayData(); };
-            }
-            else
-            {
-                Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
-                Texture2D icon = new Texture2D(38, 38);
-                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             }
             Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevel.Important);
         }

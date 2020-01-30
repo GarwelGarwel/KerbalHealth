@@ -154,10 +154,10 @@ namespace KerbalHealth
         /// <summary>
         /// Use Blizzy's Toolbar mod instead of stock app launcher
         /// </summary>
-        public static bool UseBlizzysToolbar
+        public static bool ShowAppLauncherButton
         {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UseBlizzysToolbar = value;
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ShowAppLauncherButton;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ShowAppLauncherButton = value;
         }
 
         /// <summary>
