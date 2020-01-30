@@ -505,21 +505,20 @@ namespace KerbalHealth
         void OnTrainingInfo()
         {
             if (selectedKHS == null) return;
-            string msg;
-            if (selectedKHS.TrainingVessel != null)
-                msg = selectedKHS.Name + " is training for " + selectedKHS.TrainingVessel + " (" + selectedKHS.TrainingFor.Count + " parts).\r\nProgress: " + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%.\r\n" + Core.ParseUT(selectedKHS.TrainingETA, false, 10) + " to go.";
-            else msg = selectedKHS.Name + " is not currently training.";
+            string msg = "<color=\"white\">" + selectedKHS.Name + "</color>" + ((selectedKHS.TrainingVessel != null)
+                ? " is training for <color=\"white\">" + selectedKHS.TrainingVessel + "</color> (" + selectedKHS.TrainingFor.Count + " parts).\r\nProgress: <color=\"white\">" + (selectedKHS.TrainingLevel * 100).ToString("N1") + "% / " + (Core.TrainingCap * 100).ToString("N0") + "%</color>.\r\n<color=\"white\">" + Core.ParseUT(selectedKHS.TrainingETA, false, 10) + "</color> to go."
+                : " is not currently training.");
             if (selectedKHS.TrainedVessels.Count > 0)
             {
                 msg += "\r\n\n" + selectedKHS.Name + " is trained for the following vessels:";
                 foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
-                    msg += "\r\n- " + kvp.Key + "\t" + (kvp.Value * 100).ToString("N1") + "%";
+                    msg += "\r\n- <color=\"white\">" + kvp.Key + ":\t" + (kvp.Value * 100).ToString("N1") + "%</color>";
             }
             if (selectedKHS.FamiliarPartTypes.Count > 0)
             {
-                msg += "\r\n\n" + selectedKHS.Name + " is familiar with the following part types:";
+                msg += "\r\n\n<color=\"white\">" + selectedKHS.Name + "</color> is familiar with the following part types:";
                 foreach (string s in selectedKHS.FamiliarPartTypes)
-                    msg += "\r\n- " + (PartLoader.getPartInfoByName(s)?.title ?? s);
+                    msg += "\r\n- <color=\"white\">" + (PartLoader.getPartInfoByName(s)?.title ?? s) + "</color>";
             }
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Training Info", msg, "Training Info", HighLogic.UISkin, new DialogGUIButton("Close", null, true)), false, HighLogic.UISkin);
         }
