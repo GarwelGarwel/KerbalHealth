@@ -330,7 +330,7 @@ namespace KerbalHealth
                     t.Magnitutde = radStormMagnitudes[strength] * Math.Exp(Core.GetGaussian(0.4));
                     Core.Log("Radstorm travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"));
                     t.Time = Planetarium.GetUniversalTime() + delay;
-                    Core.ShowMessage("A radiation storm of <color=\"yellow\">" + radStormStrengthNames[strength] + "</color> strength is about to hit <color=\"yellow\">" + t.Name + "</color> at <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
+                    Core.ShowMessage("A radiation storm of <color=\"yellow\">" + radStormStrengthNames[strength] + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
                     radStorms.Add(t);
                 }
                 else Core.Log("No radstorm for " + t.Name);
@@ -360,8 +360,15 @@ namespace KerbalHealth
                     if (time >= radStorms[i].Time)
                     {
                         Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
-                        Core.ShowMessage("Radstorm hits <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
-                        // Implement radstorm
+                        int j = 0;
+                        foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
+                            if (radStorms[i].Affects(khs.PCM))
+                            {
+                                Core.Log("The radstorm irradiates " + khs.Name + " by " + (radStorms[i].Magnitutde * khs.LastExposure).ToString("N0") + " BED.");
+                                khs.Dose += radStorms[i].Magnitutde * khs.LastExposure;
+                                j++;
+                            }
+                        Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
                         radStorms.RemoveAt(i--);
                     }
 

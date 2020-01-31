@@ -77,6 +77,17 @@ namespace KerbalHealth
             }
         }
 
+        public bool Affects(ProtoCrewMember pcm)
+        {
+            Vessel v = Core.KerbalVessel(pcm);
+            if (v == null) return false;
+            if (Type == TargetType.Body)
+                return Core.GetPlanet(v.mainBody).name == Name;
+            if (Type == TargetType.Vessel)
+                return v.persistentId == VesselId;
+            return false;
+        }
+
         public ConfigNode ConfigNode
         {
             get
