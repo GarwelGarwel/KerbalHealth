@@ -356,21 +356,22 @@ namespace KerbalHealth
                     vesselChanged = false;
                 }
 
-                for (int i = 0; i < radStorms.Count; i++)
-                    if (time >= radStorms[i].Time)
-                    {
-                        Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
-                        int j = 0;
-                        foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
-                            if (radStorms[i].Affects(khs.PCM))
-                            {
-                                Core.Log("The radstorm irradiates " + khs.Name + " by " + (radStorms[i].Magnitutde * khs.LastExposure).ToString("N0") + " BED.");
-                                khs.Dose += radStorms[i].Magnitutde * khs.LastExposure;
-                                j++;
-                            }
-                        Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
-                        radStorms.RemoveAt(i--);
-                    }
+                if (Core.RadiationEnabled)
+                    for (int i = 0; i < radStorms.Count; i++)
+                        if (time >= radStorms[i].Time)
+                        {
+                            Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
+                            int j = 0;
+                            foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
+                                if (radStorms[i].Affects(khs.PCM))
+                                {
+                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + (radStorms[i].Magnitutde * khs.LastExposure).ToString("N0") + " BED.");
+                                    khs.Dose += radStorms[i].Magnitutde * khs.LastExposure;
+                                    j++;
+                                }
+                            Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
+                            radStorms.RemoveAt(i--);
+                        }
 
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
@@ -405,7 +406,7 @@ namespace KerbalHealth
                                     khs.AddCondition(hc);
                                 }
                         }
-                        ProcessRadStorms();
+                        if (Core.RadiationEnabled) ProcessRadStorms();
                         nextEventTime += GetNextEventInterval();
                         Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                     }
