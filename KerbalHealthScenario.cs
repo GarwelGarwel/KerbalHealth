@@ -16,10 +16,14 @@ namespace KerbalHealth
         static double nextEventTime;  // UT when (or after) next event check occurs
         Version version;  // Current Kerbal Health version
 
+        List<RadStorm> radStorms = new List<RadStorm>();
+        double[] radStormStrengthChances = { 0.6, 0.3, 0.1 };
+        double[] radStormMagnitudes = { 2e6, 1e7, 4e7 };
+        string[] radStormStrengthNames = { "medium", "severe", "extreme" };
+
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
-        List<RadStorm> radStorms = new List<RadStorm>();
         bool dirty = false, crewChanged = false, vesselChanged = false;
         const int colNumMain = 8, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
@@ -321,11 +325,12 @@ namespace KerbalHealth
                 if (Core.rand.NextDouble() < RadStormChance)
                 {
                     Core.Log("Radstorm will hit " + t.Name, Core.LogLevel.Important);
-                    int strength = Core.SelectWeightedIndex(Core.rand.NextDouble(), new List<double>() { 0.6, 0.3, 0.1 });  // Chances of moderate, severe and extreme storms, respectively
-                    double delay = t.DistanceFromSun / 500000;  // Replace with (random) CME speed
-                    t.Magnitutde = new double[] { 2e6, 1e7, 4e7 }[strength];  // Magnitude of storms
+                    int strength = Core.SelectWeightedIndex(Core.rand.NextDouble(), radStormStrengthChances);
+                    double delay = t.DistanceFromSun / 500000 * Math.Exp(Core.GetGaussian(0.5));
+                    t.Magnitutde = radStormMagnitudes[strength] * Math.Exp(Core.GetGaussian(0.4));
+                    Core.Log("Radstorm travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"));
                     t.Time = Planetarium.GetUniversalTime() + delay;
-                    Core.ShowMessage("<color=\"red\">A radiation storm of strength " + strength + " is about to hit <color=\"white\">" + t.Name + "</color> at <color=\"white\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!</color>", true);
+                    Core.ShowMessage("A radiation storm of <color=\"yellow\">" + radStormStrengthNames[strength] + "</color> strength is about to hit <color=\"yellow\">" + t.Name + "</color> at <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
                     radStorms.Add(t);
                 }
                 else Core.Log("No radstorm for " + t.Name);
@@ -355,7 +360,7 @@ namespace KerbalHealth
                     if (time >= radStorms[i].Time)
                     {
                         Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
-                        Core.ShowMessage("<color=\"red\">Radstorm hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde + ".</color>", true);
+                        Core.ShowMessage("Radstorm hits <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
                         // Implement radstorm
                         radStorms.RemoveAt(i--);
                     }

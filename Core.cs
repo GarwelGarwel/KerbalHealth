@@ -613,14 +613,22 @@ namespace KerbalHealth
         /// <returns></returns>
         public static double Sqr(double x) => x * x;
 
-        public static int SelectWeightedIndex(double v, List<double> weights)
+        /// <summary>
+        /// Returns a Gaussian-distributed random value
+        /// </summary>
+        /// <param name="mean"></param>
+        /// <param name="stdDev"></param>
+        /// <returns></returns>
+        public static double GetGaussian(double stdDev = 1, double mean = 0) => mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - rand.NextDouble()));
+
+        public static int SelectWeightedIndex(double v, double[] weights)
         {
-            for (int i = 0; i < weights.Count; i++)
+            for (int i = 0; i < weights.Length; i++)
             {
                 v -= weights[i];
                 if (v < 0) return i;
             }
-            return weights.Count;
+            return weights.Length - 1;
         }
 
         /// <summary>
