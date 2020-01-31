@@ -17,10 +17,6 @@ namespace KerbalHealth
         Version version;  // Current Kerbal Health version
 
         List<RadStorm> radStorms = new List<RadStorm>();
-        double[] radStormStrengthChances = { 0.6, 0.3, 0.1 };
-        double[] radStormMagnitudes = { 2e6, 1e7, 4e7 };
-        string[] radStormStrengthNames = { "medium", "severe", "extreme" };
-
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
@@ -325,12 +321,12 @@ namespace KerbalHealth
                 if (Core.rand.NextDouble() < RadStormChance)
                 {
                     Core.Log("Radstorm will hit " + t.Name, Core.LogLevel.Important);
-                    int strength = Core.SelectWeightedIndex(Core.rand.NextDouble(), radStormStrengthChances);
-                    double delay = t.DistanceFromSun / 500000 * Math.Exp(Core.GetGaussian(0.5));
-                    t.Magnitutde = radStormMagnitudes[strength] * Math.Exp(Core.GetGaussian(0.4));
+                    RadStormType rst = Core.GetRandomRadStormType();
+                    double delay = t.DistanceFromSun / rst.GetVelocity();
+                    t.Magnitutde = rst.GetMagnitude();
                     Core.Log("Radstorm travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"));
                     t.Time = Planetarium.GetUniversalTime() + delay;
-                    Core.ShowMessage("A radiation storm of <color=\"yellow\">" + radStormStrengthNames[strength] + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
+                    Core.ShowMessage("A radiation storm of <color=\"yellow\">" + rst.Name + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
                     radStorms.Add(t);
                 }
                 else Core.Log("No radstorm for " + t.Name);

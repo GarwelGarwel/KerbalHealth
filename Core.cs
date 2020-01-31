@@ -89,6 +89,20 @@ namespace KerbalHealth
             return PlanetConfigs[cb];
         }
 
+        public static List<RadStormType> RadStormTypes { get; set; }
+        static double radStormTypesTotalWeight = 0;
+
+        public static RadStormType GetRandomRadStormType()
+        {
+            double d = Core.rand.NextDouble() * radStormTypesTotalWeight;
+            foreach (RadStormType rst in RadStormTypes)
+            {
+                d -= rst.Weight;
+                if (d < 0) return rst;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Loads necessary mod data from KerbalHealth.cfg and 
         /// </summary>
@@ -128,6 +142,15 @@ namespace KerbalHealth
                 }
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
+
+            RadStormTypes = new List<RadStormType>();
+            i = 0;
+            foreach (ConfigNode n in config.GetNodes("RADSTORM_TYPE"))
+            {
+                RadStormTypes.Add(new RadStormType(n));
+                radStormTypesTotalWeight += RadStormTypes[i++].Weight;
+            }
+            Core.Log(i + " radstorm types loaded with total weight " + radStormTypesTotalWeight, LogLevel.Important);
 
             trainingCaps = new List<double>(3) { 0.6, 0.75, 0.85 };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))

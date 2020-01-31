@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RadStorm.cs" />
+    <Compile Include="RadStormType.cs" />
     <Compile Include="StressFactor.cs" />
     <Compile Include="ChanceModifier.cs" />
     <Compile Include="ModuleHealthEnvironmentSensor.cs" />
