@@ -613,6 +613,16 @@ namespace KerbalHealth
         /// <returns></returns>
         public static double Sqr(double x) => x * x;
 
+        public static int SelectWeightedIndex(double v, List<double> weights)
+        {
+            for (int i = 0; i < weights.Count; i++)
+            {
+                v -= weights[i];
+                if (v < 0) return i;
+            }
+            return weights.Count;
+        }
+
         /// <summary>
         /// Returns a string representing value v with a mandatory sign (+ or -, unless v = 0)
         /// </summary>

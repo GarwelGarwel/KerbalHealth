@@ -19,6 +19,7 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
+        List<RadStorm> radStorms = new List<RadStorm>();
         bool dirty = false, crewChanged = false, vesselChanged = false;
         const int colNumMain = 8, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
@@ -288,6 +289,48 @@ namespace KerbalHealth
         /// <returns></returns>
         double GetNextEventInterval() => Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
+        double RadStormChance => 0.5;
+
+        void ProcessRadStorms()
+        {
+            Core.Log("ProcessRadStorms");
+            Dictionary<int, RadStorm> targets = new Dictionary<int, RadStorm>
+            { { Planetarium.fetch.Home.name.GetHashCode(), new RadStorm(Planetarium.fetch.Home) } };
+            foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.RosterStatus.Assigned))
+            {
+                Vessel v = Core.KerbalVessel(pcm);
+                if (v == null) continue;
+                CelestialBody b = v.mainBody;
+                Core.Log(pcm.name + " is in " + v.vesselName + " in " + b.name + "'s SOI.");
+                int k;
+                if (b == Planetarium.fetch.Sun)
+                {
+                    k = (int)v.persistentId;
+                    if (!targets.ContainsKey(k)) targets.Add(k, new RadStorm(v));
+                }
+                else
+                {
+                    b = Core.GetPlanet(b);
+                    k = b.name.GetHashCode();
+                    if (!targets.ContainsKey(k)) targets.Add(k, new RadStorm(b));
+                }
+            }
+            Core.Log(targets.Count + " potential radstorm targets found.");
+
+            foreach (RadStorm t in targets.Values)
+                if (Core.rand.NextDouble() < RadStormChance)
+                {
+                    Core.Log("Radstorm will hit " + t.Name, Core.LogLevel.Important);
+                    int strength = Core.SelectWeightedIndex(Core.rand.NextDouble(), new List<double>() { 0.6, 0.3, 0.1 });  // Chances of moderate, severe and extreme storms, respectively
+                    double delay = t.DistanceFromSun / 500000;  // Replace with (random) CME speed
+                    t.Magnitutde = new double[] { 2e6, 1e7, 4e7 }[strength];  // Magnitude of storms
+                    t.Time = Planetarium.GetUniversalTime() + delay;
+                    Core.ShowMessage("<color=\"red\">A radiation storm of strength " + strength + " is about to hit <color=\"white\">" + t.Name + "</color> at <color=\"white\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!</color>", true);
+                    radStorms.Add(t);
+                }
+                else Core.Log("No radstorm for " + t.Name);
+        }
+
         /// <summary>
         /// The main method for updating all kerbals' health and processing events
         /// </summary>
@@ -307,6 +350,16 @@ namespace KerbalHealth
                     foreach (Vessel v in FlightGlobals.VesselsLoaded) TrainVessel(v);
                     vesselChanged = false;
                 }
+
+                for (int i = 0; i < radStorms.Count; i++)
+                    if (time >= radStorms[i].Time)
+                    {
+                        Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
+                        Core.ShowMessage("<color=\"red\">Radstorm hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde + ".</color>", true);
+                        // Implement radstorm
+                        radStorms.RemoveAt(i--);
+                    }
+
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
                 if (Core.ConditionsEnabled)
@@ -340,6 +393,7 @@ namespace KerbalHealth
                                     khs.AddCondition(hc);
                                 }
                         }
+                        ProcessRadStorms();
                         nextEventTime += GetNextEventInterval();
                         Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                     }
@@ -655,6 +709,9 @@ namespace KerbalHealth
                 node.AddNode(khs.ConfigNode);
                 i++;
             }
+            foreach (RadStorm rs in radStorms)
+                if (rs.Type != RadStorm.TargetType.None)
+                    node.AddNode(rs.ConfigNode);
             Core.Log("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.", Core.LogLevel.Important);
         }
 
@@ -672,8 +729,12 @@ namespace KerbalHealth
                 Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
                 i++;
             }
-            lastUpdated = Planetarium.GetUniversalTime();
             Core.Log("" + i + " kerbal(s) loaded.", Core.LogLevel.Important);
+            radStorms.Clear();
+            foreach (ConfigNode n in node.GetNodes("RADSTORM"))
+                radStorms.Add(new RadStorm(n));
+            Core.Log(radStorms.Count + " radstorms loaded.", Core.LogLevel.Important);
+            lastUpdated = Planetarium.GetUniversalTime();
         }
     }
 
