@@ -352,7 +352,7 @@ namespace KerbalHealth
         /// <summary>
         /// How much cosmic radiation reaches outer layers of the atmosphere
         /// </summary>
-        public static float StratoCoefficient
+        public static float StratosphereCoefficient
         {
             get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient;
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = value;
@@ -536,6 +536,11 @@ namespace KerbalHealth
             Log(pcm.name + " is " + pcm.rosterStatus + " and was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Important);
             return null;
         }
+
+        public static double DistanceToSun(Vessel v) =>
+            (v.mainBody == Sun.Instance.sun)
+            ? v.altitude + Sun.Instance.sun.Radius
+            : ((v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude + Sun.Instance.sun.Radius);
 
         static List<double> trainingCaps;
 

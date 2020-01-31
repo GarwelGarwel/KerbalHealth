@@ -702,6 +702,12 @@ namespace KerbalHealth
         /// </summary>
         public double RadiationMaxHPModifier => Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1;
 
+        public void AddDose(double d)
+        {
+            if (d > 0) HP -= d * 1e-7 * Core.RadiationEffect;
+            Dose += d;
+        }
+
         /// <summary>
         /// Level of background radiation absorbed by the body, in bananas per day
         /// </summary>
@@ -714,8 +720,18 @@ namespace KerbalHealth
         /// </summary>
         public double LastExposure { get; set; } = 1;
 
-        static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
+        /// <summary>
+        /// Proportion of solar radiation that reaches a vessel at a given distance from the Sun (before applying magnetosphere, atmosphere and exposure effects)
+        /// </summary>
+        /// <param name="distance"></param>
+        /// <returns></returns>
+        public static double GetSolarRadiationProportion(double distance) => Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
 
+        /// <summary>
+        /// Amount of radiation that gets through the magnetosphere to the given vessel
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static double GetMagnetosphereCoefficient(Vessel v)
         {
             double cosmicRadiationRate = 1;
@@ -732,39 +748,36 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns level of cosmic radiation reaching the given vessel
+        /// Amount of cosmic radiation that gets through the magnetosphere and atmosphere to the given vessel
         /// </summary>
-        /// <returns>Cosmic radiation level in bananas/day</returns>
-        public static double GetCosmicRadiation(Vessel v)
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double GetCosmicRadiationRate(Vessel v)
         {
-            double cosmicRadiationRate = 1, distanceToSun = 0;
             if (v == null)
             {
                 Core.Log("Vessel is null. No radiation added.", Core.LogLevel.Important);
                 return 0;
             }
-            Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
-            Core.Log("Configs for " + v.mainBody.bodyName + ":\r\n" + Core.PlanetConfigs[v.mainBody] ?? "NOT FOUND");
+            Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", distance to Sun: " + v.distanceToSun);
 
-            if (v.mainBody != Sun.Instance.sun)
-            {
-                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude;
-                cosmicRadiationRate = GetMagnetosphereCoefficient(v);
-                if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
-                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
-                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
-                double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
-                Core.Log("At an altitude of " + v.altitude + " m and R = " + v.mainBody.Radius + " m, occlusion coefficient is " + occlusionCoefficient.ToString("P2") + ".");
-                cosmicRadiationRate *= occlusionCoefficient;
-            }
-            else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
+            if (v.mainBody == Sun.Instance.sun) return 1;
+            double cosmicRadiationRate = GetMagnetosphereCoefficient(v);
+            if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
+                if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+                else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratosphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+            double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
+            return cosmicRadiationRate * occlusionCoefficient;
+        }
+
+        /// <summary>
+        /// Returns level of cosmic radiation reaching the given vessel
+        /// </summary>
+        /// <returns>Cosmic radiation level in bananas/day</returns>
+        public static double GetCosmicRadiation(Vessel v)
+        {
             double naturalRadiation = Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
-            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
-            Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
-            Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
-            Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            Core.Log("Body's natural radiation = " + naturalRadiation);
-            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) + naturalRadiation;
+            return GetCosmicRadiationRate(v) * (GetSolarRadiationProportion(Core.DistanceToSun(v)) * Core.SolarRadiation + Core.GalacticRadiation) + naturalRadiation;
         }
 
         /// <summary>
@@ -965,7 +978,7 @@ namespace KerbalHealth
                 }
                 else if (!decontaminating) Radiation = 0;
 
-                Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
+                AddDose(Radiation / KSPUtil.dateTimeFormatter.Day * interval);
                 if (Dose < 0)
                 {
                     Dose = 0;

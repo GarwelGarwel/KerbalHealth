@@ -365,8 +365,10 @@ namespace KerbalHealth
                             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                                 if (radStorms[i].Affects(khs.PCM))
                                 {
-                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + (radStorms[i].Magnitutde * khs.LastExposure).ToString("N0") + " BED.");
-                                    khs.Dose += radStorms[i].Magnitutde * khs.LastExposure;
+                                    Vessel v = Core.KerbalVessel(khs.PCM);
+                                    double d = KerbalHealthStatus.GetCosmicRadiationRate(v) * KerbalHealthStatus.GetSolarRadiationProportion(Core.DistanceToSun(v)) * radStorms[i].Magnitutde * khs.LastExposure;
+                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.");
+                                    khs.AddDose(d);
                                     j++;
                                 }
                             Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
