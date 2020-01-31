@@ -9,12 +9,12 @@ namespace KerbalHealth
     public class RadStorm
     {
         public enum TargetType { Body, Vessel, None };
-        public TargetType Type { get; set; }
+        public TargetType Target { get; set; }
         
         string name;
         public string Name
         {
-            get => (Type == TargetType.Vessel) ? Vessel?.vesselName : name;
+            get => (Target == TargetType.Vessel) ? Vessel?.vesselName : name;
             set => name = value;
         }
 
@@ -27,40 +27,21 @@ namespace KerbalHealth
         /// </summary>
         public CelestialBody CelestialBody
         {
-            get => (Type == TargetType.Body) ? FlightGlobals.GetBodyByName(Name) : null;
+            get => (Target == TargetType.Body) ? FlightGlobals.GetBodyByName(Name) : null;
             set
             {
-                Type = TargetType.Body;
+                Target = TargetType.Body;
                 Name = value?.name;
             }
         }
 
         public Vessel Vessel
         {
-            get => (Type == TargetType.Vessel) ? FlightGlobals.PersistentVesselIds[VesselId] : null;
+            get => (Target == TargetType.Vessel) ? FlightGlobals.PersistentVesselIds[VesselId] : null;
             set
             {
-                Type = TargetType.Vessel;
+                Target = TargetType.Vessel;
                 VesselId = value.persistentId;
-            }
-        }
-
-        public object Target
-        {
-            get
-            {
-                switch (Type)
-                {
-                    case TargetType.Body: return CelestialBody;
-                    case TargetType.Vessel: return Vessel;
-                }
-                return null;
-            }
-            set
-            {
-                if (value is CelestialBody) CelestialBody = (CelestialBody)value;
-                else if (value is Vessel) Vessel = (Vessel)value;
-                else Type = TargetType.None;
             }
         }
 
@@ -68,7 +49,7 @@ namespace KerbalHealth
         {
             get
             {
-                switch (Type)
+                switch (Target)
                 {
                     case TargetType.Body: return CelestialBody.orbit.altitude;
                     case TargetType.Vessel: return Vessel.distanceToSun;
@@ -81,9 +62,9 @@ namespace KerbalHealth
         {
             Vessel v = Core.KerbalVessel(pcm);
             if (v == null) return false;
-            if (Type == TargetType.Body)
+            if (Target == TargetType.Body)
                 return Core.GetPlanet(v.mainBody).name == Name;
-            if (Type == TargetType.Vessel)
+            if (Target == TargetType.Vessel)
                 return v.persistentId == VesselId;
             return false;
         }
@@ -92,14 +73,14 @@ namespace KerbalHealth
         {
             get
             {
-                if (Type == TargetType.None)
+                if (Target == TargetType.None)
                 {
                     Core.Log("Trying to save RadStormTarget of type None.", Core.LogLevel.Important);
                     return null;
                 }
                 ConfigNode n = new ConfigNode("RADSTORM");
-                n.AddValue("type", Type.ToString());
-                if (Type == TargetType.Vessel) n.AddValue("id", VesselId);
+                n.AddValue("target", Target.ToString());
+                if (Target == TargetType.Vessel) n.AddValue("id", VesselId);
                 else n.AddValue("body", Name);
                 if (Magnitutde > 0) n.AddValue("magnitude", Magnitutde);
                 if (Time > 0) n.AddValue("time", Time);
@@ -107,14 +88,14 @@ namespace KerbalHealth
             }
             set
             {
-                Type = (TargetType)Enum.Parse(typeof(TargetType), value.GetValue("type"), true);
-                if (Type == TargetType.Vessel)
+                Target = (TargetType)Enum.Parse(typeof(TargetType), value.GetValue("target"), true);
+                if (Target == TargetType.Vessel)
                 {
                     VesselId = Core.GetUInt(value, "id");
                     if (!FlightGlobals.PersistentVesselIds.ContainsKey(VesselId))
                     {
                         Core.Log("Vessel id " + VesselId + " not found in RadStormTarget.ConfigNode.set.", Core.LogLevel.Error);
-                        Type = TargetType.None;
+                        Target = TargetType.None;
                         return;
                     }
                 }

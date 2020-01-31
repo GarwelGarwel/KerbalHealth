@@ -725,7 +725,7 @@ namespace KerbalHealth
                 i++;
             }
             foreach (RadStorm rs in radStorms)
-                if (rs.Type != RadStorm.TargetType.None)
+                if (rs.Target != RadStorm.TargetType.None)
                     node.AddNode(rs.ConfigNode);
             Core.Log("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.", Core.LogLevel.Important);
         }
