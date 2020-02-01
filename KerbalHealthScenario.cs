@@ -17,6 +17,7 @@ namespace KerbalHealth
         Version version;  // Current Kerbal Health version
 
         List<RadStorm> radStorms = new List<RadStorm>();
+
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
@@ -289,8 +290,6 @@ namespace KerbalHealth
         /// <returns></returns>
         double GetNextEventInterval() => Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
-        double RadStormChance => 0.5;
-
         void ProcessRadStorms()
         {
             Core.Log("ProcessRadStorms");
@@ -315,21 +314,22 @@ namespace KerbalHealth
                     if (!targets.ContainsKey(k)) targets.Add(k, new RadStorm(b));
                 }
             }
-            Core.Log(targets.Count + " potential radstorm targets found.");
+            Core.Log(targets.Count + " potential radstorm targets found.", Core.LogLevel.Important);
+            Core.Log("Current solar cycle phase: " + Core.SolarCyclePhase.ToString("P2") + " through. Radstorm chance: " + Core.RadStormChance, Core.LogLevel.Important);
 
             foreach (RadStorm t in targets.Values)
-                if (Core.rand.NextDouble() < RadStormChance)
+                if (Core.rand.NextDouble() < Core.RadStormChance)
                 {
                     Core.Log("Radstorm will hit " + t.Name, Core.LogLevel.Important);
                     RadStormType rst = Core.GetRandomRadStormType();
                     double delay = t.DistanceFromSun / rst.GetVelocity();
                     t.Magnitutde = rst.GetMagnitude();
-                    Core.Log("Radstorm travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"));
+                    Core.Log("Radstorm travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"), Core.LogLevel.Important);
                     t.Time = Planetarium.GetUniversalTime() + delay;
                     Core.ShowMessage("A radiation storm of <color=\"yellow\">" + rst.Name + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
                     radStorms.Add(t);
                 }
-                else Core.Log("No radstorm for " + t.Name);
+                else Core.Log("No radstorm for " + t.Name, Core.LogLevel.Important);
         }
 
         /// <summary>
@@ -363,8 +363,9 @@ namespace KerbalHealth
                                 {
                                     Vessel v = Core.KerbalVessel(khs.PCM);
                                     double d = KerbalHealthStatus.GetCosmicRadiationRate(v) * KerbalHealthStatus.GetSolarRadiationProportion(Core.DistanceToSun(v)) * radStorms[i].Magnitutde * khs.LastExposure;
-                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.");
+                                    double hp = khs.HP;
                                     khs.AddDose(d);
+                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED. HP before: " + hp.ToString("N3") + ", after: " + khs.HP.ToString("N3"), Core.LogLevel.Important);
                                     j++;
                                 }
                             Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);

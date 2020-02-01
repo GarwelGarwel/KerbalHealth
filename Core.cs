@@ -103,6 +103,13 @@ namespace KerbalHealth
             return null;
         }
 
+        public static double SolarCycleDuration { get; set; } = 11 * 426 * 6 * 60 * 60;
+        public static double SolarCycleStartingPhase { get; set; } = 0.5;
+        public static double RadStormMinChancePerDay { get; set; } = 0.1; //= 0.00015244;  // 6560 days
+        public static double RadStormMaxChancePerDay { get; set; } = 0.5; //= 0.00228659;  // 437.33 days
+        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
+        public static double RadStormChance => RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+
         /// <summary>
         /// Loads necessary mod data from KerbalHealth.cfg and 
         /// </summary>
