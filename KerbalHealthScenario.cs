@@ -534,12 +534,14 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Exposure:"));
                 gridContents.Add(new DialogGUILabel(""));
+                gridContents.Add(new DialogGUILabel("Shelter Exposure:"));
+                gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Radiation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Lifetime Dose:"));
                 gridContents.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
-                    new DialogGUIButton("Decon", OnDecontamination, 50, 20, false)));
+                    new DialogGUIButton("Decon", OnDecontamination, 40, 20, false)));
                 gridContents.Add(new DialogGUILabel("Rad HP Loss:"));
                 gridContents.Add(new DialogGUILabel(""));
                 monitorPosition.width = gridWidthDetails + 10;
@@ -640,7 +642,6 @@ namespace KerbalHealth
                     Invalidate();
                     crewChanged = false;
                 }
-                Core.Log(kerbals.Count + " kerbals in Health Monitor list.");
                 // Fill the Health Monitor's grid with kerbals' health data
                 for (int i = 0; i < LineCount; i++)
                 {
@@ -678,6 +679,7 @@ namespace KerbalHealth
                     selectedKHS = null;
                     Invalidate();
                 }
+                Core.Log(pcm.name + "'s ship is at latitude " + Core.KerbalVessel(pcm).latitude, Core.LogLevel.Important); // <<< DELETE ME
                 bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
                 gridContents[1].SetOptionText("<color=\"white\">" + selectedKHS.Name + "</color>");
                 gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel + "</color>");
@@ -699,10 +701,11 @@ namespace KerbalHealth
                     }
                 gridContents[i].children[0].SetOptionText("<color=\"white\">" + (((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? ((selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%") : "N/A") + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + (healthFrozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
-                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
-                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
-                gridContents[i + 8].children[0].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N0") + "</color>");
-                gridContents[i + 10].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
+                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P1") + "</color>");
+                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.ShelterExposure.ToString("P1") + "</color>");
+                gridContents[i + 8].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
+                gridContents[i + 10].children[0].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N0") + "</color>");
+                gridContents[i + 12].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
             }
             dirty = false;
         }
