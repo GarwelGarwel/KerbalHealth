@@ -56,7 +56,7 @@ namespace KerbalHealth
         public double Shielding { get; set; }
         public double PartsRadiation { get; set; }
         public double ExposureMultiplier { get; set; } = 1;
-        public double GetExposure(double crewCap) => Math.Pow(2, -Shielding * Core.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
+        public double GetExposure(double crewCap) => Core.GetExposure(Shielding, crewCap);
         public Dictionary<string, double> BonusSums { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> FreeMultipliers { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> MinMultipliers { get; set; } = new Dictionary<string, double>();
@@ -127,12 +127,7 @@ namespace KerbalHealth
             foreach (Part p in parts)
             {
                 ProcessPart(p, false);
-                foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
-                {
-                    p.GetConnectedResourceTotals(res.Key, ResourceFlowMode.NO_FLOW, out double amount, out double maxAmount);
-                    if (amount != 0) Core.Log("Part " + p.name + " contains " + amount + " / " + maxAmount + " of shielding resource " + res.Key);
-                    Shielding += res.Value * amount;
-                }
+                Shielding += Core.GetResourceShielding(p);
             }
         }
 

@@ -14,7 +14,7 @@ namespace KerbalHealth
         Rect reportPosition = new Rect(0.5f, 0.5f, 400, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
-        DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl;
+        DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
         int colNum = 4;  // # of columns in Health Report
         static bool healthModulesEnabled = true, trainingEnabled = true;
 
@@ -91,7 +91,9 @@ namespace KerbalHealth
                         new DialogGUILabel("<color=\"white\">Shielding: </color>", false),
                         shieldingLbl = new DialogGUILabel("N/A", true),
                         new DialogGUILabel("<color=\"white\">Exposure: </color>", false),
-                        exposureLbl = new DialogGUILabel("N/A", true)),
+                        exposureLbl = new DialogGUILabel("N/A", true),
+                        new DialogGUILabel("<color=\"white\">Shelter Exposure: </color>", false),
+                        shelterExposureLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel("Factors", true),
@@ -241,6 +243,8 @@ namespace KerbalHealth
                 recupLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Recuperation.ToString("F1") + "%</color>");
                 shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
                 exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
+                shelterExposureLbl.SetOptionText("<color=\"white\">" + Core.GetShelterExposure(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount).ToString("P1") + "</color>");
+                Core.Log("Shelter exposure: " + Core.GetShelterExposure(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount).ToString("P2"), Core.LogLevel.Important);
                 dirty = false;
             }
         }
