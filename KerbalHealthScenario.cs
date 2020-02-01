@@ -358,17 +358,16 @@ namespace KerbalHealth
                         {
                             Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
                             int j = 0;
+                            double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun);
                             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                                 if (radStorms[i].Affects(khs.PCM))
                                 {
-                                    Vessel v = Core.KerbalVessel(khs.PCM);
-                                    double d = KerbalHealthStatus.GetCosmicRadiationRate(v) * KerbalHealthStatus.GetSolarRadiationProportion(Core.DistanceToSun(v)) * radStorms[i].Magnitutde * khs.LastExposure;
-                                    double hp = khs.HP;
+                                    double d = m * KerbalHealthStatus.GetCosmicRadiationRate(Core.KerbalVessel(khs.PCM)) * khs.ShelterExposure;
                                     khs.AddDose(d);
-                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED. HP before: " + hp.ToString("N3") + ", after: " + khs.HP.ToString("N3"), Core.LogLevel.Important);
+                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.", Core.LogLevel.Important);
                                     j++;
                                 }
-                            Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + radStorms[i].Magnitutde.ToString("N0") + "</color>.", true);
+                            Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + m.ToString("N0") + "</color>.", true);
                             radStorms.RemoveAt(i--);
                         }
 

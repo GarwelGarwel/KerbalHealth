@@ -51,8 +51,8 @@ namespace KerbalHealth
             {
                 switch (Target)
                 {
-                    case TargetType.Body: return CelestialBody.orbit.altitude;
-                    case TargetType.Vessel: return Vessel.distanceToSun;
+                    case TargetType.Body: return CelestialBody.orbit.altitude + Sun.Instance.sun.Radius;
+                    case TargetType.Vessel: return Core.DistanceToSun(Vessel);
                 }
                 return 0;
             }
@@ -63,7 +63,7 @@ namespace KerbalHealth
             Vessel v = Core.KerbalVessel(pcm);
             if (v == null) return false;
             if (Target == TargetType.Body)
-                return Core.GetPlanet(v.mainBody).name == Name;
+                return Core.GetPlanet(v.mainBody)?.name == Name;
             if (Target == TargetType.Vessel)
                 return v.persistentId == VesselId;
             return false;
