@@ -37,7 +37,7 @@ namespace KerbalHealth
 
         public Vessel Vessel
         {
-            get => (Target == TargetType.Vessel) ? FlightGlobals.PersistentVesselIds[VesselId] : null;
+            get => (Target == TargetType.Vessel) && FlightGlobals.PersistentVesselIds.ContainsKey(VesselId) ? FlightGlobals.PersistentVesselIds[VesselId] : null;
             set
             {
                 Target = TargetType.Vessel;
@@ -88,13 +88,20 @@ namespace KerbalHealth
             }
             set
             {
-                Target = (TargetType)Enum.Parse(typeof(TargetType), value.GetValue("target"), true);
+                try
+                { Target = (TargetType)Enum.Parse(typeof(TargetType), value.GetValue("target"), true); }
+                catch (Exception)
+                {
+                    Core.Log("No valid 'target' value found in RadStorm ConfigNode:\r\n" + value, Core.LogLevel.Error);
+                    Target = TargetType.None;
+                    return;
+                }
                 if (Target == TargetType.Vessel)
                 {
                     VesselId = Core.GetUInt(value, "id");
                     if (!FlightGlobals.PersistentVesselIds.ContainsKey(VesselId))
                     {
-                        Core.Log("Vessel id " + VesselId + " not found in RadStormTarget.ConfigNode.set.", Core.LogLevel.Error);
+                        Core.Log("Vessel id " + VesselId + " from RadStorm ConfigNode not found.", Core.LogLevel.Error);
                         Target = TargetType.None;
                         return;
                     }
