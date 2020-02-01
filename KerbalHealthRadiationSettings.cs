@@ -15,27 +15,19 @@
         {
             case GameParameters.Preset.Easy:
                     RadiationEnabled = false;
-                    RadiationEffect = 0.05f;
                     ShieldingEffect = 2;
-                    EVAExposure = 1;
                     break;
             case GameParameters.Preset.Normal:
                     RadiationEnabled = true;
-                    RadiationEffect = 0.05f;
-                    ShieldingEffect = 2;
-                    EVAExposure = 1;
+                    ShieldingEffect = 1;
                     break;
             case GameParameters.Preset.Moderate:
                     RadiationEnabled = true;
-                    RadiationEffect = 0.05f;
                     ShieldingEffect = 1;
-                    EVAExposure = 2;
                     break;
             case GameParameters.Preset.Hard:
                     RadiationEnabled = true;
-                    RadiationEffect = 0.1f;
                     ShieldingEffect = 1;
-                    EVAExposure = 5;
                     break;
         }
     }
@@ -64,11 +56,11 @@
         [GameParameters.CustomFloatParameterUI("EVA Exposure Multiplier", toolTip = "How much more radiaiton kerbals receive when on EVA", minValue = 0, maxValue = 10, displayFormat = "N0", stepCount = 21)]
         public float EVAExposure = 5;
 
-        [GameParameters.CustomFloatParameterUI("Solar Radiation (Nominal)", toolTip = "Solar radiation in interplanetary space at 1 AU, banana doses/day", minValue = 0, maxValue = 10000, displayFormat = "N0", stepCount = 21)]
-        public float SolarRadiation = 5000;
+        [GameParameters.CustomFloatParameterUI("Solar Radiation (Nominal)", toolTip = "Solar radiation and base radiation storm intensity in interplanetary space at 1 AU, banana doses/day", minValue = 0, maxValue = 5000, displayFormat = "N0", stepCount = 21)]
+        public float SolarRadiation = 2500;
 
         [GameParameters.CustomFloatParameterUI("Galactic Radiation", toolTip = "Galactic cosmic radiation in interplanetary space, banana doses/day", minValue = 0, maxValue = 30000, displayFormat = "N0", stepCount = 31)]
-        public float GalacticRadiation = 15000;
+        public float GalacticRadiation = 12500;
 
         [GameParameters.CustomFloatParameterUI("Decontamination Rate per Day", toolTip = "How much radiation is lost per day during decontamination", minValue = 1000, maxValue = 1000000, displayFormat = "N0", logBase = 10)]
         public float DecontaminationRate = 100000;
@@ -87,8 +79,5 @@
 
         [GameParameters.CustomIntParameterUI("R&D Level for Decon", toolTip = "Min level of the Research & Development Facility for Decontamination", minValue = 0, maxValue = 3)]
         public int DecontaminationRNDLevel = 3;
-
-        //[GameParameters.CustomParameterUI("Decontamination Causes Level Loss", toolTip = "The decontaminated kerbal loses 1 experience level")]
-        public bool DecontaminationLevelLoss = false;
     }
 }
