@@ -828,23 +828,6 @@ namespace KerbalHealth
                 Core.Log("Taking " + Core.DecontaminationScienceCost + " science points for decontamination.");
                 ResearchAndDevelopment.Instance.AddScience(-Core.DecontaminationScienceCost, TransactionReasons.None);
             }
-            if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) && Core.DecontaminationLevelLoss)  // Not implemented (always false)
-            {
-                Core.Log("Removing XP from " + Name + " (" + PCM.experience + " XP, level " + PCM.experienceLevel + ") for decontamination.");
-                ShowXP();
-                //PCM.experienceLevel--;
-                //PCM.ExtraExperience -= PCM.experience / 2;
-                Core.Log("Flight log for " + Name + " has " + PCM.flightLog.Count + " entries.");
-                PCM.flightLog.AddEntry("Decontamination", Planetarium.fetch.Home.bodyName);
-                Core.Log("Flight log for " + Name + " has " + PCM.flightLog.Count + " entries.");
-                ShowXP();
-                Core.Log("Archiving flight log...");
-                PCM.ArchiveFlightLog();
-                ShowXP();
-                Core.Log("Updating experience...");
-                PCM.UpdateExperience();
-                ShowXP();
-            }
             HP *= 1 - Core.DecontaminationHealthLoss;
             AddCondition("Decontaminating");
             Radiation = -Core.DecontaminationRate;

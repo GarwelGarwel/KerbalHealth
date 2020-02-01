@@ -466,15 +466,6 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// The decontaminated kerbal loses 1 experience level
-        /// </summary>
-        public static bool DecontaminationLevelLoss
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss = value;
-        }
-
-        /// <summary>
         /// Min level of the Astronaut Complex for Decontamination
         /// </summary>
         public static int DecontaminationAstronautComplexLevel
