@@ -42,7 +42,7 @@
         public float ShieldingEffect = 1;
 
         [GameParameters.CustomFloatParameterUI("In Space High Coefficient", toolTip = "How much cosmic radiation reaches vessels in high planetary orbit or on moons", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
-        public float InSpaceHighCoefficient = 0.30f;
+        public float InSpaceHighCoefficient = 0.40f;
 
         [GameParameters.CustomFloatParameterUI("In Space Low Coefficient", toolTip = "How much cosmic radiation reaches vessels in low planetary orbits", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
         public float InSpaceLowCoefficient = 0.20f;

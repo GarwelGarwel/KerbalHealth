@@ -114,16 +114,17 @@ namespace KerbalHealth
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = 0.2f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = 0.2f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.01f;
-                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 5000;
-                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 15000;
                     Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
                 }
                 if (version < new Version("1.3.8.1"))
                 {
                     Core.Log("Pre-1.3.9 Stress factor: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor);
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor = -2;
+                    Core.SolarRadiation = 2500;
+                    Core.GalacticRadiation = 12500;
+                    Core.InSpaceHighCoefficient = 0.4f;
                     Core.TrainingEnabled = false;
-                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Stress (formerly Assigned) factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
+                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Solar and Galactic radiation intensities and high-space radiation level adjusted. Stress (formerly Assigned) factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
                 }
                 version = v;
             }
@@ -679,7 +680,6 @@ namespace KerbalHealth
                     selectedKHS = null;
                     Invalidate();
                 }
-                Core.Log(pcm.name + "'s ship is at latitude " + Core.KerbalVessel(pcm).latitude, Core.LogLevel.Important); // <<< DELETE ME
                 bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
                 gridContents[1].SetOptionText("<color=\"white\">" + selectedKHS.Name + "</color>");
                 gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel + "</color>");
