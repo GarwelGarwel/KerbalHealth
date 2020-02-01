@@ -721,6 +721,11 @@ namespace KerbalHealth
         public double LastExposure { get; set; } = 1;
 
         /// <summary>
+        /// Exposure in radiaiton shelter (used for radstorms)
+        /// </summary>
+        public double ShelterExposure { get; set; } = 1;
+
+        /// <summary>
         /// Proportion of solar radiation that reaches a vessel at a given distance from the Sun (before applying magnetosphere, atmosphere and exposure effects)
         /// </summary>
         /// <param name="distance"></param>
@@ -897,9 +902,11 @@ namespace KerbalHealth
                 mods = VesselModifiers.Clone();
                 Core.Log("Vessel health modifiers before applying part and kerbal effects:\n" + mods);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
+                if (IsOnEVA) mods.ExposureMultiplier *= Core.EVAExposure;
+                ShelterExposure = Core.GetShelterExposure(Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts, Core.GetCrewCount(pcm)) * mods.ExposureMultiplier;
+                Core.Log("Shelter exposure for " + name + " is " + ShelterExposure, Core.LogLevel.Important);
                 mods.ProcessPart(Core.GetCrewPart(pcm), true);
                 mods.ExposureMultiplier *= mods.GetExposure(Core.GetCrewCapacity(pcm));
-                if (IsOnEVA) mods.ExposureMultiplier *= Core.EVAExposure;
             }
             else
             {
@@ -1051,6 +1058,7 @@ namespace KerbalHealth
                 if (Radiation != 0) n.AddValue("radiation", Radiation);
                 if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
                 if (LastExposure != 1) n.AddValue("exposure", LastExposure);
+                if (ShelterExposure < LastExposure) n.AddValue("shelterExposure", ShelterExposure);
                 foreach (HealthCondition hc in Conditions) n.AddValue("condition", hc.Name);
                 foreach (Quirk q in Quirks) n.AddValue("quirk", q.Name);
                 if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
@@ -1089,6 +1097,7 @@ namespace KerbalHealth
                 Radiation = Core.GetDouble(value, "radiation");
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
                 LastExposure = Core.GetDouble(value, "exposure", 1);
+                ShelterExposure = Core.GetDouble(value, "shelterExposure", LastExposure);
                 foreach (string s in value.GetValues("condition"))
                     Conditions.Add(Core.GetHealthCondition(s));
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
