@@ -360,15 +360,17 @@ namespace KerbalHealth
                             Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
                             int j = 0;
                             double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun);
+                            string s = "Radstorm of nominal magnitude <color=\"yellow\">" + Core.PrefixFormat(m, 5) + " BED</color> has just hit <color=\"yellow\">" + radStorms[i].Name + "</color>. Affected kerbals:";
                             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                                 if (radStorms[i].Affects(khs.PCM))
                                 {
                                     double d = m * KerbalHealthStatus.GetCosmicRadiationRate(Core.KerbalVessel(khs.PCM)) * khs.ShelterExposure;
                                     khs.AddDose(d);
                                     Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.", Core.LogLevel.Important);
+                                    s += "\r\n- <color=\"yellow\">" + khs.Name + "</color> for <color=\"yellow\">" + Core.PrefixFormat(d, 5) + " BED</color>";
                                     j++;
                                 }
-                            Core.ShowMessage("Radstorm hits " + j + " kerbals at <color=\"yellow\">" + radStorms[i].Name + "</color> with magnitude of <color=\"yellow\">" + m.ToString("N0") + "</color>.", true);
+                            if (j > 0) Core.ShowMessage(s, true);
                             radStorms.RemoveAt(i--);
                         }
 
@@ -669,7 +671,7 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
                     gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
                     gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 5) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 4, true) + "/day)" : "") + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 3) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 3, true) + "/day)" : "") + formatUntag);
                 }
             }
             else  // Showing details for one particular kerbal
@@ -704,7 +706,7 @@ namespace KerbalHealth
                 gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P1") + "</color>");
                 gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.ShelterExposure.ToString("P1") + "</color>");
                 gridContents[i + 8].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
-                gridContents[i + 10].children[0].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N0") + "</color>");
+                gridContents[i + 10].children[0].SetOptionText("<color=\"white\">" + Core.PrefixFormat(selectedKHS.Dose, 6) + "</color>");
                 gridContents[i + 12].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
             }
             dirty = false;

@@ -760,16 +760,17 @@ namespace KerbalHealth
         /// Converts a number into a string with a multiplicative character (K, M, G or T), if applicable
         /// </summary>
         /// <param name="value">The value to convert</param>
-        /// <param name="allowedDigits">Max number of digits to allow before the prefix (must be 3 or more)</param>
+        /// <param name="digits">Number of digits to allow before the prefix (must be 3 or more)</param>
         /// <returns></returns>
-        public static string PrefixFormat(double value, int allowedDigits = 3, bool mandatorySign = false)
+        public static string PrefixFormat(double value, int digits = 3, bool mandatorySign = false)
         {
-            double v = Math.Abs(value);
+            double v = Math.Abs(Math.Round(value));
             if (v < 0.5) return "0";
-            int n, m = (int)Math.Pow(10, allowedDigits);
+            if (digits < 3) digits = 3;
+            int n, m = (int)Math.Pow(10, digits);
             for (n = 0; (v >= m) && (n < prefixes.Length - 1); n++)
                 v /= 1000;
-            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("N0") + prefixes[n];
+            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("F" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
         }
 
         /// <summary>
