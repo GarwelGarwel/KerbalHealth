@@ -189,7 +189,7 @@ namespace KerbalHealth
                 Shielding += GetResourceShielding(p);
                 if (p.CrewCapacity > 0)
                 {
-                    Core.Log("Possible shelter part: " + p.name + " with exposure " + GetPartExtendedExposure(p).ToString("P1"), Core.LogLevel.Important);
+                    Core.Log("Possible shelter part: " + p.name + " with exposure " + GetPartExtendedExposure(p).ToString("P1"));
                     exposures.Add(new PartExposure(p));
                     CrewCapacity += p.CrewCapacity;
                 }
@@ -201,13 +201,12 @@ namespace KerbalHealth
             int i = 0;
             for (int c = 0; i < exposures.Count; i++)
             {
-                Core.Log("Part " + exposures[i].Part.name + " with exposure " + exposures[i].Exposure.ToString("P1") + " and crew cap " + exposures[i].Part.CrewCapacity, Core.LogLevel.Important);
+                Core.Log("Part " + exposures[i].Part.name + " with exposure " + exposures[i].Exposure.ToString("P1") + " and crew cap " + exposures[i].Part.CrewCapacity);
                 x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crew - c);
                 c += exposures[i].Part.CrewCapacity;
                 if (c >= crew) break;
             }
-            Core.Log("Average exposure in top " + (i + 1) + " parts is " + (x / crew).ToString("P1"), Core.LogLevel.Important);
-            Core.Log("Vessel overall exposure is " + Exposure.ToString("P1"), Core.LogLevel.Important);
+            Core.Log("Average exposure in top " + (i + 1) + " parts is " + (x / crew).ToString("P1") + "; general vessel exposure is " + Exposure.ToString("P1"));
             ShelterExposure = Math.Min(x / crew, Exposure);
         }
 

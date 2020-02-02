@@ -887,7 +887,7 @@ namespace KerbalHealth
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
                 if (IsOnEVA) mods.ExposureMultiplier *= Core.EVAExposure;
                 ShelterExposure = mods.ShelterExposure * mods.ExposureMultiplier;
-                Core.Log("Shelter exposure for " + name + " is " + ShelterExposure, Core.LogLevel.Important);
+                Core.Log("Shelter exposure for " + name + " is " + ShelterExposure);
                 mods.ProcessPart(Core.GetCrewPart(pcm), true);
                 mods.ExposureMultiplier *= mods.Exposure;
             }

@@ -37,7 +37,7 @@
         public int LinesPerPage = 10;
 
         [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of GAME seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
-        public float UpdateInterval = 10;
+        public float UpdateInterval = 30;
 
         [GameParameters.CustomFloatParameterUI("Minimum Update Interval", toolTip = "Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval", minValue = 0.04f, maxValue = 60)]
         public float MinUpdateInterval = 1;

@@ -244,7 +244,7 @@ namespace KerbalHealth
                 shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
                 exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
                 shelterExposureLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.ShelterExposure.ToString("P1") + "</color>");
-                Core.Log("Shelter exposure: " + khs.VesselModifiers.ShelterExposure.ToString("P2"), Core.LogLevel.Important);
+                Core.Log("Shelter exposure: " + khs.VesselModifiers.ShelterExposure.ToString("P2"));
                 dirty = false;
             }
         }

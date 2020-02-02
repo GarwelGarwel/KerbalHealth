@@ -315,22 +315,21 @@ namespace KerbalHealth
                     if (!targets.ContainsKey(k)) targets.Add(k, new RadStorm(b));
                 }
             }
-            Core.Log(targets.Count + " potential radstorm targets found.", Core.LogLevel.Important);
-            Core.Log("Current solar cycle phase: " + Core.SolarCyclePhase.ToString("P2") + " through. Radstorm chance: " + Core.RadStormChance, Core.LogLevel.Important);
+            Core.Log(targets.Count + " potential radstorm targets found.");
+            Core.Log("Current solar cycle phase: " + Core.SolarCyclePhase.ToString("P2") + " through. Radstorm chance: " + Core.RadStormChance);
 
             foreach (RadStorm t in targets.Values)
                 if (Core.rand.NextDouble() < Core.RadStormChance)
                 {
-                    Core.Log("Radstorm will hit " + t.Name, Core.LogLevel.Important);
                     RadStormType rst = Core.GetRandomRadStormType();
                     double delay = t.DistanceFromSun / rst.GetVelocity();
                     t.Magnitutde = rst.GetMagnitude();
-                    Core.Log("Radstorm travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"), Core.LogLevel.Important);
+                    Core.Log("Radstorm will hit " + t.Name + " travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"));
                     t.Time = Planetarium.GetUniversalTime() + delay;
                     Core.ShowMessage("A radiation storm of <color=\"yellow\">" + rst.Name + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
                     radStorms.Add(t);
                 }
-                else Core.Log("No radstorm for " + t.Name, Core.LogLevel.Important);
+                else Core.Log("No radstorm for " + t.Name);
         }
 
         /// <summary>
@@ -357,7 +356,7 @@ namespace KerbalHealth
                     for (int i = 0; i < radStorms.Count; i++)
                         if (time >= radStorms[i].Time)
                         {
-                            Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde);
+                            Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde, Core.LogLevel.Important);
                             int j = 0;
                             double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun);
                             string s = "Radstorm of nominal magnitude <color=\"yellow\">" + Core.PrefixFormat(m, 5) + " BED</color> has just hit <color=\"yellow\">" + radStorms[i].Name + "</color>. Affected kerbals:";
@@ -366,7 +365,7 @@ namespace KerbalHealth
                                 {
                                     double d = m * KerbalHealthStatus.GetCosmicRadiationRate(Core.KerbalVessel(khs.PCM)) * khs.ShelterExposure;
                                     khs.AddDose(d);
-                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.", Core.LogLevel.Important);
+                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.");
                                     s += "\r\n- <color=\"yellow\">" + khs.Name + "</color> for <color=\"yellow\">" + Core.PrefixFormat(d, 5) + " BED</color>";
                                     j++;
                                 }
