@@ -886,10 +886,10 @@ namespace KerbalHealth
                 Core.Log("Vessel health modifiers before applying part and kerbal effects:\n" + mods);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
                 if (IsOnEVA) mods.ExposureMultiplier *= Core.EVAExposure;
-                ShelterExposure = Core.GetShelterExposure(Core.IsInEditor ? EditorLogic.SortedShipList : Core.KerbalVessel(pcm).Parts, Core.GetCrewCount(pcm)) * mods.ExposureMultiplier;
+                ShelterExposure = mods.ShelterExposure * mods.ExposureMultiplier;
                 Core.Log("Shelter exposure for " + name + " is " + ShelterExposure, Core.LogLevel.Important);
                 mods.ProcessPart(Core.GetCrewPart(pcm), true);
-                mods.ExposureMultiplier *= mods.GetExposure(Core.GetCrewCapacity(pcm));
+                mods.ExposureMultiplier *= mods.Exposure;
             }
             else
             {

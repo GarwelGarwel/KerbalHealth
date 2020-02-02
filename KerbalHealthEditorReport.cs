@@ -243,8 +243,8 @@ namespace KerbalHealth
                 recupLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Recuperation.ToString("F1") + "%</color>");
                 shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
                 exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
-                shelterExposureLbl.SetOptionText("<color=\"white\">" + Core.GetShelterExposure(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount).ToString("P1") + "</color>");
-                Core.Log("Shelter exposure: " + Core.GetShelterExposure(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount).ToString("P2"), Core.LogLevel.Important);
+                shelterExposureLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.ShelterExposure.ToString("P1") + "</color>");
+                Core.Log("Shelter exposure: " + khs.VesselModifiers.ShelterExposure.ToString("P2"), Core.LogLevel.Important);
                 dirty = false;
             }
         }
