@@ -8,7 +8,7 @@ namespace KerbalHealth
     /// </summary>
     public class RadStorm
     {
-        public enum TargetType { Body, Vessel, None };
+        public enum TargetType { None, Body, Vessel };
         public TargetType Target { get; set; }
         
         string name;
@@ -117,8 +117,5 @@ namespace KerbalHealth
         public RadStorm(Vessel vessel) => Vessel = vessel;
 
         public RadStorm(ConfigNode node) => ConfigNode = node;
-
-        public RadStorm()
-        { }
     }
 }

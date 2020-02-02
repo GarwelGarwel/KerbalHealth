@@ -7,7 +7,7 @@ namespace KerbalHealth
     /// <summary>
     /// Provides general static methods and fields for KerbalHealth
     /// </summary>
-    public class Core
+    public static class Core
     {
         public static bool Loaded = false;
 
@@ -152,8 +152,8 @@ namespace KerbalHealth
 
             SolarCycleDuration = GetDouble(config, "solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
             SolarCycleStartingPhase = GetDouble(config, "solarCycleStartingPhase");
-            RadStormMinChancePerDay = GetDouble(config, "radStormMinChance", 0.00015244);
-            RadStormMaxChancePerDay = GetDouble(config, "radStormMaxChance", 0.00228659);
+            RadStormMinChancePerDay = GetDouble(config, "radStormMinChance", 0.00015);
+            RadStormMaxChancePerDay = GetDouble(config, "radStormMaxChance", 0.00229);
 
             RadStormTypes = new List<RadStormType>();
             i = 0;
@@ -746,23 +746,13 @@ namespace KerbalHealth
         /// <returns></returns>
         public static double GetGaussian(double stdDev = 1, double mean = 0) => mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - rand.NextDouble()));
 
-        public static int SelectWeightedIndex(double v, double[] weights)
-        {
-            for (int i = 0; i < weights.Length; i++)
-            {
-                v -= weights[i];
-                if (v < 0) return i;
-            }
-            return weights.Length - 1;
-        }
-
         /// <summary>
-        /// Returns a string representing value v with a mandatory sign (+ or -, unless v = 0)
+        /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)
         /// </summary>
-        /// <param name="v">Value to present as a string</param>
+        /// <param name="value">Value to present as a string</param>
         /// <param name="format">String format according to Double.ToString</param>
         /// <returns></returns>
-        public static string SignValue(double v, string format) => ((v > 0) ? "+" : "") + v.ToString(format);
+        public static string SignValue(double value, string format) => ((value > 0) ? "+" : "") + value.ToString(format);
 
         static string[] prefixes = { "", "K", "M", "G", "T" };
 
@@ -892,7 +882,5 @@ namespace KerbalHealth
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         { if (IsLogging(messageLevel) && (message != "")) Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message); }
-
-        private Core() { }
     }
 }
