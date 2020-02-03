@@ -16,6 +16,7 @@
             case GameParameters.Preset.Easy:
                     RadiationEnabled = false;
                     ShieldingEffect = 2;
+                    RadStormsEnabled = false;
                     break;
             case GameParameters.Preset.Normal:
                     RadiationEnabled = true;
@@ -61,6 +62,15 @@
 
         [GameParameters.CustomFloatParameterUI("Galactic Radiation", toolTip = "Galactic cosmic radiation in interplanetary space, banana doses/day", minValue = 0, maxValue = 30000, displayFormat = "N0", stepCount = 31)]
         public float GalacticRadiation = 12500;
+
+        [GameParameters.CustomParameterUI("Radiation Storms", toolTip = "Enable solar radiation storms (CMEs). Must have radiation enabled to work")]
+        public bool RadStormsEnabled = true;
+
+        [GameParameters.CustomFloatParameterUI("RadStorm Frequency", toolTip = "How often radiation storms happen, relative to default values", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
+        public float RadStormFrequency = 1;
+
+        [GameParameters.CustomFloatParameterUI("RadStorm Magnitude", toolTip = "How strong radstorms are, relative to default values", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
+        public float RadStormMagnitude = 1;
 
         [GameParameters.CustomFloatParameterUI("Decontamination Rate per Day", toolTip = "How much radiation is lost per day during decontamination", minValue = 1000, maxValue = 1000000, displayFormat = "N0", logBase = 10)]
         public float DecontaminationRate = 100000;

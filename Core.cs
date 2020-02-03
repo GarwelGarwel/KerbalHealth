@@ -430,6 +430,33 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Enable solar radiation storms (CMEs)
+        /// </summary>
+        public static bool RadStormsEnabled
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormsEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormsEnabled = value;
+        }
+
+        /// <summary>
+        /// How often radiation storms happen, relative to default values
+        /// </summary>
+        public static float RadStormFrequency
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequency;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequency = value;
+        }
+
+        /// <summary>
+        /// How often radiation storms happen, relative to default values
+        /// </summary>
+        public static float RadStormMagnitude
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormMagnitude;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormMagnitude = value;
+        }
+
+        /// <summary>
         /// How much radiation dose is removed per day during decontamination
         /// </summary>
         public static float DecontaminationRate

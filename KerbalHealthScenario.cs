@@ -319,7 +319,7 @@ namespace KerbalHealth
             Core.Log("Current solar cycle phase: " + Core.SolarCyclePhase.ToString("P2") + " through. Radstorm chance: " + Core.RadStormChance);
 
             foreach (RadStorm t in targets.Values)
-                if (Core.rand.NextDouble() < Core.RadStormChance)
+                if (Core.rand.NextDouble() < Core.RadStormChance * Core.RadStormFrequency)
                 {
                     RadStormType rst = Core.GetRandomRadStormType();
                     double delay = t.DistanceFromSun / rst.GetVelocity();
@@ -352,13 +352,13 @@ namespace KerbalHealth
                     vesselChanged = false;
                 }
 
-                if (Core.RadiationEnabled)
+                if (Core.RadiationEnabled && Core.RadStormsEnabled)
                     for (int i = 0; i < radStorms.Count; i++)
                         if (time >= radStorms[i].Time)
                         {
                             Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde, Core.LogLevel.Important);
                             int j = 0;
-                            double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun);
+                            double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun) * Core.RadStormMagnitude;
                             string s = "Radstorm of nominal magnitude <color=\"yellow\">" + Core.PrefixFormat(m, 5) + " BED</color> has just hit <color=\"yellow\">" + radStorms[i].Name + "</color>. Affected kerbals:";
                             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                                 if (radStorms[i].Affects(khs.PCM))
@@ -375,8 +375,9 @@ namespace KerbalHealth
 
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
-                if (Core.ConditionsEnabled)
-                    while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
+                while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
+                {
+                    if (Core.ConditionsEnabled)
                     {
                         Core.Log("Processing conditions...");
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
@@ -406,10 +407,11 @@ namespace KerbalHealth
                                     khs.AddCondition(hc);
                                 }
                         }
-                        if (Core.RadiationEnabled) ProcessRadStorms();
-                        nextEventTime += GetNextEventInterval();
-                        Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                     }
+                    if (Core.RadiationEnabled && Core.RadStormsEnabled) ProcessRadStorms();
+                    nextEventTime += GetNextEventInterval();
+                    Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
+                }
                 dirty = true;
             }
         }
