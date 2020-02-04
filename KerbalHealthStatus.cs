@@ -872,6 +872,7 @@ namespace KerbalHealth
             if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned))
             {
                 CachedChange = 0;
+                LastExposure = ShelterExposure = 1;
                 Factors = new Dictionary<string, double>(Core.Factors.Count);
             }
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
