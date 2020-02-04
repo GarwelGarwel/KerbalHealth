@@ -67,8 +67,8 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_RS_RadStormsEnabled", toolTip = "#KH_RS_RadStormsEnabled_desc")]//Radiation Storms""Enable solar radiation storms (CMEs). Must have radiation enabled to work
         public bool RadStormsEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequency", toolTip = "#KH_RS_RadStormFrequency_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
-        public float RadStormFrequency = 1;
+        [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequence", toolTip = "#KH_RS_RadStormFrequence_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
+        public float RadStormFrequence = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormMagnitude", toolTip = "#KH_RS_RadStormMagnitude_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Magnitude""How strong radstorms are, relative to default values
         public float RadStormMagnitude = 1;

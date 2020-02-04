@@ -443,8 +443,8 @@ namespace KerbalHealth
         /// </summary>
         public static float RadStormFrequency
         {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequency;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequency = value;
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequence;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequence = value;
         }
 
         /// <summary>
