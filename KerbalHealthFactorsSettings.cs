@@ -41,7 +41,7 @@ namespace KerbalHealth
             }
         }
 
-        [GameParameters.CustomFloatParameterUI("Stress", toolTip = "HP change per day when the kerbal is assigned; can be lowered through training and/or upgrading Astronaut Complex", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]
+        [GameParameters.CustomFloatParameterUI("#KH_FS_Stress", toolTip = "#KH_FS_Stress_desc", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)] //Stress""HP change per day when the kerbal is assigned; can be lowered through training and/or upgrading Astronaut Complex
         public float StressFactor = -2;
 
         [GameParameters.CustomFloatParameterUI("#KH_FS_Confinement", toolTip = "#KH_FS_Confinement_desc", minValue = -10, maxValue = 0, stepCount = 41)]//Confinement""HP change per day in a vessel with 1 living space per kerbal
@@ -65,16 +65,16 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_FS_KSC", toolTip = "#KH_FS_KSC_desc", minValue = 0, maxValue = 20, stepCount = 41)]//At KSC""HP change per day when the kerbal is at KSC (available)
         public float KSCFactor = 4;
 
-        [GameParameters.CustomParameterUI("Training Enabled", toolTip = "Turn on/off the need to train kerbals to reduce stress")]
+        [GameParameters.CustomParameterUI("#KH_FS_TrainingEnabled", toolTip = "#KH_FS_TrainingEnabled_desc")]//Training Enabled""Turn on/off the need to train kerbals to reduce stress
         public bool TrainingEnabled = true;
 
-        [GameParameters.CustomIntParameterUI("KSC Training Time", toolTip = "Min # of days it takes to train kerbal to max level at KSC", minValue = 1, maxValue = 50)]
+        [GameParameters.CustomIntParameterUI("#KH_FS_KSCTrainingTime", toolTip = "#KH_FS_KSCTrainingTime_desc", minValue = 1, maxValue = 50)]//KSC Training Time""Min # of days it takes to train kerbal to max level at KSC
         public int KSCTrainingTime = 20;
 
-        [GameParameters.CustomIntParameterUI("In-Flight Training Time", toolTip = "Min # of days it takes to train kerbal to max level during a mission", minValue = 1, maxValue = 100)]
+        [GameParameters.CustomIntParameterUI("#KH_FS_InFlightTrainingTime", toolTip = "#KH_FS_InFlightTrainingTime_desc", minValue = 1, maxValue = 100)] //In-Flight Training Time""Min # of days it takes to train kerbal to max level during a mission
         public int InFlightTrainingTime = 50;
 
-        [GameParameters.CustomFloatParameterUI("Stupidity Penalty", toolTip = "How much longer it takes to train a stupid kerbal compared to a smart one", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]
+        [GameParameters.CustomFloatParameterUI("#KH_FS_StupidityPenalty", toolTip = "#KH_FS_StupidityPenalty_desc", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]//Stupidity Penalty""How much longer it takes to train a stupid kerbal compared to a smart one
         public float StupidityPenalty = 0;
     }
 }

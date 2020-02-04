@@ -64,13 +64,13 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_RS_GalacticRadiation", toolTip = "#KH_RS_GalacticRadiation_desc", minValue = 0, maxValue = 30000, displayFormat = "N0", stepCount = 31)]//Galactic Radiation""Galactic cosmic radiation in interplanetary space, banana doses/day
         public float GalacticRadiation = 12500;
 
-        [GameParameters.CustomParameterUI("Radiation Storms", toolTip = "Enable solar radiation storms (CMEs). Must have radiation enabled to work")]
+        [GameParameters.CustomParameterUI("#KH_RS_RadStormsEnabled", toolTip = "#KH_RS_RadStormsEnabled_desc")]//Radiation Storms""Enable solar radiation storms (CMEs). Must have radiation enabled to work
         public bool RadStormsEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("RadStorm Frequency", toolTip = "How often radiation storms happen, relative to default values", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
+        [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequency", toolTip = "#KH_RS_RadStormFrequency_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
         public float RadStormFrequency = 1;
 
-        [GameParameters.CustomFloatParameterUI("RadStorm Magnitude", toolTip = "How strong radstorms are, relative to default values", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]
+        [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormMagnitude", toolTip = "#KH_RS_RadStormMagnitude_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Magnitude""How strong radstorms are, relative to default values
         public float RadStormMagnitude = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationRate", toolTip = "#KH_RS_DecontaminationRate_desc", minValue = 1000, maxValue = 1000000, displayFormat = "N0", logBase = 10)]//Decontamination Rate per Day""How much radiation is lost per day during decontamination

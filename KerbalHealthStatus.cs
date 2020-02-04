@@ -479,7 +479,7 @@ namespace KerbalHealth
         public void FinishTraining(bool silent = false)
         {
             Core.Log("Training of " + name + " is complete.");
-            if (!silent) Core.ShowMessage("Training of " + name + " for " + TrainingVessel + " is complete!", PCM);
+            if (!silent) Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), PCM);//Training of " +  + " for " +  + " is complete!
             RemoveCondition("Training");
             TrainingFor.Clear();
             TrainingVessel = null;
@@ -802,14 +802,6 @@ namespace KerbalHealth
         /// Returns true if the kerbal is currently decontaminating (i.e. has 'Decontaminating' condition)
         /// </summary>
         public bool IsDecontaminating => HasCondition("Decontaminating");
-
-        void ShowXP()
-        {
-            Core.Log("XP level: " + PCM.experienceLevel + " (delta " + PCM.ExperienceLevelDelta + ")");
-            Core.Log("Experience: " + PCM.experience);
-            Core.Log("Extra XP: " + PCM.ExtraExperience);
-            Core.Log("Full XP: " + PCM.CalculateExperiencePoints(HighLogic.CurrentGame));
-        }
 
         public void StartDecontamination()
         {

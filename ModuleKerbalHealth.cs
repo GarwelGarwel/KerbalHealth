@@ -157,16 +157,16 @@ namespace KerbalHealth
                 if (decay > 0) return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
                 switch (multiplyFactor.ToLower())
                 {
-                    case "stress": return "Stress Relief";
-                    case "confinement": return Localizer.Format("#KH_Module_type3");//"Comforts"
-                    case "loneliness": return Localizer.Format("#KH_Module_type4");//"Meditation"
-                    case "microgravity": return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type5") : Localizer.Format("#KH_Module_type6");//"Paragravity""Exercise Equipment"
-                    case "connected": return Localizer.Format("#KH_Module_type7");//"TV Set"
-                    case "sickness": return Localizer.Format("#KH_Module_type8");//"Sick Bay"
+                    case "stress": return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
+                    case "confinement": return Localizer.Format("#KH_Module_type4");//"Comforts"
+                    case "loneliness": return Localizer.Format("#KH_Module_type5");//"Meditation"
+                    case "microgravity": return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
+                    case "connected": return Localizer.Format("#KH_Module_type8");//"TV Set"
+                    case "sickness": return Localizer.Format("#KH_Module_type9");//"Sick Bay"
                 }
-                if (space > 0) return Localizer.Format("#KH_Module_type9");//"Living Space"
-                if (shielding > 0) return Localizer.Format("#KH_Module_type10");//"RadShield"
-                if (radioactivity > 0) return Localizer.Format("#KH_Module_type11");//"Radiation"
+                if (space > 0) return Localizer.Format("#KH_Module_type10");//"Living Space"
+                if (shielding > 0) return Localizer.Format("#KH_Module_type11");//"RadShield"
+                if (radioactivity > 0) return Localizer.Format("#KH_Module_type12");//"Radiation"
                 return Localizer.Format("#KH_Module_title");//"Health Module"
             }
             set => title = value;
@@ -194,7 +194,7 @@ namespace KerbalHealth
             if (resourceConsumptionPerKerbal != 0) res += Localizer.Format("#KH_Module_info8", ResourceDefinition.abbreviation,resourceConsumptionPerKerbal.ToString("F2"));//"\n" +  + " per Kerbal: " +  + "/sec."
             if (shielding != 0) res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " + 
             if (radioactivity != 0) res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
-            if (complexity != 0) res += "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%";
+            if (complexity != 0) res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
             if (res == "") return "";
             return  Localizer.Format("#KH_Module_typetitle", Title)+ res;//"Module type: " + 
         }

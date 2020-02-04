@@ -28,7 +28,7 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_GS_modEnabled", toolTip = "#KH_GS_modEnabled_desc")]//Mod Enabled""Turn Kerbal Health mechanics on/off
         public bool modEnabled = true;
 
-        [GameParameters.CustomParameterUI("AppLauncher Button", toolTip = "Show stock AppLauncher (sidebar) buttons in addition to Blizzy's Toolbar. May need a scene change")]
+        [GameParameters.CustomParameterUI("#KH_GS_AppLauncherButton", toolTip = "#KH_GS_AppLauncherButton_desc")]//AppLauncher Button""Show stock AppLauncher (sidebar) buttons in addition to Blizzy's Toolbar. Needs a scene change
         public bool ShowAppLauncherButton = true;
 
         [GameParameters.CustomIntParameterUI("#KH_GS_SortByLocation", toolTip = "#KH_GS_SortByLocation_desc")]//Sort Kerbals by Location""Kerbals in Health Monitor will be displayed depending on their current location, otherwise sort by name
@@ -37,7 +37,7 @@ namespace KerbalHealth
         [GameParameters.CustomIntParameterUI("#KH_GS_LinesPerPage", toolTip = "#KH_GS_LinesPerPage_desc", minValue = 5, maxValue = 20, stepSize = 5)]//Lines per Page in Health Monitor""How many kerbals to show on one page of Health Monitor
         public int LinesPerPage = 10;
 
-        [GameParameters.CustomFloatParameterUI("Update Interval", toolTip = "Number of GAME seconds between health updates\nDoesn't affect health rates. Increase if performance too slow", minValue = 0.04f, maxValue = 60)]
+        [GameParameters.CustomFloatParameterUI("#KH_GS_UpdateInterval", toolTip = "#KH_GS_UpdateInterval_desc", minValue = 0.04f, maxValue = 60)]
         public float UpdateInterval = 30;
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_MinUpdateInterval", toolTip = "#KH_GS_MinUpdateInterval_desc", minValue = 0.04f, maxValue = 60)]//Minimum Update Interval""Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval
