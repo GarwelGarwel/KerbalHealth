@@ -410,6 +410,11 @@ namespace KerbalHealth
                     }
                     if (Core.RadiationEnabled && Core.RadStormsEnabled) ProcessRadStorms();
                     nextEventTime += GetNextEventInterval();
+                    if (Core.RadiationEnabled && Core.RadiationEnabled && (Core.GetYear(nextEventTime) > Core.GetYear(Planetarium.GetUniversalTime())))
+                    {
+                        Core.Log("Showing solar weather summary.", Core.LogLevel.Important);
+                        Core.ShowMessage("You are " + (Core.SolarCyclePhase * 100).ToString("N1") + " through solar cycle " + Math.Truncate(Planetarium.GetUniversalTime() / Core.SolarCycleDuration + 1).ToString("N0") + ". Current mean time between radiation storms is " + (1 / Core.RadStormChance / Core.RadStormFrequency).ToString("N0") + " days.", false);
+                    }
                     Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                 }
                 dirty = true;

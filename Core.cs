@@ -719,6 +719,13 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Returns a zero-based year in the given timestamp (add 1 for a KSP date year)
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public static int GetYear(double time) => (int)Math.Truncate(time / KSPUtil.dateTimeFormatter.Year);
+
+        /// <summary>
         /// Parses UT into a string (e.g. "2 d 3 h 15 m 59 s"), hides zero elements
         /// </summary>
         /// <param name="time">Time in seconds</param>
