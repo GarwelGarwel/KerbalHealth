@@ -48,9 +48,9 @@ namespace KerbalHealth
         public void DisplayData()
         {
             Core.Log("KerbalHealthEditorReport.DisplayData");
-            if ((ShipConstruction.ShipManifest == null) || (!ShipConstruction.ShipManifest.HasAnyCrew()))
+            if ((ShipConstruction.ShipManifest == null) || !ShipConstruction.ShipManifest.HasAnyCrew())
             {
-                Core.Log("Ship is empty. Let's get outta here!", Core.LogLevel.Important);
+                Core.Log("The ship is empty. Let's get outta here!", Core.LogLevel.Important);
                 return;
             }
             gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
@@ -59,7 +59,7 @@ namespace KerbalHealth
                  new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Name")+"</color></b>", true),//Name
                  new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Trend")+"</color></b>", true),//Trend
                  new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_MissionTime")+"</color></b>", true),//Mission Time
-                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_TrainingTime")+"</color></b>", true)
+                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_TrainingTime")+"</color></b>", true)//Training Time
             };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
@@ -79,10 +79,10 @@ namespace KerbalHealth
                 new MultiOptionDialog(
                     "Health Report",
                     "",
-                    Localizer.Format("#KH_ER_Windowtitle"),//"Health Report"
+                    Localizer.Format("#KH_ER_Windowtitle"),//Health Report
                     HighLogic.UISkin,
                     reportPosition,
-                    new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
+                    new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Space") + "</color>", false),//Space: 
                         spaceLbl = new DialogGUILabel("N/A", true),
@@ -100,7 +100,7 @@ namespace KerbalHealth
                         new DialogGUILabel(Localizer.Format("#KH_ER_Factors"), true),
                         new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnResetButtonSelected, false),
                         new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false)),
-                    new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(190, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
+                    new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(190, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
                 false,
                 HighLogic.UISkin,
                 false);
@@ -145,7 +145,7 @@ namespace KerbalHealth
             }
             string msg = "";
             if (s.Count > 0)
-                if (s.Count == 1) msg = Localizer.Format("#KH_ER_KerbalStartedTraining", s[0]); //s[0] + " started training.";
+                if (s.Count == 1) msg = Localizer.Format("#KH_ER_KerbalStartedTraining", s[0]); // + " started training.
                 else
                 {
                     msg = Localizer.Format("#KH_ER_KerbalsStartedTraining"); //The following kerbals started training:
@@ -155,7 +155,7 @@ namespace KerbalHealth
             if (f.Count > 0)
             {
                 if (msg != "") msg += "\r\n\n";
-                if (f.Count == 1) msg += "<color=\"red\">" + Localizer.Format("#KH_ER_KerbalCantTrain", f[0]) + "</color>"; // can't train.
+                if (f.Count == 1) msg += Localizer.Format("#KH_ER_KerbalCantTrain", f[0]); //<color="red">* can't train.</color>
                 else
                 {
                     msg += "<color=\"red\">" + Localizer.Format("#KH_ER_KerbalsCantTrain");  //The following kerbals can't train:
