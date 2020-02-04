@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
+using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -104,7 +105,7 @@ namespace KerbalHealth
                 {
                     Core.Log("Confinement Factor is " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor + " instead of -3. Automatically fixing.");
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConfinementBaseFactor = -3;
-                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString(3) + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg", v.ToString(3)), true);//"Kerbal Health has been updated to v" +  + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
                 }
                 if (version < new Version("1.2.1.2"))
                 {
@@ -114,7 +115,7 @@ namespace KerbalHealth
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = 0.2f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = 0.2f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.01f;
-                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg2", v.ToString()), true);//"Kerbal Health has been updated to v" + + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
                 }
                 if (version < new Version("1.3.8.1"))
                 {
@@ -489,13 +490,13 @@ namespace KerbalHealth
                 gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain);
 
                 // Creating column titles
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Name</color></b>", true));
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Location</color></b>", true));
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Condition</color></b>", true));
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Health</color></b>", true));
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Change/day</color></b>", true));
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Time Left</color></b>", true));
-                gridContents.Add(new DialogGUILabel("<b><color=\"white\">Radiation</color></b>", true));
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_Name") + "</color></b>", true));//Name
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_Location") + "</color></b>", true));//Location
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_Condition") + "</color></b>", true));//Condition
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_Health") + "</color></b>", true));//Health
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_Changeperday") + "</color></b>", true));//Change/day
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_TimeLeft") + "</color></b>", true));//Time Left
+                gridContents.Add(new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_HM_Radiation") + "</color></b>", true));//Radiation
                 gridContents.Add(new DialogGUILabel("", true));
 
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
@@ -503,11 +504,11 @@ namespace KerbalHealth
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
                         gridContents.Add(new DialogGUILabel("", true));
-                    gridContents.Add(new DialogGUIButton<int>("Details", (n) => { selectedKHS = kerbals.Values[n]; Invalidate(); }, i));
+                    gridContents.Add(new DialogGUIButton<int>(Localizer.Format("#KH_HM_Details"), (n) => { selectedKHS = kerbals.Values[n]; Invalidate(); }, i));//"Details"
                 }
                 layout.AddChild(new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(colWidth, 30), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumMain, gridContents.ToArray()));
                 monitorPosition.width = gridWidthList + 10;
-                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Monitor", HighLogic.UISkin, monitorPosition, layout), false, HighLogic.UISkin, false);
+                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", Localizer.Format("#KH_HM_windowtitle"), HighLogic.UISkin, monitorPosition, layout), false, HighLogic.UISkin, false);//"Health Monitor"
             }
 
             else
@@ -515,19 +516,19 @@ namespace KerbalHealth
                 // Creating the grid for detailed view, which will be filled in Update method
                 Core.Log("Showing details for " + selectedKHS.Name + ".");
                 gridContents = new List<DialogGUIBase>();
-                gridContents.Add(new DialogGUILabel("Name:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DName")));//"Name:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Level:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DLevel")));//"Level:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Condition:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DCondition")));//"Condition:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Quirks:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DQuirks")));//"Quirks:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Max HP:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DMaxHP")));//"Max HP:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("HP:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHp")));//"HP:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("HP Change:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHPChange")));//"HP Change:"
                 gridContents.Add(new DialogGUILabel(""));
                 if (Core.IsKerbalLoaded(selectedKHS.PCM) && !selectedKHS.HasCondition("Frozen"))
                     foreach (HealthFactor f in Core.Factors)
@@ -539,22 +540,22 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
                     new DialogGUIButton("?", OnTrainingInfo, 20, 20, false)));
-                gridContents.Add(new DialogGUILabel("Recuperation:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRecuperation")));//"Recuperation:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Exposure:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DExposure")));//"Exposure:"
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Shelter Exposure:"));
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Radiation:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadiation")));//"Radiation:"
                 gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel("Lifetime Dose:"));
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DLifetimeDose")));//"Lifetime Dose:"
                 gridContents.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
-                    new DialogGUIButton("Decon", OnDecontamination, 40, 20, false)));
-                gridContents.Add(new DialogGUILabel("Rad HP Loss:"));
+                    new DialogGUIButton(Localizer.Format("#KH_HM_DDecon"), OnDecontamination, 50, 20, false)));//"Decon"
+                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadHPLoss")));//"Rad HP Loss:"
                 gridContents.Add(new DialogGUILabel(""));
                 monitorPosition.width = gridWidthDetails + 10;
-                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", "Health Details", HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(colWidth, 40), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton("Back", () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);
+                monitorWindow = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog("Health Monitor", "", Localizer.Format("#KH_HM_Dwindowtitle"), HighLogic.UISkin, monitorPosition, new DialogGUIVerticalLayout(new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(colWidth, 40), new Vector2(colSpacing, 10), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNumDetails, gridContents.ToArray()), new DialogGUIButton(Localizer.Format("#KH_HM_backbtn"), () => { selectedKHS = null; Invalidate(); }, gridWidthDetails, 20, false))), false, HighLogic.UISkin, false);//"Health Details""Back"
             }
             dirty = true;
         }
@@ -607,19 +608,19 @@ namespace KerbalHealth
             if (selectedKHS.IsDecontaminating)
             {
                 Core.Log("User ordered to stop decontamination of " + selectedKHS.Name);
-                msg = selectedKHS.Name + " is decontaminating. If you stop it, the process will stop and they will slowly regain health.";
+                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.Name);// + " is decontaminating. If you stop it, the process will stop and they will slowly regain health."
                 ok = () => { selectedKHS.StopDecontamination(); Invalidate(); };
             }
             else
             {
-                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) msg += "Your Astronaut Complex has to be <color=\"yellow\">level " + Core.DecontaminationAstronautComplexLevel + "</color> and your R&D Facility <color=\"yellow\">level " + Core.DecontaminationRNDLevel + "</color> to allow decontamination.\r\n\r\n";
-                if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)) msg += "Decontamination will cost <color=\"yellow\">" + (HighLogic.CurrentGame.Mode == Game.Modes.CAREER ? (Core.DecontaminationFundsCost.ToString("N0") + " funds and ") : "") + Core.DecontaminationScienceCost.ToString("N0") + " science</color>. ";
-                msg += selectedKHS.Name + " needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by " + (Core.DecontaminationHealthLoss * 100).ToString("N0") + "% during decontamination.\r\n\r\nAt a rate of " + Core.DecontaminationRate.ToString("N0") + " banana doses/day, it is expected to take about <color=\"yellow\">" + Core.ParseUT(selectedKHS.Dose / Core.DecontaminationRate * KSPUtil.dateTimeFormatter.Day, false, 2) + "</color>.";
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) msg += Localizer.Format("#KH_DeconMsg2", Core.DecontaminationAstronautComplexLevel,Core.DecontaminationRNDLevel);//"Your Astronaut Complex has to be <color=\"yellow\">level " +  + "</color> and your R&D Facility <color=\"yellow\">level " +  + "</color> to allow decontamination.\r\n\r\n"
+                if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)) msg += Localizer.Format("#KH_DeconMsg3", (HighLogic.CurrentGame.Mode == Game.Modes.CAREER ?  Localizer.Format("#KH_DeconMsg3_CAREERMode", Core.DecontaminationFundsCost.ToString("N0")): ""),Core.DecontaminationScienceCost.ToString("N0"));//"Decontamination will cost <color=\"yellow\">" +  +  + " science</color>. "( <<1>>" funds and ")
+                msg += Localizer.Format("#KH_DeconMsg4", selectedKHS.Name,(Core.DecontaminationHealthLoss * 100).ToString("N0"),Core.DecontaminationRate.ToString("N0"),Core.ParseUT(selectedKHS.Dose / Core.DecontaminationRate * 21600, false, 2));//"<<1>> needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by <<2>>% during decontamination.\r\n\r\nAt a rate of <<3>> banana doses/day, it is expected to take about <color="yellow"><<4>></color>."
                 if (selectedKHS.IsReadyForDecontamination)
                     ok = () => { selectedKHS.StartDecontamination(); Invalidate(); };
-                else msg += "</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>";
+                else msg += Localizer.Format("#KH_DeconMsg5");//"</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>"
             }
-            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Decontamination", msg, "Decontamination", HighLogic.UISkin, new DialogGUIButton("OK", ok, () => selectedKHS.IsReadyForDecontamination, true), new DialogGUIButton("Cancel", null, true)), false, HighLogic.UISkin);
+            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Decontamination", msg, Localizer.Format("#KH_DeconWinTitle"), HighLogic.UISkin, new DialogGUIButton(Localizer.Format("#KH_DeconWinOKbtn"), ok, () => selectedKHS.IsReadyForDecontamination, true), new DialogGUIButton(Localizer.Format("#KH_DeconWinCancelbtn"), null, true)), false, HighLogic.UISkin);//"Decontamination""OK""Cancel"
         }
 
         /// <summary>

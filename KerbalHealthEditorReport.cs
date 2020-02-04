@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
+using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -55,6 +56,10 @@ namespace KerbalHealth
             gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
                 // Creating column titles
+                new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Name")+"</color></b>", true),//Name
+                new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Trend")+"</color></b>", true),//Trend
+                new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_TL")+"</color></b>", true)//Time Left
+            };
                 new DialogGUILabel("<b><color=\"white\">Name</color></b>", true),
                 new DialogGUILabel("<b><color=\"white\">Trend</color></b>", true),
                 new DialogGUILabel("<b><color=\"white\">Mission Time</color></b>", true),
@@ -78,17 +83,17 @@ namespace KerbalHealth
                 new MultiOptionDialog(
                     "Health Report",
                     "",
-                    "Health Report",
+                    Localizer.Format("#KH_ER_Windowtitle"),//"Health Report"
                     HighLogic.UISkin,
                     reportPosition,
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("<color=\"white\">Space: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Space") + "</color>", false),//Space: 
                         spaceLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">Recuperation: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Recuperation") + "</color>", false),//Recuperation: 
                         recupLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("<color=\"white\">Shielding: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Shielding") + "</color>", false),//Shielding: 
                         shieldingLbl = new DialogGUILabel("N/A", true),
                         new DialogGUILabel("<color=\"white\">Exposure: </color>", false),
                         exposureLbl = new DialogGUILabel("N/A", true),
@@ -231,7 +236,7 @@ namespace KerbalHealth
                     double b = khs.GetBalanceHP();
                     string s = "";
                     if (b > 0) s = "-> " + b.ToString("F0") + " HP (" + (b / khs.MaxHP * 100).ToString("F0") + "%)";
-                    else s = ch.ToString("F1") + " HP/day";
+                    else s = Localizer.Format("#KH_ER_HealthPerDay",ch.ToString("F1"));// + " HP/day"
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);

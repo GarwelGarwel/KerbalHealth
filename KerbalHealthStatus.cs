@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -83,14 +84,14 @@ namespace KerbalHealth
             {
                 switch (PCM.rosterStatus)
                 {
-                    case ProtoCrewMember.RosterStatus.Available: return "KSC";
-                    case ProtoCrewMember.RosterStatus.Dead: return "Dead";
-                    case ProtoCrewMember.RosterStatus.Missing: return "Unknown";
-                    case (ProtoCrewMember.RosterStatus﻿)9001: return "On Vacation";
+                    case ProtoCrewMember.RosterStatus.Available: return Localizer.Format("#KH_Location_status1");//"KSC"
+                    case ProtoCrewMember.RosterStatus.Dead: return Localizer.Format("#KH_Location_status2");//"Dead"
+                    case ProtoCrewMember.RosterStatus.Missing: return Localizer.Format("#KH_Location_status3");//"Unknown"
+                    case (ProtoCrewMember.RosterStatus﻿)9001: return Localizer.Format("#KH_Location_status4");//"On Vacation"
                 }
                 Vessel v = Core.KerbalVessel(PCM);
                 if (v == null) return "???";
-                if (v.isEVA) return "EVA (" + v.mainBody.bodyName + ")";
+                if (v.isEVA) return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
                 return v.vesselName;
             }
         }
@@ -157,7 +158,7 @@ namespace KerbalHealth
             if (Core.ConditionsEnabled) HP += condition.HP * Core.ConditionsEffect;
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
             if (condition.Incapacitated) MakeIncapacitated();
-            if (condition.Visible) Core.ShowMessage("<color=\"white\">" + Name + " has acquired " + condition.Title + "</color> condition!\r\n\n" + condition.Description, PCM);
+            if (condition.Visible) Core.ShowMessage(Localizer.Format("#KH_Location_statumsg1", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -181,7 +182,7 @@ namespace KerbalHealth
             if (Core.ConditionsEnabled && condition.RestoreHP) HP -= condition.HP * n * Core.ConditionsEffect;
             if ((n > 0) && condition.Incapacitated && IsCapable) MakeCapable();
             if ((n > 0) && condition.Visible)
-                Core.ShowMessage("<color=\"white\">" + Name + "</color> has lost <color=\"white\">" + condition.Title + "</color> condition!", PCM);
+                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg2", Name,condition.Title), PCM);//"<color=\"white\">" +  + "</color> has lost <color=\"white\">" +  + "</color> condition!"
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
@@ -363,7 +364,7 @@ namespace KerbalHealth
         {
             Quirk q = GetRandomQuirk(level);
             Quirks.Add(q);
-            Core.ShowMessage("<color=\"white\">" + Name + "</color> acquired a new quirk: " + q, PCM);
+            Core.ShowMessage(Localizer.Format("#KH_Location_statumsg3", Name,q), PCM);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
             return q;
         }
 
@@ -566,7 +567,7 @@ namespace KerbalHealth
                 else hp = value;
                 if (!IsWarned && Health < Core.LowHealthAlert)
                 {
-                    Core.ShowMessage("<color=\"white\">" + Name + "</color>'s health is dangerously low!", PCM);
+                    Core.ShowMessage(Localizer.Format("#KH_Location_statumsg4",Name), PCM);//"<color=\"white\">" +  + "</color>'s health is dangerously low!"
                     IsWarned = true;
                 }
                 else if (IsWarned && Health >= Core.LowHealthAlert) IsWarned = false;
@@ -992,7 +993,7 @@ namespace KerbalHealth
                 if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
-                Core.ShowMessage("<color=\"white\">" + Name + "</color> has died of poor health!", true);
+                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg5", Name), true);//"<color=\"white\">" +  + "</color> has died of poor health!"
             }
 
             // If KSC training no longer possible, stop it
@@ -1019,13 +1020,13 @@ namespace KerbalHealth
                 if (HP >= ExhaustionEndHP)
                 {
                     RemoveCondition("Exhausted");
-                    Core.ShowMessage("<color=\"white\">" + Name + "</color> is no longer exhausted.", PCM);
+                    Core.ShowMessage(Localizer.Format("#KH_Location_statumsg6", Name), PCM);//"<color=\"white\">" +  + "</color> is no longer exhausted."
                 }
             }
             else if (HP < ExhaustionStartHP)
             {
                 AddCondition("Exhausted");
-                Core.ShowMessage("<color=\"white\">" + Name + "</color> is exhausted!", PCM);
+                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg7", Name), PCM);//"<color=\"white\">" +  + "</color> is exhausted!"
             }
         }
         #endregion
