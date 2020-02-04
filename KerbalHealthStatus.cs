@@ -702,6 +702,12 @@ namespace KerbalHealth
         /// </summary>
         public double RadiationMaxHPModifier => Core.RadiationEnabled ? 1 - Dose * 1e-7 * Core.RadiationEffect : 1;
 
+        public void AddDose(double d)
+        {
+            if (d > 0) HP -= d * 1e-7 * Core.RadiationEffect;
+            Dose += d;
+        }
+
         /// <summary>
         /// Level of background radiation absorbed by the body, in bananas per day
         /// </summary>
@@ -714,8 +720,23 @@ namespace KerbalHealth
         /// </summary>
         public double LastExposure { get; set; } = 1;
 
-        static double GetSolarRadiationAtDistance(double distance) => Core.SolarRadiation * Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
+        /// <summary>
+        /// Exposure in radiaiton shelter (used for radstorms)
+        /// </summary>
+        public double ShelterExposure { get; set; } = 1;
 
+        /// <summary>
+        /// Proportion of solar radiation that reaches a vessel at a given distance from the Sun (before applying magnetosphere, atmosphere and exposure effects)
+        /// </summary>
+        /// <param name="distance"></param>
+        /// <returns></returns>
+        public static double GetSolarRadiationProportion(double distance) => Core.Sqr(FlightGlobals.GetHomeBody().orbit.radius / distance);
+
+        /// <summary>
+        /// Amount of radiation that gets through the magnetosphere to the given vessel
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static double GetMagnetosphereCoefficient(Vessel v)
         {
             double cosmicRadiationRate = 1;
@@ -732,39 +753,36 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns level of cosmic radiation reaching the given vessel
+        /// Amount of cosmic radiation that gets through the magnetosphere and atmosphere to the given vessel
         /// </summary>
-        /// <returns>Cosmic radiation level in bananas/day</returns>
-        public static double GetCosmicRadiation(Vessel v)
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double GetCosmicRadiationRate(Vessel v)
         {
-            double cosmicRadiationRate = 1, distanceToSun = 0;
             if (v == null)
             {
                 Core.Log("Vessel is null. No radiation added.", Core.LogLevel.Important);
                 return 0;
             }
-            Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", situation: " + v.SituationString + ", distance to Sun: " + v.distanceToSun);
-            Core.Log("Configs for " + v.mainBody.bodyName + ":\r\n" + Core.PlanetConfigs[v.mainBody] ?? "NOT FOUND");
+            Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", distance to Sun: " + v.distanceToSun);
 
-            if (v.mainBody != Sun.Instance.sun)
-            {
-                distanceToSun = (v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude;
-                cosmicRadiationRate = GetMagnetosphereCoefficient(v);
-                if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
-                    if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
-                    else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
-                double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
-                Core.Log("At an altitude of " + v.altitude + " m and R = " + v.mainBody.Radius + " m, occlusion coefficient is " + occlusionCoefficient.ToString("P2") + ".");
-                cosmicRadiationRate *= occlusionCoefficient;
-            }
-            else distanceToSun = v.altitude + Sun.Instance.sun.Radius;
+            if (v.mainBody == Sun.Instance.sun) return 1;
+            double cosmicRadiationRate = GetMagnetosphereCoefficient(v);
+            if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
+                if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(Core.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+                else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(Core.StratosphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+            double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
+            return cosmicRadiationRate * occlusionCoefficient;
+        }
+
+        /// <summary>
+        /// Returns level of cosmic radiation reaching the given vessel
+        /// </summary>
+        /// <returns>Cosmic radiation level in bananas/day</returns>
+        public static double GetCosmicRadiation(Vessel v)
+        {
             double naturalRadiation = Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
-            Core.Log("Solar Radiation Quoficient = " + cosmicRadiationRate);
-            Core.Log("Distance to Sun = " + distanceToSun + " (" + (distanceToSun / FlightGlobals.GetHomeBody().orbit.radius) + " AU)");
-            Core.Log("Nominal Solar Radiation @ Vessel's Location = " + GetSolarRadiationAtDistance(distanceToSun));
-            Core.Log("Nominal Galactic Radiation = " + Core.GalacticRadiation);
-            Core.Log("Body's natural radiation = " + naturalRadiation);
-            return cosmicRadiationRate * (GetSolarRadiationAtDistance(distanceToSun) + Core.GalacticRadiation) + naturalRadiation;
+            return GetCosmicRadiationRate(v) * (GetSolarRadiationProportion(Core.DistanceToSun(v)) * Core.SolarRadiation + Core.GalacticRadiation) + naturalRadiation;
         }
 
         /// <summary>
@@ -810,23 +828,6 @@ namespace KerbalHealth
                 Core.Log("Taking " + Core.DecontaminationScienceCost + " science points for decontamination.");
                 ResearchAndDevelopment.Instance.AddScience(-Core.DecontaminationScienceCost, TransactionReasons.None);
             }
-            if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) && Core.DecontaminationLevelLoss)  // Not implemented (always false)
-            {
-                Core.Log("Removing XP from " + Name + " (" + PCM.experience + " XP, level " + PCM.experienceLevel + ") for decontamination.");
-                ShowXP();
-                //PCM.experienceLevel--;
-                //PCM.ExtraExperience -= PCM.experience / 2;
-                Core.Log("Flight log for " + Name + " has " + PCM.flightLog.Count + " entries.");
-                PCM.flightLog.AddEntry("Decontamination", Planetarium.fetch.Home.bodyName);
-                Core.Log("Flight log for " + Name + " has " + PCM.flightLog.Count + " entries.");
-                ShowXP();
-                Core.Log("Archiving flight log...");
-                PCM.ArchiveFlightLog();
-                ShowXP();
-                Core.Log("Updating experience...");
-                PCM.UpdateExperience();
-                ShowXP();
-            }
             HP *= 1 - Core.DecontaminationHealthLoss;
             AddCondition("Decontaminating");
             Radiation = -Core.DecontaminationRate;
@@ -871,6 +872,7 @@ namespace KerbalHealth
             if (recalculateCache || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned))
             {
                 CachedChange = 0;
+                LastExposure = ShelterExposure = 1;
                 Factors = new Dictionary<string, double>(Core.Factors.Count);
             }
             else Core.Log("Cached HP change for " + pcm.name + " is " + CachedChange + " HP/day.");
@@ -884,9 +886,11 @@ namespace KerbalHealth
                 mods = VesselModifiers.Clone();
                 Core.Log("Vessel health modifiers before applying part and kerbal effects:\n" + mods);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
-                mods.ProcessPart(Core.GetCrewPart(pcm), true);
-                mods.ExposureMultiplier *= mods.GetExposure(Core.GetCrewCapacity(pcm));
                 if (IsOnEVA) mods.ExposureMultiplier *= Core.EVAExposure;
+                ShelterExposure = mods.ShelterExposure * mods.ExposureMultiplier;
+                Core.Log("Shelter exposure for " + name + " is " + ShelterExposure);
+                mods.ProcessPart(Core.GetCrewPart(pcm), true);
+                mods.ExposureMultiplier *= mods.Exposure;
             }
             else
             {
@@ -965,7 +969,7 @@ namespace KerbalHealth
                 }
                 else if (!decontaminating) Radiation = 0;
 
-                Dose += Radiation / KSPUtil.dateTimeFormatter.Day * interval;
+                AddDose(Radiation / KSPUtil.dateTimeFormatter.Day * interval);
                 if (Dose < 0)
                 {
                     Dose = 0;
@@ -1038,6 +1042,7 @@ namespace KerbalHealth
                 if (Radiation != 0) n.AddValue("radiation", Radiation);
                 if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
                 if (LastExposure != 1) n.AddValue("exposure", LastExposure);
+                if (ShelterExposure < LastExposure) n.AddValue("shelterExposure", ShelterExposure);
                 foreach (HealthCondition hc in Conditions) n.AddValue("condition", hc.Name);
                 foreach (Quirk q in Quirks) n.AddValue("quirk", q.Name);
                 if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
@@ -1076,6 +1081,7 @@ namespace KerbalHealth
                 Radiation = Core.GetDouble(value, "radiation");
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
                 LastExposure = Core.GetDouble(value, "exposure", 1);
+                ShelterExposure = Core.GetDouble(value, "shelterExposure", LastExposure);
                 foreach (string s in value.GetValues("condition"))
                     Conditions.Add(Core.GetHealthCondition(s));
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))

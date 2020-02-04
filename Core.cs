@@ -7,7 +7,7 @@ namespace KerbalHealth
     /// <summary>
     /// Provides general static methods and fields for KerbalHealth
     /// </summary>
-    public class Core
+    public static class Core
     {
         public static bool Loaded = false;
 
@@ -89,6 +89,27 @@ namespace KerbalHealth
             return PlanetConfigs[cb];
         }
 
+        public static List<RadStormType> RadStormTypes { get; set; }
+        static double radStormTypesTotalWeight = 0;
+
+        public static RadStormType GetRandomRadStormType()
+        {
+            double d = Core.rand.NextDouble() * radStormTypesTotalWeight;
+            foreach (RadStormType rst in RadStormTypes)
+            {
+                d -= rst.Weight;
+                if (d < 0) return rst;
+            }
+            return null;
+        }
+
+        public static double SolarCycleDuration { get; set; }
+        public static double SolarCycleStartingPhase { get; set; }
+        public static double RadStormMinChancePerDay { get; set; }
+        public static double RadStormMaxChancePerDay { get; set; }
+        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
+        public static double RadStormChance => RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+
         /// <summary>
         /// Loads necessary mod data from KerbalHealth.cfg and 
         /// </summary>
@@ -128,6 +149,20 @@ namespace KerbalHealth
                 }
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
+
+            SolarCycleDuration = GetDouble(config, "solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
+            SolarCycleStartingPhase = GetDouble(config, "solarCycleStartingPhase");
+            RadStormMinChancePerDay = GetDouble(config, "radStormMinChance", 0.00015);
+            RadStormMaxChancePerDay = GetDouble(config, "radStormMaxChance", 0.00229);
+
+            RadStormTypes = new List<RadStormType>();
+            i = 0;
+            foreach (ConfigNode n in config.GetNodes("RADSTORM_TYPE"))
+            {
+                RadStormTypes.Add(new RadStormType(n));
+                radStormTypesTotalWeight += RadStormTypes[i++].Weight;
+            }
+            Core.Log(i + " radstorm types loaded with total weight " + radStormTypesTotalWeight, LogLevel.Important);
 
             trainingCaps = new List<double>(3) { 0.6, 0.75, 0.85 };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
@@ -352,7 +387,7 @@ namespace KerbalHealth
         /// <summary>
         /// How much cosmic radiation reaches outer layers of the atmosphere
         /// </summary>
-        public static float StratoCoefficient
+        public static float StratosphereCoefficient
         {
             get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient;
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = value;
@@ -395,6 +430,33 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Enable solar radiation storms (CMEs)
+        /// </summary>
+        public static bool RadStormsEnabled
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormsEnabled;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormsEnabled = value;
+        }
+
+        /// <summary>
+        /// How often radiation storms happen, relative to default values
+        /// </summary>
+        public static float RadStormFrequency
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequency;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormFrequency = value;
+        }
+
+        /// <summary>
+        /// How often radiation storms happen, relative to default values
+        /// </summary>
+        public static float RadStormMagnitude
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormMagnitude;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().RadStormMagnitude = value;
+        }
+
+        /// <summary>
         /// How much radiation dose is removed per day during decontamination
         /// </summary>
         public static float DecontaminationRate
@@ -428,15 +490,6 @@ namespace KerbalHealth
         {
             get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationScienceCost;
             set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationScienceCost = value;
-        }
-
-        /// <summary>
-        /// The decontaminated kerbal loses 1 experience level
-        /// </summary>
-        public static bool DecontaminationLevelLoss
-        {
-            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss;
-            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().DecontaminationLevelLoss = value;
         }
 
         /// <summary>
@@ -537,6 +590,11 @@ namespace KerbalHealth
             return null;
         }
 
+        public static double DistanceToSun(Vessel v) =>
+            (v.mainBody == Sun.Instance.sun)
+            ? v.altitude + Sun.Instance.sun.Radius
+            : ((v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude + Sun.Instance.sun.Radius);
+
         static List<double> trainingCaps;
 
         /// <summary>
@@ -614,12 +672,20 @@ namespace KerbalHealth
         public static double Sqr(double x) => x * x;
 
         /// <summary>
-        /// Returns a string representing value v with a mandatory sign (+ or -, unless v = 0)
+        /// Returns a Gaussian-distributed random value
         /// </summary>
-        /// <param name="v">Value to present as a string</param>
+        /// <param name="mean"></param>
+        /// <param name="stdDev"></param>
+        /// <returns></returns>
+        public static double GetGaussian(double stdDev = 1, double mean = 0) => mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - rand.NextDouble()));
+
+        /// <summary>
+        /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)
+        /// </summary>
+        /// <param name="value">Value to present as a string</param>
         /// <param name="format">String format according to Double.ToString</param>
         /// <returns></returns>
-        public static string SignValue(double v, string format) => ((v > 0) ? "+" : "") + v.ToString(format);
+        public static string SignValue(double value, string format) => ((value > 0) ? "+" : "") + value.ToString(format);
 
         static string[] prefixes = { "", "K", "M", "G", "T" };
 
@@ -627,16 +693,16 @@ namespace KerbalHealth
         /// Converts a number into a string with a multiplicative character (K, M, G or T), if applicable
         /// </summary>
         /// <param name="value">The value to convert</param>
-        /// <param name="allowedDigits">Max number of digits to allow before the prefix (must be 3 or more)</param>
+        /// <param name="digits">Number of digits to allow before the prefix (must be 3 or more)</param>
         /// <returns></returns>
-        public static string PrefixFormat(double value, int allowedDigits = 3, bool mandatorySign = false)
+        public static string PrefixFormat(double value, int digits = 3, bool mandatorySign = false)
         {
             double v = Math.Abs(value);
             if (v < 0.5) return "0";
-            int n, m = (int)Math.Pow(10, allowedDigits);
+            int n, m = (int)Math.Pow(10, digits);
             for (n = 0; (v >= m) && (n < prefixes.Length - 1); n++)
                 v /= 1000;
-            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("N0") + prefixes[n];
+            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("F" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
         }
 
         /// <summary>
@@ -651,6 +717,13 @@ namespace KerbalHealth
             foreach (char ch in s) if (ch == c) res++;
             return res;
         }
+
+        /// <summary>
+        /// Returns a zero-based year in the given timestamp (add 1 for a KSP date year)
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
+        public static int GetYear(double time) => (int)Math.Truncate(time / KSPUtil.dateTimeFormatter.Year);
 
         /// <summary>
         /// Parses UT into a string (e.g. "2 d 3 h 15 m 59 s"), hides zero elements
@@ -749,7 +822,5 @@ namespace KerbalHealth
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         { if (IsLogging(messageLevel) && (message != "")) Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message); }
-
-        private Core() { }
     }
 }

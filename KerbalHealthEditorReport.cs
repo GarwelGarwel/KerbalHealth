@@ -14,7 +14,7 @@ namespace KerbalHealth
         Rect reportPosition = new Rect(0.5f, 0.5f, 400, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
-        DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl;
+        DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
         int colNum = 4;  // # of columns in Health Report
         static bool healthModulesEnabled = true, trainingEnabled = true;
 
@@ -91,7 +91,9 @@ namespace KerbalHealth
                         new DialogGUILabel("<color=\"white\">Shielding: </color>", false),
                         shieldingLbl = new DialogGUILabel("N/A", true),
                         new DialogGUILabel("<color=\"white\">Exposure: </color>", false),
-                        exposureLbl = new DialogGUILabel("N/A", true)),
+                        exposureLbl = new DialogGUILabel("N/A", true),
+                        new DialogGUILabel("<color=\"white\">Shelter Exposure: </color>", false),
+                        shelterExposureLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel("Factors", true),
@@ -232,15 +234,17 @@ namespace KerbalHealth
                     else s = ch.ToString("F1") + " HP/day";
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     if (b > khs.NextConditionHP()) s = "—";
-                    else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition());
+                    else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
-                    gridContents[(i + 1) * colNum + 3].SetOptionText(Core.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 10) : "N/A");
+                    gridContents[(i + 1) * colNum + 3].SetOptionText(Core.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : "N/A");
                     i++;
                 }
                 spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Space.ToString("F1") + "</color>");
                 recupLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Recuperation.ToString("F1") + "%</color>");
                 shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
                 exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
+                shelterExposureLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.ShelterExposure.ToString("P1") + "</color>");
+                Core.Log("Shelter exposure: " + khs.VesselModifiers.ShelterExposure.ToString("P2"));
                 dirty = false;
             }
         }

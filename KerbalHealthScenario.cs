@@ -16,6 +16,8 @@ namespace KerbalHealth
         static double nextEventTime;  // UT when (or after) next event check occurs
         Version version;  // Current Kerbal Health version
 
+        List<RadStorm> radStorms = new List<RadStorm>();
+
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
@@ -112,16 +114,17 @@ namespace KerbalHealth
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().InSpaceLowCoefficient = 0.2f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().StratoCoefficient = 0.2f;
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().TroposphereCoefficient = 0.01f;
-                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().SolarRadiation = 5000;
-                    HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>().GalacticRadiation = 15000;
                     Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache.", true);
                 }
                 if (version < new Version("1.3.8.1"))
                 {
                     Core.Log("Pre-1.3.9 Stress factor: " + HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor);
                     HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor = -2;
+                    Core.SolarRadiation = 2500;
+                    Core.GalacticRadiation = 12500;
+                    Core.InSpaceHighCoefficient = 0.4f;
                     Core.TrainingEnabled = false;
-                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Stress (formerly Assigned) factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
+                    Core.ShowMessage("Kerbal Health has been updated to v" + v.ToString() + ". Solar and Galactic radiation intensities and high-space radiation level adjusted. Stress (formerly Assigned) factor has been reset to -2. Kerbals' training is currently disabled. Please check difficulty settings if you want to enable it and then check every crewed vessel to update Kerbal Health cache.", true);
                 }
                 version = v;
             }
@@ -288,6 +291,47 @@ namespace KerbalHealth
         /// <returns></returns>
         double GetNextEventInterval() => Core.rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
+        void ProcessRadStorms()
+        {
+            Core.Log("ProcessRadStorms");
+            Dictionary<int, RadStorm> targets = new Dictionary<int, RadStorm>
+            { { Planetarium.fetch.Home.name.GetHashCode(), new RadStorm(Planetarium.fetch.Home) } };
+            foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.RosterStatus.Assigned))
+            {
+                Vessel v = Core.KerbalVessel(pcm);
+                if (v == null) continue;
+                CelestialBody b = v.mainBody;
+                Core.Log(pcm.name + " is in " + v.vesselName + " in " + b.name + "'s SOI.");
+                int k;
+                if (b == Planetarium.fetch.Sun)
+                {
+                    k = (int)v.persistentId;
+                    if (!targets.ContainsKey(k)) targets.Add(k, new RadStorm(v));
+                }
+                else
+                {
+                    b = Core.GetPlanet(b);
+                    k = b.name.GetHashCode();
+                    if (!targets.ContainsKey(k)) targets.Add(k, new RadStorm(b));
+                }
+            }
+            Core.Log(targets.Count + " potential radstorm targets found.");
+            Core.Log("Current solar cycle phase: " + Core.SolarCyclePhase.ToString("P2") + " through. Radstorm chance: " + Core.RadStormChance);
+
+            foreach (RadStorm t in targets.Values)
+                if (Core.rand.NextDouble() < Core.RadStormChance * Core.RadStormFrequency)
+                {
+                    RadStormType rst = Core.GetRandomRadStormType();
+                    double delay = t.DistanceFromSun / rst.GetVelocity();
+                    t.Magnitutde = rst.GetMagnitude();
+                    Core.Log("Radstorm will hit " + t.Name + " travel distance: " + t.DistanceFromSun.ToString("F0") + " m; travel time: " + delay.ToString("N0") + " s; magnitude " + t.Magnitutde.ToString("N0"));
+                    t.Time = Planetarium.GetUniversalTime() + delay;
+                    Core.ShowMessage("A radiation storm of <color=\"yellow\">" + rst.Name + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!", true);
+                    radStorms.Add(t);
+                }
+                else Core.Log("No radstorm for " + t.Name);
+        }
+
         /// <summary>
         /// The main method for updating all kerbals' health and processing events
         /// </summary>
@@ -307,10 +351,33 @@ namespace KerbalHealth
                     foreach (Vessel v in FlightGlobals.VesselsLoaded) TrainVessel(v);
                     vesselChanged = false;
                 }
+
+                if (Core.RadiationEnabled && Core.RadStormsEnabled)
+                    for (int i = 0; i < radStorms.Count; i++)
+                        if (time >= radStorms[i].Time)
+                        {
+                            Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + radStorms[i].Magnitutde, Core.LogLevel.Important);
+                            int j = 0;
+                            double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun) * Core.RadStormMagnitude;
+                            string s = "Radstorm of nominal magnitude <color=\"yellow\">" + Core.PrefixFormat(m, 5) + " BED</color> has just hit <color=\"yellow\">" + radStorms[i].Name + "</color>. Affected kerbals:";
+                            foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
+                                if (radStorms[i].Affects(khs.PCM))
+                                {
+                                    double d = m * KerbalHealthStatus.GetCosmicRadiationRate(Core.KerbalVessel(khs.PCM)) * khs.ShelterExposure;
+                                    khs.AddDose(d);
+                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.");
+                                    s += "\r\n- <color=\"yellow\">" + khs.Name + "</color> for <color=\"yellow\">" + Core.PrefixFormat(d, 5) + " BED</color>";
+                                    j++;
+                                }
+                            if (j > 0) Core.ShowMessage(s, true);
+                            radStorms.RemoveAt(i--);
+                        }
+
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
-                if (Core.ConditionsEnabled)
-                    while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
+                while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
+                {
+                    if (Core.ConditionsEnabled)
                     {
                         Core.Log("Processing conditions...");
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
@@ -340,9 +407,16 @@ namespace KerbalHealth
                                     khs.AddCondition(hc);
                                 }
                         }
-                        nextEventTime += GetNextEventInterval();
-                        Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                     }
+                    if (Core.RadiationEnabled && Core.RadStormsEnabled) ProcessRadStorms();
+                    nextEventTime += GetNextEventInterval();
+                    if (Core.RadiationEnabled && Core.RadiationEnabled && (Core.GetYear(nextEventTime) > Core.GetYear(Planetarium.GetUniversalTime())))
+                    {
+                        Core.Log("Showing solar weather summary.", Core.LogLevel.Important);
+                        Core.ShowMessage("You are " + (Core.SolarCyclePhase * 100).ToString("N1") + " through solar cycle " + Math.Truncate(Planetarium.GetUniversalTime() / Core.SolarCycleDuration + 1).ToString("N0") + ". Current mean time between radiation storms is " + (1 / Core.RadStormChance / Core.RadStormFrequency).ToString("N0") + " days.", false);
+                    }
+                    Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
+                }
                 dirty = true;
             }
         }
@@ -469,12 +543,14 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Exposure:"));
                 gridContents.Add(new DialogGUILabel(""));
+                gridContents.Add(new DialogGUILabel("Shelter Exposure:"));
+                gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Radiation:"));
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel("Lifetime Dose:"));
                 gridContents.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
-                    new DialogGUIButton("Decon", OnDecontamination, 50, 20, false)));
+                    new DialogGUIButton("Decon", OnDecontamination, 40, 20, false)));
                 gridContents.Add(new DialogGUILabel("Rad HP Loss:"));
                 gridContents.Add(new DialogGUILabel(""));
                 monitorPosition.width = gridWidthDetails + 10;
@@ -574,7 +650,6 @@ namespace KerbalHealth
                     Invalidate();
                     crewChanged = false;
                 }
-                Core.Log(kerbals.Count + " kerbals in Health Monitor list.");
                 // Fill the Health Monitor's grid with kerbals' health data
                 for (int i = 0; i < LineCount; i++)
                 {
@@ -587,7 +662,7 @@ namespace KerbalHealth
                     if (healthFrozen || (ch == 0) || ((b - khs.NextConditionHP()) * ch < 0)) s = "—";
                     else
                     {
-                        s = Core.ParseUT(khs.TimeToNextCondition(), true, 100);
+                        s = Core.ParseUT(khs.TimeToNextCondition(), false, 100);
                         if (ch < 0)
                         {
                             if (khs.TimeToNextCondition() < KSPUtil.dateTimeFormatter.Day) formatTag = "<color=\"red\">";
@@ -601,7 +676,7 @@ namespace KerbalHealth
                     gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
                     gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((ch > 0) ? "+" : "") + ch.ToString("F2"))) + formatUntag);
                     gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 5) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 4, true) + "/day)" : "") + formatUntag);
+                    gridContents[(i + 1) * colNumMain + 6].SetOptionText(formatTag + Core.PrefixFormat(khs.Dose, 3) + (khs.Radiation != 0 ? " (" + Core.PrefixFormat(khs.Radiation, 3, true) + "/day)" : "") + formatUntag);
                 }
             }
             else  // Showing details for one particular kerbal
@@ -633,10 +708,11 @@ namespace KerbalHealth
                     }
                 gridContents[i].children[0].SetOptionText("<color=\"white\">" + (((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? ((selectedKHS.TrainingLevel * 100).ToString("N0") + "%/" + (Core.TrainingCap * 100).ToString("N0") + "%") : "N/A") + "</color>");
                 gridContents[i + 2].SetOptionText("<color=\"white\">" + (healthFrozen ? "N/A" : (selectedKHS.LastRecuperation.ToString("F1") + "%" + (selectedKHS.LastDecay != 0 ? ("/ " + (-selectedKHS.LastDecay).ToString("F1") + "%") : "") + " (" + selectedKHS.MarginalChange.ToString("F2") + " HP)")) + "</color>");
-                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P2") + "</color>");
-                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
-                gridContents[i + 8].children[0].SetOptionText("<color=\"white\">" + selectedKHS.Dose.ToString("N0") + "</color>");
-                gridContents[i + 10].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
+                gridContents[i + 4].SetOptionText("<color=\"white\">" + selectedKHS.LastExposure.ToString("P1") + "</color>");
+                gridContents[i + 6].SetOptionText("<color=\"white\">" + selectedKHS.ShelterExposure.ToString("P1") + "</color>");
+                gridContents[i + 8].SetOptionText("<color=\"white\">" + selectedKHS.Radiation.ToString("N0") + "/day</color>");
+                gridContents[i + 10].children[0].SetOptionText("<color=\"white\">" + Core.PrefixFormat(selectedKHS.Dose, 6) + "</color>");
+                gridContents[i + 12].SetOptionText("<color=\"white\">" + (1 - selectedKHS.RadiationMaxHPModifier).ToString("P2") + "</color>");
             }
             dirty = false;
         }
@@ -654,6 +730,9 @@ namespace KerbalHealth
                 node.AddNode(khs.ConfigNode);
                 i++;
             }
+            foreach (RadStorm rs in radStorms)
+                if (rs.Target != RadStorm.TargetType.None)
+                    node.AddNode(rs.ConfigNode);
             Core.Log("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.", Core.LogLevel.Important);
         }
 
@@ -671,8 +750,12 @@ namespace KerbalHealth
                 Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
                 i++;
             }
-            lastUpdated = Planetarium.GetUniversalTime();
             Core.Log("" + i + " kerbal(s) loaded.", Core.LogLevel.Important);
+            radStorms.Clear();
+            foreach (ConfigNode n in node.GetNodes("RADSTORM"))
+                radStorms.Add(new RadStorm(n));
+            Core.Log(radStorms.Count + " radstorms loaded.", Core.LogLevel.Important);
+            lastUpdated = Planetarium.GetUniversalTime();
         }
     }
 
