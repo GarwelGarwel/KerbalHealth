@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\SteamLibrary\steamapps\common\Kerbal Space Program\GameData\KerbalHealth\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -95,6 +95,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="GameData\KerbalHealth\icon.png" />
+    <None Include="GameData\KerbalHealth\Localization\en-us.cfg" />
+    <None Include="GameData\KerbalHealth\Localization\zh-cn.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHDMOS.cfg" />
     <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>

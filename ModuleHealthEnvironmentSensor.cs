@@ -15,12 +15,12 @@
             switch (type.ToLower())
             {
                 case "radiation":
-                    Fields["displayData"].guiName = "Radiation";
-                    Fields["displayData"].guiUnits = "/day";
+                    Fields["displayData"].guiName = "#KH_Radiation";//Radiation
+                    Fields["displayData"].guiUnits = "/day";//
                     Fields["displayData"].guiFormat = "N0";
                     break;
                 case "magnetosphere":
-                    Fields["displayData"].guiName = "Magnetosphere Shielding";
+                    Fields["displayData"].guiName = "Magnetosphere Shielding";//
                     Fields["displayData"].guiUnits = "";
                     Fields["displayData"].guiFormat = "P0";
                     break;

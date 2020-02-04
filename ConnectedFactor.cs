@@ -1,8 +1,10 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     public class ConnectedFactor : HealthFactor
     {
         public override string Name => "Connected";
+        public override string Title => Localizer.Format("#KH_Connected");//Connected
 
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConnectedFactor;
 

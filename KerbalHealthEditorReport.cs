@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
+using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -55,11 +56,11 @@ namespace KerbalHealth
             gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
                 // Creating column titles
-                new DialogGUILabel("<b><color=\"white\">Name</color></b>", true),
-                new DialogGUILabel("<b><color=\"white\">Trend</color></b>", true),
-                new DialogGUILabel("<b><color=\"white\">Mission Time</color></b>", true),
-                 new DialogGUILabel("<b><color=\"white\">Training Time</color></b>", true)
-           };
+                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Name")+"</color></b>", true),//Name
+                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Trend")+"</color></b>", true),//Trend
+                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_MissionTime")+"</color></b>", true),//Mission Time
+                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_TrainingTime")+"</color></b>", true)
+            };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
                 gridContents.Add(new DialogGUILabel("", true));
@@ -78,27 +79,27 @@ namespace KerbalHealth
                 new MultiOptionDialog(
                     "Health Report",
                     "",
-                    "Health Report",
+                    Localizer.Format("#KH_ER_Windowtitle"),//"Health Report"
                     HighLogic.UISkin,
                     reportPosition,
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("<color=\"white\">Space: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Space") + "</color>", false),//Space: 
                         spaceLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">Recuperation: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Recuperation") + "</color>", false),//Recuperation: 
                         recupLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("<color=\"white\">Shielding: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Shielding") + "</color>", false),//Shielding: 
                         shieldingLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">Exposure: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Exposure") + "</color>", false),
                         exposureLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">Shelter Exposure: </color>", false),
+                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_ShelterExposure") + "</color>", false),
                         shelterExposureLbl = new DialogGUILabel("N/A", true)),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
-                        new DialogGUILabel("Factors", true),
-                        new DialogGUIButton("Reset", OnResetButtonSelected, false),
-                        new DialogGUIButton("Train", OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false)),
+                        new DialogGUILabel(Localizer.Format("#KH_ER_Factors"), true),
+                        new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnResetButtonSelected, false),
+                        new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false)),
                     new DialogGUIGridLayout(new RectOffset(0, 0, 0, 0), new Vector2(190, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
                 false,
                 HighLogic.UISkin,
@@ -144,20 +145,20 @@ namespace KerbalHealth
             }
             string msg = "";
             if (s.Count > 0)
-                if (s.Count == 1) msg = s[0] + " started training.";
+                if (s.Count == 1) msg = Localizer.Format("#KH_ER_KerbalStartedTraining", s[0]); //s[0] + " started training.";
                 else
                 {
-                    msg = "The following kerbals started training:";
+                    msg = Localizer.Format("#KH_ER_KerbalsStartedTraining"); //The following kerbals started training:
                     foreach (string k in s)
                         msg += "\r\n- " + k;
                 }
             if (f.Count > 0)
             {
                 if (msg != "") msg += "\r\n\n";
-                if (f.Count == 1) msg += "<color=\"red\">" + f[0] + " can't train.</color>";
+                if (f.Count == 1) msg += "<color=\"red\">" + Localizer.Format("#KH_ER_KerbalCantTrain", f[0]) + "</color>"; // can't train.
                 else
                 {
-                    msg += "<color=\"red\">The following kerbals can't train:";
+                    msg += "<color=\"red\">" + Localizer.Format("#KH_ER_KerbalsCantTrain");  //The following kerbals can't train:
                     foreach (string k in f)
                         msg += "\r\n- " + k;
                     msg += "</color>";
@@ -231,7 +232,7 @@ namespace KerbalHealth
                     double b = khs.GetBalanceHP();
                     string s = "";
                     if (b > 0) s = "-> " + b.ToString("F0") + " HP (" + (b / khs.MaxHP * 100).ToString("F0") + "%)";
-                    else s = ch.ToString("F1") + " HP/day";
+                    else s = Localizer.Format("#KH_ER_HealthPerDay", ch.ToString("F1"));// + " HP/day"
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
@@ -244,7 +245,6 @@ namespace KerbalHealth
                 shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
                 exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
                 shelterExposureLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.ShelterExposure.ToString("P1") + "</color>");
-                Core.Log("Shelter exposure: " + khs.VesselModifiers.ShelterExposure.ToString("P2"));
                 dirty = false;
             }
         }

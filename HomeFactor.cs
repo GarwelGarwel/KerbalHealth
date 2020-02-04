@@ -1,8 +1,10 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     class HomeFactor : HealthFactor
     {
         public override string Name => "Home";
+        public override string Title => Localizer.Format("#KH_Home");//Home
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 

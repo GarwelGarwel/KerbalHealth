@@ -1,8 +1,10 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     class MicrogravityFactor : HealthFactor
     {
         public override string Name => "Microgravity";
+        public override string Title => Localizer.Format("#KH_Microgravity");//Microgravity
 
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().MicrogravityFactor;
 

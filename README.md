@@ -2,23 +2,21 @@
 
 This mod introduces many aspects of astronauts' health management to KSP. It makes the game more challenging but also more realistic, encourages smarter mission planning, and adds to the fun. It works well alongside most popular mods.
 
-## Features
+## Overview
 
-- Every kerbal has Health Points (HP).
-- Maximum HP increases with kerbals' level. A newbie has 100 HP while a 5-level kerbal has 150.
-- Kerbals' HP change, including in the background and in timewarp, based on a range of factors such as living space, presence of crewmates, gravity, and specific ship parts. E.g., a level 1 kerbal will typically survive 11 days in a 1-man pod before becoming exhausted and turning into a Tourist.
-- Kerbals need time to recuperate at the KSC between flights to restore full health.
+- Kerbals have Health Points (HP) that gradually reduce during missions and restored at KSC.
+- Maximum HP is determined by kerbal's level (+10 HP per level).
+- HP change based on several factors such as available living space, presence of crewmates, gravity, and specific ship parts.
 - If a kerbal's health goes under 20%, he/she is exhausted and becomes a Tourist. They will go back to work when health grows back to 25%.
 - If a kerbal's health falls to 0, he/she dies!
-- Kerbals experience radiation, both cosmic and artificial, which permanently affects their maximum health.
-- You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation with their magnetic fields, atmospheres and occlusion, to various degrees.
-- Kerbals may fall sick, have health accidents, panic attacks and other contingences
+- Kerbals are affected by radiation, which permanently reduces their maximum health.
+- You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation within their magnetic fields and atmospheres.
+- Occasionally, solar radiation storms will hit a planet or a vessel in Sun's orbit. They can be very powerful, and kerbals will automatically take to the shelter (most protected parts of the vessel). The Sun has its 11-year cycle, and you can choose safer periods for interplanetary missions.
+- Kerbals may fall sick, have health accidents, panic attacks and other contingences.
 - When kerbals level up, they can acquire quirks that affect their health reactions, to the better or to the worse.
-- Health Monitor lets you check on all your kerbals in KSC and in flight.
-- Health Report in Editor helps design comfy and healthy craft.
-- A configurable low health alert will warn you when you are about to lose a kerbal.
+- All necessary data is shown in the Health Monitor (at KSC and in flight) and Health Report (in the editor).
 - Compatibility patches support a range of parts mods (see below).
-- All of these settings are easily changed or disabled in-game and with ModuleManager patches.
+- All of these settings are easily changed or disabled in-game and/or with ModuleManager patches.
 
 ## Health factors
 
@@ -34,7 +32,7 @@ The following factors may affect kerbal's health:
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
 
-Certain parts (Hitchhiker, crew cabins, and the Cupola + many provided by mods) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
+Certain parts (such as Hitchhiker and crew cabins) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
 
 ## Stress and Training
 
@@ -65,11 +63,13 @@ Decay is the opposite to Recuperation: for every percentage point of Decay, your
 
 All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (when you eat a banana, you get approximately 1e-7 Sv of radiation). 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal.
 
-The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also greater closer to the Sun. To check environment before sending astronauts, you can use magnetometers and Geiger counters provided by supported mods or embedded in advanced stock probe cores.
+The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also a bit higher closer to the Sun. To check environment before sending astronauts, you can use magnetometers and Geiger counters provided by supported mods or embedded in advanced stock probe cores.
 
 Being on EVA takes away all the protection your ship provides and dramatically increases radiation level. Artificial radiation is created by certain parts like atomic engines and nuclear reactors.
 
 You can protect kerbals from radiation (both cosmic and artificial) by adding shielding to the vessel. It is provided by some parts, like structural panels, heat shields and mk3 cargo bays. These parts and most crew pods can be improved by adding Radiation Shielding to them in the Editor. You can never eliminate all radiation, but you can reduce it to non-dangerous levels.
+
+Beware of solar radiation storms! They can blast your kerbals in a planet's SOI or in interplanetary space with amounts of radiation ranging from high to enormous. You will be warned, usually, a few hours in advance and the kerbals will automatically take cover in the shelter, if there is one. The shelter is determined as the most protected part (or set of parts) that can fit the entire crew. You will see shelter exposure in the Health Report and Health Monitor details. The frequence of solar storms depends on the phase of the solar cycle going (on average) from one storm every 6,667 days to one storm every 437 days.
 
 It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
 
@@ -135,9 +135,10 @@ If you would like to include special support for your (or your favorite) mod, le
 ## Conflicts and Incompatibilities
 
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
+- Custom solar systems with multiple stars can work in strange ways with radiation mechanics. Disable radiation in the settings if you have problems.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
-- Compatibility with Kerbalism hasn't been tested. This mod changes much of game's internal mechanics, so it can be incompatible.
+- Compatibility with Kerbalism hasn't been tested. That mod changes much of game's internal mechanics, so it can be incompatible.
 
 ## Copyright and License
 
