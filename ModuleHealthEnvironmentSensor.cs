@@ -5,7 +5,7 @@
         [KSPField]
         public string type = "";  // "radiation" - shows current radiation level; "magnetosphere" - shows current magnetosphere coefficient
 
-        [KSPField(guiActive = true)]
+        [KSPField(guiActive = true, guiActiveEditor = false)]
         public float displayData;
 
         public override void OnStart(StartState state)
@@ -44,15 +44,12 @@
             {
                 case "radiation":
                     displayData = (float)KerbalHealthStatus.GetCosmicRadiation(vessel);
-                    Core.Log("Displaying radiation of " + displayData);
                     break;
                 case "magnetosphere":
                     displayData = 1 - (float)KerbalHealthStatus.GetMagnetosphereCoefficient(vessel);
-                    Core.Log("Displaying magnetic field strength of " + displayData);
                     break;
                 default:
                     Fields["displayData"].guiActive = false;
-                    Core.Log("Unrecognized sensor type '" + type + "'!");
                     break;
             }
         }
