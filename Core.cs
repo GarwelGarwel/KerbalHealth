@@ -196,6 +196,15 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Display indicators of kerbals' trait (profession) and level in Health Monitor and Health Report, e.g. S3 for 3-level Scientist
+        /// </summary>
+        public static bool ShowTraitLevel
+        {
+            get => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ShowTraitLevel;
+            set => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().ShowTraitLevel = value;
+        }
+
+        /// <summary>
         /// Number of game seconds between updates
         /// </summary>
         public static float UpdateInterval

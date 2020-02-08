@@ -24,6 +24,8 @@ namespace KerbalHealth
             }
         }
 
+        public string FullName => Name + (Core.ShowTraitLevel ? " (" + Localizer.Format("#KH_TraitSymbol_" + PCM.trait) + PCM.experienceLevel + ")" : "");
+
         string trait = null;
         /// <summary>
         /// Returns saved kerbal's trait or current trait if nothing is saved

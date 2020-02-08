@@ -37,6 +37,9 @@ namespace KerbalHealth
         [GameParameters.CustomIntParameterUI("#KH_GS_LinesPerPage", toolTip = "#KH_GS_LinesPerPage_desc", minValue = 5, maxValue = 20, stepSize = 5)]//Lines per Page in Health Monitor""How many kerbals to show on one page of Health Monitor
         public int LinesPerPage = 10;
 
+        [GameParameters.CustomIntParameterUI("#KH_GS_ShowTraitLevel", toolTip = "#KH_GS_ShowTraitLevel_desc")] //Show Kerbals' Trait and Level""Display indicators of kerbals' trait (profession) and level in Health Monitor and Health Report, e.g. S3 for 3-level Scientist
+        public bool ShowTraitLevel = true;
+
         [GameParameters.CustomFloatParameterUI("#KH_GS_UpdateInterval", toolTip = "#KH_GS_UpdateInterval_desc", minValue = 0.04f, maxValue = 60)]
         public float UpdateInterval = 30;
 

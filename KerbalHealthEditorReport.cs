@@ -12,7 +12,7 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         bool dirty = false;
-        Rect reportPosition = new Rect(0.5f, 0.5f, 400, 50);
+        Rect reportPosition = new Rect(0.5f, 0.5f, 420, 50);
         PopupDialog reportWindow;  // Health Report window
         System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
@@ -82,7 +82,7 @@ namespace KerbalHealth
                     Localizer.Format("#KH_ER_Windowtitle"),//Health Report
                     HighLogic.UISkin,
                     reportPosition,
-                    new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(80, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
+                    new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(90, 30), new Vector2(10, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, colNum, gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Space") + "</color>", false),//Space: 
                         spaceLbl = new DialogGUILabel("N/A", true),
@@ -100,7 +100,7 @@ namespace KerbalHealth
                         new DialogGUILabel(Localizer.Format("#KH_ER_Factors"), true),
                         new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnResetButtonSelected, false),
                         new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false)),
-                    new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(190, 30), new Vector2(20, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 2, checklist.ToArray())),
+                    new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(130, 30), new Vector2(10, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 3, checklist.ToArray())),
                 false,
                 HighLogic.UISkin,
                 false);
@@ -219,7 +219,6 @@ namespace KerbalHealth
                 foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
                 {
                     if (pcm == null) continue;
-                    gridContents[(i + 1) * colNum].SetOptionText(pcm.name);
                     khs = Core.KerbalHealthList?.Find(pcm)?.Clone();
                     if (khs == null)
                     {
@@ -227,6 +226,7 @@ namespace KerbalHealth
                         i++;
                         continue;
                     }
+                    gridContents[(i + 1) * colNum].SetOptionText(khs.FullName);
                     khs.HP = khs.MaxHP;
                     double ch = khs.HealthChangePerDay();
                     double b = khs.GetBalanceHP();

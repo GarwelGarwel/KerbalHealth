@@ -670,7 +670,7 @@ namespace KerbalHealth
                             formatUntag = "</color>";
                         }
                     }
-                    gridContents[(i + 1) * colNumMain].SetOptionText(formatTag + khs.Name + formatUntag);
+                    gridContents[(i + 1) * colNumMain].SetOptionText(formatTag + khs.FullName + formatUntag);
                     gridContents[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
                     gridContents[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
                     gridContents[(i + 1) * colNumMain + 3].SetOptionText(formatTag + (100 * khs.Health).ToString("F2") + "% (" + khs.HP.ToString("F2") + ")" + formatUntag);
@@ -689,7 +689,7 @@ namespace KerbalHealth
                 }
                 bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
                 gridContents[1].SetOptionText("<color=\"white\">" + selectedKHS.Name + "</color>");
-                gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel + "</color>");
+                gridContents[3].SetOptionText("<color=\"white\">" + pcm.experienceLevel + " " + pcm.trait + "</color>");
                 gridContents[5].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks)
