@@ -69,7 +69,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AssignedFactor.cs" />
+    <Compile Include="RadStorm.cs" />
+    <Compile Include="RadStormType.cs" />
+    <Compile Include="StressFactor.cs" />
     <Compile Include="ChanceModifier.cs" />
     <Compile Include="ModuleHealthEnvironmentSensor.cs" />
     <Compile Include="Outcome.cs" />
@@ -101,9 +103,12 @@
     <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
     <Compile Include="HealthModifierSet.cs" />
+    <Compile Include="TrainingPart.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="GameData\KerbalHealth\icon.png" />
+    <None Include="GameData\KerbalHealth\Localization\en-us.cfg" />
+    <None Include="GameData\KerbalHealth\Localization\zh-cn.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHDMOS.cfg" />
     <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>
@@ -112,15 +117,19 @@
     <None Include="GameData\KerbalHealth\Patches\KHEPL.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHFelineUtilityRover.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHFTT.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHJNSQ.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHKaribou.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHNearFutureExploration.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHNFA.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHNFE.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHMalemute.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHNearFutureSpacecraft.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHOPM.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHReStockPlus.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSEP.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHSSPX.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHTantares.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHTokamak.cfg" />
-    <None Include="KerbalHealth.netkan" />
     <None Include="GameData\KerbalHealth\KerbalHealth.version" />
     <None Include="GameData\KerbalHealth\LICENSE" />
     <None Include="GameData\KerbalHealth\Patches\General.cfg" />

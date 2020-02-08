@@ -1,8 +1,10 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+namespace KerbalHealth
 {
     public class ConditionsFactor : HealthFactor
     {
         public override string Name => "Conditions";
+        public override string Title => Localizer.Format("#KH_Condition");//Conditions
 
         // Not applicable to this factor
         public override double BaseChangePerDay => 0;

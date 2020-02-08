@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -7,6 +8,9 @@ namespace KerbalHealth
     {
         [KSPField]
         public string title = "";  // Module title displayed in right-click menu (empty string for auto)
+
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+        public uint id = 0;
 
         [KSPField]
         public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
@@ -47,13 +51,16 @@ namespace KerbalHealth
         [KSPField]
         public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
 
+        [KSPField]
+        public float complexity = 0;  // 0 if no training needed for this part, 1 for standard training complexity
+
         [KSPField(isPersistant = true)]
         public bool isActive = true;  // If not alwaysActive, this determines if the module is active
 
         [KSPField(isPersistant = true)]
         public bool starving = false;  // Determines if the module is disabled due to the lack of the resource
 
-        [KSPField(guiActive = true, guiActiveEditor = true)]
+        [KSPField(guiName = "#KH_Module_ecPersec", guiActive = true, guiActiveEditor = true)]
         public float ecPerSec = 0;
 
         double lastUpdated;
@@ -111,6 +118,8 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
+            Core.Log("Complexity of " + part.partName + ": " + complexity.ToString("P0"), Core.LogLevel.Important);
+            if ((complexity != 0) && (id == 0)) id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;
@@ -118,7 +127,8 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
             UpdateGUIName();
-            if (Core.IsInEditor && (resource == "ElectricCharge")) ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+            if (Core.IsInEditor && (resource == "ElectricCharge")) 
+                ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
             lastUpdated = Planetarium.GetUniversalTime();
         }
 
@@ -143,25 +153,26 @@ namespace KerbalHealth
             get
             {
                 if (title != "") return title;
-                if (recuperation > 0) return "R&R";
-                if (decay > 0) return "Health Poisoning";
+                if (recuperation > 0) return Localizer.Format("#KH_Module_type1");//"R&R"
+                if (decay > 0) return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
                 switch (multiplyFactor.ToLower())
                 {
-                    case "confinement": return "Comforts";
-                    case "loneliness": return "Meditation";
-                    case "microgravity": return (multiplier <= 0.25) ? "Paragravity" : "Exercise Equipment";
-                    case "connected": return "TV Set";
-                    case "sickness": return "Sick Bay";
+                    case "stress": return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
+                    case "confinement": return Localizer.Format("#KH_Module_type4");//"Comforts"
+                    case "loneliness": return Localizer.Format("#KH_Module_type5");//"Meditation"
+                    case "microgravity": return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
+                    case "connected": return Localizer.Format("#KH_Module_type8");//"TV Set"
+                    case "sickness": return Localizer.Format("#KH_Module_type9");//"Sick Bay"
                 }
-                if (space > 0) return "Living Space";
-                if (shielding > 0) return "RadShield";
-                if (radioactivity > 0) return "Radiation";
-                return "Health Module";
+                if (space > 0) return Localizer.Format("#KH_Module_type10");//"Living Space"
+                if (shielding > 0) return Localizer.Format("#KH_Module_type11");//"RadShield"
+                if (radioactivity > 0) return Localizer.Format("#KH_Module_type12");//"Radiation"
+                return Localizer.Format("#KH_Module_title");//"Health Module"
             }
             set => title = value;
         }
 
-        void UpdateGUIName() => Events["OnToggleActive"].guiName = (isActive ? "Disable " : "Enable ") + Title;
+        void UpdateGUIName() => Events["OnToggleActive"].guiName = (isActive ? Localizer.Format("#KH_Module_Disable") : Localizer.Format("#KH_Module_Enable")) + Title;//"Disable ""Enable "
         
         [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
         public void OnToggleActive()
@@ -173,18 +184,19 @@ namespace KerbalHealth
         public override string GetInfo()
         {
             string res = "";
-            if (hpChangePerDay != 0) res = "\nHealth points: " + hpChangePerDay.ToString("F1") + "/day";
-            if (recuperation != 0) res += "\nRecuperation: " + recuperation.ToString("F1") + "%/day";
-            if (decay != 0) res += "\nHealth decay: " + decay.ToString("F1") + "%/day";
-            if (multiplier != 1) res += "\n" + multiplier.ToString("F2") + "x " + multiplyFactor;
-            if (crewCap > 0) res += " for up to " + crewCap + " kerbal" + (crewCap != 1 ? "s" : "");
-            if (space != 0) res += "\nSpace: " + space.ToString("F1");
-            if (resourceConsumption != 0) res += "\n" + ResourceDefinition.abbreviation + ": " + resourceConsumption.ToString("F2") + "/sec.";
-            if (resourceConsumptionPerKerbal != 0) res += "\n" + ResourceDefinition.abbreviation + " per Kerbal: " + resourceConsumptionPerKerbal.ToString("F2") + "/sec.";
-            if (shielding != 0) res += "\nShielding rating: " + shielding.ToString("F1");
-            if (radioactivity != 0) res += "\nRadioactive emission: " + radioactivity.ToString("N0") + "/day";
+            if (hpChangePerDay != 0) res = Localizer.Format("#KH_Module_info1", hpChangePerDay.ToString("F1"));//"\nHealth points: " +  + "/day"
+            if (recuperation != 0) res += Localizer.Format("#KH_Module_info2", recuperation.ToString("F1"));//"\nRecuperation: " +  + "%/day"
+            if (decay != 0) res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
+            if (multiplier != 1) res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"),multiplyFactor);//"\n" +  + "x " + 
+            if (crewCap > 0) res += Localizer.Format("#KH_Module_info5", crewCap,(crewCap != 1 ? Localizer.Format("#KH_Module_info5_s") : ""));//" for up to " +  + " kerbal" + "s"
+            if (space != 0) res += Localizer.Format("#KH_Module_info6",space.ToString("F1"));//"\nSpace: " + 
+            if (resourceConsumption != 0) res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
+            if (resourceConsumptionPerKerbal != 0) res += Localizer.Format("#KH_Module_info8", ResourceDefinition.abbreviation,resourceConsumptionPerKerbal.ToString("F2"));//"\n" +  + " per Kerbal: " +  + "/sec."
+            if (shielding != 0) res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " + 
+            if (radioactivity != 0) res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
+            if (complexity != 0) res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
             if (res == "") return "";
-            return "Module type: " + Title + res;
+            return  Localizer.Format("#KH_Module_typetitle", Title)+ res;//"Module type: " + 
         }
     }
 }

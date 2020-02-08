@@ -1,8 +1,11 @@
-﻿namespace KerbalHealth
+﻿using KSP.Localization;
+
+namespace KerbalHealth
 {
     class HomeFactor : HealthFactor
     {
         public override string Name => "Home";
+        public override string Title => Localizer.Format("#KH_Home");//Home
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
@@ -16,7 +19,13 @@
                 Core.Log("Home factor is off when kerbal is not assigned.");
                 return 0;
             }
-            if (Core.KerbalVessel(pcm).mainBody.isHomeWorld && (Core.KerbalVessel(pcm).altitude < 18000))
+            CelestialBody body = Core.KerbalVessel(pcm)?.mainBody;
+            if (body == null)
+            {
+                Core.Log("Could not find main body for " + pcm.name, Core.LogLevel.Error);
+                return 0;
+            }
+            if (body.isHomeWorld && (Core.KerbalVessel(pcm).altitude < body.scienceValues.flyingAltitudeThreshold))
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
