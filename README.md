@@ -9,9 +9,8 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - HP change based on several factors such as available living space, presence of crewmates, gravity, and specific ship parts.
 - If a kerbal's health goes under 20%, he/she is exhausted and becomes a Tourist. They will go back to work when health grows back to 25%.
 - If a kerbal's health falls to 0, he/she dies!
-- Kerbals are affected by radiation, which permanently reduces their maximum health.
+- Kerbals are affected by radiation, which permanently reduces their maximum health. It can come from the Sun, including CMEs, radioactive parts, galactic cosmic rays and even killing planets (OPM only).
 - You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation within their magnetic fields and atmospheres.
-- Occasionally, solar radiation storms will hit a planet or a vessel in Sun's orbit. They can be very powerful, and kerbals will automatically take to the shelter (most protected parts of the vessel). The Sun has its 11-year cycle, and you can choose safer periods for interplanetary missions.
 - Kerbals may fall sick, have health accidents, panic attacks and other contingences.
 - When kerbals level up, they can acquire quirks that affect their health reactions, to the better or to the worse.
 - All necessary data is shown in the Health Monitor (at KSC and in flight) and Health Report (in the editor).
@@ -27,7 +26,7 @@ The following factors may affect kerbal's health:
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
 - **EVA**: -10 HP/day
 - **Connected** (having a working CommNet connection to home): +0.5 HP/day
-- **Home** (on Kerbin below 18 km altitude): +2 HP/day
+- **Home** (in Kerbin's low atmosphere): +2 HP/day
 - **KSC** (kerbal is recuperating at KSC, i.e. available): +4 HP/day
 
 These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
@@ -96,6 +95,7 @@ Conditions can be disabled or their chances and effects changed in game settings
 
 Kerbal Health should work well alongside most other mods and will try to adapt to them with smart MM patches. Some have better, manually balanced support though:
 
+- [Atomic Age](https://forum.kerbalspaceprogram.com/index.php?/topic/94519-105-atomic-age-nuclear-propulsion-red-hot-radiators/)
 - [B9 Aerospace](https://github.com/blowfishpro/B9-Aerospace)
 - [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [Bluedog Design Bureau](https://forum.kerbalspaceprogram.com/index.php?/topic/122020-131-bluedog-design-bureau-stockalike-saturn-apollo-and-more-v141-атлас-1jan2018)
@@ -107,15 +107,19 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Extraplanetary Launchpads](https://forum.kerbalspaceprogram.com/index.php?/topic/54284-*)
 - [FASA](http://forum.kerbalspaceprogram.com/index.php?/topic/22888-105-fasa-544/)
 - [Feline Utility Rovers](https://forum.kerbalspaceprogram.com/index.php?/topic/155344-13x14x-feline-utility-rovers-v128-10october-2018/)
+- [FTmN Atomic Rockets](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-18x-spacetux-industries-recycled-parts/) (classic and Improved)
 - [JNSQ](https://forum.kerbalspaceprogram.com/index.php?/topic/184880-17x-jnsq-07-17-june-2019/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
-- [KPBS](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
+- [Kerbal Planetary Base Systems](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
 - [KSP Interstellar Extended](https://forum.kerbalspaceprogram.com/index.php?/topic/155255-12213-kspi-extended)
 - [Malemute](https://forum.kerbalspaceprogram.com/index.php?/topic/139668-13-the-malemute-rover-020/)
-- [Near Future Technologies](http://forum.kerbalspaceprogram.com/index.php?/topic/155465-122-near-future-technologies)
+- [Near Future Technologies](http://forum.kerbalspaceprogram.com/index.php?/topic/155465-122-near-future-technologies) (Aeronautics, Electrics, Exploration, Spacecraft)
 - [Outer Planets Mod](https://forum.kerbalspaceprogram.com/index.php?/topic/165854-ksp-142-outer-planets-mod221-15-april-2018/)
+- [Probes Before Crew](https://forum.kerbalspaceprogram.com/index.php?/topic/181013-ksp-181-probes-before-crew-pbc-version-28/)
+- [ReStock+](https://forum.kerbalspaceprogram.com/index.php?/topic/182679-161-restock-revamping-ksps-art/)
 - [RLA Reborn](https://forum.kerbalspaceprogram.com/index.php?/topic/175512-14-rla-reborn/)
+- [RSCapsuledyne](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-18x-spacetux-industries-recycled-parts/)
 - [Sin Phi Heavy Industries](https://forum.kerbalspaceprogram.com/index.php?/topic/162654-130-sin-phi-heavy-industries-centrifuge-habitat-halberd/)
 - [Spacetux Recycled Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-131-spacetux-industries-recycled-parts/) (Atomic Age, FTmN, FTmN-New, RSCapsuledyne)
 - [SpaceY Heavy Lifters](https://forum.kerbalspaceprogram.com/index.php?/topic/90545-12213-spacey-heavy-lifter-parts-pack-v116-2017-01-30/)
