@@ -23,9 +23,9 @@ namespace KerbalHealth
         {
             if (!Core.ModEnabled) return;
             Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
-            GameEvents.onEditorShipModified.Add(delegate(ShipConstruct sc) { Invalidate(); });
+            GameEvents.onEditorShipModified.Add(delegate (ShipConstruct sc) { Invalidate(); });
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(delegate(EditorScreen s) { Invalidate(); });
+            GameEvents.onEditorScreenChange.Add(delegate (EditorScreen s) { Invalidate(); });
             if (Core.ShowAppLauncherButton)
             {
                 Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
@@ -56,10 +56,10 @@ namespace KerbalHealth
             gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
                 // Creating column titles
-                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Name")+"</color></b>", true),//Name
-                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_Trend")+"</color></b>", true),//Trend
-                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_MissionTime")+"</color></b>", true),//Mission Time
-                 new DialogGUILabel("<b><color=\"white\">"+Localizer.Format("#KH_ER_TrainingTime")+"</color></b>", true)//Training Time
+                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_Name") + "</color></b>", true),//Name
+                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_Trend") + "</color></b>", true),//Trend
+                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_MissionTime") + "</color></b>", true),//Mission Time
+                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_TrainingTime") + "</color></b>", true)//Training Time
             };
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
@@ -70,8 +70,8 @@ namespace KerbalHealth
             foreach (HealthFactor f in Core.Factors)
                 checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, (state) => { f.SetEnabledInEditor(state); Invalidate(); }));
             if (Core.TrainingEnabled)
-                checklist.Add(new DialogGUIToggle(true, "Trained", (state) => { trainingEnabled = state; Invalidate(); }));
-            checklist.Add(new DialogGUIToggle(true, "Health modules", (state) => { healthModulesEnabled = state; Invalidate(); }));
+                checklist.Add(new DialogGUIToggle(true, Localizer.Format("#KH_ER_Trained"), (state) => { trainingEnabled = state; Invalidate(); }));
+            checklist.Add(new DialogGUIToggle(true, Localizer.Format("#KH_ER_HealthModules"), (state) => { healthModulesEnabled = state; Invalidate(); }));
 
             reportWindow = PopupDialog.SpawnPopupDialog(
                 new Vector2(0.5f, 0.5f),
