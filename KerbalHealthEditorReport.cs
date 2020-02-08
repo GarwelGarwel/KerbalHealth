@@ -176,7 +176,7 @@ namespace KerbalHealth
             if (reportWindow != null)
             {
                 Vector3 v = reportWindow.RTrf.position;
-                reportPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 400, 50);
+                reportPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, 420, 50);
                 reportWindow.Dismiss();
             }
         }
