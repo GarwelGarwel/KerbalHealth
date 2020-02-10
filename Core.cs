@@ -732,7 +732,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="time"></param>
         /// <returns></returns>
-        public static int GetYear(double time) => (int)Math.Truncate(time / KSPUtil.dateTimeFormatter.Year);
+        public static int GetYear(double time) => (int)Math.Floor(time / KSPUtil.dateTimeFormatter.Year);
 
         /// <summary>
         /// Parses UT into a string (e.g. "2 d 3 h 15 m 59 s"), hides zero elements

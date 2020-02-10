@@ -353,7 +353,9 @@ namespace KerbalHealth
                     vesselChanged = false;
                 }
 
+                // Processing radiation storms
                 if (Core.RadiationEnabled && Core.RadStormsEnabled)
+                {
                     for (int i = 0; i < radStorms.Count; i++)
                         if (time >= radStorms[i].Time)
                         {
@@ -373,10 +375,19 @@ namespace KerbalHealth
                             if (j > 0) Core.ShowMessage(s, true);
                             radStorms.RemoveAt(i--);
                         }
+                    if (Core.GetYear(time) > Core.GetYear(lastUpdated))
+                    {
+                        Core.Log("Showing solar weather summary.", Core.LogLevel.Important);
+                        Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (1 / Core.RadStormChance / Core.RadStormFrequency).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
+                    }
+                    else Core.Log("Current year is " + (Core.GetYear(time) + 1) + "; last update was in year " + (Core.GetYear(lastUpdated) + 1));
+                }
 
                 Core.KerbalHealthList.Update(timePassed);
                 lastUpdated = time;
-                while (time >= nextEventTime)  // Can take several turns of event processing at high time warp
+
+                // Processing events. It can take several turns of event processing at high time warp
+                while (time >= nextEventTime)
                 {
                     if (Core.ConditionsEnabled)
                     {
@@ -411,11 +422,6 @@ namespace KerbalHealth
                     }
                     if (Core.RadiationEnabled && Core.RadStormsEnabled) ProcessRadStorms();
                     nextEventTime += GetNextEventInterval();
-                    if (Core.RadiationEnabled && Core.RadiationEnabled && (Core.GetYear(nextEventTime) > Core.GetYear(Planetarium.GetUniversalTime())))
-                    {
-                        Core.Log("Showing solar weather summary.", Core.LogLevel.Important);
-                        Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Truncate(Planetarium.GetUniversalTime() / Core.SolarCycleDuration + 1).ToString("N0"), (1 / Core.RadStormChance / Core.RadStormFrequency).ToString("N0")), false);//You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
-                    }
                     Core.Log("Next event processing is scheduled at " + KSPUtil.PrintDateCompact(nextEventTime, true), Core.LogLevel.Important);
                 }
                 dirty = true;
@@ -613,9 +619,9 @@ namespace KerbalHealth
             }
             else
             {
-                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) msg += Localizer.Format("#KH_DeconMsg2", Core.DecontaminationAstronautComplexLevel,Core.DecontaminationRNDLevel);//"Your Astronaut Complex has to be <color=\"yellow\">level " +  + "</color> and your R&D Facility <color=\"yellow\">level " +  + "</color> to allow decontamination.\r\n\r\n"
-                if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)) msg += Localizer.Format("#KH_DeconMsg3", (HighLogic.CurrentGame.Mode == Game.Modes.CAREER ?  Localizer.Format("#KH_DeconMsg3_CAREERMode", Core.DecontaminationFundsCost.ToString("N0")): ""),Core.DecontaminationScienceCost.ToString("N0"));//"Decontamination will cost <color=\"yellow\">" +  +  + " science</color>. "( <<1>>" funds and ")
-                msg += Localizer.Format("#KH_DeconMsg4", selectedKHS.Name,(Core.DecontaminationHealthLoss * 100).ToString("N0"),Core.DecontaminationRate.ToString("N0"),Core.ParseUT(selectedKHS.Dose / Core.DecontaminationRate * 21600, false, 2));//"<<1>> needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by <<2>>% during decontamination.\r\n\r\nAt a rate of <<3>> banana doses/day, it is expected to take about <color="yellow"><<4>></color>."
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) msg += Localizer.Format("#KH_DeconMsg2", Core.DecontaminationAstronautComplexLevel,Core.DecontaminationRNDLevel); //"Your Astronaut Complex has to be <color=\"yellow\">level " +  + "</color> and your R&D Facility <color=\"yellow\">level " +  + "</color> to allow decontamination.\r\n\r\n"
+                if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)) msg += Localizer.Format("#KH_DeconMsg3", (HighLogic.CurrentGame.Mode == Game.Modes.CAREER ?  Localizer.Format("#KH_DeconMsg3_CAREERMode", Core.DecontaminationFundsCost.ToString("N0")) : ""), Core.DecontaminationScienceCost.ToString("N0")); //"Decontamination will cost <color=\"yellow\">" +  +  + " science</color>. "( <<1>>" funds and ")
+                msg += Localizer.Format("#KH_DeconMsg4", selectedKHS.Name,(Core.DecontaminationHealthLoss * 100).ToString("N0"),Core.DecontaminationRate.ToString("N0"),Core.ParseUT(selectedKHS.Dose / Core.DecontaminationRate * 21600, false, 2)); //"<<1>> needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by <<2>>% during decontamination.\r\n\r\nAt a rate of <<3>> banana doses/day, it is expected to take about <color="yellow"><<4>></color>."
                 if (selectedKHS.IsReadyForDecontamination)
                     ok = () => { selectedKHS.StartDecontamination(); Invalidate(); };
                 else msg += Localizer.Format("#KH_DeconMsg5");//"</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>"

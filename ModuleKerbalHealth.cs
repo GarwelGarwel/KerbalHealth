@@ -9,7 +9,7 @@ namespace KerbalHealth
         [KSPField]
         public string title = "";  // Module title displayed in right-click menu (empty string for auto)
 
-        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+        [KSPField(isPersistant = true)]
         public uint id = 0;
 
         [KSPField]
@@ -60,7 +60,7 @@ namespace KerbalHealth
         [KSPField(isPersistant = true)]
         public bool starving = false;  // Determines if the module is disabled due to the lack of the resource
 
-        [KSPField(guiName = "#KH_Module_ecPersec", guiActive = true, guiActiveEditor = true)]
+        [KSPField(guiName = "", guiActive = true, guiActiveEditor = true, guiUnits = "#KH_Module_ecPersec")] // /sec
         public float ecPerSec = 0;
 
         double lastUpdated;
@@ -92,8 +92,7 @@ namespace KerbalHealth
                         return r;
                     }
                     else return ShipConstruction.ShipManifest.CrewCount;
-                else if (partCrewOnly) return part.protoModuleCrew.Count;
-                else return vessel.GetCrewCount();
+                else return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
             }
         }
 
@@ -118,7 +117,6 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
-            Core.Log("Complexity of " + part.partName + ": " + complexity.ToString("P0"), Core.LogLevel.Important);
             if ((complexity != 0) && (id == 0)) id = part.persistentId;
             if (IsAlwaysActive)
             {
@@ -126,9 +124,10 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActive = false;
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
-            UpdateGUIName();
-            if (Core.IsInEditor && (resource == "ElectricCharge")) 
+            if (Core.IsInEditor && (resource == "ElectricCharge"))
                 ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+            Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
+            UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
         }
 
@@ -152,7 +151,7 @@ namespace KerbalHealth
         {
             get
             {
-                if (title != "") return title;
+                if (!string.IsNullOrEmpty(title)) return title;
                 if (recuperation > 0) return Localizer.Format("#KH_Module_type1");//"R&R"
                 if (decay > 0) return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
                 switch (multiplyFactor.ToLower())
@@ -172,9 +171,13 @@ namespace KerbalHealth
             set => title = value;
         }
 
-        void UpdateGUIName() => Events["OnToggleActive"].guiName = (isActive ? Localizer.Format("#KH_Module_Disable") : Localizer.Format("#KH_Module_Enable")) + Title;//"Disable ""Enable "
+        void UpdateGUIName()
+        {
+            Events["OnToggleActive"].guiName = (isActive ? Localizer.Format("#KH_Module_Disable") : Localizer.Format("#KH_Module_Enable")) + Title;//"Disable ""Enable "
+            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = Core.ModEnabled && isActive && ecPerSec != 0;
+        }
         
-        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "Toggle Health Module", guiActiveEditor = true)]
+        [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "#KH_Module_Toggle", guiActiveEditor = true)] //Toggle Health Module
         public void OnToggleActive()
         {
             isActive = IsAlwaysActive || !isActive;
@@ -195,7 +198,7 @@ namespace KerbalHealth
             if (shielding != 0) res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " + 
             if (radioactivity != 0) res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
             if (complexity != 0) res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
-            if (res == "") return "";
+            if (string.IsNullOrEmpty(res)) return "";
             return  Localizer.Format("#KH_Module_typetitle", Title)+ res;//"Module type: " + 
         }
     }

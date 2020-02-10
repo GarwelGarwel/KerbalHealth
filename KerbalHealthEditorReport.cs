@@ -98,8 +98,8 @@ namespace KerbalHealth
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel(Localizer.Format("#KH_ER_Factors"), true),
-                        new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnResetButtonSelected, false),
-                        new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false)),
+                        new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false),
+                        new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnResetButtonSelected, false)),
                     new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(130, 30), new Vector2(10, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 3, checklist.ToArray())),
                 false,
                 HighLogic.UISkin,
@@ -121,9 +121,9 @@ namespace KerbalHealth
 
         public void OnTrainButtonSelected()
         {
-            KerbalHealthStatus khs;
             Core.Log("OnTrainButtonSelected()");
             if (!Core.TrainingEnabled) return;
+            KerbalHealthStatus khs;
             List<string> s = new List<string>();
             List<string> f = new List<string>();
             foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
