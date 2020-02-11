@@ -283,7 +283,11 @@ namespace KerbalHealth
             if (v == null) return;
             Core.Log("KerbalHealthScenario.TrainVessel('" + v.vesselName + "')");
             foreach (ProtoCrewMember pcm in v.GetVesselCrew())
-                Core.KerbalHealthList.Find(pcm).StartTraining(v.Parts, v.vesselName);
+            {
+                KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
+                if (khs == null) Core.KerbalHealthList.Add(khs = new KerbalHealthStatus(pcm.name));
+                khs.StartTraining(v.Parts, v.vesselName);
+            }
         }
 
         /// <summary>
