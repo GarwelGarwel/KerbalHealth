@@ -101,13 +101,15 @@ namespace KerbalHealth
         /// </summary>
         public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
 
-        public List<PartResourceDefinition> GetConsumedResources() => resourceConsumption != 0 ? new List<PartResourceDefinition>() { ResourceDefinition } : new List<PartResourceDefinition>();
+        public List<PartResourceDefinition> GetConsumedResources() => (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0) ? new List<PartResourceDefinition>() { ResourceDefinition } : new List<PartResourceDefinition>();
 
         PartResourceDefinition ResourceDefinition
         {
             get => PartResourceLibrary.Instance.GetDefinition(resource);
             set => resource = value?.name;
         }
+
+        public float TotalResourceConsumption => resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
 
         public double RecuperationPower => crewCap > 0 ? recuperation * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : recuperation;
 
@@ -125,7 +127,7 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
             if (Core.IsInEditor && (resource == "ElectricCharge"))
-                ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+                ecPerSec = TotalResourceConsumption;
             Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
@@ -137,7 +139,7 @@ namespace KerbalHealth
             double time = Planetarium.GetUniversalTime();
             if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
-                ecPerSec = resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+                ecPerSec = TotalResourceConsumption;
                 double res = ecPerSec * (time - lastUpdated), res2;
                 if (resource != "ElectricCharge") ecPerSec = 0;
                 starving = (res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res;
@@ -145,6 +147,50 @@ namespace KerbalHealth
             }
             else ecPerSec = 0;
             lastUpdated = time;
+        }
+
+        /// <summary>
+        /// Kerbalism background processing compatibility method
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="part_snapshot"></param>
+        /// <param name="module_snapshot"></param>
+        /// <param name="proto_part_module"></param>
+        /// <param name="proto_part"></param>
+        /// <param name="availableResources"></param>
+        /// <param name="resourceChangeRequest"></param>
+        /// <param name="elapsed_s"></param>
+        /// <returns></returns>
+        public static string BackgroundUpdate(Vessel v, ProtoPartSnapshot part_snapshot, ProtoPartModuleSnapshot module_snapshot, PartModule proto_part_module, Part proto_part, Dictionary<string, double> availableResources, List<KeyValuePair<string, double>> resourceChangeRequest, double elapsed_s)
+        {
+            if (!Core.ModEnabled) return null;
+            ModuleKerbalHealth mkh = proto_part_module as ModuleKerbalHealth;
+            if (mkh.isActive && ((mkh.resourceConsumption != 0) || (mkh.resourceConsumptionPerKerbal != 0)))
+            {
+                mkh.ecPerSec = mkh.TotalResourceConsumption;
+                double res = mkh.ecPerSec * elapsed_s, res2;
+                if (mkh.resource != "ElectricCharge") mkh.ecPerSec = 0;
+                availableResources.TryGetValue("ElectricCharge", out res2);
+                if (res2 < mkh.ecPerSec) mkh.starving = true;
+                resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -res));
+                if (mkh.starving) Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + res + " needed, " + res2 + " available.");
+            }
+            else mkh.ecPerSec = 0;
+            return mkh.Title.ToLower();
+        }
+
+        /// <summary>
+        /// Kerbalism Planner compatibility method
+        /// </summary>
+        /// <param name="resources">A list of resource names and production/consumption rates. Production is a positive rate, consumption is negatvie. Add all resources your module is going to produce/consume.</param>
+        /// <param name="body">The currently selected body in the Kerbalism planner</param>
+        /// <param name="environment">Environment variables guesstimated by Kerbalism, based on the current selection of body and vessel situation. See above.</param>
+        /// <returns>The title to display in the tooltip of the planner UI.</returns>
+        public string PlannerUpdate(List<KeyValuePair<string, double>> resources, CelestialBody body, Dictionary<string, double> environment)
+        {
+            if (!Core.ModEnabled) return null;
+            resources.Add(new KeyValuePair<string, double>(resource, -ecPerSec));
+            return Title.ToLower();
         }
 
         public string Title
@@ -173,7 +219,7 @@ namespace KerbalHealth
 
         void UpdateGUIName()
         {
-            Events["OnToggleActive"].guiName = (isActive ? Localizer.Format("#KH_Module_Disable") : Localizer.Format("#KH_Module_Enable")) + Title;//"Disable ""Enable "
+            Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
             Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = Core.ModEnabled && isActive && ecPerSec != 0;
         }
         
