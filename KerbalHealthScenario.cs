@@ -282,7 +282,7 @@ namespace KerbalHealth
             vesselChanged = true;
         }
 
-        bool NeedsCheckForUntrainedCrew => KerbalHealthGeneralSettings.Instance.modEnabled && .TrainingEnabled && HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH;
+        bool NeedsCheckForUntrainedCrew => KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthFactorsSettings.Instance.TrainingEnabled && HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH;
 
         /// <summary>
         /// Checks the given vessel and displays an alert if any of the crew isn't fully trained
