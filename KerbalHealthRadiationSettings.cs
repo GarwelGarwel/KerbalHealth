@@ -3,36 +3,38 @@ namespace KerbalHealth
 {
     class KerbalHealthRadiationSettings : GameParameters.CustomParameterNode
     {
-    public override string Title => Localizer.Format("#KH_RS_title");//"Radiation"
-    public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
-    public override bool HasPresets => true;
-    public override string Section => "Kerbal Health (2)";
-    public override string DisplaySection => Section;
-    public override int SectionOrder => 1;
+        public override string Title => Localizer.Format("#KH_RS_title");//"Radiation"
+        public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
+        public override bool HasPresets => true;
+        public override string Section => "Kerbal Health (2)";
+        public override string DisplaySection => Section;
+        public override int SectionOrder => 1;
 
-    public override void SetDifficultyPreset(GameParameters.Preset preset)
-    {
-        switch (preset)
+        public override void SetDifficultyPreset(GameParameters.Preset preset)
         {
-            case GameParameters.Preset.Easy:
+            switch (preset)
+            {
+                case GameParameters.Preset.Easy:
                     RadiationEnabled = false;
                     ShieldingEffect = 2;
                     RadStormsEnabled = false;
                     break;
-            case GameParameters.Preset.Normal:
+                case GameParameters.Preset.Normal:
                     RadiationEnabled = true;
                     ShieldingEffect = 1;
                     break;
-            case GameParameters.Preset.Moderate:
+                case GameParameters.Preset.Moderate:
                     RadiationEnabled = true;
                     ShieldingEffect = 1;
                     break;
-            case GameParameters.Preset.Hard:
+                case GameParameters.Preset.Hard:
                     RadiationEnabled = true;
                     ShieldingEffect = 1;
                     break;
+            }
         }
-    }
+
+        public static KerbalHealthRadiationSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>();
 
         [GameParameters.CustomParameterUI("#KH_RS_RadiationEnabled", toolTip = "#KH_RS_RadiationEnabled_desc")]//Radiation Enabled""Degrade max health based on accumulated dose
         public bool RadiationEnabled = true;

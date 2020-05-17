@@ -75,7 +75,7 @@ namespace KerbalHealth
         /// <param name="shielding">Total shielding</param>
         /// <param name="crew">Crew capacity</param>
         /// <returns></returns>
-        public static double GetExposure(double shielding, double crew) => Math.Pow(2, -shielding * Core.ShieldingEffect / Math.Pow(crew, 2f / 3));
+        public static double GetExposure(double shielding, double crew) => Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crew, 2f / 3));
 
         /// <summary>
         /// Returns effective multiplier for the given factor

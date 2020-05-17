@@ -135,7 +135,7 @@ namespace KerbalHealth
 
         public void FixedUpdate()
         {
-            if (Core.IsInEditor || !Core.ModEnabled) return;
+            if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled) return;
             double time = Planetarium.GetUniversalTime();
             if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
@@ -163,7 +163,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string BackgroundUpdate(Vessel v, ProtoPartSnapshot part_snapshot, ProtoPartModuleSnapshot module_snapshot, PartModule proto_part_module, Part proto_part, Dictionary<string, double> availableResources, List<KeyValuePair<string, double>> resourceChangeRequest, double elapsed_s)
         {
-            if (!Core.ModEnabled) return null;
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled) return null;
             ModuleKerbalHealth mkh = proto_part_module as ModuleKerbalHealth;
             if (mkh.isActive && ((mkh.resourceConsumption != 0) || (mkh.resourceConsumptionPerKerbal != 0)))
             {
@@ -188,7 +188,7 @@ namespace KerbalHealth
         /// <returns>The title to display in the tooltip of the planner UI.</returns>
         public string PlannerUpdate(List<KeyValuePair<string, double>> resources, CelestialBody body, Dictionary<string, double> environment)
         {
-            if (!Core.ModEnabled) return null;
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled) return null;
             resources.Add(new KeyValuePair<string, double>(resource, -ecPerSec));
             return Title.ToLower();
         }
@@ -220,7 +220,7 @@ namespace KerbalHealth
         void UpdateGUIName()
         {
             Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
-            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = Core.ModEnabled && isActive && ecPerSec != 0;
+            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
         }
         
         [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "#KH_Module_Toggle", guiActiveEditor = true)] //Toggle Health Module

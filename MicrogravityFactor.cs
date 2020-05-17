@@ -6,7 +6,7 @@ namespace KerbalHealth
         public override string Name => "Microgravity";
         public override string Title => Localizer.Format("#KH_Microgravity");//Microgravity
 
-        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().MicrogravityFactor;
+        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.MicrogravityFactor;
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

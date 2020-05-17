@@ -8,7 +8,7 @@
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
-        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().KSCFactor;
+        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.KSCFactor;
         
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

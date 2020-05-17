@@ -6,7 +6,7 @@
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor (false);
 
-        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().EVAFactor;
+        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.EVAFactor;
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

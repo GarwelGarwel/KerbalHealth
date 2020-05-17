@@ -21,12 +21,12 @@ namespace KerbalHealth
 
         public void Start()
         {
-            if (!Core.ModEnabled) return;
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled) return;
             Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
             GameEvents.onEditorShipModified.Add(delegate (ShipConstruct sc) { Invalidate(); });
             GameEvents.onEditorPodDeleted.Add(Invalidate);
             GameEvents.onEditorScreenChange.Add(delegate (EditorScreen s) { Invalidate(); });
-            if (Core.ShowAppLauncherButton)
+            if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {
                 Core.Log("Registering AppLauncher button...", Core.LogLevel.Important);
                 Texture2D icon = new Texture2D(38, 38);
@@ -69,7 +69,7 @@ namespace KerbalHealth
             List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
             foreach (HealthFactor f in Core.Factors)
                 checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, (state) => { f.SetEnabledInEditor(state); Invalidate(); }));
-            if (Core.TrainingEnabled)
+            if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), (state) => { trainingEnabled = state; Invalidate(); }));
             checklist.Add(new DialogGUIToggle(healthModulesEnabled, Localizer.Format("#KH_ER_HealthModules"), (state) => { healthModulesEnabled = state; Invalidate(); }));
 
@@ -98,7 +98,7 @@ namespace KerbalHealth
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel(Localizer.Format("#KH_ER_Factors"), true),
-                        new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnTrainButtonSelected, () => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().TrainingEnabled, false),
+                        new DialogGUIButton(Localizer.Format("#KH_ER_Train"), OnTrainButtonSelected, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled, false),
                         new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnResetButtonSelected, false)),
                     new DialogGUIGridLayout(new RectOffset(3, 3, 3, 3), new Vector2(130, 30), new Vector2(10, 0), UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft, UnityEngine.UI.GridLayoutGroup.Axis.Horizontal, TextAnchor.MiddleCenter, UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount, 3, checklist.ToArray())),
                 false,
@@ -123,7 +123,7 @@ namespace KerbalHealth
         public void OnTrainButtonSelected()
         {
             Core.Log("OnTrainButtonSelected()");
-            if (!Core.TrainingEnabled) return;
+            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled) return;
             KerbalHealthStatus khs;
             List<string> s = new List<string>();
             List<string> f = new List<string>();
@@ -192,7 +192,7 @@ namespace KerbalHealth
 
         public void Update()
         {
-            if (!Core.ModEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
             {
                 if (reportWindow != null) reportWindow.Dismiss();
                 return;
@@ -238,7 +238,7 @@ namespace KerbalHealth
                     if (b > khs.NextConditionHP()) s = "—";
                     else s = ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
-                    gridContents[(i + 1) * colNum + 3].SetOptionText(Core.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : "N/A");
+                    gridContents[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : "N/A");
                     i++;
                 }
                 spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Space.ToString("F1") + "</color>");

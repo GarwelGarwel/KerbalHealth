@@ -21,7 +21,7 @@ namespace KerbalHealth
         /// Returns a random, Gaussian-dispersed magnitude of a radstorm in BED
         /// </summary>
         /// <returns></returns>
-        public double GetMagnitude() => MeanMagnitude * Math.Exp(Core.GetGaussian(0.4)) * Core.SolarRadiation;
+        public double GetMagnitude() => MeanMagnitude * Math.Exp(Core.GetGaussian(0.4)) * KerbalHealthRadiationSettings.Instance.SolarRadiation;
 
         /// <summary>
         /// Returns a random, Gaussian-dispersed velocity value for a storm, in m/s

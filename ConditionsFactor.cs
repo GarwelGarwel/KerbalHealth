@@ -15,10 +15,10 @@ namespace KerbalHealth
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (!Core.ConditionsEnabled) return 0;
+            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled) return 0;
             KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
             if (khs == null) return 0;
-            float k = Core.ConditionsEffect;
+            float k = KerbalHealthQuirkSettings.Instance.ConditionsEffect;
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)
                 res += hc.HPChangePerDay * k;

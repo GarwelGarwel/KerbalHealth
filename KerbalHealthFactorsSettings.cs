@@ -10,6 +10,8 @@ namespace KerbalHealth
         public override string DisplaySection => Section;
         public override int SectionOrder => 2;
 
+        public static KerbalHealthFactorsSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>();
+
         public override void SetDifficultyPreset(GameParameters.Preset preset)
         {
             switch (preset)

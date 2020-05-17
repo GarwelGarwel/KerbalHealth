@@ -30,6 +30,8 @@ namespace KerbalHealth
                     break;
             }
         }
+        
+        public static KerbalHealthQuirkSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>();
 
         [GameParameters.CustomParameterUI("#KH_QS_ConditionsEnable", toolTip = "#KH_QS_ConditionsEnabled_desc")]//Conditions Enabled""If checked, special health conditions affect health and can randomly appear in kerbals
         public bool ConditionsEnabled = true;
