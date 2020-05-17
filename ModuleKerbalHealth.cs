@@ -188,7 +188,7 @@ namespace KerbalHealth
         /// <returns>The title to display in the tooltip of the planner UI.</returns>
         public string PlannerUpdate(List<KeyValuePair<string, double>> resources, CelestialBody body, Dictionary<string, double> environment)
         {
-            if (!Core.ModEnabled) return null;
+            if (!Core.ModEnabled || !isActive) return null;
             resources.Add(new KeyValuePair<string, double>(resource, -ecPerSec));
             return Title.ToLower();
         }
