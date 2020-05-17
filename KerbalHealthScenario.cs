@@ -18,7 +18,8 @@ namespace KerbalHealth
         Version version;  // Current Kerbal Health version
 
         List<RadStorm> radStorms = new List<RadStorm>();
-
+        bool checkUntrainedKerbals = false;
+        ScreenMessage untrainedKerbalsWarningMessage;
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
@@ -130,6 +131,9 @@ namespace KerbalHealth
                 version = v;
             }
             else Core.Log("Kerbal Health v" + version);
+
+            if (NeedsCheckForUntrainedCrew) checkUntrainedKerbals = true;
+
             Core.Log("KerbalHealthScenario.Start finished.", Core.LogLevel.Important);
         }
 
@@ -278,6 +282,45 @@ namespace KerbalHealth
             vesselChanged = true;
         }
 
+        bool NeedsCheckForUntrainedCrew => Core.ModEnabled && Core.TrainingEnabled && HighLogic.LoadedSceneIsFlight && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH;
+
+        /// <summary>
+        /// Checks the given vessel and displays an alert if any of the crew isn't fully trained
+        /// </summary>
+        /// <param name="v"></param>
+        void CheckUntrainedCrewWarning(Vessel v)
+        {
+            Core.Log("CheckUntrainedCrewWarning('" + v.vesselName + "')");
+            if (!NeedsCheckForUntrainedCrew)
+            {
+                Core.Log("Disabling untrained crew warning.");
+                checkUntrainedKerbals = false;
+                untrainedKerbalsWarningMessage.duration = 0;
+                return;
+            }
+            string msg = "";
+            int n = 0;
+            foreach (ProtoCrewMember pcm in v.GetVesselCrew())
+            {
+                KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
+                if (khs == null)
+                {
+                    Core.Log("KerbalHealthStatus for " + pcm.name + " in " + v.vesselName + " not found!", Core.LogLevel.Error);
+                    continue;
+                }
+                Core.Log(pcm.name + " is trained " + khs.TrainingLevel.ToString("P1") + " / " + Core.TrainingCap.ToString("P1"));
+                if (khs.TrainingLevel < Core.TrainingCap)
+                {
+                    msg += (msg.Length == 0 ? "" : ", ") + pcm.name;
+                    n++;
+                }
+            }
+            Core.Log(n + " kerbals are untrained: " + msg);
+            if (n == 0) return;
+            untrainedKerbalsWarningMessage = new ScreenMessage(Localizer.Format(n == 1 ? "#KH_TrainingAlert1" : "#KH_TrainingAlertMany", msg), 2 * Core.UpdateInterval, ScreenMessageStyle.UPPER_CENTER);
+            ScreenMessages.PostScreenMessage(untrainedKerbalsWarningMessage);
+        }
+
         public void TrainVessel(Vessel v)
         {
             if (v == null) return;
@@ -356,6 +399,7 @@ namespace KerbalHealth
                     foreach (Vessel v in FlightGlobals.VesselsLoaded) TrainVessel(v);
                     vesselChanged = false;
                 }
+                if (checkUntrainedKerbals) CheckUntrainedCrewWarning(FlightGlobals.ActiveVessel);
 
                 // Processing radiation storms
                 if (Core.RadiationEnabled && Core.RadStormsEnabled)
@@ -381,10 +425,9 @@ namespace KerbalHealth
                         }
                     if (Core.GetYear(time) > Core.GetYear(lastUpdated))
                     {
-                        Core.Log("Showing solar weather summary.", Core.LogLevel.Important);
+                        Core.Log("Showing solar weather summary for year " + Core.GetYear(time) + ".", Core.LogLevel.Important);
                         Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (1 / Core.RadStormChance / Core.RadStormFrequency).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
                     }
-                    else Core.Log("Current year is " + (Core.GetYear(time) + 1) + "; last update was in year " + (Core.GetYear(lastUpdated) + 1));
                 }
 
                 Core.KerbalHealthList.Update(timePassed);
