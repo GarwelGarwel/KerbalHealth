@@ -70,8 +70,8 @@ namespace KerbalHealth
             foreach (HealthFactor f in Core.Factors)
                 checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, (state) => { f.SetEnabledInEditor(state); Invalidate(); }));
             if (Core.TrainingEnabled)
-                checklist.Add(new DialogGUIToggle(true, Localizer.Format("#KH_ER_Trained"), (state) => { trainingEnabled = state; Invalidate(); }));
-            checklist.Add(new DialogGUIToggle(true, Localizer.Format("#KH_ER_HealthModules"), (state) => { healthModulesEnabled = state; Invalidate(); }));
+                checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), (state) => { trainingEnabled = state; Invalidate(); }));
+            checklist.Add(new DialogGUIToggle(healthModulesEnabled, Localizer.Format("#KH_ER_HealthModules"), (state) => { healthModulesEnabled = state; Invalidate(); }));
 
             reportWindow = PopupDialog.SpawnPopupDialog(
                 new Vector2(0.5f, 0.5f),
@@ -116,6 +116,7 @@ namespace KerbalHealth
             foreach (HealthFactor f in Core.Factors)
                 f.ResetEnabledInEditor();
             healthModulesEnabled = true;
+            trainingEnabled = true;
             Invalidate();
         }
 
