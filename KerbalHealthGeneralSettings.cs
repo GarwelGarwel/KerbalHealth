@@ -1,4 +1,6 @@
 ﻿using KSP.Localization;
+using System.ComponentModel;
+
 namespace KerbalHealth
 {
     class KerbalHealthGeneralSettings : GameParameters.CustomParameterNode
@@ -23,6 +25,27 @@ namespace KerbalHealth
                     DeathEnabled = true;
                     break;
             }
+        }
+
+        public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
+
+        internal void Reset()
+        {
+            modEnabled = true;
+            ShowAppLauncherButton = true;
+            SortByLocation = true;
+            LinesPerPage = 10;
+            ShowTraitLevel = true;
+            UpdateInterval = 30;
+            MinUpdateInterval = 1;
+            BaseMaxHP = 100;
+            HPPerLevel = 10;
+            LowHealthAlert = 0.3f;
+            DeathEnabled = true;
+            ExhaustionStartHealth = 0.2f;
+            ExhaustionEndHealth = 0.25f;
+            ResetSettings = false;
+            SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
 
         [GameParameters.CustomParameterUI("#KH_GS_modEnabled", toolTip = "#KH_GS_modEnabled_desc")]//Mod Enabled""Turn Kerbal Health mechanics on/off
@@ -66,5 +89,8 @@ namespace KerbalHealth
 
         [GameParameters.CustomParameterUI("#KH_GS_DebugMode", toolTip = "#KH_GS_DebugMode_desc")]//Debug Logging""Controls amount of logging
         public bool DebugMode = false;
+
+        [GameParameters.CustomParameterUI("#KH_GS_ResetSettings", toolTip = "#KH_GS_ResetSettings_desc")]//Reset Mod Settings""Check and quit to game to revert all Kerbal Health settings to their default values
+        public bool ResetSettings = false;
     }
 }

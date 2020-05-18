@@ -51,6 +51,7 @@ namespace KerbalHealth
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
 
+            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             GameEvents.onCrewBoardVessel.Add(onCrewBoardVessel);
             GameEvents.onCrewKilled.Add(OnCrewKilled);
@@ -143,6 +144,7 @@ namespace KerbalHealth
             if (Core.IsInEditor) return;
             UndisplayData();
 
+            GameEvents.OnGameSettingsApplied.Remove(OnGameSettingsApplied);
             GameEvents.onCrewOnEva.Remove(OnKerbalEva);
             GameEvents.onCrewBoardVessel.Remove(onCrewBoardVessel);
             GameEvents.onCrewKilled.Remove(OnCrewKilled);
@@ -164,6 +166,22 @@ namespace KerbalHealth
             if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
             Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
+        }
+
+        /// <summary>
+        /// Called to check and reset Kerbal Health settings, if needed
+        /// </summary>
+        public void OnGameSettingsApplied()
+        {
+            Core.Log("OnGameSettingsApplied");
+            if (KerbalHealthGeneralSettings.Instance.ResetSettings)
+            {
+                KerbalHealthGeneralSettings.Instance.Reset();
+                KerbalHealthFactorsSettings.Instance.Reset();
+                KerbalHealthQuirkSettings.Instance.Reset();
+                KerbalHealthRadiationSettings.Instance.Reset();
+                ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_SettingsReset"), 5);
+            }
         }
 
         /// <summary>
