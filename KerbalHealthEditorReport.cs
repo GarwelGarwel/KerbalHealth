@@ -41,7 +41,7 @@ namespace KerbalHealth
             {
                 Core.Log("Registering Toolbar button...");
                 toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthReport");
-                toolbarButton.Text = "Kerbal Health Report";
+                toolbarButton.Text = Localizer.Format("#KH_ER_ButtonTitle");
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
                 toolbarButton.ToolTip = "Kerbal Health";
                 toolbarButton.OnClick += (e) =>
@@ -152,7 +152,7 @@ namespace KerbalHealth
 
         public void OnTrainButtonSelected()
         {
-            Core.Log("OnTrainButtonSelected()");
+            Core.Log("OnTrainButtonSelected");
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
@@ -207,10 +207,6 @@ namespace KerbalHealth
             Core.ShowMessage(msg, false);
         }
 
-        //string GetShielding() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).VesselModifiers.Shielding.ToString("F1") : "N/A";
-
-        //string GetExposure() => (ShipConstruction.ShipManifest.CrewCount != 0) ? Core.KerbalHealthList.Find(ShipConstruction.ShipManifest.GetAllCrew(false)[0]).LastExposure.ToString("P1") : "N/A";
-
         public void UndisplayData()
         {
             if (reportWindow != null)
@@ -237,6 +233,7 @@ namespace KerbalHealth
                     reportWindow.Dismiss();
                 return;
             }
+
             if ((reportWindow != null) && dirty)
             {
                 if (gridContents == null)
@@ -244,12 +241,14 @@ namespace KerbalHealth
                     Core.Log("gridContents is null.", Core.LogLevel.Error);
                     return;
                 }
+
                 if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
                 {
                     Core.Log("Kerbals' number has changed. Recreating the Health Report window.", Core.LogLevel.Important);
                     UndisplayData();
                     DisplayData();
                 }
+
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;

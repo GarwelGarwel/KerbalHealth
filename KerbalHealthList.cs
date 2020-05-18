@@ -93,14 +93,14 @@ namespace KerbalHealth
 
         public new KerbalHealthStatus this[string name]
         {
-            get => ContainsKey(name) ? this[name] : null;
-            set => this[name] = value;
+            get => ContainsKey(name) ? base[name] : null;
+            set => base[name] = value;
         }
 
         public KerbalHealthStatus this[ProtoCrewMember pcm]
         {
-            get => ContainsKey(pcm.name) ? this[pcm.name] : null;
-            set => this[pcm.name] = value;
+            get => ContainsKey(pcm.name) ? base[pcm.name] : null;
+            set => base[pcm.name] = value;
         }
 
         /// <summary>
