@@ -8,12 +8,12 @@ namespace KerbalHealth
     /// </summary>
     public class ChanceModifier
     {
-        public enum Modifications { Multiply, Add, Power };
+        public enum OperationType { Multiply, Add, Power };
 
         /// <summary>
         /// Type of modification: multiply the base chance, add to it or find power of it
         /// </summary>
-        public Modifications Modification { get; set; } = Modifications.Multiply;
+        public OperationType Modification { get; set; } = OperationType.Multiply;
 
         /// <summary>
         /// Constant value by which the base chance is modified
@@ -35,20 +35,34 @@ namespace KerbalHealth
         /// <returns></returns>
         public double Calculate(double baseValue, ProtoCrewMember pcm)
         {
-            if (!Logic.Test(pcm)) return baseValue;
+            if (!Logic.Test(pcm))
+                return baseValue;
             double v = Value;
+
             if (UseAttribute != null)
                 switch (UseAttribute.ToLower())
                 {
-                    case "courage": v *= pcm.courage; break;
-                    case "stupidity": v *= pcm.stupidity; break;
+                    case "courage":
+                        v *= pcm.courage;
+                        break;
+                    case "stupidity":
+                        v *= pcm.stupidity;
+                        break;
                 }
+
             switch (Modification)
             {
-                case Modifications.Multiply: v *= baseValue; break;
-                case Modifications.Add: v += baseValue; break;
-                case Modifications.Power: v = Math.Pow(baseValue, v); break;
+                case OperationType.Multiply:
+                    v *= baseValue;
+                    break;
+                case OperationType.Add:
+                    v += baseValue;
+                    break;
+                case OperationType.Power:
+                    v = Math.Pow(baseValue, v);
+                    break;
             }
+
             return v;
         }
 
@@ -73,8 +87,8 @@ namespace KerbalHealth
             set
             {
                 if (value.HasValue("modification"))
-                    Modification = (Modifications)Enum.Parse(typeof(Modifications), value.GetValue("modification"), true);
-                Value = Core.GetDouble(value, "value", Modification == Modifications.Add ? 0 : 1);
+                    Modification = (OperationType)Enum.Parse(typeof(OperationType), value.GetValue("modification"), true);
+                Value = Core.GetDouble(value, "value", Modification == OperationType.Add ? 0 : 1);
                 UseAttribute = Core.GetString(value, "useAttribute");
                 Logic.ConfigNode = value;
             }
@@ -85,13 +99,13 @@ namespace KerbalHealth
             string res = "";
             switch (Modification)
             {
-                case Modifications.Multiply:
+                case OperationType.Multiply:
                     res = "Multiply base chance by ";
                     break;
-                case Modifications.Add:
+                case OperationType.Add:
                     res = "Increase base chance by ";
                     break;
-                case Modifications.Power:
+                case OperationType.Power:
                     res = "Base chance's power of ";
                     break;
             }

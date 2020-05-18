@@ -14,19 +14,19 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>GameData\KerbalHealth\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>GameData\KerbalHealth\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,10 +36,12 @@
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -50,57 +52,63 @@
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule">
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="RadStorm.cs" />
     <Compile Include="RadStormType.cs" />
-    <Compile Include="StressFactor.cs" />
+    <Compile Include="Factors\StressFactor.cs" />
     <Compile Include="ChanceModifier.cs" />
     <Compile Include="ModuleHealthEnvironmentSensor.cs" />
     <Compile Include="Outcome.cs" />
     <Compile Include="PlanetHealthConfig.cs" />
-    <Compile Include="ConnectedFactor.cs" />
+    <Compile Include="Factors\ConnectedFactor.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="DFWrapper.cs" />
+    <Compile Include="Wrappers\DFWrapper.cs" />
     <Compile Include="HealthCondition.cs" />
     <Compile Include="HealthEffect.cs" />
-    <Compile Include="KerbalHealthFactorsSettings.cs" />
-    <Compile Include="HealthFactor.cs" />
+    <Compile Include="Settings\KerbalHealthFactorsSettings.cs" />
+    <Compile Include="Factors\HealthFactor.cs" />
     <Compile Include="EVAFactor.cs" />
-    <Compile Include="KerbalHealthQuirkSettings.cs" />
-    <Compile Include="KerbalHealthRadiationSettings.cs" />
-    <Compile Include="KSCFactor.cs" />
+    <Compile Include="Settings\KerbalHealthQuirkSettings.cs" />
+    <Compile Include="Settings\KerbalHealthRadiationSettings.cs" />
+    <Compile Include="Factors\KSCFactor.cs" />
     <Compile Include="Logic.cs" />
-    <Compile Include="LonelinessFactor.cs" />
-    <Compile Include="HomeFactor.cs" />
-    <Compile Include="MicrogravityFactor.cs" />
+    <Compile Include="Factors\LonelinessFactor.cs" />
+    <Compile Include="Factors\HomeFactor.cs" />
+    <Compile Include="Factors\MicrogravityFactor.cs" />
     <Compile Include="ModuleKerbalHealth.cs" />
     <Compile Include="KerbalHealthEditorReport.cs" />
     <Compile Include="KerbalHealthStatus.cs" />
     <Compile Include="KerbalHealthList.cs" />
     <Compile Include="KerbalHealthScenario.cs" />
-    <Compile Include="ConfinementFactor.cs" />
+    <Compile Include="Factors\ConfinementFactor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="KerbalHealthGeneralSettings.cs" />
-    <Compile Include="ConditionsFactor.cs" />
-    <Compile Include="ToolbarWrapper.cs" />
+    <Compile Include="Settings\KerbalHealthGeneralSettings.cs" />
+    <Compile Include="Factors\ConditionsFactor.cs" />
+    <Compile Include="Wrappers\ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
     <Compile Include="HealthModifierSet.cs" />
     <Compile Include="TrainingPart.cs" />

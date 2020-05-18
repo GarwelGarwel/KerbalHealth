@@ -1,4 +1,5 @@
 ﻿using KSP.Localization;
+
 namespace KerbalHealth
 {
     public class ConnectedFactor : HealthFactor
@@ -6,7 +7,7 @@ namespace KerbalHealth
         public override string Name => "Connected";
         public override string Title => Localizer.Format("#KH_Connected");//Connected
 
-        public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().ConnectedFactor;
+        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.ConnectedFactor;
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

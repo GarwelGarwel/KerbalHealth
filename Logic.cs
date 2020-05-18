@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace KerbalHealth
 {
@@ -15,7 +13,7 @@ namespace KerbalHealth
         public OperatorType Operator { get; set; } = OperatorType.And;
         public bool Inverse { get; set; } = false;
 
-        public static string Padding = "-";
+        public static readonly string Padding = "-";
 
         public string Situation { get; set; } = null;
         public string InSOI { get; set; } = null;
@@ -32,8 +30,12 @@ namespace KerbalHealth
         {
             switch (Operator)
             {
-                case OperatorType.And: operand1 &= operand2; break;
-                case OperatorType.Or: operand1 |= operand2; break;
+                case OperatorType.And:
+                    operand1 &= operand2;
+                    break;
+                case OperatorType.Or:
+                    operand1 |= operand2;
+                    break;
             }
             return operand1;
         }
@@ -52,54 +54,77 @@ namespace KerbalHealth
                 {
                     switch (Situation.ToLower())
                     {
-                        case "prelaunch": Op(ref res, v.situation == Vessel.Situations.PRELAUNCH); break;
-                        case "landed": Op(ref res, v.situation == Vessel.Situations.LANDED); break;
-                        case "splashed": Op(ref res, v.situation == Vessel.Situations.SPLASHED); break;
-                        case "ground": Op(ref res, (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED)); break;
-                        case "flying": Op(ref res, v.situation == Vessel.Situations.FLYING); break;
-                        case "suborbital": Op(ref res, v.situation == Vessel.Situations.SUB_ORBITAL); break;
-                        case "orbiting": Op(ref res, v.situation == Vessel.Situations.ORBITING); break;
-                        case "escaping": Op(ref res, v.situation == Vessel.Situations.ESCAPING); break;
-                        case "in space": Op(ref res, (v.situation == Vessel.Situations.SUB_ORBITAL) || (v.situation == Vessel.Situations.ORBITING) || (v.situation == Vessel.Situations.ESCAPING)); break;
+                        case "prelaunch":
+                            Op(ref res, v.situation == Vessel.Situations.PRELAUNCH);
+                            break;
+                        case "landed":
+                            Op(ref res, v.situation == Vessel.Situations.LANDED);
+                            break;
+                        case "splashed":
+                            Op(ref res, v.situation == Vessel.Situations.SPLASHED);
+                            break;
+                        case "ground":
+                            Op(ref res, (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED));
+                            break;
+                        case "flying":
+                            Op(ref res, v.situation == Vessel.Situations.FLYING);
+                            break;
+                        case "suborbital":
+                            Op(ref res, v.situation == Vessel.Situations.SUB_ORBITAL);
+                            break;
+                        case "orbiting":
+                            Op(ref res, v.situation == Vessel.Situations.ORBITING);
+                            break;
+                        case "escaping":
+                            Op(ref res, v.situation == Vessel.Situations.ESCAPING);
+                            break;
+                        case "in space":
+                            Op(ref res, (v.situation == Vessel.Situations.SUB_ORBITAL) || (v.situation == Vessel.Situations.ORBITING) || (v.situation == Vessel.Situations.ESCAPING));
+                            break;
                     }
                 }
                 else Op(ref res, false);
+
             if (InSOI != null)
-                if (v != null)
-                {
-                    Op(ref res, InSOI.Equals(v.mainBody.name, StringComparison.CurrentCultureIgnoreCase));
-                }
-                else
-                {
-                    Op(ref res, false);
-                }
+                Op(ref res, v != null ? InSOI.Equals(v.mainBody.name, StringComparison.CurrentCultureIgnoreCase) : false);
+            
             if (KerbalStatus != null)
-            {
                 Op(ref res, KerbalStatus.Equals(pcm.rosterStatus.ToString(), StringComparison.CurrentCultureIgnoreCase));
-            }
+
             if (!Double.IsNaN(MissionTime))
-            {
-                if (v != null) Op(ref res, v.missionTime >= MissionTime);
-                else Op(ref res, false);
-            }
+                Op(ref res, v != null ? v.missionTime >= MissionTime : false);
+
             if (Gender != null)
             {
                 ProtoCrewMember.Gender g = pcm.gender;
                 switch (Gender.ToLower())
                 {
-                    case "female": Op(ref res, g == ProtoCrewMember.Gender.Female); break;
-                    case "male": Op(ref res, g == ProtoCrewMember.Gender.Male); break;
+                    case "female":
+                        Op(ref res, g == ProtoCrewMember.Gender.Female);
+                        break;
+                    case "male":
+                        Op(ref res, g == ProtoCrewMember.Gender.Male);
+                        break;
                 }
             }
+
             if (GenderPresent != null)
             {
                 ProtoCrewMember.Gender g;
                 switch (GenderPresent.ToLower())
                 {
-                    case "female": g = ProtoCrewMember.Gender.Female; break;
-                    case "male": g = ProtoCrewMember.Gender.Male; break;
-                    case "same": g = pcm.gender; break;
-                    case "other": g = pcm.gender == ProtoCrewMember.Gender.Female ? ProtoCrewMember.Gender.Male : ProtoCrewMember.Gender.Female; break;
+                    case "female":
+                        g = ProtoCrewMember.Gender.Female;
+                        break;
+                    case "male":
+                        g = ProtoCrewMember.Gender.Male;
+                        break;
+                    case "same":
+                        g = pcm.gender;
+                        break;
+                    case "other":
+                        g = pcm.gender == ProtoCrewMember.Gender.Female ? ProtoCrewMember.Gender.Male : ProtoCrewMember.Gender.Female;
+                        break;
                     default:
                         Core.Log("Unrecognized value for gender in 'genderPresent = " + GenderPresent + "'. Assuming 'other'.");
                         goto case "other";
@@ -114,6 +139,7 @@ namespace KerbalHealth
                         }
                 Op(ref res, found);
             }
+
             if (TraitPresent != null)
             {
                 bool found = false;
@@ -126,20 +152,23 @@ namespace KerbalHealth
                         }
                 Op(ref res, found);
             }
+
             if (ConditionPresent != null)
             {
                 bool found = false;
                 if (v != null)
                     foreach (ProtoCrewMember crewmate in v.GetVesselCrew())
-                        if ((Core.KerbalHealthList.Find(crewmate.name).HasCondition(ConditionPresent)) && (crewmate != pcm))
+                        if ((Core.KerbalHealthList[crewmate].HasCondition(ConditionPresent)) && (crewmate != pcm))
                         {
                             found = true;
                             break;
                         }
                 Op(ref res, found);
             }
+
             foreach (Logic l in Operands)
                 Op(ref res, l.Test(pcm));
+
             return res ^ Inverse;
         }
 
@@ -147,23 +176,33 @@ namespace KerbalHealth
         {
             string res = "";
             string indent1 = "";
-            for (int i = 0; i < level; i++) indent1 += Padding;
+            for (int i = 0; i < level; i++)
+                indent1 += Padding;
             string indent2 = indent1 + Padding + " ";
-            if (level > 0) indent1 += " ";
+            if (level > 0)
+                indent1 += " ";
 
-            if (Situation != null) res += "\n" + indent2 + "Is " + Situation;
-            if (InSOI != null) res += "\n" + indent2 + "Kerbal is in the SOI of " + InSOI;
-            if (KerbalStatus != null) res += "\n" + indent2 + "Kerbal is" + KerbalStatus;
-            if (!Double.IsNaN(MissionTime)) res += "\n" + indent2 + "Mission lasts at least " + Core.ParseUT(MissionTime, false, 100);
-            if (Gender != null) res += "\n" + indent2 + "Kerbal is " + Gender;
-            if (GenderPresent != null) res += "\n" + indent2 + GenderPresent + " gender kerbal(s) present in the vessel";
-            if (TraitPresent != null) res += "\n" + indent2 + TraitPresent + " kerbal(s) present in the vessel";
-            if (ConditionPresent != null) res += "\n" + indent2 + "Kerbal(s) with " + ConditionPresent + " present in the vessel";
-            foreach (Logic l in Operands) res += "\n" + l.Description(level + 1);
+            if (Situation != null)
+                res += "\n" + indent2 + "Is " + Situation;
+            if (InSOI != null)
+                res += "\n" + indent2 + "Kerbal is in the SOI of " + InSOI;
+            if (KerbalStatus != null)
+                res += "\n" + indent2 + "Kerbal is" + KerbalStatus;
+            if (!Double.IsNaN(MissionTime))
+                res += "\n" + indent2 + "Mission lasts at least " + Core.ParseUT(MissionTime, false, 100);
+            if (Gender != null)
+                res += "\n" + indent2 + "Kerbal is " + Gender;
+            if (GenderPresent != null)
+                res += "\n" + indent2 + GenderPresent + " gender kerbal(s) present in the vessel";
+            if (TraitPresent != null)
+                res += "\n" + indent2 + TraitPresent + " kerbal(s) present in the vessel";
+            if (ConditionPresent != null)
+                res += "\n" + indent2 + "Kerbal(s) with " + ConditionPresent + " present in the vessel";
+            foreach (Logic l in Operands)
+                res += "\n" + l.Description(level + 1);
             if (Core.CountChars(res, '\n') >= 2)
                 res = indent1 + (Operator == OperatorType.And ? (Inverse ? "One" : "All") : (Inverse ? "None" : "One")) + " of the following conditions is " + ((Operator == OperatorType.And) && Inverse ? "false" : "true") + ":" + res;
-            else if ((res != "") && Inverse) res = indent1 + "This is FALSE:" + res;
-            else res = res.Trim('\n');
+            else res = (res.Length != 0) && Inverse ? indent1 + "This is FALSE:" + res : res.Trim('\n');
             return res;
         }
 

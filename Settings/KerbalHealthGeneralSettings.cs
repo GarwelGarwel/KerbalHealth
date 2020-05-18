@@ -1,4 +1,6 @@
 ﻿using KSP.Localization;
+using System.ComponentModel;
+
 namespace KerbalHealth
 {
     class KerbalHealthGeneralSettings : GameParameters.CustomParameterNode
@@ -24,6 +26,8 @@ namespace KerbalHealth
                     break;
             }
         }
+
+        public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
 
         [GameParameters.CustomParameterUI("#KH_GS_modEnabled", toolTip = "#KH_GS_modEnabled_desc")]//Mod Enabled""Turn Kerbal Health mechanics on/off
         public bool modEnabled = true;
