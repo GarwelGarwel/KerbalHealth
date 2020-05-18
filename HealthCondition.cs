@@ -19,7 +19,7 @@ namespace KerbalHealth
         /// </summary>
         public string Title
         {
-            get => ((title == null) || (title == "")) ? Name : title;
+            get => ((title == null) || (title.Length == 0)) ? Name : title;
             set => title = value;
         }
 
@@ -48,7 +48,8 @@ namespace KerbalHealth
         public bool IsCompatibleWith(List<HealthCondition> conditions)
         {
             foreach (HealthCondition hc in conditions)
-                if (IncompatibleConditions.Contains(hc.Name)) return false;
+                if (IncompatibleConditions.Contains(hc.Name))
+                    return false;
             return true;
         }
 

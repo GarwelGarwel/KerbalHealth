@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace KerbalHealth
 {
@@ -37,18 +34,13 @@ namespace KerbalHealth
         /// <returns></returns>
         public bool IsAvailableTo(KerbalHealthStatus khs, int level)
         {
-            if (level < MinLevel) return false;
+            if (level < MinLevel)
+                return false;
             foreach (string q in IncompatibleQuirks)
-                if (khs.Quirks.Contains(Core.GetQuirk(q))) return false;
+                if (khs.Quirks.Contains(Core.GetQuirk(q)))
+                    return false;
             return true;
         }
-
-        /// <summary>
-        /// Returns true if this quirk can be assigned to the given kerbal at a his/her current experience level
-        /// </summary>
-        /// <param name="khs"></param>
-        /// <returns></returns>
-        public bool IsAvailableTo(KerbalHealthStatus khs) => IsAvailableTo(khs, khs.PCM.experienceLevel);
 
         /// <summary>
         /// Applies valid effects of this quirk to the given kerbal's HealthModifierSet
@@ -59,7 +51,8 @@ namespace KerbalHealth
         {
             Core.Log("Applying " + Name + " quirk to " + khs.Name + ".");
             foreach (HealthEffect eff in Effects)
-                if (eff.IsApplicable(khs)) eff.Apply(hms);
+                if (eff.IsApplicable(khs))
+                    eff.Apply(hms);
         }
 
         public override bool Equals(object obj) => (obj is Quirk) && (obj != null) && (((Quirk)obj).Name == Name);
@@ -68,8 +61,10 @@ namespace KerbalHealth
         public override string ToString()
         {
             string res = Title + ".";
-            if ((Description != null) && (Description != "")) res += "\n" + Description;
-            if (Effects.Count == 1) res += "\nEffect: " + Effects[0];
+            if ((Description != null) && (Description != ""))
+                res += "\n" + Description;
+            if (Effects.Count == 1)
+                res += "\nEffect: " + Effects[0];
             if (Effects.Count > 1)
             {
                 res += "\nEffects:";

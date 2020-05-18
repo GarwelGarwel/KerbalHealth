@@ -87,12 +87,13 @@ namespace KerbalHealth
                     {
                         int r = 0;
                         foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew())
-                            if (pcm != null) r++;
+                            if (pcm != null)
+                                r++;
                         Core.Log(r + " kerbal(s) found in " + part?.name + ".");
                         return r;
                     }
                     else return ShipConstruction.ShipManifest.CrewCount;
-                else return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
+                return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
             }
         }
 
@@ -119,7 +120,8 @@ namespace KerbalHealth
         {
             Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
             base.OnStart(state);
-            if ((complexity != 0) && (id == 0)) id = part.persistentId;
+            if ((complexity != 0) && (id == 0))
+                id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;
@@ -135,15 +137,18 @@ namespace KerbalHealth
 
         public void FixedUpdate()
         {
-            if (Core.IsInEditor || !Core.ModEnabled) return;
+            if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
+                return;
             double time = Planetarium.GetUniversalTime();
             if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
                 ecPerSec = TotalResourceConsumption;
                 double res = ecPerSec * (time - lastUpdated), res2;
-                if (resource != "ElectricCharge") ecPerSec = 0;
+                if (resource != "ElectricCharge")
+                    ecPerSec = 0;
                 starving = (res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res;
-                if (starving) Core.Log(Title + " Module is starving of " + resource + " (" + res + " needed, " + res2 + " provided).");
+                if (starving)
+                    Core.Log(Title + " Module is starving of " + resource + " (" + res + " needed, " + res2 + " provided).");
             }
             else ecPerSec = 0;
             lastUpdated = time;
@@ -163,17 +168,21 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string BackgroundUpdate(Vessel v, ProtoPartSnapshot part_snapshot, ProtoPartModuleSnapshot module_snapshot, PartModule proto_part_module, Part proto_part, Dictionary<string, double> availableResources, List<KeyValuePair<string, double>> resourceChangeRequest, double elapsed_s)
         {
-            if (!Core.ModEnabled) return null;
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+                return null;
             ModuleKerbalHealth mkh = proto_part_module as ModuleKerbalHealth;
             if (mkh.isActive && ((mkh.resourceConsumption != 0) || (mkh.resourceConsumptionPerKerbal != 0)))
             {
                 mkh.ecPerSec = mkh.TotalResourceConsumption;
-                double res = mkh.ecPerSec * elapsed_s, res2;
-                if (mkh.resource != "ElectricCharge") mkh.ecPerSec = 0;
-                availableResources.TryGetValue("ElectricCharge", out res2);
-                if (res2 < mkh.ecPerSec) mkh.starving = true;
+                double res = mkh.ecPerSec * elapsed_s;
+                if (mkh.resource != "ElectricCharge")
+                    mkh.ecPerSec = 0;
+                availableResources.TryGetValue("ElectricCharge", out double res2);
+                if (res2 < mkh.ecPerSec)
+                    mkh.starving = true;
                 resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -res));
-                if (mkh.starving) Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + res + " needed, " + res2 + " available.");
+                if (mkh.starving)
+                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + res + " needed, " + res2 + " available.");
             }
             else mkh.ecPerSec = 0;
             return mkh.Title.ToLower();
@@ -188,7 +197,8 @@ namespace KerbalHealth
         /// <returns>The title to display in the tooltip of the planner UI.</returns>
         public string PlannerUpdate(List<KeyValuePair<string, double>> resources, CelestialBody body, Dictionary<string, double> environment)
         {
-            if (!Core.ModEnabled || !isActive) return null;
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || !isActive)
+                return null;
             resources.Add(new KeyValuePair<string, double>(resource, -ecPerSec));
             return Title.ToLower();
         }
@@ -197,21 +207,33 @@ namespace KerbalHealth
         {
             get
             {
-                if (!string.IsNullOrEmpty(title)) return title;
-                if (recuperation > 0) return Localizer.Format("#KH_Module_type1");//"R&R"
-                if (decay > 0) return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
+                if (!string.IsNullOrEmpty(title))
+                    return title;
+                if (recuperation > 0)
+                    return Localizer.Format("#KH_Module_type1");//"R&R"
+                if (decay > 0)
+                    return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
                 switch (multiplyFactor.ToLower())
                 {
-                    case "stress": return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
-                    case "confinement": return Localizer.Format("#KH_Module_type4");//"Comforts"
-                    case "loneliness": return Localizer.Format("#KH_Module_type5");//"Meditation"
-                    case "microgravity": return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
-                    case "connected": return Localizer.Format("#KH_Module_type8");//"TV Set"
-                    case "conditions": return Localizer.Format("#KH_Module_type9");//"Sick Bay"
+                    case "stress":
+                        return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
+                    case "confinement":
+                        return Localizer.Format("#KH_Module_type4");//"Comforts"
+                    case "loneliness":
+                        return Localizer.Format("#KH_Module_type5");//"Meditation"
+                    case "microgravity":
+                        return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
+                    case "connected":
+                        return Localizer.Format("#KH_Module_type8");//"TV Set"
+                    case "conditions":
+                        return Localizer.Format("#KH_Module_type9");//"Sick Bay"
                 }
-                if (space > 0) return Localizer.Format("#KH_Module_type10");//"Living Space"
-                if (shielding > 0) return Localizer.Format("#KH_Module_type11");//"RadShield"
-                if (radioactivity > 0) return Localizer.Format("#KH_Module_type12");//"Radiation"
+                if (space > 0)
+                    return Localizer.Format("#KH_Module_type10");//"Living Space"
+                if (shielding > 0)
+                    return Localizer.Format("#KH_Module_type11");//"RadShield"
+                if (radioactivity > 0)
+                    return Localizer.Format("#KH_Module_type12");//"Radiation"
                 return Localizer.Format("#KH_Module_title");//"Health Module"
             }
             set => title = value;
@@ -220,7 +242,7 @@ namespace KerbalHealth
         void UpdateGUIName()
         {
             Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
-            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = Core.ModEnabled && isActive && ecPerSec != 0;
+            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
         }
         
         [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "#KH_Module_Toggle", guiActiveEditor = true)] //Toggle Health Module
@@ -233,18 +255,30 @@ namespace KerbalHealth
         public override string GetInfo()
         {
             string res = "";
-            if (hpChangePerDay != 0) res = Localizer.Format("#KH_Module_info1", hpChangePerDay.ToString("F1"));//"\nHealth points: " +  + "/day"
-            if (recuperation != 0) res += Localizer.Format("#KH_Module_info2", recuperation.ToString("F1"));//"\nRecuperation: " +  + "%/day"
-            if (decay != 0) res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
-            if (multiplier != 1) res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"),multiplyFactor);//"\n" +  + "x " + 
-            if (crewCap > 0) res += Localizer.Format("#KH_Module_info5", crewCap,(crewCap != 1 ? Localizer.Format("#KH_Module_info5_s") : ""));//" for up to " +  + " kerbal" + "s"
-            if (space != 0) res += Localizer.Format("#KH_Module_info6",space.ToString("F1"));//"\nSpace: " + 
-            if (resourceConsumption != 0) res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
-            if (resourceConsumptionPerKerbal != 0) res += Localizer.Format("#KH_Module_info8", ResourceDefinition.abbreviation,resourceConsumptionPerKerbal.ToString("F2"));//"\n" +  + " per Kerbal: " +  + "/sec."
-            if (shielding != 0) res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " + 
-            if (radioactivity != 0) res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
-            if (complexity != 0) res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
-            if (string.IsNullOrEmpty(res)) return "";
+            if (hpChangePerDay != 0)
+                res = Localizer.Format("#KH_Module_info1", hpChangePerDay.ToString("F1"));//"\nHealth points: " +  + "/day"
+            if (recuperation != 0)
+                res += Localizer.Format("#KH_Module_info2", recuperation.ToString("F1"));//"\nRecuperation: " +  + "%/day"
+            if (decay != 0)
+                res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
+            if (multiplier != 1)
+                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"),multiplyFactor);//"\n" +  + "x " + 
+            if (crewCap > 0)
+                res += Localizer.Format("#KH_Module_info5", crewCap,(crewCap != 1 ? Localizer.Format("#KH_Module_info5_s") : ""));//" for up to " +  + " kerbal" + "s"
+            if (space != 0)
+                res += Localizer.Format("#KH_Module_info6",space.ToString("F1"));//"\nSpace: " + 
+            if (resourceConsumption != 0)
+                res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
+            if (resourceConsumptionPerKerbal != 0)
+                res += Localizer.Format("#KH_Module_info8", ResourceDefinition.abbreviation,resourceConsumptionPerKerbal.ToString("F2"));//"\n" +  + " per Kerbal: " +  + "/sec."
+            if (shielding != 0)
+                res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " + 
+            if (radioactivity != 0)
+                res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
+            if (complexity != 0)
+                res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
+            if (string.IsNullOrEmpty(res))
+                return "";
             return  Localizer.Format("#KH_Module_typetitle", Title)+ res;//"Module type: " + 
         }
     }

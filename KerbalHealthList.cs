@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace KerbalHealth
 {
@@ -14,7 +15,8 @@ namespace KerbalHealth
         /// <param name="health">Kerbal's current HP, maximum if skipped</param>
         public void Add(string name)
         {
-            if (ContainsKey(name)) return;
+            if (ContainsKey(name))
+                return;
             Core.Log("Registering " + name + ".", Core.LogLevel.Important);
             Add(name, new KerbalHealthStatus(name));
         }
@@ -25,8 +27,8 @@ namespace KerbalHealth
         /// <param name="khs"></param>
         public void Add(KerbalHealthStatus khs)
         {
-            try { Add(khs.Name, khs); }
-            catch (System.ArgumentException) { }
+            if (!ContainsKey(khs.Name))
+                Add(khs.Name, khs);
         }
 
         /// <summary>
@@ -37,6 +39,8 @@ namespace KerbalHealth
         public void Rename(string name1, string name2)
         {
             Core.Log("KerbalHealthList.Rename('" + name1 + "', '" + name2 + "')");
+            if (name1 == name2)
+                return;
             if (ContainsKey(name1))
             {
                 this[name1].Name = name2;
@@ -52,13 +56,14 @@ namespace KerbalHealth
         public void RegisterKerbals()
         {
             Core.Log("Registering kerbals...");
-            KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             RemoveUntrackable();
+            KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
             list.AddRange(kerbalRoster.Tourist);
             Core.Log(list.Count + " total trackable kerbals.", Core.LogLevel.Important);
             foreach (ProtoCrewMember pcm in list)
-                if (Core.IsKerbalTrackable(pcm)) Add(pcm.name);
+                if (Core.IsKerbalTrackable(pcm))
+                    Add(pcm.name);
             Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", Core.LogLevel.Important);
         }
 
@@ -67,36 +72,36 @@ namespace KerbalHealth
             List<string> toRemove = new List<string>();
             foreach (KerbalHealthStatus khs in Values)
             {
-                ProtoCrewMember pcm = khs.PCM;
-                if (!Core.IsKerbalTrackable(pcm) && !khs.IsFrozen)
+                if (!Core.IsKerbalTrackable(khs.PCM) && !khs.IsFrozen)
                 {
                     Core.Log(khs.Name + " is not trackable anymore. Marking for removal.");
                     toRemove.Add(khs.Name);
                 }
             }
-            foreach (string name in toRemove) Remove(name);
-            if (toRemove.Count > 0) Core.Log(toRemove.Count + " kerbal(s) removed from the list.");
+            foreach (string name in toRemove)
+                Remove(name);
+            if (toRemove.Count > 0)
+                Core.Log(toRemove.Count + " kerbal(s) removed from the KerbalHealthList.");
         }
 
         public void Update(double interval)
         {
             RemoveUntrackable();
-            foreach (KerbalHealthStatus khs in Values) khs.Update(interval);
+            foreach (KerbalHealthStatus khs in Values)
+                khs.Update(interval);
         }
 
-        /// <summary>
-        /// Returns KerbalHealthStatus for a given kerbal
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        public KerbalHealthStatus Find(string name) => ContainsKey(name) ? this[name] : null;
+        public new KerbalHealthStatus this[string name]
+        {
+            get => ContainsKey(name) ? base[name] : null;
+            set => base[name] = value;
+        }
 
-        /// <summary>
-        /// Returns KerbalHealthStatus for a given kerbal
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public KerbalHealthStatus Find(ProtoCrewMember pcm) => Find(pcm.name);
+        public KerbalHealthStatus this[ProtoCrewMember pcm]
+        {
+            get => ContainsKey(pcm.name) ? base[pcm.name] : null;
+            set => base[pcm.name] = value;
+        }
 
         /// <summary>
         /// Returns the list of names
@@ -105,7 +110,8 @@ namespace KerbalHealth
         public override string ToString()
         {
             string s = "";
-            foreach (string n in Keys) s += n + "\r\n";
+            foreach (string n in Keys)
+                s += n + "\r\n";
             return s.Trim();
         }
 

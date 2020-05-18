@@ -32,6 +32,8 @@ namespace KerbalHealth
                     break;
             }
         }
+        
+        public static KerbalHealthQuirkSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>();
 
         internal void Reset()
         {
