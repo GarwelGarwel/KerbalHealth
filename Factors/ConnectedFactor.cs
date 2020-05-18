@@ -1,4 +1,5 @@
 ﻿using KSP.Localization;
+
 namespace KerbalHealth
 {
     public class ConnectedFactor : HealthFactor

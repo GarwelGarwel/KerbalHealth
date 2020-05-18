@@ -1,4 +1,5 @@
 ﻿using KSP.Localization;
+
 namespace KerbalHealth
 {
     public class ConditionsFactor : HealthFactor
@@ -15,13 +16,14 @@ namespace KerbalHealth
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {
-            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled) return 0;
-            KerbalHealthStatus khs = Core.KerbalHealthList.Find(pcm);
-            if (khs == null) return 0;
-            float k = KerbalHealthQuirkSettings.Instance.ConditionsEffect;
+            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
+                return 0;
+            KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
+            if (khs == null)
+                return 0;
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)
-                res += hc.HPChangePerDay * k;
+                res += hc.HPChangePerDay * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
             Core.Log("Conditions HP chande per day: " + res);
             return Core.IsInEditor ? (IsEnabledInEditor() ? res : 0) : res;
         }

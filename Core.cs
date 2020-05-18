@@ -9,7 +9,7 @@ namespace KerbalHealth
     /// </summary>
     public static class Core
     {
-        public static bool Loaded = false;
+        public static bool IsLoaded = false;
 
         /// <summary>
         /// List of all tracked kerbals
@@ -44,7 +44,9 @@ namespace KerbalHealth
         /// <returns></returns>
         public static HealthFactor GetHealthFactor(string id)
         {
-            foreach (HealthFactor f in Factors) if (f.Name == id) return f;
+            foreach (HealthFactor f in Factors)
+                if (f.Name == id)
+                    return f;
             return null;
         }
 
@@ -76,7 +78,8 @@ namespace KerbalHealth
         public static Quirk GetQuirk(string name)
         {
             foreach (Quirk q in Quirks)
-                if (string.Compare(name, q.Name, true) == 0) return q;
+                if (string.Compare(name, q.Name, true) == 0)
+                    return q;
             return null;
         }
 
@@ -85,8 +88,7 @@ namespace KerbalHealth
         public static PlanetHealthConfig GetPlanetConfig(string name)
         {
             CelestialBody cb = FlightGlobals.GetBodyByName(name);
-            if ((cb == null) || !PlanetConfigs.ContainsKey(cb)) return null;
-            return PlanetConfigs[cb];
+            return (cb == null) || !PlanetConfigs.ContainsKey(cb) ? null : PlanetConfigs[cb];
         }
 
         public static List<RadStormType> RadStormTypes { get; set; }
@@ -98,7 +100,8 @@ namespace KerbalHealth
             foreach (RadStormType rst in RadStormTypes)
             {
                 d -= rst.Weight;
-                if (d < 0) return rst;
+                if (d < 0)
+                    return rst;
             }
             return null;
         }
@@ -108,7 +111,8 @@ namespace KerbalHealth
         public static double RadStormMinChancePerDay { get; set; }
         public static double RadStormMaxChancePerDay { get; set; }
         public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
-        public static double RadStormChance => RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+        public static double RadStormChance
+            => RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
 
         /// <summary>
         /// Loads necessary mod data from KerbalHealth.cfg and 
@@ -137,7 +141,9 @@ namespace KerbalHealth
             Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
             PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
-            foreach (CelestialBody b in FlightGlobals.Bodies) PlanetConfigs.Add(b, new PlanetHealthConfig(b));
+            foreach (CelestialBody b in FlightGlobals.Bodies)
+                PlanetConfigs.Add(b, new PlanetHealthConfig(b));
+
             int i = 0;
             foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
             {
@@ -168,11 +174,12 @@ namespace KerbalHealth
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
                 int j = Core.GetInt(n, "level");
-                if (j == 0) continue;
+                if (j == 0)
+                    continue;
                 trainingCaps[j - 1] = Core.GetDouble(n, "cap");
             }
 
-            Loaded = true;
+            IsLoaded = true;
         }
 
         /// <summary>
@@ -185,21 +192,24 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static int GetCrewCount(ProtoCrewMember pcm) => IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1);
+        public static int GetCrewCount(ProtoCrewMember pcm)
+            => IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1);
 
         /// <summary>
         /// Returns number of maximum crew in a vessel the kerbal is in or in the currently constructed vessel
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static int GetCrewCapacity(ProtoCrewMember pcm) => IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1);
+        public static int GetCrewCapacity(ProtoCrewMember pcm)
+            => IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1);
 
         /// <summary>
         /// Returns Part where ProtoCrewMember is currently located or null if none
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static Part GetCrewPart(ProtoCrewMember pcm) => IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
+        public static Part GetCrewPart(ProtoCrewMember pcm)
+            => IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
 
         /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
@@ -213,7 +223,8 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalTrackable(ProtoCrewMember pcm) => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001));
+        public static bool IsKerbalTrackable(ProtoCrewMember pcm)
+            => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001));
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
@@ -233,7 +244,9 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel KerbalVessel(ProtoCrewMember pcm)
         {
-            if (pcm == null) return null;
+            if (pcm == null)
+                return null;
+
             if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
             {
                 Vessel v = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
@@ -241,8 +254,13 @@ namespace KerbalHealth
                 kerbalVesselsCache.Add(pcm.name, v);
                 return v;
             }
-            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return null;
-            if (kerbalVesselsCache.ContainsKey(pcm.name)) return kerbalVesselsCache[pcm.name];
+
+            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+                return null;
+
+            if (kerbalVesselsCache.ContainsKey(pcm.name))
+                return kerbalVesselsCache[pcm.name];
+
             foreach (Vessel v in FlightGlobals.Vessels)
                 foreach (ProtoCrewMember k in v.GetVesselCrew())
                     if (k == pcm)
@@ -264,7 +282,8 @@ namespace KerbalHealth
         /// <summary>
         /// Max amount of stress reduced by training depending on Astronaut Complex's level
         /// </summary>
-        public static double TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
+        public static double TrainingCap
+            => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
 
         /// <summary>
         /// Returns list of IDs of parts that are used in training and stress calculations
@@ -289,16 +308,19 @@ namespace KerbalHealth
 
         public static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
-        public static CelestialBody GetPlanet(CelestialBody body) => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
+        public static CelestialBody GetPlanet(CelestialBody body)
+            => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
 
-        public static string GetString(ConfigNode n, string key, string defaultValue = null) => n.HasValue(key) ? n.GetValue(key) : defaultValue;
+        public static string GetString(ConfigNode n, string key, string defaultValue = null)
+            => n.HasValue(key) ? n.GetValue(key) : defaultValue;
 
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
         {
             double res;
             try {
                 res = Double.Parse(n.GetValue(key));
-                if (Double.IsNaN(res)) throw new Exception();
+                if (Double.IsNaN(res))
+                    throw new Exception();
             }
             catch (Exception) { res = defaultValue; }
             return res;
@@ -341,7 +363,8 @@ namespace KerbalHealth
         /// <param name="mean"></param>
         /// <param name="stdDev"></param>
         /// <returns></returns>
-        public static double GetGaussian(double stdDev = 1, double mean = 0) => mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - rand.NextDouble()));
+        public static double GetGaussian(double stdDev = 1, double mean = 0)
+            => mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - rand.NextDouble()));
 
         /// <summary>
         /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)
@@ -362,7 +385,8 @@ namespace KerbalHealth
         public static string PrefixFormat(double value, int digits = 3, bool mandatorySign = false)
         {
             double v = Math.Abs(value);
-            if (v < 0.5) return "0";
+            if (v < 0.5)
+                return "0";
             int n, m = (int)Math.Pow(10, digits);
             for (n = 0; (v >= m) && (n < prefixes.Length - 1); n++)
                 v /= 1000;
@@ -378,7 +402,9 @@ namespace KerbalHealth
         public static int CountChars(string s, char c)
         {
             int res = 0;
-            foreach (char ch in s) if (ch == c) res++;
+            foreach (char ch in s)
+                if (ch == c)
+                    res++;
             return res;
         }
 
@@ -398,8 +424,10 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
-            if (Double.IsNaN(time) || (time == 0)) return "—";
-            if (time > KSPUtil.dateTimeFormatter.Year * 10) return "10y+";
+            if (Double.IsNaN(time) || (time == 0))
+                return "—";
+            if (time > KSPUtil.dateTimeFormatter.Year * 10)
+                return "10y+";
             double t = time;
             int y, d, m, h;
             string res = "";
@@ -433,21 +461,29 @@ namespace KerbalHealth
                     t -= m * 60;
                     res += m + " m ";
                 }
-                if ((time < 60) || (showSeconds && (Math.Floor(t) > 0))) res += t.ToString("F0") + " s";
+                if ((time < 60) || (showSeconds && (Math.Floor(t) > 0)))
+                    res += t.ToString("F0") + " s";
             }
-            else if (time < KSPUtil.dateTimeFormatter.Day) res = "0 d";
+            else if (time < KSPUtil.dateTimeFormatter.Day)
+                res = "0 d";
             return res.TrimEnd();
         }
 
         public static void ShowMessage(string msg, bool unwarpTime)
         {
-            KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message("Kerbal Health", KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg, KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED, KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
-            if (unwarpTime) TimeWarp.SetRate(0, false, true);
+            KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message(
+                "Kerbal Health",
+                KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true) + ": " + msg,
+                KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED,
+                KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+            if (unwarpTime)
+                TimeWarp.SetRate(0, false, true);
         }
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
-            if (!KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001))) return;
+            if (!KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001)))
+                return;
             ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 
@@ -485,6 +521,9 @@ namespace KerbalHealth
         /// <param name="message">Text to log</param>
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
-        { if (IsLogging(messageLevel) && (message != "")) Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message); }
+        {
+            if (IsLogging(messageLevel) && (message.Length != 0))
+                Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message);
+        }
     }
 }

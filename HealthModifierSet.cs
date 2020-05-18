@@ -12,7 +12,7 @@ namespace KerbalHealth
         /// <summary>
         /// Cache of processed vessels, refreshed at every update
         /// </summary>
-        public static Dictionary<Guid, HealthModifierSet> VesselCache = new Dictionary<Guid, HealthModifierSet>();
+        public static Dictionary<Guid, HealthModifierSet> VesselCache { get; set; } = new Dictionary<Guid, HealthModifierSet>();
 
         /// <summary>
         /// Returns vessel health modifiers for the given vessel, either cached or calculated
@@ -20,10 +20,7 @@ namespace KerbalHealth
         /// <param name="v"></param>
         /// <returns></returns>
         public static HealthModifierSet GetVesselModifiers(Vessel v)
-        {
-            if (VesselCache.ContainsKey(v.id)) return VesselCache[v.id];
-            return VesselCache[v.id] = new HealthModifierSet(v);
-        }
+            => VesselCache.ContainsKey(v.id) ? VesselCache[v.id] : (VesselCache[v.id] = new HealthModifierSet(v));
 
         /// <summary>
         /// Returns vessel health modifiers for the vessel with the given kerbal
@@ -42,8 +39,7 @@ namespace KerbalHealth
                 Core.Log("In editor and VesselHealthInfo not found in cache. Calculating and adding to cache.");
                 return VesselCache[Guid.Empty] = new HealthModifierSet(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
             }
-            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) return new HealthModifierSet();
-            return GetVesselModifiers(Core.KerbalVessel(pcm));
+            return pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned ? new HealthModifierSet() : GetVesselModifiers(Core.KerbalVessel(pcm));
         }
 
         public int CrewCapacity { get; set; }
@@ -58,12 +54,6 @@ namespace KerbalHealth
         public double ExposureMultiplier { get; set; } = 1;
         public double ShelterExposure { get; set; } = 1;
         public double Exposure => GetExposure(Shielding, CrewCapacity);
-        /// <summary>
-        /// Returns exposure provided by this vessel's shielding
-        /// </summary>
-        /// <param name="crewCap"></param>
-        /// <returns></returns>
-        //public double GetExposure(double crewCap) => GetExposure(Shielding, crewCap);
         public Dictionary<string, double> BonusSums { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> FreeMultipliers { get; set; } = new Dictionary<string, double>();
         public Dictionary<string, double> MinMultipliers { get; set; } = new Dictionary<string, double>();
@@ -75,7 +65,8 @@ namespace KerbalHealth
         /// <param name="shielding">Total shielding</param>
         /// <param name="crew">Crew capacity</param>
         /// <returns></returns>
-        public static double GetExposure(double shielding, double crew) => Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crew, 2f / 3));
+        public static double GetExposure(double shielding, double crew)
+            => Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crew, 2f / 3));
 
         /// <summary>
         /// Returns effective multiplier for the given factor
@@ -86,7 +77,7 @@ namespace KerbalHealth
         public double GetMultiplier(string factorId, int crewCount)
         {
             double res = 1 - BonusSums[factorId] / crewCount;
-            if (res < 1) res = Math.Max(res, MinMultipliers[factorId]); else res = Math.Min(res, MaxMultipliers[factorId]);
+            res = res < 1 ? Math.Max(res, MinMultipliers[factorId]) : Math.Min(res, MaxMultipliers[factorId]);
             return res * FreeMultipliers[factorId];
         }
 
@@ -101,7 +92,8 @@ namespace KerbalHealth
             foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
             {
                 p.GetConnectedResourceTotals(res.Key, ResourceFlowMode.NO_FLOW, out double amount, out double maxAmount);
-                if (amount != 0) Core.Log("Part " + p.name + " contains " + amount + " / " + maxAmount + " of shielding resource " + res.Key);
+                if (amount != 0)
+                    Core.Log("Part " + p.name + " contains " + amount + " / " + maxAmount + " of shielding resource " + res.Key);
                 s += res.Value * amount;
             }
             return s;
@@ -114,10 +106,13 @@ namespace KerbalHealth
         /// <returns></returns>
         public static double GetPartExtendedExposure(Part part)
         {
-            if (part.CrewCapacity == 0) return 1;
+            if (part.CrewCapacity == 0)
+                return 1;
+
             double s = 0;
             List<Part> parts = new List<Part>() { part };
-            if (part.parent != null) parts.Add(part.parent);
+            if (part.parent != null)
+                parts.Add(part.parent);
             parts.AddRange(part.children);
             List<ModuleKerbalHealth> modules = new List<ModuleKerbalHealth>();
             foreach (Part p in parts)
@@ -126,8 +121,10 @@ namespace KerbalHealth
                     modules.AddRange(p.FindModulesImplementing<ModuleKerbalHealth>());
                     s += GetResourceShielding(p);
                 }
+
             foreach (ModuleKerbalHealth m in modules)
-                if (m.IsModuleActive) s += m.shielding;
+                if (m.IsModuleActive)
+                    s += m.shielding;
             return GetExposure(s, part.CrewCapacity);
         }
 
@@ -157,19 +154,24 @@ namespace KerbalHealth
                         MaxRecuperaction = Math.Max(MaxRecuperaction, mkh.recuperation);
                     }
                     Decay += mkh.DecayPower;
+
                     // Processing factor multiplier
                     if ((mkh.multiplier != 1) && (mkh.MultiplyFactor != null))
                     {
-                        if (mkh.crewCap > 0) BonusSums[mkh.multiplyFactor] += (1 - mkh.multiplier) * Math.Min(mkh.crewCap, mkh.CappedAffectedCrewCount);
+                        if (mkh.crewCap > 0)
+                            BonusSums[mkh.multiplyFactor] += (1 - mkh.multiplier) * Math.Min(mkh.crewCap, mkh.CappedAffectedCrewCount);
                         else FreeMultipliers[mkh.MultiplyFactor.Name] *= mkh.multiplier;
-                        if (mkh.multiplier > 1) MaxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(MaxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
+                        if (mkh.multiplier > 1)
+                            MaxMultipliers[mkh.MultiplyFactor.Name] = Math.Max(MaxMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                         else MinMultipliers[mkh.MultiplyFactor.Name] = Math.Min(MinMultipliers[mkh.MultiplyFactor.Name], mkh.multiplier);
                     }
                     Core.Log((HPChange != 0 ? "HP change after this module: " + HPChange + ". " : "") + (mkh.MultiplyFactor != null ? "Bonus to " + mkh.MultiplyFactor.Name + ": " + BonusSums[mkh.MultiplyFactor.Name] + ". Free multiplier: " + FreeMultipliers[mkh.MultiplyFactor.Name] + "." : ""));
                     Shielding += mkh.shielding;
-                    if (mkh.shielding != 0) Core.Log("Shielding of this module is " + mkh.shielding + ".");
+                    if (mkh.shielding != 0)
+                        Core.Log("Shielding of this module is " + mkh.shielding + ".");
                     PartsRadiation += mkh.radioactivity;
-                    if (mkh.radioactivity != 0) Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
+                    if (mkh.radioactivity != 0)
+                        Core.Log("Radioactive emission of this module is " + mkh.radioactivity);
                 }
         }
 
@@ -203,24 +205,11 @@ namespace KerbalHealth
                 Core.Log("Part " + exposures[i].Part.name + " with exposure " + exposures[i].Exposure.ToString("P1") + " and crew cap " + exposures[i].Part.CrewCapacity);
                 x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crew - c);
                 c += exposures[i].Part.CrewCapacity;
-                if (c >= crew) break;
+                if (c >= crew)
+                    break;
             }
             Core.Log("Average exposure in top " + (i + 1) + " parts is " + (x / crew).ToString("P1") + "; general vessel exposure is " + Exposure.ToString("P1"));
             ShelterExposure = Math.Min(x / crew, Exposure);
-        }
-
-        class PartExposure : IComparable<PartExposure>
-        {
-            public Part Part { get; set; }
-            public double Exposure { get; private set; }
-
-            public int CompareTo(PartExposure other) => Exposure.CompareTo(other.Exposure);
-
-            public PartExposure(Part p)
-            {
-                Part = p;
-                Exposure = GetPartExtendedExposure(p);
-            }
         }
 
         /// <summary>
@@ -230,23 +219,40 @@ namespace KerbalHealth
         public override string ToString()
         {
             string res = "";
-            if (HPChange != 0) res += "\nHP change per day: " + HPChange.ToString("F2");
-            if (Space != 0) res += "\nSpace: " + Space.ToString("F1");
-            if (RecuperationPower != 0) res += "\nRecuperation Power: " + RecuperationPower.ToString("F1") + "% (max " + MaxRecuperaction.ToString("F1") + "%)";
-            if (Decay != 0) res += "\nDecay: " + Shielding.ToString("F1") + "%";
-            if (Shielding != 0) res += "\nShielding: " + Shielding.ToString("F1");
-            if (PartsRadiation != 0) res += "\nParts radiation: " + PartsRadiation.ToString("F0");
+            if (HPChange != 0)
+                res += "\nHP change per day: " + HPChange.ToString("F2");
+            if (Space != 0)
+                res += "\nSpace: " + Space.ToString("F1");
+            if (RecuperationPower != 0)
+                res += "\nRecuperation Power: " + RecuperationPower.ToString("F1") + "% (max " + MaxRecuperaction.ToString("F1") + "%)";
+            if (Decay != 0)
+                res += "\nDecay: " + Shielding.ToString("F1") + "%";
+            if (Shielding != 0)
+                res += "\nShielding: " + Shielding.ToString("F1");
+            if (PartsRadiation != 0)
+                res += "\nParts radiation: " + PartsRadiation.ToString("F0");
+
             foreach (HealthFactor f in Core.Factors)
             {
-                if (BonusSums[f.Name] != 0) res += "\n" + f.Name + " bonus sum: " + BonusSums[f.Name];
-                if (FreeMultipliers[f.Name] != 1) res += "\n" + f.Name + " free multiplier: " + FreeMultipliers[f.Name];
-                if (MinMultipliers[f.Name] != 1) res += "\n" + f.Name + " min multiplier: " + MinMultipliers[f.Name];
-                if (MaxMultipliers[f.Name] != 1) res += "\n" + f.Name + " max multiplier: " + MaxMultipliers[f.Name];
+                if (BonusSums[f.Name] != 0)
+                    res += "\n" + f.Name + " bonus sum: " + BonusSums[f.Name];
+                if (FreeMultipliers[f.Name] != 1)
+                    res += "\n" + f.Name + " free multiplier: " + FreeMultipliers[f.Name];
+                if (MinMultipliers[f.Name] != 1)
+                    res += "\n" + f.Name + " min multiplier: " + MinMultipliers[f.Name];
+                if (MaxMultipliers[f.Name] != 1)
+                    res += "\n" + f.Name + " max multiplier: " + MaxMultipliers[f.Name];
             }
-            if (BonusSums["All"] != 0) res += "\nWildcard bonus sum: " + BonusSums["All"];
-            if (FreeMultipliers["All"] != 1) res += "\nWildcard free multiplier: " + FreeMultipliers["All"];
-            if (MinMultipliers["All"] != 1) res += "\nWildcard min multiplier: " + MinMultipliers["All"];
-            if (MaxMultipliers["All"] != 1) res += "\nWildcard max multiplier: " + MaxMultipliers["All"];
+
+            if (BonusSums["All"] != 0)
+                res += "\nWildcard bonus sum: " + BonusSums["All"];
+            if (FreeMultipliers["All"] != 1)
+                res += "\nWildcard free multiplier: " + FreeMultipliers["All"];
+            if (MinMultipliers["All"] != 1)
+                res += "\nWildcard min multiplier: " + MinMultipliers["All"];
+            if (MaxMultipliers["All"] != 1)
+                res += "\nWildcard max multiplier: " + MaxMultipliers["All"];
+
             return res.Trim();
         }
 
@@ -273,6 +279,7 @@ namespace KerbalHealth
                 MinMultipliers[f.Name] = 1;
                 MaxMultipliers[f.Name] = 1;
             }
+
             BonusSums["All"] = 0;
             FreeMultipliers["All"] = 1;
             MinMultipliers["All"] = 1;
@@ -282,5 +289,19 @@ namespace KerbalHealth
         public HealthModifierSet(Vessel v) : this() => ProcessParts(v?.Parts, v.GetCrewCount());
 
         public HealthModifierSet(List<Part> parts, int crew) : this() => ProcessParts(parts, crew);
+
+        class PartExposure : IComparable<PartExposure>
+        {
+            public Part Part { get; set; }
+            public double Exposure { get; private set; }
+
+            public int CompareTo(PartExposure other) => Exposure.CompareTo(other.Exposure);
+
+            public PartExposure(Part p)
+            {
+                Part = p;
+                Exposure = GetPartExtendedExposure(p);
+            }
+        }
     }
 }

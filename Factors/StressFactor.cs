@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -6,7 +6,7 @@ namespace KerbalHealth
     {
         public override string Name => "Stress";
 
-        public override string Title => "Stress";
+        public override string Title => Localizer.Format("#KH_Stress");
 
         public override bool Cachable => false;
 
@@ -17,7 +17,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        double ChangePerDayActual(ProtoCrewMember pcm) => BaseChangePerDay * (1 - Core.KerbalHealthList.Find(pcm).TrainingLevel);
+        double ChangePerDayActual(ProtoCrewMember pcm) => BaseChangePerDay * (1 - Core.KerbalHealthList[pcm].TrainingLevel);
 
         public override double ChangePerDay(ProtoCrewMember pcm)
         {

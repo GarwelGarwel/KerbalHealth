@@ -10,6 +10,7 @@ namespace KerbalHealth
     public class KerbalHealthStatus
     {
         #region BASIC PROPERTIES
+
         string name;
         /// <summary>
         /// Kerbal's name
@@ -24,7 +25,8 @@ namespace KerbalHealth
             }
         }
 
-        public string FullName => Name + (KerbalHealthGeneralSettings.Instance.ShowTraitLevel ? " (" + Localizer.Format("#KH_TraitSymbol_" + PCM.trait) + PCM.experienceLevel + ")" : "");
+        public string FullName
+            => Name + (KerbalHealthGeneralSettings.Instance.ShowTraitLevel ? " (" + Localizer.Format("#KH_TraitSymbol_" + PCM.trait) + PCM.experienceLevel + ")" : "");
 
         string trait = null;
         /// <summary>
@@ -54,9 +56,10 @@ namespace KerbalHealth
         {
             get
             {
-                if (pcmCached != null) return pcmCached;
+                if (pcmCached != null)
+                    return pcmCached;
                 try { return pcmCached = HighLogic.fetch.currentGame.CrewRoster[Name]; }
-                catch (Exception)
+                catch (ArgumentOutOfRangeException)
                 {
                     Core.Log("Could not find ProtoCrewMember for " + Name + ". KerbalHealth kerbal list contains " + Core.KerbalHealthList.Count + " records:\r\n" + Core.KerbalHealthList);
                     return null;
@@ -69,31 +72,30 @@ namespace KerbalHealth
             }
         }
 
-        /// <summary>
-        /// Returns true if the kerbal is member of an array of ProtoCrewMembers
-        /// </summary>
-        /// <param name="crew"></param>
-        /// <returns></returns>
-        bool IsInCrew(ProtoCrewMember[] crew)
-        {
-            foreach (ProtoCrewMember pcm in crew) if (pcm?.name == Name) return true;
-            return false;
-        }
-
         public string LocationString
         {
             get
             {
+                if (IsFrozen)
+                    return Localizer.Format("#KH_Location_frozen");//"Frozen"
+
                 switch (PCM.rosterStatus)
                 {
-                    case ProtoCrewMember.RosterStatus.Available: return Localizer.Format("#KH_Location_status1");//"KSC"
-                    case ProtoCrewMember.RosterStatus.Dead: return Localizer.Format("#KH_Location_status2");//"Dead"
-                    case ProtoCrewMember.RosterStatus.Missing: return Localizer.Format("#KH_Location_status3");//"Unknown"
-                    case (ProtoCrewMember.RosterStatus﻿)9001: return Localizer.Format("#KH_Location_status4");//"On Vacation"
+                    case ProtoCrewMember.RosterStatus.Available:
+                        return Localizer.Format("#KH_Location_status1");//"KSC"
+                    case ProtoCrewMember.RosterStatus.Dead:
+                        return Localizer.Format("#KH_Location_status2");//"Dead"
+                    case ProtoCrewMember.RosterStatus.Missing:
+                        return Localizer.Format("#KH_Location_status3");//"Unknown"
+                    case (ProtoCrewMember.RosterStatus﻿)9001:
+                        return Localizer.Format("#KH_Location_status4");//"On Vacation"
                 }
+
                 Vessel v = Core.KerbalVessel(PCM);
-                if (v == null) return "???";
-                if (v.isEVA) return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
+                if (v == null)
+                    return "???";
+                if (v.isEVA)
+                    return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
                 return v.vesselName;
             }
         }
@@ -116,7 +118,8 @@ namespace KerbalHealth
         public HealthCondition GetCondition(string condition)
         {
             foreach (HealthCondition hc in Conditions)
-                if (hc.Name == condition) return hc;
+                if (hc.Name == condition)
+                    return hc;
             return null;
         }
 
@@ -142,7 +145,8 @@ namespace KerbalHealth
             get => HasCondition("Frozen");
             set
             {
-                if (value) AddCondition("Frozen");
+                if (value)
+                    AddCondition("Frozen");
                 else RemoveCondition("Frozen");
             }
         }
@@ -153,14 +157,20 @@ namespace KerbalHealth
         /// <param name="condition">Condition to add</param>
         public void AddCondition(HealthCondition condition)
         {
-            if (condition == null) return;
+            if (condition == null)
+                return;
             Core.Log("Adding " + condition.Name + " condition to " + Name + "...");
-            if (!condition.Stackable && HasCondition(condition)) return;
+            if (!condition.Stackable && HasCondition(condition))
+                return;
+
             Conditions.Add(condition);
-            if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled) HP += condition.HP * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
+            if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
+                HP += condition.HP * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
             Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
-            if (condition.Incapacitated) MakeIncapacitated();
-            if (condition.Visible) Core.ShowMessage(Localizer.Format("#KH_Location_statumsg1", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
+            if (condition.Incapacitated)
+                MakeIncapacitated();
+            if (condition.Visible)
+                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg1", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -172,17 +182,22 @@ namespace KerbalHealth
         /// <param name="removeAll">If true, all conditions with the same name will be removed. Makes sense for additive conditions. Default is false</param>
         public void RemoveCondition(HealthCondition condition, bool removeAll = false)
         {
-            if (condition == null) return;
+            if (condition == null)
+                return;
             Core.Log("Removing " + condition.Name + " condition from " + Name + ".", Core.LogLevel.Important);
+
             int n = 0;
             if (removeAll)
             {
-                while (Conditions.Remove(condition)) n++;
+                while (Conditions.Remove(condition))
+                    n++;
                 Core.Log(n + " instance(s) of " + condition.Name + " removed.", Core.LogLevel.Important);
             }
             else n = Conditions.Remove(condition) ? 1 : 0;
-            if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled && condition.RestoreHP) HP -= condition.HP * n * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
-            if ((n > 0) && condition.Incapacitated && IsCapable) MakeCapable();
+            if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled && condition.RestoreHP)
+                HP -= condition.HP * n * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
+            if ((n > 0) && condition.Incapacitated && IsCapable)
+                MakeCapable();
             if ((n > 0) && condition.Visible)
                 Core.ShowMessage(Localizer.Format("#KH_Location_statumsg2", Name,condition.Title), PCM);//"<color=\"white\">" +  + "</color> has lost <color=\"white\">" +  + "</color> condition!"
         }
@@ -200,10 +215,12 @@ namespace KerbalHealth
                 foreach (HealthCondition hc in Conditions)
                     if (hc.Visible)
                     {
-                        if (res != "") res += ", ";
+                        if (res.Length != 0)
+                            res += ", ";
                         res += hc.Title;
                     }
-                if (res == "") res = "OK";
+                if (res.Length == 0)
+                    res = "OK";
                 return res;
             }
         }
@@ -216,7 +233,8 @@ namespace KerbalHealth
             get
             {
                 foreach (HealthCondition hc in Conditions)
-                    if (hc.Incapacitated) return false;
+                    if (hc.Incapacitated)
+                        return false;
                 return true;
             }
         }
@@ -242,7 +260,8 @@ namespace KerbalHealth
         /// </summary>
         void MakeCapable()
         {
-            if (PCM.type != ProtoCrewMember.KerbalType.Tourist) return;  // Apparently, the kerbal has already been revived by another mod
+            if (PCM.type != ProtoCrewMember.KerbalType.Tourist)
+                return;  // Apparently, the kerbal has already been revived by another mod
             Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.", Core.LogLevel.Important);
             if ((Trait != null) && (Trait != "Tourist"))
             {
@@ -263,7 +282,8 @@ namespace KerbalHealth
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
                     foreach (Quirk q in Quirks)
                         foreach (HealthEffect he in q.Effects)
-                            if (he.IsApplicable(this)) xs *= he.ExhaustedStart;
+                            if (he.IsApplicable(this))
+                                xs *= he.ExhaustedStart;
                 return xs;
             }
         }
@@ -294,6 +314,7 @@ namespace KerbalHealth
         /// HP for Exhaustion condition to end
         /// </summary>
         public double ExhaustionEndHP => ExhaustionEnd * MaxHP;
+
         #endregion
         #region QUIRKS
 
@@ -312,7 +333,10 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="quirk"></param>
         public void AddQuirk(Quirk quirk)
-        { if (!Quirks.Contains(quirk)) Quirks.Add(quirk); }
+        {
+            if (!Quirks.Contains(quirk))
+                Quirks.Add(quirk);
+        }
 
         /// <summary>
         /// Adds the quirk unless it is already present
@@ -321,7 +345,8 @@ namespace KerbalHealth
         public void AddQuirk(string quirk)
         {
             Quirk q = Core.GetQuirk(quirk);
-            if (q == null) q = new Quirk(quirk);
+            if (q == null)
+                q = new Quirk(quirk);
             Core.Quirks.Add(q);
             AddQuirk(q);
         }
@@ -342,11 +367,13 @@ namespace KerbalHealth
                     weights.Add(w);
                     Core.Log("Available quirk: " + q.Name + " (weight " + w + ")");
                 }
+
             if ((availableQuirks.Count == 0) || (weightSum <= 0))
             {
                 Core.Log("No available quirks found for " + Name + " (level " + level + ").", Core.LogLevel.Important);
                 return null;
             }
+
             double r = Core.rand.NextDouble() * weightSum;
             Core.Log("Quirk selection roll: " + r + " out of " + weightSum);
             for (int i = 0; i < availableQuirks.Count; i++)
@@ -372,13 +399,14 @@ namespace KerbalHealth
 
         public Quirk AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
 
-        public void AwardQuirks()
+        public void CheckForAvailableQuirks()
         {
             if (KerbalHealthQuirkSettings.Instance.AwardQuirksOnMissions || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available))
             {
                 for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
                 {
-                    if (Quirks.Count >= KerbalHealthQuirkSettings.Instance.MaxQuirks) break;
+                    if (Quirks.Count >= KerbalHealthQuirkSettings.Instance.MaxQuirks)
+                        break;
                     double r = Core.rand.NextDouble();
                     if (r < KerbalHealthQuirkSettings.Instance.QuirkChance)
                     {
@@ -433,7 +461,10 @@ namespace KerbalHealth
 
         public double TrainingLevelForPart(uint id) => TrainingLevels.ContainsKey(id) ? TrainingLevels[id] : 0;
 
-        public double TrainingPerDay => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? KerbalHealthFactorsSettings.Instance.InFlightTrainingTime : KerbalHealthFactorsSettings.Instance.KSCTrainingTime) / (1 + PCM.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
+        public double TrainingPerDay
+            => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+            ? KerbalHealthFactorsSettings.Instance.InFlightTrainingTime
+            : KerbalHealthFactorsSettings.Instance.KSCTrainingTime) / (1 + PCM.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
 
         public double GetPartTrainingComplexity(TrainingPart tp) => IsFamiliarWithPartType(tp.Name) ? tp.Complexity : (tp.Complexity * 2);
         public double GetPartTrainingComplexity(ModuleKerbalHealth mkh) => IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity : (mkh.complexity * 2);
@@ -466,22 +497,27 @@ namespace KerbalHealth
                 TrainingVessel = null;
                 return;
             }
+
             foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
             {
-                if (!TrainingLevels.ContainsKey(mkh.id)) TrainingLevels.Add(mkh.id, 0);
+                if (!TrainingLevels.ContainsKey(mkh.id))
+                    TrainingLevels.Add(mkh.id, 0);
                 TrainingFor.Add(new TrainingPart(mkh.id, mkh.part.name, mkh.complexity));
                 Core.Log("Now training for " + mkh.part.name + " with id " + mkh.id);
             }
+
             TrainingVessel = vesselName;
             TrainedVessels[vesselName] = TrainingLevel;
-            if (TrainedVessels[vesselName] >= Core.TrainingCap) FinishTraining(true);
+            if (TrainedVessels[vesselName] >= Core.TrainingCap)
+                FinishTraining(true);
             Core.Log("Training " + name + " for " + vesselName + " (" + TrainingFor.Count + " parts).");
         }
 
         public void FinishTraining(bool silent = false)
         {
             Core.Log("Training of " + name + " is complete.");
-            if (!silent) Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), PCM);//Training of " +  + " for " +  + " is complete!
+            if (!silent)
+                Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), PCM);//Training of " +  + " for " +  + " is complete!
             RemoveCondition("Training");
             TrainingFor.Clear();
             TrainingVessel = null;
@@ -498,30 +534,31 @@ namespace KerbalHealth
             Core.Log(name + " is training for " + TrainingFor.Count + " parts.");
 
             // Step 1: Calculating training complexity of all not yet trained-for parts
-            double c = 0;
+            double totalComplexity = 0;
             foreach (TrainingPart tp in TrainingFor)
             {
                 if (TrainingLevels[tp.Id] < Core.TrainingCap)
-                    c += GetPartTrainingComplexity(tp);
+                    totalComplexity += GetPartTrainingComplexity(tp);
             }
-            if (c == 0)
+            if (totalComplexity == 0)
             {
                 Core.Log("No parts in need of training found.", Core.LogLevel.Important);
                 FinishTraining();
                 return;
             }
             bool trainingComplete = true;
-            double s = 0, p = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / c;  // Training progress is inverse proportional to total complexity of parts
-            Core.Log("Training progress: " + (p * 100) + "%. Training cap: " + (Core.TrainingCap * 100) + "%.");
+            double totalTraining = 0, trainingProgress = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / totalComplexity;  // Training progress is inverse proportional to total complexity of parts
+            Core.Log("Training progress: " + (trainingProgress * 100) + "%. Training cap: " + (Core.TrainingCap * 100) + "%.");
 
             // Step 1: Updating parts' training progress and calculating their base complexity to update vessel's training level
-            c = 0;
+            totalComplexity = 0;
             foreach (TrainingPart tp in TrainingFor)
             {
-                TrainingLevels[tp.Id] = Math.Min(TrainingLevels[tp.Id] + p, Core.TrainingCap);
-                s += TrainingLevels[tp.Id] * tp.Complexity;
-                c += tp.Complexity;
-                if (TrainingLevels[tp.Id] < Core.TrainingCap) trainingComplete = false;
+                TrainingLevels[tp.Id] = Math.Min(TrainingLevels[tp.Id] + trainingProgress, Core.TrainingCap);
+                totalTraining += TrainingLevels[tp.Id] * tp.Complexity;
+                totalComplexity += tp.Complexity;
+                if (TrainingLevels[tp.Id] < Core.TrainingCap)
+                    trainingComplete = false;
                 else
                 {
                     Core.Log("Training for part " + tp.Name + " with id " + tp.Id + " complete.");
@@ -529,8 +566,10 @@ namespace KerbalHealth
                 }
                 Core.Log("Training level for part " + tp.Name + " with id " + tp.Id + " is " + TrainingLevels[tp.Id].ToString("P2") + " with complexity " + tp.Complexity.ToString("P0"));
             }
-            if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s / c;
-            if (trainingComplete) FinishTraining();
+            if (TrainingVessel != null)
+                TrainedVessels[TrainingVessel] = totalTraining / totalComplexity;
+            if (trainingComplete)
+                FinishTraining();
         }
 
         public double TrainingLevel
@@ -539,15 +578,16 @@ namespace KerbalHealth
             {
                 if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 {
-                    double s = 0, c = 0;
+                    double totalTraining = 0, totalComplexity = 0;
                     foreach (TrainingPart tp in TrainingFor)
                     {
-                        s += TrainingLevels[tp.Id] * tp.Complexity;
-                        c += tp.Complexity;
+                        totalTraining += TrainingLevels[tp.Id] * tp.Complexity;
+                        totalComplexity += tp.Complexity;
                     }
-                    s = (c != 0) ? s / c : Core.TrainingCap;
-                    if (TrainingVessel != null) TrainedVessels[TrainingVessel] = s;
-                    return s;
+                    totalTraining = (totalComplexity != 0) ? totalTraining / totalComplexity : Core.TrainingCap;
+                    if (TrainingVessel != null)
+                        TrainedVessels[TrainingVessel] = totalTraining;
+                    return totalTraining;
                 }
                 return Core.TrainingCap;
             }
@@ -564,15 +604,16 @@ namespace KerbalHealth
             get => hp;
             set
             {
-                if (value < 0) hp = 0;
-                else if (value > MaxHP) hp = MaxHP;
-                else hp = value;
+                hp = value < 0
+                    ? 0 : 
+                    (value > MaxHP ? MaxHP : value);
                 if (!IsWarned && Health < KerbalHealthGeneralSettings.Instance.LowHealthAlert)
                 {
                     Core.ShowMessage(Localizer.Format("#KH_Location_statumsg4",Name), PCM);//"<color=\"white\">" +  + "</color>'s health is dangerously low!"
                     IsWarned = true;
                 }
-                else if (IsWarned && Health >= KerbalHealthGeneralSettings.Instance.LowHealthAlert) IsWarned = false;
+                else if (IsWarned && Health >= KerbalHealthGeneralSettings.Instance.LowHealthAlert)
+                    IsWarned = false;
             }
         }
 
@@ -581,7 +622,8 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static double GetMaxHP(ProtoCrewMember pcm) => KerbalHealthGeneralSettings.Instance.BaseMaxHP + (pcm != null ? KerbalHealthGeneralSettings.Instance.HPPerLevel * pcm.experienceLevel : 0);
+        public static double GetMaxHP(ProtoCrewMember pcm)
+            => KerbalHealthGeneralSettings.Instance.BaseMaxHP + (pcm != null ? KerbalHealthGeneralSettings.Instance.HPPerLevel * pcm.experienceLevel : 0);
 
         /// <summary>
         /// Returns the max number of HP for the kerbal (including the modifier)
@@ -613,8 +655,10 @@ namespace KerbalHealth
         /// Health points added to (or subtracted from) kerbal's max HP
         /// </summary>
         public double MaxHPModifier { get; set; }
+
         #endregion
         #region HP CHANGE
+
         double CachedChange { get; set; } = 0;
 
         /// <summary>
@@ -640,12 +684,13 @@ namespace KerbalHealth
         /// <summary>
         /// Total HP change per day rate in the latest update
         /// </summary>
-        public double LastChangeTotal { get; set; }// => LastChange + MarginalChange;
+        public double LastChangeTotal { get; set; }
 
         /// <summary>
         /// List of factors' effect on the kerbal (used for monitoring only)
         /// </summary>
         public Dictionary<string, double> Factors { get; set; } = new Dictionary<string, double>(Core.Factors.Count);
+
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
         /// </summary>
@@ -653,10 +698,10 @@ namespace KerbalHealth
         /// <returns></returns>
         public double TimeToValue(double target)
         {
-            if (LastChangeTotal == 0) return double.NaN;
+            if (LastChangeTotal == 0)
+                return double.NaN;
             double res = (target - HP) / LastChangeTotal;
-            if (res < 0) return double.NaN;
-            return res * KSPUtil.dateTimeFormatter.Day;
+            return res >= 0 ? res * KSPUtil.dateTimeFormatter.Day : double.NaN;
         }
 
         /// <summary>
@@ -666,12 +711,9 @@ namespace KerbalHealth
         public double NextConditionHP()
         {
             if (LastChangeTotal > 0)
-                if (HasCondition("Exhausted"))
-                    return ExhaustionEndHP;
-                else return MaxHP;
+                return HasCondition("Exhausted") ? ExhaustionEndHP : MaxHP;
             if (LastChangeTotal < 0)
-                if (HasCondition("Exhausted")) return 0;
-                else return ExhaustionStartHP;
+                return HasCondition("Exhausted") ? 0 : ExhaustionStartHP;
             return double.NaN;
         }
 
@@ -688,9 +730,11 @@ namespace KerbalHealth
         public double GetBalanceHP()
         {
             Core.Log(Name + "'s last change: " + LastChange + ". Recuperation: " + LastRecuperation + "%. Decay: " + LastDecay + "%.");
-            if (LastChange == 0) HealthChangePerDay();
-            if (LastRecuperation + LastDecay == 0) return LastChange < 0 ? 0 : MaxHP;
-            return (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation + LastDecay);
+            if (LastChange == 0)
+                HealthChangePerDay();
+            return LastRecuperation + LastDecay == 0
+                ? (LastChange < 0 ? 0 : MaxHP)
+                : (MaxHP * LastRecuperation + LastChange * 100) / (LastRecuperation + LastDecay);
         }
 
         #endregion
@@ -703,11 +747,17 @@ namespace KerbalHealth
         /// <summary>
         /// Returns the fraction of max HP that the kerbal has considering radiation effects. 1e7 of RadiationDose = -25% of MaxHP
         /// </summary>
-        public double RadiationMaxHPModifier => KerbalHealthRadiationSettings.Instance.RadiationEnabled ? 1 - Dose * 1e-7 * KerbalHealthRadiationSettings.Instance.RadiationEffect : 1;
+        public double RadiationMaxHPModifier
+            => KerbalHealthRadiationSettings.Instance.RadiationEnabled ? 1 - Dose * 1e-7 * KerbalHealthRadiationSettings.Instance.RadiationEffect : 1;
 
+        /// <summary>
+        /// Adds given amount of radiation and reduces curent HP accordingly
+        /// </summary>
+        /// <param name="d"></param>
         public void AddDose(double d)
         {
-            if (d > 0) HP -= d * 1e-7 * KerbalHealthRadiationSettings.Instance.RadiationEffect;
+            if (d > 0)
+                HP -= d * 1e-7 * KerbalHealthRadiationSettings.Instance.RadiationEffect;
             Dose += d;
         }
 
@@ -743,14 +793,14 @@ namespace KerbalHealth
         public static double GetMagnetosphereCoefficient(Vessel v)
         {
             double cosmicRadiationRate = 1;
-            double a = v.altitude;
+            double altitude = v.altitude;
             for (CelestialBody b = v.mainBody; b != Sun.Instance.sun; b = b.referenceBody)
             {
                 if (Core.PlanetConfigs[b].Magnetosphere != 0)
-                    if (a < b.scienceValues.spaceAltitudeThreshold)
+                    if (altitude < b.scienceValues.spaceAltitudeThreshold)
                         cosmicRadiationRate *= Math.Pow(KerbalHealthRadiationSettings.Instance.InSpaceLowCoefficient, Core.PlanetConfigs[b].Magnetosphere);
                     else cosmicRadiationRate *= Math.Pow(KerbalHealthRadiationSettings.Instance.InSpaceHighCoefficient, Core.PlanetConfigs[b].Magnetosphere);
-                a = b.orbit.altitude;
+                altitude = b.orbit.altitude;
             }
             return cosmicRadiationRate;
         }
@@ -769,11 +819,15 @@ namespace KerbalHealth
             }
             Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", distance to Sun: " + v.distanceToSun);
 
-            if (v.mainBody == Sun.Instance.sun) return 1;
+            if (v.mainBody == Sun.Instance.sun)
+                return 1;
+
             double cosmicRadiationRate = GetMagnetosphereCoefficient(v);
             if (v.mainBody.atmosphere && (Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption != 0))
-                if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold) cosmicRadiationRate *= Math.Pow(KerbalHealthRadiationSettings.Instance.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
-                else if (v.altitude < v.mainBody.atmosphereDepth) cosmicRadiationRate *= Math.Pow(KerbalHealthRadiationSettings.Instance.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+                if (v.altitude < v.mainBody.scienceValues.flyingAltitudeThreshold)
+                    cosmicRadiationRate *= Math.Pow(KerbalHealthRadiationSettings.Instance.TroposphereCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
+                else if (v.altitude < v.mainBody.atmosphereDepth)
+                    cosmicRadiationRate *= Math.Pow(KerbalHealthRadiationSettings.Instance.StratoCoefficient, Core.PlanetConfigs[v.mainBody].AtmosphericAbsorption);
             double occlusionCoefficient = (Math.Sqrt(1 - Core.Sqr(v.mainBody.Radius) / Core.Sqr(v.mainBody.Radius + Math.Max(v.altitude, 0))) + 1) / 2;
             return cosmicRadiationRate * occlusionCoefficient;
         }
@@ -783,10 +837,8 @@ namespace KerbalHealth
         /// </summary>
         /// <returns>Cosmic radiation level in bananas/day</returns>
         public static double GetCosmicRadiation(Vessel v)
-        {
-            double naturalRadiation = Core.PlanetConfigs[v.mainBody].Radioactivity * Core.Sqr(v.mainBody.Radius / (v.mainBody.Radius + v.altitude));
-            return GetCosmicRadiationRate(v) * (GetSolarRadiationProportion(Core.DistanceToSun(v)) * KerbalHealthRadiationSettings.Instance.SolarRadiation + KerbalHealthRadiationSettings.Instance.GalacticRadiation) + naturalRadiation;
-        }
+            => GetCosmicRadiationRate(v) * (GetSolarRadiationProportion(Core.DistanceToSun(v)) * KerbalHealthRadiationSettings.Instance.SolarRadiation + KerbalHealthRadiationSettings.Instance.GalacticRadiation)
+            + GetNaturalRadiation(v);
 
         /// <summary>
         /// Body-emitted radiation reaching the given vessel
@@ -798,7 +850,14 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal can start decontamination now
         /// </summary>
-        public bool IsReadyForDecontamination => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && (Health >= 1) && (Conditions.Count == 0) && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost)) && (((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) && ((HighLogic.CurrentGame.Mode != Game.Modes.SCIENCE_SANDBOX)) || ResearchAndDevelopment.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost))) && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel) && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) >= KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel);
+        public bool IsReadyForDecontamination
+            => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+            && (Health >= 1)
+            && (Conditions.Count == 0)
+            && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost))
+            && (((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) && ((HighLogic.CurrentGame.Mode != Game.Modes.SCIENCE_SANDBOX)) || ResearchAndDevelopment.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost)))
+            && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel)
+            && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) >= KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel);
 
         /// <summary>
         /// Returns true if the kerbal is currently decontaminating (i.e. has 'Decontaminating' condition)
@@ -881,7 +940,8 @@ namespace KerbalHealth
                 mods = VesselModifiers.Clone();
                 Core.Log("Vessel health modifiers before applying part and kerbal effects:\n" + mods);
                 Core.Log("Now about to process part " + Core.GetCrewPart(pcm)?.name + " where " + Name + " is located.");
-                if (IsOnEVA) mods.ExposureMultiplier *= KerbalHealthRadiationSettings.Instance.EVAExposure;
+                if (IsOnEVA)
+                    mods.ExposureMultiplier *= KerbalHealthRadiationSettings.Instance.EVAExposure;
                 ShelterExposure = mods.ShelterExposure * mods.ExposureMultiplier;
                 Core.Log("Shelter exposure for " + name + " is " + ShelterExposure);
                 mods.ProcessPart(Core.GetCrewPart(pcm), true);
@@ -898,7 +958,8 @@ namespace KerbalHealth
 
             // Applying quirks
             if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                foreach (Quirk q in Quirks) q.Apply(this, mods);
+                foreach (Quirk q in Quirks)
+                    q.Apply(this, mods);
 
             Core.Log("Health modifiers after applying all effects:\n" + mods);
 
@@ -922,7 +983,8 @@ namespace KerbalHealth
                 Core.Log("Multiplier for " + f.Name + " is " + mods.GetMultiplier(f.Name, crewCount) + " * " + mods.FreeMultipliers[f.Name] + " (bonus sum: " + mods.BonusSums[f.Name] + "; multipliers: " + mods.MinMultipliers[f.Name] + ".." + mods.MaxMultipliers[f.Name] + ")");
                 Core.Log(f.Name + "'s effect on " + pcm.name + " is " + c + " HP/day.");
                 Factors[f.Name] = c;
-                if (f.Cachable) CachedChange += c;
+                if (f.Cachable)
+                    CachedChange += c;
                 else LastChange += c;
             }
             LastChange += CachedChange;
@@ -931,7 +993,8 @@ namespace KerbalHealth
 
             Core.Log("Recuperation/decay change for " + pcm.name + ": " + mc + " (+" + LastRecuperation + "%, -" + LastDecay + "%).");
             Core.Log("Total change for " + pcm.name + ": " + LastChangeTotal + " HP/day.");
-            if (recalculateCache) Core.Log("Total shielding: " + mods.Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
+            if (recalculateCache)
+                Core.Log("Total shielding: " + mods.Shielding + "; crew capacity: " + Core.GetCrewCapacity(pcm));
             return LastChangeTotal;
         }
 
@@ -949,7 +1012,8 @@ namespace KerbalHealth
                 return;
             }
 
-            if (KerbalHealthQuirkSettings.Instance.QuirksEnabled) AwardQuirks();
+            if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
+                CheckForAvailableQuirks();
 
             bool frozen = IsFrozen;
             bool decontaminating = IsDecontaminating;
@@ -960,15 +1024,18 @@ namespace KerbalHealth
                 {
                     Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(Core.KerbalVessel(PCM))) * KSPUtil.dateTimeFormatter.Day / 21600;
                     Core.Log(Name + "'s radiation level is " + Radiation + " bananas/day. Total accumulated dose is " + Dose + " bananas.");
-                    if (decontaminating) StopDecontamination();
+                    if (decontaminating)
+                        StopDecontamination();
                 }
-                else if (!decontaminating) Radiation = 0;
+                else if (!decontaminating)
+                    Radiation = 0;
 
                 AddDose(Radiation / KSPUtil.dateTimeFormatter.Day * interval);
                 if (Dose < 0)
                 {
                     Dose = 0;
-                    if (decontaminating) StopDecontamination();
+                    if (decontaminating)
+                        StopDecontamination();
                 }
             }
 
@@ -984,7 +1051,8 @@ namespace KerbalHealth
             if ((HP <= 0) && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
                 Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
-                if (PCM.seat != null) PCM.seat.part.RemoveCrewmember(PCM);
+                if (PCM.seat != null)
+                    PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
                 Core.ShowMessage(Localizer.Format("#KH_Location_statumsg5", Name), true);//"<color=\"white\">" +  + "</color> has died of poor health!"
@@ -995,7 +1063,8 @@ namespace KerbalHealth
             {
                 Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
                 RemoveCondition("Training");
-                if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned) TrainingFor.Clear();
+                if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+                    TrainingFor.Clear();
             }
 
             // Stop training after the kerbal has been recovered
@@ -1023,8 +1092,10 @@ namespace KerbalHealth
                 Core.ShowMessage(Localizer.Format("#KH_Location_statumsg7", Name), PCM);//"<color=\"white\">" +  + "</color> is exhausted!"
             }
         }
+
         #endregion
         #region SAVING, LOADING, INITIALIZING ETC.
+        
         public ConfigNode ConfigNode
         {
             get
@@ -1032,20 +1103,33 @@ namespace KerbalHealth
                 ConfigNode n = new ConfigNode("KerbalHealthStatus");
                 n.AddValue("name", Name);
                 n.AddValue("health", HP);
-                if (MaxHPModifier != 0) n.AddValue("maxHPModifier", MaxHPModifier);
+                if (MaxHPModifier != 0)
+                    n.AddValue("maxHPModifier", MaxHPModifier);
                 n.AddValue("dose", Dose);
-                if (Radiation != 0) n.AddValue("radiation", Radiation);
-                if (partsRadiation != 0) n.AddValue("partsRadiation", partsRadiation);
-                if (LastExposure != 1) n.AddValue("exposure", LastExposure);
-                if (ShelterExposure < LastExposure) n.AddValue("shelterExposure", ShelterExposure);
-                foreach (HealthCondition hc in Conditions) n.AddValue("condition", hc.Name);
-                foreach (Quirk q in Quirks) n.AddValue("quirk", q.Name);
-                if (QuirkLevel != 0) n.AddValue("quirkLevel", QuirkLevel);
-                if (!IsCapable) n.AddValue("trait", Trait);
-                if (CachedChange != 0) n.AddValue("cachedChange", CachedChange);
-                if (LastRecuperation != 0) n.AddValue("lastRecuperation", LastRecuperation);
-                if (LastDecay != 0) n.AddValue("lastDecay", LastDecay);
-                if (IsOnEVA) n.AddValue("onEva", true);
+                if (Radiation != 0)
+                    n.AddValue("radiation", Radiation);
+                if (partsRadiation != 0)
+                    n.AddValue("partsRadiation", partsRadiation);
+                if (LastExposure != 1)
+                    n.AddValue("exposure", LastExposure);
+                if (ShelterExposure < LastExposure)
+                    n.AddValue("shelterExposure", ShelterExposure);
+                foreach (HealthCondition hc in Conditions)
+                    n.AddValue("condition", hc.Name);
+                foreach (Quirk q in Quirks)
+                    n.AddValue("quirk", q.Name);
+                if (QuirkLevel != 0)
+                    n.AddValue("quirkLevel", QuirkLevel);
+                if (!IsCapable)
+                    n.AddValue("trait", Trait);
+                if (CachedChange != 0)
+                    n.AddValue("cachedChange", CachedChange);
+                if (LastRecuperation != 0)
+                    n.AddValue("lastRecuperation", LastRecuperation);
+                if (LastDecay != 0)
+                    n.AddValue("lastDecay", LastDecay);
+                if (IsOnEVA)
+                    n.AddValue("onEva", true);
                 foreach (KeyValuePair<uint, double> t in TrainingLevels)
                 {
                     ConfigNode n2 = new ConfigNode("TRAINED_PART");
@@ -1064,9 +1148,11 @@ namespace KerbalHealth
                 }
                 foreach (TrainingPart tp in TrainingFor)
                     n.AddNode(tp.ConfigNode);
-                if (TrainingVessel != null) n.AddValue("trainingVessel", TrainingVessel);
+                if (TrainingVessel != null)
+                    n.AddValue("trainingVessel", TrainingVessel);
                 return n;
             }
+
             set
             {
                 Name = value.GetValue("name");
@@ -1081,7 +1167,8 @@ namespace KerbalHealth
                     Conditions.Add(Core.GetHealthCondition(s));
                 foreach (ConfigNode n in value.GetNodes("HealthCondition"))
                     Conditions.Add(Core.GetHealthCondition(Core.GetString(n, "name")));
-                if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && HasCondition("Training")) RemoveCondition("Training", true);
+                if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && HasCondition("Training"))
+                    RemoveCondition("Training", true);
                 foreach (string s in value.GetValues("quirk"))
                     AddQuirk(s);
                 QuirkLevel = Core.GetInt(value, "quirkLevel");
@@ -1094,14 +1181,16 @@ namespace KerbalHealth
                 foreach (ConfigNode n in value.GetNodes("TRAINED_PART"))
                 {
                     uint id = Core.GetUInt(n, "id");
-                    if (id != 0) TrainingLevels[id] = Core.GetDouble(n, "trainingLevel");
+                    if (id != 0)
+                        TrainingLevels[id] = Core.GetDouble(n, "trainingLevel");
                 }
                 foreach (string s in value.GetValues("familiarPartType"))
                     FamiliarPartTypes.Add(s);
                 foreach (ConfigNode n in value.GetNodes("TRAINED_VESSEL"))
                 {
                     string name = Core.GetString(n, "name");
-                    if (name != null) TrainedVessels.Add(name, Core.GetDouble(n, "trainingLevel"));
+                    if (name != null)
+                        TrainedVessels.Add(name, Core.GetDouble(n, "trainingLevel"));
                 }
                 TrainingFor.Clear();
                 foreach (ConfigNode n in value.GetNodes("TRAINING_PART"))
