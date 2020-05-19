@@ -102,7 +102,10 @@ namespace KerbalHealth
         /// </summary>
         public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
 
-        public List<PartResourceDefinition> GetConsumedResources() => (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0) ? new List<PartResourceDefinition>() { ResourceDefinition } : new List<PartResourceDefinition>();
+        public List<PartResourceDefinition> GetConsumedResources()
+            => (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
+            ? new List<PartResourceDefinition>() { ResourceDefinition }
+            : new List<PartResourceDefinition>();
 
         PartResourceDefinition ResourceDefinition
         {
@@ -266,7 +269,7 @@ namespace KerbalHealth
             if (crewCap > 0)
                 res += Localizer.Format("#KH_Module_info5", crewCap,(crewCap != 1 ? Localizer.Format("#KH_Module_info5_s") : ""));//" for up to " +  + " kerbal" + "s"
             if (space != 0)
-                res += Localizer.Format("#KH_Module_info6",space.ToString("F1"));//"\nSpace: " + 
+                res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
             if (resourceConsumption != 0)
                 res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
             if (resourceConsumptionPerKerbal != 0)
@@ -279,7 +282,7 @@ namespace KerbalHealth
                 res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
             if (string.IsNullOrEmpty(res))
                 return "";
-            return  Localizer.Format("#KH_Module_typetitle", Title)+ res;//"Module type: " + 
+            return  Localizer.Format("#KH_Module_typetitle", Title) + res;//"Module type: " + 
         }
     }
 }

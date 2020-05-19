@@ -17,12 +17,12 @@ namespace KerbalHealth
         static double nextEventTime;  // UT when (or after) next event check occurs
         Version version;  // Current Kerbal Health version
 
-        List<RadStorm> radStorms = new List<RadStorm>();
-        bool checkUntrainedKerbals = false;
+        List<RadStorm> radStorms = new List<RadStorm>();  // List of scheduled radstorms
+        bool checkUntrainedKerbals = false;  // Whether the current vessel should be checked for untrained kerbals, to show notification
         ScreenMessage untrainedKerbalsWarningMessage;
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
-        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
+        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;  // List of displayed kerbal, sorted according to current settings
         bool dirty = false, crewChanged = false, vesselChanged = false;
         const int colNumMain = 8, colNumDetails = 6;  // # of columns in Health Monitor
         const int colWidth = 100;  // Width of a cell
@@ -37,22 +37,21 @@ namespace KerbalHealth
 
         public void Start()
         {
+            if (Core.IsInEditor)
+                return;
+
+            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);  // This needs to be run even if the mod is disabled, so that its settings can be reset
+            
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             Core.Log("KerbalHealthScenario.Start", Core.LogLevel.Important);
-            if (Core.IsInEditor)
-            {
-                Core.Log("Skipping KerbalHealthScenario initialization in Editor.", Core.LogLevel.Important);
-                return;
-            }
-            Core.Log(Core.Factors.Count + " factors initialized.");
+
             Core.KerbalHealthList.RegisterKerbals();
             vesselChanged = true;
 
             lastUpdated = Planetarium.GetUniversalTime();
             nextEventTime = lastUpdated + GetNextEventInterval();
 
-            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             GameEvents.onCrewBoardVessel.Add(onCrewBoardVessel);
             GameEvents.onCrewKilled.Add(OnCrewKilled);
@@ -86,12 +85,7 @@ namespace KerbalHealth
             }
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
-            {
-                Core.Log("Registering AppLauncher button...");
-                Texture2D icon = new Texture2D(38, 38);
-                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-                appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
-            }
+                RegisterAppLauncherButton();
 
             if (ToolbarManager.ToolbarAvailable)
             {
@@ -178,11 +172,59 @@ namespace KerbalHealth
             if (dfEvent != null)
                 dfEvent.Remove(OnKerbalThaw);
 
+            UnregisterAppLauncherButton();
             if (toolbarButton != null)
                 toolbarButton.Destroy();
+            Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
+        }
+
+        void RegisterAppLauncherButton()
+        {
+            Core.Log("Registering AppLauncher button...");
+            Texture2D icon = new Texture2D(38, 38);
+            icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
+            appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+        }
+
+        void UnregisterAppLauncherButton()
+        {
             if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
-            Core.Log("KerbalHealthScenario.OnDisable finished.", Core.LogLevel.Important);
+        }
+
+        bool LoadSettingsFromConfig()
+        {
+            Core.Log("LoadSettingsFromConfig", Core.LogLevel.Important);
+            ConfigNode settingsNode;
+            try
+            {
+                settingsNode = GameDatabase.Instance.GetMergedConfigNodes("KERBALHEALTH_CONFIG");
+                Core.Log("KERBALHEALTH_CONFIG node: " + settingsNode);
+                settingsNode = settingsNode.GetNode("SETTINGS") ?? throw new Exception("settingsNode is null");
+            }
+            catch (Exception e)
+            {
+                Core.Log("KERBALHEALTH_CONFIG/SETTINGS node not found.", Core.LogLevel.Important);
+                Core.Log("Exception: " + e.ToString());
+                return false;
+            }
+
+            KerbalHealthGeneralSettings.Instance.ApplyConfig(settingsNode);
+            KerbalHealthFactorsSettings.Instance.ApplyConfig(settingsNode);
+            KerbalHealthQuirkSettings.Instance.ApplyConfig(settingsNode);
+            KerbalHealthRadiationSettings.Instance.ApplyConfig(settingsNode);
+
+            Core.Log("Current difficulty preset is " + HighLogic.CurrentGame.Parameters.preset, Core.LogLevel.Important);
+            if ((HighLogic.CurrentGame.Parameters.preset != GameParameters.Preset.Custom) && (settingsNode.HasNode(HighLogic.CurrentGame.Parameters.preset.ToString())))
+            {
+                settingsNode = settingsNode.GetNode(HighLogic.CurrentGame.Parameters.preset.ToString());
+                KerbalHealthGeneralSettings.Instance.ApplyConfig(settingsNode);
+                KerbalHealthFactorsSettings.Instance.ApplyConfig(settingsNode);
+                KerbalHealthQuirkSettings.Instance.ApplyConfig(settingsNode);
+                KerbalHealthRadiationSettings.Instance.ApplyConfig(settingsNode);
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -190,15 +232,24 @@ namespace KerbalHealth
         /// </summary>
         public void OnGameSettingsApplied()
         {
-            Core.Log("OnGameSettingsApplied");
+            Core.Log("OnGameSettingsApplied", Core.LogLevel.Important);
             if (KerbalHealthGeneralSettings.Instance.ResetSettings)
             {
                 KerbalHealthGeneralSettings.Instance.Reset();
                 KerbalHealthFactorsSettings.Instance.Reset();
                 KerbalHealthQuirkSettings.Instance.Reset();
                 KerbalHealthRadiationSettings.Instance.Reset();
+
+                LoadSettingsFromConfig();
+
                 ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_SettingsReset"), 5);
             }
+
+            if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton && appLauncherButton == null)
+                RegisterAppLauncherButton();
+
+            if (!KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton || !KerbalHealthGeneralSettings.Instance.modEnabled)
+                UnregisterAppLauncherButton();
         }
 
         /// <summary>
@@ -424,7 +475,7 @@ namespace KerbalHealth
             Core.Log("Current solar cycle phase: " + Core.SolarCyclePhase.ToString("P2") + " through. Radstorm chance: " + Core.RadStormChance);
 
             foreach (RadStorm t in targets.Values)
-                if (Core.rand.NextDouble() < Core.RadStormChance * KerbalHealthRadiationSettings.Instance.RadStormFrequence)
+                if (Core.rand.NextDouble() < Core.RadStormChance * KerbalHealthRadiationSettings.Instance.RadStormFrequency)
                 {
                     RadStormType rst = Core.GetRandomRadStormType();
                     double delay = t.DistanceFromSun / rst.GetVelocity();
@@ -486,7 +537,7 @@ namespace KerbalHealth
                     if (Core.GetYear(time) > Core.GetYear(lastUpdated))
                     {
                         Core.Log("Showing solar weather summary for year " + Core.GetYear(time) + ".", Core.LogLevel.Important);
-                        Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (1 / Core.RadStormChance / KerbalHealthRadiationSettings.Instance.RadStormFrequence).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
+                        Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (1 / Core.RadStormChance / KerbalHealthRadiationSettings.Instance.RadStormFrequency).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
                     }
                 }
 
@@ -954,9 +1005,17 @@ namespace KerbalHealth
                 Core.LoadConfig();
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
+
             Core.Log("KerbalHealthScenario.OnLoad", Core.LogLevel.Important);
+
+            // If loading scenario for the first time, try to load settings from config
+            if (!node.HasValue("nextEventTime"))
+                if (LoadSettingsFromConfig())
+                    ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
+
             version = new Version(Core.GetString(node, "version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
             nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
+
             Core.KerbalHealthList.Clear();
             int i = 0;
             foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
@@ -965,10 +1024,12 @@ namespace KerbalHealth
                 i++;
             }
             Core.Log("" + i + " kerbal(s) loaded.", Core.LogLevel.Important);
+
             radStorms.Clear();
             foreach (ConfigNode n in node.GetNodes("RADSTORM"))
                 radStorms.Add(new RadStorm(n));
             Core.Log(radStorms.Count + " radstorms loaded.", Core.LogLevel.Important);
+            
             lastUpdated = Planetarium.GetUniversalTime();
         }
     }

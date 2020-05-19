@@ -27,8 +27,9 @@ namespace KerbalHealth
             }
         }
 
-        public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
-
+        /// <summary>
+        /// Reverts all settings to their mod-default values
+        /// </summary>
         internal void Reset()
         {
             modEnabled = true;
@@ -47,6 +48,32 @@ namespace KerbalHealth
             ResetSettings = false;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
+
+        /// <summary>
+        /// Assigns settings defined in settingsNode
+        /// </summary>
+        /// <param name="settingsNode"></param>
+        internal void ApplyConfig(ConfigNode settingsNode)
+        {
+            if (settingsNode == null)
+                return;
+            Core.Log("Applying KerbalHealthGeneralSettings settings: " + settingsNode);
+            settingsNode.TryGetValue("ModEnabled", ref modEnabled);
+            settingsNode.TryGetValue("ShowAppLauncherButton", ref ShowAppLauncherButton);
+            settingsNode.TryGetValue("SortByLocation", ref SortByLocation);
+            settingsNode.TryGetValue("LinesPerPage", ref LinesPerPage);
+            settingsNode.TryGetValue("ShowTraitLevel", ref ShowTraitLevel);
+            settingsNode.TryGetValue("UpdateInterval", ref UpdateInterval);
+            settingsNode.TryGetValue("MinUpdateInterval", ref MinUpdateInterval);
+            settingsNode.TryGetValue("BaseMaxHP", ref BaseMaxHP);
+            settingsNode.TryGetValue("HPPerLevel", ref HPPerLevel);
+            settingsNode.TryGetValue("LowHealthAlert", ref LowHealthAlert);
+            settingsNode.TryGetValue("DeathEnabled", ref DeathEnabled);
+            settingsNode.TryGetValue("ExhaustionStartHealth", ref ExhaustionStartHealth);
+            settingsNode.TryGetValue("ExhaustionEndHealth", ref ExhaustionEndHealth);
+        }
+
+        public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
 
         [GameParameters.CustomParameterUI("#KH_GS_modEnabled", toolTip = "#KH_GS_modEnabled_desc")]//Mod Enabled""Turn Kerbal Health mechanics on/off
         public bool modEnabled = true;

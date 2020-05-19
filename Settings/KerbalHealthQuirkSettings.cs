@@ -32,9 +32,10 @@ namespace KerbalHealth
                     break;
             }
         }
-        
-        public static KerbalHealthQuirkSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>();
 
+        /// <summary>
+        /// Reverts all settings to their mod-default values
+        /// </summary>
         internal void Reset()
         {
             ConditionsEnabled = true;
@@ -49,6 +50,29 @@ namespace KerbalHealth
             StatsAffectQuirkWeights = true;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
+
+        /// <summary>
+        /// Assigns settings defined in settingsNode
+        /// </summary>
+        /// <param name="settingsNode"></param>
+        internal void ApplyConfig(ConfigNode settingsNode)
+        {
+            if (settingsNode == null)
+                return;
+            Core.Log("Applying KerbalHealthQuirkSettings settings: " + settingsNode);
+            settingsNode.TryGetValue("ConditionsEnabled", ref ConditionsEnabled);
+            settingsNode.TryGetValue("KSCNotificationsEnabled", ref KSCNotificationsEnabled);
+            settingsNode.TryGetValue("ConditionsChance", ref ConditionsChance);
+            settingsNode.TryGetValue("ConditionsEffect", ref ConditionsEffect);
+            settingsNode.TryGetValue("QuirksEnabled", ref QuirksEnabled);
+            settingsNode.TryGetValue("MaxQuirks", ref MaxQuirks);
+            settingsNode.TryGetValue("QuirkChance", ref QuirkChance);
+            settingsNode.TryGetValue("AwardQuirksOnMissions", ref AwardQuirksOnMissions);
+            settingsNode.TryGetValue("AnomalyQuirkChance", ref AnomalyQuirkChance);
+            settingsNode.TryGetValue("StatsAffectQuirkWeights", ref StatsAffectQuirkWeights);
+        }
+
+        public static KerbalHealthQuirkSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthQuirkSettings>();
 
         [GameParameters.CustomParameterUI("#KH_QS_ConditionsEnable", toolTip = "#KH_QS_ConditionsEnabled_desc")]//Conditions Enabled""If checked, special health conditions affect health and can randomly appear in kerbals
         public bool ConditionsEnabled = true;

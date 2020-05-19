@@ -11,8 +11,6 @@ namespace KerbalHealth
         public override string DisplaySection => Section;
         public override int SectionOrder => 2;
 
-        public static KerbalHealthFactorsSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>();
-
         public override void SetDifficultyPreset(GameParameters.Preset preset)
         {
             switch (preset)
@@ -47,6 +45,9 @@ namespace KerbalHealth
             }
         }
 
+        /// <summary>
+        /// Reverts all settings to their mod-default values
+        /// </summary>
         internal void Reset()
         {
             StressFactor = -2;
@@ -63,6 +64,30 @@ namespace KerbalHealth
             StupidityPenalty = 0;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
+
+        /// <summary>
+        /// Assigns settings defined in settingsNode
+        /// </summary>
+        /// <param name="settingsNode"></param>
+        internal void ApplyConfig(ConfigNode settingsNode)
+        {
+            if (settingsNode == null)
+                return;
+            Core.Log("Applying KerbalHealthFactorsSettings settings: " + settingsNode);
+            settingsNode.TryGetValue("StressFactor", ref StressFactor);
+            settingsNode.TryGetValue("ConfinementBaseFactor", ref ConfinementBaseFactor);
+            settingsNode.TryGetValue("LonelinessFactor", ref LonelinessFactor);
+            settingsNode.TryGetValue("EVAFactor", ref EVAFactor);
+            settingsNode.TryGetValue("ConnectedFactor", ref ConnectedFactor);
+            settingsNode.TryGetValue("HomeFactor", ref HomeFactor);
+            settingsNode.TryGetValue("KSCFactor", ref KSCFactor);
+            settingsNode.TryGetValue("TrainingEnabled", ref TrainingEnabled);
+            settingsNode.TryGetValue("KSCTrainingTime", ref KSCTrainingTime);
+            settingsNode.TryGetValue("InFlightTrainingTime", ref InFlightTrainingTime);
+            settingsNode.TryGetValue("StupidityPenalty", ref StupidityPenalty);
+        }
+
+        public static KerbalHealthFactorsSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>();
 
         [GameParameters.CustomFloatParameterUI("#KH_Stress", toolTip = "#KH_FS_Stress_desc", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)] //Stress""HP change per day when the kerbal is assigned; can be lowered through training and/or upgrading Astronaut Complex
         public float StressFactor = -2;

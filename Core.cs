@@ -67,7 +67,7 @@ namespace KerbalHealth
             PartResourceDefinition prd = PartResourceLibrary.Instance?.GetDefinition(name);
             if (prd == null)
             {
-                Log("Can't find ResourceDefinition for " + name + ".", LogLevel.Important);
+                Log("Can't find ResourceDefinition for " + name + ".");
                 return;
             }
             ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
