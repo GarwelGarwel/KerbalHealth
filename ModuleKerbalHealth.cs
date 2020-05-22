@@ -7,60 +7,78 @@ namespace KerbalHealth
     public class ModuleKerbalHealth : PartModule, IResourceConsumer
     {
         [KSPField]
-        public string title = "";  // Module title displayed in right-click menu (empty string for auto)
+        // Module title displayed in right-click menu (empty string for auto)
+        public string title = "";
 
         [KSPField(isPersistant = true)]
         public uint id = 0;
 
         [KSPField]
-        public float hpChangePerDay = 0;  // How many raw HP per day every affected kerbal gains
+        // How many raw HP per day every affected kerbal gains
+        public float hpChangePerDay = 0;
 
         [KSPField]
-        public float recuperation = 0;  // Will increase HP by this % of (MaxHP - HP) per day
+        // Will increase HP by this % of (MaxHP - HP) per day
+        public float recuperation = 0;
 
         [KSPField]
-        public float decay = 0;  // Will decrease by this % of (HP - MinHP) per day
+        // Will decrease by this % of (HP - MinHP) per day
+        public float decay = 0;
 
         [KSPField]
-        public bool partCrewOnly = false;  // Does the module affect health of only crew in this part or the entire vessel?
+        // Does the module affect health of only crew in this part or the entire vessel?
+        public bool partCrewOnly = false;
 
         [KSPField]
-        public string multiplyFactor = "All";  // Name of factor whose effect is multiplied
+        // Name of factor whose effect is multiplied
+        public string multiplyFactor = "All";
 
         [KSPField]
-        public float multiplier = 1;  // How the factor is changed (e.g., 0.5 means factor's effect is halved)
+        // How the factor is changed (e.g., 0.5 means factor's effect is halved)
+        public float multiplier = 1;
 
         [KSPField]
-        public int crewCap = 0;  // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
+        // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
+        public int crewCap = 0;
 
         [KSPField]
-        public double space = 0;  // Points of living space provided by the part (used to calculate Confinement factor)
+        // Points of living space provided by the part (used to calculate Confinement factor)
+        public double space = 0;
 
         [KSPField]
-        public float shielding = 0;  // Number of halving-thicknesses
+        // Number of halving-thicknesses
+        public float shielding = 0;
 
         [KSPField]
-        public float radioactivity = 0;  // Radioactive emission, bananas/day
+        // Radioactive emission, bananas/day
+        public float radioactivity = 0;
 
         [KSPField]
-        public string resource = "ElectricCharge";  // Determines, which resource is consumed by the module
+        // Determines, which resource is consumed by the module
+        public string resource = "ElectricCharge";
 
         [KSPField]
-        public float resourceConsumption = 0;  // Flat EC consumption (units per second)
+        // Flat EC consumption (units per second)
+        public float resourceConsumption = 0;
 
         [KSPField]
-        public float resourceConsumptionPerKerbal = 0;  // EC consumption per affected kerbal (units per second)
+        // EC consumption per affected kerbal (units per second)
+        public float resourceConsumptionPerKerbal = 0;
 
         [KSPField]
-        public float complexity = 0;  // 0 if no training needed for this part, 1 for standard training complexity
+        // 0 if no training needed for this part, 1 for standard training complexity
+        public float complexity = 0;
 
         [KSPField(isPersistant = true)]
-        public bool isActive = true;  // If not alwaysActive, this determines if the module is active
+        // If not alwaysActive, this determines if the module is active
+        public bool isActive = true;
 
         [KSPField(isPersistant = true)]
-        public bool starving = false;  // Determines if the module is disabled due to the lack of the resource
+        // Determines if the module is disabled due to the lack of the resource
+        public bool starving = false;
 
         [KSPField(guiName = "", guiActive = true, guiActiveEditor = true, guiUnits = "#KH_Module_ecPersec")] // /sec
+        // Electric Charge usage per second
         public float ecPerSec = 0;
 
         double lastUpdated;
@@ -93,6 +111,21 @@ namespace KerbalHealth
                         return r;
                     }
                     else return ShipConstruction.ShipManifest.CrewCount;
+                if (part == null)
+                {
+                    Core.Log("TotalAffectedCrewCount: part is null!", Core.LogLevel.Error);
+                    return 0;
+                }
+                if (part.protoModuleCrew == null)
+                {
+                    Core.Log("TotalAffectedCrewCount: part.protoModuleCrew is null!", Core.LogLevel.Error);
+                    return 0;
+                }
+                if (vessel == null)
+                {
+                    Core.Log("TotalAffectedCrewCount: vessel is null!", Core.LogLevel.Error);
+                    return 0;
+                }
                 return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
             }
         }
@@ -146,12 +179,12 @@ namespace KerbalHealth
             if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
             {
                 ecPerSec = TotalResourceConsumption;
-                double res = ecPerSec * (time - lastUpdated), res2;
+                double requiredAmount = ecPerSec * (time - lastUpdated), providedAmount;
                 if (resource != "ElectricCharge")
                     ecPerSec = 0;
-                starving = (res2 = vessel.RequestResource(part, ResourceDefinition.id, res, false)) * 2 < res;
+                starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
                 if (starving)
-                    Core.Log(Title + " Module is starving of " + resource + " (" + res + " needed, " + res2 + " provided).");
+                    Core.Log(Title + " Module is starving of " + resource + " (" + requiredAmount + " needed, " + providedAmount + " provided).");
             }
             else ecPerSec = 0;
             lastUpdated = time;
@@ -176,16 +209,19 @@ namespace KerbalHealth
             ModuleKerbalHealth mkh = proto_part_module as ModuleKerbalHealth;
             if (mkh.isActive && ((mkh.resourceConsumption != 0) || (mkh.resourceConsumptionPerKerbal != 0)))
             {
+                mkh.part = proto_part;
+                mkh.part.vessel = v;
                 mkh.ecPerSec = mkh.TotalResourceConsumption;
-                double res = mkh.ecPerSec * elapsed_s;
+                double requiredAmount = mkh.ecPerSec * elapsed_s;
                 if (mkh.resource != "ElectricCharge")
                     mkh.ecPerSec = 0;
-                availableResources.TryGetValue("ElectricCharge", out double res2);
-                if (res2 < mkh.ecPerSec)
+                availableResources.TryGetValue(mkh.resource, out double res2);
+                if (res2 < requiredAmount)
+                {
+                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " needed, " + res2 + " available.");
                     mkh.starving = true;
-                resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -res));
-                if (mkh.starving)
-                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + res + " needed, " + res2 + " available.");
+                }
+                else resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -requiredAmount));
             }
             else mkh.ecPerSec = 0;
             return mkh.Title.ToLower();
@@ -200,7 +236,7 @@ namespace KerbalHealth
         /// <returns>The title to display in the tooltip of the planner UI.</returns>
         public string PlannerUpdate(List<KeyValuePair<string, double>> resources, CelestialBody body, Dictionary<string, double> environment)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled || !isActive)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || !isActive || IsAlwaysActive)
                 return null;
             resources.Add(new KeyValuePair<string, double>(resource, -ecPerSec));
             return Title.ToLower();

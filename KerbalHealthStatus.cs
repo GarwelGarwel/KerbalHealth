@@ -170,7 +170,7 @@ namespace KerbalHealth
             if (condition.Incapacitated)
                 MakeIncapacitated();
             if (condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg1", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -199,7 +199,7 @@ namespace KerbalHealth
             if ((n > 0) && condition.Incapacitated && IsCapable)
                 MakeCapable();
             if ((n > 0) && condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg2", Name,condition.Title), PCM);//"<color=\"white\">" +  + "</color> has lost <color=\"white\">" +  + "</color> condition!"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Lost", Name,condition.Title), PCM);//"<color=\"white\">" +  + "</color> has lost <color=\"white\">" +  + "</color> condition!"
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
@@ -393,7 +393,7 @@ namespace KerbalHealth
         {
             Quirk q = GetRandomQuirk(level);
             Quirks.Add(q);
-            Core.ShowMessage(Localizer.Format("#KH_Location_statumsg3", Name,q), PCM);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
+            Core.ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name,q), PCM);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
             return q;
         }
 
@@ -609,7 +609,7 @@ namespace KerbalHealth
                     (value > MaxHP ? MaxHP : value);
                 if (!IsWarned && Health < KerbalHealthGeneralSettings.Instance.LowHealthAlert)
                 {
-                    Core.ShowMessage(Localizer.Format("#KH_Location_statumsg4",Name), PCM);//"<color=\"white\">" +  + "</color>'s health is dangerously low!"
+                    Core.ShowMessage(Localizer.Format("#KH_Condition_LowHealth", Name), PCM);//"<color=\"white\">" +  + "</color>'s health is dangerously low!"
                     IsWarned = true;
                 }
                 else if (IsWarned && Health >= KerbalHealthGeneralSettings.Instance.LowHealthAlert)
@@ -1055,13 +1055,13 @@ namespace KerbalHealth
                     PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(Core.KerbalVessel(PCM));
-                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg5", Name), true);//"<color=\"white\">" +  + "</color> has died of poor health!"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_KerbalDied", Name), true);//"<color=\"white\">" +  + "</color> has died of poor health!"
             }
 
             // If KSC training no longer possible, stop it
             if (HasCondition("Training") && !CanTrainAtKSC)
             {
-                Core.ShowMessage("Training of " + name + " has been stopped. The kerbal needs to be at KSC and at over 90% health to train.", PCM);
+                Core.ShowMessage(Localizer.Format("#KH_TrainingStopped", name), PCM);
                 RemoveCondition("Training");
                 if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                     TrainingFor.Clear();
@@ -1083,13 +1083,13 @@ namespace KerbalHealth
                 if (HP >= ExhaustionEndHP)
                 {
                     RemoveCondition("Exhausted");
-                    Core.ShowMessage(Localizer.Format("#KH_Location_statumsg6", Name), PCM);//"<color=\"white\">" +  + "</color> is no longer exhausted."
+                    Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionEnd", Name), PCM);//"<color=\"white\">" +  + "</color> is no longer exhausted."
                 }
             }
             else if (HP < ExhaustionStartHP)
             {
                 AddCondition("Exhausted");
-                Core.ShowMessage(Localizer.Format("#KH_Location_statumsg7", Name), PCM);//"<color=\"white\">" +  + "</color> is exhausted!"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionStart", Name), PCM);//"<color=\"white\">" +  + "</color> is exhausted!"
             }
         }
 
