@@ -23,7 +23,7 @@ namespace KerbalHealth
         {
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
-            Core.Log("KerbalHealthEditorReport.Start", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
             GameEvents.onEditorShipModified.Add(delegate (ShipConstruct sc) { Invalidate(); });
             GameEvents.onEditorPodDeleted.Add(Invalidate);
@@ -52,7 +52,7 @@ namespace KerbalHealth
                 };
             }
 
-            Core.Log("KerbalHealthEditorReport.Start finished.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.Start finished.", LogLevel.Important);
         }
 
         public void DisplayData()
@@ -60,7 +60,7 @@ namespace KerbalHealth
             Core.Log("KerbalHealthEditorReport.DisplayData");
             if ((ShipConstruction.ShipManifest == null) || !ShipConstruction.ShipManifest.HasAnyCrew())
             {
-                Core.Log("The ship is empty. Let's get outta here!", Core.LogLevel.Important);
+                Core.Log("The ship is empty. Let's get outta here!", LogLevel.Important);
                 return;
             }
 
@@ -174,7 +174,7 @@ namespace KerbalHealth
                 }
                 else
                 {
-                    Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", Core.LogLevel.Important);
+                    Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", LogLevel.Important);
                     f.Add(pcm.name);
                 }
             }
@@ -238,13 +238,13 @@ namespace KerbalHealth
             {
                 if (gridContents == null)
                 {
-                    Core.Log("gridContents is null.", Core.LogLevel.Error);
+                    Core.Log("gridContents is null.", LogLevel.Error);
                     return;
                 }
 
                 if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
                 {
-                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.", Core.LogLevel.Important);
+                    Core.Log("Kerbals' number has changed. Recreating the Health Report window.", LogLevel.Important);
                     UndisplayData();
                     DisplayData();
                 }
@@ -263,7 +263,7 @@ namespace KerbalHealth
                     khs = Core.KerbalHealthList[pcm]?.Clone();
                     if (khs == null)
                     {
-                        Core.Log("Could not create a clone of KerbalHealthStatus for " + pcm.name + ". It is " + ((Core.KerbalHealthList[pcm] == null) ? "not " : "") + "found in KerbalHealthList, which contains " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
+                        Core.Log("Could not create a clone of KerbalHealthStatus for " + pcm.name + ". It is " + ((Core.KerbalHealthList[pcm] == null) ? "not " : "") + "found in KerbalHealthList, which contains " + Core.KerbalHealthList.Count + " records.", LogLevel.Error);
                         i++;
                         continue;
                     }
@@ -298,13 +298,13 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
-            Core.Log("KerbalHealthEditorReport.OnDisable", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
             UndisplayData();
             if (toolbarButton != null)
                 toolbarButton.Destroy();
             if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
-            Core.Log("KerbalHealthEditorReport.OnDisable finished.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable finished.", LogLevel.Important);
         }
     }
 }

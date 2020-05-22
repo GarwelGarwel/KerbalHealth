@@ -137,7 +137,7 @@ namespace KerbalHealth
         {
             if (part == null)
             {
-                Core.Log("HealthModifierSet: 'part' is null. Unless the kerbal is on EVA, this is probably an error.", Core.LogLevel.Important);
+                Core.Log("HealthModifierSet: 'part' is null. Unless the kerbal is on EVA, this is probably an error.", LogLevel.Important);
                 return;
             }
             foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>())

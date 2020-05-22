@@ -78,7 +78,7 @@ namespace KerbalHealth
             {
                 if (Target == RadStormTargetType.None)
                 {
-                    Core.Log("Trying to save RadStormTarget of type None.", Core.LogLevel.Important);
+                    Core.Log("Trying to save RadStormTarget of type None.", LogLevel.Important);
                     return null;
                 }
                 ConfigNode n = new ConfigNode("RADSTORM");
@@ -99,7 +99,7 @@ namespace KerbalHealth
                 { Target = (RadStormTargetType)Enum.Parse(typeof(RadStormTargetType), value.GetValue("target"), true); }
                 catch (ArgumentException)
                 {
-                    Core.Log("No valid 'target' value found in RadStorm ConfigNode:\r\n" + value, Core.LogLevel.Error);
+                    Core.Log("No valid 'target' value found in RadStorm ConfigNode:\r\n" + value, LogLevel.Error);
                     Target = RadStormTargetType.None;
                     return;
                 }
@@ -109,7 +109,7 @@ namespace KerbalHealth
                     VesselId = Core.GetUInt(value, "id");
                     if (!FlightGlobals.PersistentVesselIds.ContainsKey(VesselId))
                     {
-                        Core.Log("Vessel id " + VesselId + " from RadStorm ConfigNode not found.", Core.LogLevel.Error);
+                        Core.Log("Vessel id " + VesselId + " from RadStorm ConfigNode not found.", LogLevel.Error);
                         Target = RadStormTargetType.None;
                         return;
                     }

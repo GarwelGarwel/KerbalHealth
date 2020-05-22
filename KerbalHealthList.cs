@@ -17,7 +17,7 @@ namespace KerbalHealth
         {
             if (ContainsKey(name))
                 return;
-            Core.Log("Registering " + name + ".", Core.LogLevel.Important);
+            Core.Log("Registering " + name + ".", LogLevel.Important);
             Add(name, new KerbalHealthStatus(name));
         }
 
@@ -47,7 +47,7 @@ namespace KerbalHealth
                 Add(name2, this[name1]);
                 Remove(name1);
             }
-            else Core.Log("Could not find '" + name1 + "'.", Core.LogLevel.Error);
+            else Core.Log("Could not find '" + name1 + "'.", LogLevel.Error);
         }
 
         /// <summary>
@@ -60,11 +60,11 @@ namespace KerbalHealth
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
             list.AddRange(kerbalRoster.Tourist);
-            Core.Log(list.Count + " total trackable kerbals.", Core.LogLevel.Important);
+            Core.Log(list.Count + " total trackable kerbals.", LogLevel.Important);
             foreach (ProtoCrewMember pcm in list)
                 if (Core.IsKerbalTrackable(pcm))
                     Add(pcm.name);
-            Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", Core.LogLevel.Important);
+            Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", LogLevel.Important);
         }
 
         void RemoveUntrackable()

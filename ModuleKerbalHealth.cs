@@ -113,17 +113,17 @@ namespace KerbalHealth
                     else return ShipConstruction.ShipManifest.CrewCount;
                 if (part == null)
                 {
-                    Core.Log("TotalAffectedCrewCount: part is null!", Core.LogLevel.Error);
+                    Core.Log("TotalAffectedCrewCount: part is null!", LogLevel.Error);
                     return 0;
                 }
                 if (part.protoModuleCrew == null)
                 {
-                    Core.Log("TotalAffectedCrewCount: part.protoModuleCrew is null!", Core.LogLevel.Error);
+                    Core.Log("TotalAffectedCrewCount: part.protoModuleCrew is null!", LogLevel.Error);
                     return 0;
                 }
                 if (vessel == null)
                 {
-                    Core.Log("TotalAffectedCrewCount: vessel is null!", Core.LogLevel.Error);
+                    Core.Log("TotalAffectedCrewCount: vessel is null!", LogLevel.Error);
                     return 0;
                 }
                 return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();

@@ -21,7 +21,7 @@
                 Id = Core.GetUInt(value, "id");
                 if (Id == 0)
                 {
-                    Core.Log("Incorrect part id 0 for training part.", Core.LogLevel.Error);
+                    Core.Log("Incorrect part id 0 for training part.", LogLevel.Error);
                     return;
                 }
                 Name = Core.GetString(value, "name", "");

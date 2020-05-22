@@ -5,6 +5,17 @@ using UnityEngine;
 namespace KerbalHealth
 {
     /// <summary>
+    /// Log levels:
+    /// <list type="bullet">
+    /// <item><definition>None: do not log</definition></item>
+    /// <item><definition>Error: log only errors</definition></item>
+    /// <item><definition>Important: log only errors and important information</definition></item>
+    /// <item><definition>Debug: log all information</definition></item>
+    /// </list>
+    /// </summary>
+    public enum LogLevel { None = 0, Error, Important, Debug };
+
+    /// <summary>
     /// Provides general static methods and fields for KerbalHealth
     /// </summary>
     public static class Core
@@ -42,13 +53,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="id">Factor id</param>
         /// <returns></returns>
-        public static HealthFactor GetHealthFactor(string id)
-        {
-            foreach (HealthFactor f in Factors)
-                if (f.Name == id)
-                    return f;
-            return null;
-        }
+        public static HealthFactor GetHealthFactor(string id) => Factors.Find(f => f.Name == id);
 
         /// <summary>
         /// List sof all possible health conditions
@@ -75,13 +80,7 @@ namespace KerbalHealth
 
         public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
 
-        public static Quirk GetQuirk(string name)
-        {
-            foreach (Quirk q in Quirks)
-                if (string.Compare(name, q.Name, true) == 0)
-                    return q;
-            return null;
-        }
+        public static Quirk GetQuirk(string name) => Quirks.Find(q => string.Compare(name, q.Name, true) == 0);
 
         public static Dictionary<CelestialBody, PlanetHealthConfig> PlanetConfigs { get; set; }
 
@@ -224,7 +223,10 @@ namespace KerbalHealth
         /// <param name="pcm"></param>
         /// <returns></returns>
         public static bool IsKerbalTrackable(ProtoCrewMember pcm)
-            => (pcm != null) && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001));
+            => (pcm != null)
+            && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+            || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+            || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001));
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
@@ -294,15 +296,7 @@ namespace KerbalHealth
         {
             List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
             foreach (Part p in allParts)
-            {
-                List<ModuleKerbalHealth> modules = p.FindModulesImplementing<ModuleKerbalHealth>();
-                foreach (ModuleKerbalHealth mkh in modules)
-                    if (mkh.complexity != 0)
-                    {
-                        res.Add(mkh);
-                        break;
-                    }
-            }
+                res.AddRange(p.FindModulesImplementing<ModuleKerbalHealth>().FindAll(mkh => mkh.complexity != 0));
             return res;
         }
 
@@ -394,21 +388,6 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns the number of occurences of a character in a string
-        /// </summary>
-        /// <param name="s"></param>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        public static int CountChars(string s, char c)
-        {
-            int res = 0;
-            foreach (char ch in s)
-                if (ch == c)
-                    res++;
-            return res;
-        }
-
-        /// <summary>
         /// Returns a zero-based year in the given timestamp (add 1 for a KSP date year)
         /// </summary>
         /// <param name="time"></param>
@@ -491,17 +470,6 @@ namespace KerbalHealth
         /// Mod-wide random number generator
         /// </summary>
         public static System.Random rand = new System.Random();
-
-        /// <summary>
-        /// Log levels:
-        /// <list type="bullet">
-        /// <item><definition>None: do not log</definition></item>
-        /// <item><definition>Error: log only errors</definition></item>
-        /// <item><definition>Important: log only errors and important information</definition></item>
-        /// <item><definition>Debug: log all information</definition></item>
-        /// </list>
-        /// </summary>
-        public enum LogLevel { None, Error, Important, Debug };
 
         /// <summary>
         /// Current <see cref="LogLevel"/>: either Debug or Important

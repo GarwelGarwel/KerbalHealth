@@ -37,11 +37,11 @@
                 Name = Core.GetString(value, "name");
                 if (Name == null)
                 {
-                    Core.Log("Missing 'name' key in body properties definition.", Core.LogLevel.Error);
+                    Core.Log("Missing 'name' key in body properties definition.", LogLevel.Error);
                     return;
                 }
                 if (Body == null)
-                    Core.Log("Body '" + Name + "' not found.", Core.LogLevel.Important);
+                    Core.Log("Body '" + Name + "' not found.", LogLevel.Important);
                 Magnetosphere = Core.GetDouble(value, "magnetosphere", Magnetosphere);
                 AtmosphericAbsorption = Core.GetDouble(value, "atmosphericAbsorption", AtmosphericAbsorption);
                 Radioactivity = Core.GetDouble(value, "radioactivity", Radioactivity);

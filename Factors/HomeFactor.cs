@@ -24,7 +24,7 @@ namespace KerbalHealth
             CelestialBody body = Core.KerbalVessel(pcm)?.mainBody;
             if (body == null)
             {
-                Core.Log("Could not find main body for " + pcm.name, Core.LogLevel.Error);
+                Core.Log("Could not find main body for " + pcm.name, LogLevel.Error);
                 return 0;
             }
             if (body.isHomeWorld && (Core.KerbalVessel(pcm).altitude < body.scienceValues.flyingAltitudeThreshold))

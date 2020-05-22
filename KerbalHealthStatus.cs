@@ -166,7 +166,7 @@ namespace KerbalHealth
             Conditions.Add(condition);
             if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
                 HP += condition.HP * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
-            Core.Log(condition.Name + " condition added to " + Name + ".", Core.LogLevel.Important);
+            Core.Log(condition.Name + " condition added to " + Name + ".", LogLevel.Important);
             if (condition.Incapacitated)
                 MakeIncapacitated();
             if (condition.Visible)
@@ -184,14 +184,14 @@ namespace KerbalHealth
         {
             if (condition == null)
                 return;
-            Core.Log("Removing " + condition.Name + " condition from " + Name + ".", Core.LogLevel.Important);
+            Core.Log("Removing " + condition.Name + " condition from " + Name + ".", LogLevel.Important);
 
             int n = 0;
             if (removeAll)
             {
                 while (Conditions.Remove(condition))
                     n++;
-                Core.Log(n + " instance(s) of " + condition.Name + " removed.", Core.LogLevel.Important);
+                Core.Log(n + " instance(s) of " + condition.Name + " removed.", LogLevel.Important);
             }
             else n = Conditions.Remove(condition) ? 1 : 0;
             if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled && condition.RestoreHP)
@@ -228,16 +228,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns false if at least one of kerbal's current health conditions makes him/her incapacitated (i.e. turns into a Tourist), true otherwise
         /// </summary>
-        public bool IsCapable
-        {
-            get
-            {
-                foreach (HealthCondition hc in Conditions)
-                    if (hc.Incapacitated)
-                        return false;
-                return true;
-            }
-        }
+        public bool IsCapable => !Conditions.Exists(hc => hc.Incapacitated);
 
         /// <summary>
         /// Turn a kerbal into a Tourist
@@ -246,10 +237,10 @@ namespace KerbalHealth
         {
             if ((Trait != null) && (PCM.type == ProtoCrewMember.KerbalType.Tourist))
             {
-                Core.Log(Name + " is already incapacitated.", Core.LogLevel.Important);
+                Core.Log(Name + " is already incapacitated.", LogLevel.Important);
                 return;
             }
-            Core.Log(Name + " (" + Trait + ") is incapacitated.", Core.LogLevel.Important);
+            Core.Log(Name + " (" + Trait + ") is incapacitated.", LogLevel.Important);
             Trait = PCM.trait;
             PCM.type = ProtoCrewMember.KerbalType.Tourist;
             KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
@@ -262,7 +253,7 @@ namespace KerbalHealth
         {
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist)
                 return;  // Apparently, the kerbal has already been revived by another mod
-            Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.", Core.LogLevel.Important);
+            Core.Log(Name + " is becoming " + (Trait ?? "something strange") + " again.", LogLevel.Important);
             if ((Trait != null) && (Trait != "Tourist"))
             {
                 PCM.type = ProtoCrewMember.KerbalType.Crew;
@@ -370,7 +361,7 @@ namespace KerbalHealth
 
             if ((availableQuirks.Count == 0) || (weightSum <= 0))
             {
-                Core.Log("No available quirks found for " + Name + " (level " + level + ").", Core.LogLevel.Important);
+                Core.Log("No available quirks found for " + Name + " (level " + level + ").", LogLevel.Important);
                 return null;
             }
 
@@ -385,7 +376,7 @@ namespace KerbalHealth
                     return availableQuirks[i];
                 }
             }
-            Core.Log("Something is terribly wrong with quirk selection!", Core.LogLevel.Error);
+            Core.Log("Something is terribly wrong with quirk selection!", LogLevel.Error);
             return null;
         }
 
@@ -536,13 +527,11 @@ namespace KerbalHealth
             // Step 1: Calculating training complexity of all not yet trained-for parts
             double totalComplexity = 0;
             foreach (TrainingPart tp in TrainingFor)
-            {
                 if (TrainingLevels[tp.Id] < Core.TrainingCap)
                     totalComplexity += GetPartTrainingComplexity(tp);
-            }
             if (totalComplexity == 0)
             {
-                Core.Log("No parts in need of training found.", Core.LogLevel.Important);
+                Core.Log("No parts in need of training found.", LogLevel.Important);
                 FinishTraining();
                 return;
             }
@@ -814,7 +803,7 @@ namespace KerbalHealth
         {
             if (v == null)
             {
-                Core.Log("Vessel is null. No radiation added.", Core.LogLevel.Important);
+                Core.Log("Vessel is null. No radiation added.", LogLevel.Important);
                 return 0;
             }
             Core.Log(v.vesselName + " is in " + v.mainBody.bodyName + "'s SOI at an altitude of " + v.altitude + ", distance to Sun: " + v.distanceToSun);
@@ -869,7 +858,7 @@ namespace KerbalHealth
             Core.Log("StartDecontamination for " + Name);
             if (!IsReadyForDecontamination)
             {
-                Core.Log(Name + " is " + PCM.rosterStatus + "; HP: " + HP + "/" + MaxHP + "; has " + Conditions.Count + " condition(s)", Core.LogLevel.Error);
+                Core.Log(Name + " is " + PCM.rosterStatus + "; HP: " + HP + "/" + MaxHP + "; has " + Conditions.Count + " condition(s)", LogLevel.Error);
                 return;
             }
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
@@ -905,7 +894,7 @@ namespace KerbalHealth
             ProtoCrewMember pcm = PCM;
             if (pcm == null)
             {
-                Core.Log(Name + " was not found in the kerbal roster!", Core.LogLevel.Error);
+                Core.Log(Name + " was not found in the kerbal roster!", LogLevel.Error);
                 return 0;
             }
 
@@ -917,7 +906,7 @@ namespace KerbalHealth
 
             if (IsOnEVA && ((pcm.seat != null) || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)))
             {
-                Core.Log(Name + " is back from EVA.", Core.LogLevel.Important);
+                Core.Log(Name + " is back from EVA.", LogLevel.Important);
                 IsOnEVA = false;
             }
 
@@ -1008,7 +997,7 @@ namespace KerbalHealth
 
             if (PCM == null)
             {
-                Core.Log(Name + " ProtoCrewMember record not found. Aborting health update.", Core.LogLevel.Error);
+                Core.Log(Name + " ProtoCrewMember record not found. Aborting health update.", LogLevel.Error);
                 return;
             }
 
@@ -1050,7 +1039,7 @@ namespace KerbalHealth
 
             if ((HP <= 0) && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
-                Core.Log(Name + " dies due to having " + HP + " health.", Core.LogLevel.Important);
+                Core.Log(Name + " dies due to having " + HP + " health.", LogLevel.Important);
                 if (PCM.seat != null)
                     PCM.seat.part.RemoveCrewmember(PCM);
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;

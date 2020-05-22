@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -45,7 +46,7 @@ namespace KerbalHealth
             bool res = true;
             if (pcm == null)
             {
-                Core.Log("ProtoCrewMember argument in Logic.Test is null!", Core.LogLevel.Error);
+                Core.Log("ProtoCrewMember argument in Logic.Test is null!", LogLevel.Error);
                 return res;
             }
             Vessel v = Core.KerbalVessel(pcm);
@@ -200,8 +201,12 @@ namespace KerbalHealth
                 res += "\n" + indent2 + "Kerbal(s) with " + ConditionPresent + " present in the vessel";
             foreach (Logic l in Operands)
                 res += "\n" + l.Description(level + 1);
-            if (Core.CountChars(res, '\n') >= 2)
-                res = indent1 + (Operator == OperatorType.And ? (Inverse ? "One" : "All") : (Inverse ? "None" : "One")) + " of the following conditions is " + ((Operator == OperatorType.And) && Inverse ? "false" : "true") + ":" + res;
+            if (res.Count(c => c == '\n') > 1)
+                res = indent1
+                    + (Operator == OperatorType.And ? (Inverse ? "One" : "All") : (Inverse ? "None" : "One"))
+                    + " of the following conditions is "
+                    + ((Operator == OperatorType.And) && Inverse ? "false" : "true")
+                    + ":" + res;
             else res = (res.Length != 0) && Inverse ? indent1 + "This is FALSE:" + res : res.Trim('\n');
             return res;
         }
@@ -225,7 +230,7 @@ namespace KerbalHealth
                         Operator = OperatorType.Or;
                         break;
                     default:
-                        Core.Log("Unrecognized Logic operator '" + s + "' in config node " + value.name + ".", Core.LogLevel.Error);
+                        Core.Log("Unrecognized Logic operator '" + s + "' in config node " + value.name + ".", LogLevel.Error);
                         break;
                 }
                 Inverse = Core.GetBool(value, "inverse");

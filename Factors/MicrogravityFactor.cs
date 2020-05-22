@@ -16,12 +16,12 @@ namespace KerbalHealth
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
             if (Core.KerbalHealthList[pcm] == null)
             {
-                Core.Log(pcm.name + " not found in KerbalHealthList. The list has " + Core.KerbalHealthList.Count + " records.", Core.LogLevel.Error);
+                Core.Log(pcm.name + " not found in KerbalHealthList. The list has " + Core.KerbalHealthList.Count + " records.", LogLevel.Error);
                 return 0;
             }
             if (Core.KerbalVessel(pcm) == null)
             {
-                Core.Log("MicrogravityFactor.ChangePerDay: Core.KerbalVessel(pcm) is null for " + pcm.name + "! EVA is " + Core.KerbalHealthList[pcm].IsOnEVA, Core.LogLevel.Error);
+                Core.Log("MicrogravityFactor.ChangePerDay: Core.KerbalVessel(pcm) is null for " + pcm.name + "! EVA is " + Core.KerbalHealthList[pcm].IsOnEVA, LogLevel.Error);
                 return 0;
             }
             if ((Core.KerbalVessel(pcm).situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL | Vessel.Situations.ESCAPING)) != 0)
