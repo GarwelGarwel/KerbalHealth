@@ -79,6 +79,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("ConfinementBaseFactor", ref ConfinementBaseFactor);
             settingsNode.TryGetValue("LonelinessFactor", ref LonelinessFactor);
             settingsNode.TryGetValue("EVAFactor", ref EVAFactor);
+            settingsNode.TryGetValue("MicrogravityFactor", ref MicrogravityFactor);
             settingsNode.TryGetValue("ConnectedFactor", ref ConnectedFactor);
             settingsNode.TryGetValue("HomeFactor", ref HomeFactor);
             settingsNode.TryGetValue("KSCFactor", ref KSCFactor);
