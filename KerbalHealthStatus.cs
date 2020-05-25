@@ -452,13 +452,16 @@ namespace KerbalHealth
 
         public double TrainingLevelForPart(uint id) => TrainingLevels.ContainsKey(id) ? TrainingLevels[id] : 0;
 
-        public double TrainingPerDay
-            => Core.TrainingCap / (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+        public double TrainingPerDay => Core.TrainingCap / 
+            (double)((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
             ? KerbalHealthFactorsSettings.Instance.InFlightTrainingTime
-            : KerbalHealthFactorsSettings.Instance.KSCTrainingTime) / (1 + PCM.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
+            : KerbalHealthFactorsSettings.Instance.KSCTrainingTime)
+            / (1 + PCM.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
 
-        public double GetPartTrainingComplexity(TrainingPart tp) => IsFamiliarWithPartType(tp.Name) ? tp.Complexity : (tp.Complexity * 2);
-        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh) => IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity : (mkh.complexity * 2);
+        public double GetPartTrainingComplexity(TrainingPart tp)
+            => IsFamiliarWithPartType(tp.Name) ? tp.Complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : tp.Complexity;
+        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh)
+            => IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : mkh.complexity;
 
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
