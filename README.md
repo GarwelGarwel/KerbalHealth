@@ -110,6 +110,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [FTmN Atomic Rockets](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-18x-spacetux-industries-recycled-parts/) (classic and Improved)
 - [JNSQ](https://forum.kerbalspaceprogram.com/index.php?/topic/184880-17x-jnsq-07-17-june-2019/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
+- [Kerbalism](https://kerbalism.github.io/Kerbalism/) (see notes below)
 - [Kerbal Planetary Base Systems](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
 - [KSP Interstellar Extended](https://forum.kerbalspaceprogram.com/index.php?/topic/155255-12213-kspi-extended)
@@ -123,6 +124,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Sin Phi Heavy Industries](https://forum.kerbalspaceprogram.com/index.php?/topic/162654-130-sin-phi-heavy-industries-centrifuge-habitat-halberd/)
 - [Spacetux Recycled Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-131-spacetux-industries-recycled-parts/) (Atomic Age, FTmN, FTmN-New, RSCapsuledyne)
 - [SpaceY Heavy Lifters](https://forum.kerbalspaceprogram.com/index.php?/topic/90545-12213-spacey-heavy-lifter-parts-pack-v116-2017-01-30/)
+- [Snacks](https://forum.kerbalspaceprogram.com/index.php?/topic/149604-18x-snacks-friendly-simplified-life-support/)
 - [SSTU](https://github.com/shadowmage45/SSTULabs)
 - [Stockalike Station Parts Expansion Redux](https://forum.kerbalspaceprogram.com/index.php?/topic/170211-*)
 - [Surface Experiment Pack](https://forum.kerbalspaceprogram.com/index.php?/topic/155382-14x-surface-experiment-pack-deployable-science-for-kiskas-v26-20mar18/&tab=comments#comment-2930055)
@@ -130,7 +132,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Tokamak Insustries Refurbished Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/163166-151-tokamak-industries-refurbished-parts-featuring-porkjets-hab-pack/)
 - [USI Freight Transportation Technologies](https://forum.kerbalspaceprogram.com/index.php?/topic/82730-13-freight-transport-technologies-v060/)
 - [USI Kolonization Systems (MKS/OKS) + Karibou](https://github.com/BobPalmer/MKS)
-- [USI-LS](https://github.com/BobPalmer/USI-LS)
+- [USI-LS](https://github.com/BobPalmer/USI-LS) (see notes below)
 
 Making History expansion is fully supported too but not required.
 
@@ -140,9 +142,9 @@ If you would like to include special support for your (or your favorite) mod, le
 
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - Custom solar systems with multiple stars can work in strange ways with radiation mechanics. Disable radiation in the settings if you have problems.
+- It is recommended to disable Habitat, Stress and Sick Bay in the config for Kerbalism.
 - It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
-- Compatibility with Kerbalism hasn't been tested. That mod changes much of game's internal mechanics, so it can be incompatible.
 
 ## Copyright and License
 

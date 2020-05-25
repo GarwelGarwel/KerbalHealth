@@ -218,7 +218,7 @@ namespace KerbalHealth
                 availableResources.TryGetValue(mkh.resource, out double res2);
                 if (res2 < requiredAmount)
                 {
-                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " needed, " + res2 + " available.");
+                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " @ " + mkh.ecPerSec + "EC/sec needed, " + res2 + " available.");
                     mkh.starving = true;
                 }
                 else resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -requiredAmount));

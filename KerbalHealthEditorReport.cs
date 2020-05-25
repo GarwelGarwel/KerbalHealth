@@ -13,11 +13,20 @@ namespace KerbalHealth
         IButton toolbarButton;
         bool dirty = false;
         Rect reportPosition = new Rect(0.5f, 0.5f, 420, 50);
-        PopupDialog reportWindow;  // Health Report window
-        System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Report grid's labels
+        
+        // Health Report window
+        PopupDialog reportWindow;
+        
+        // Health Report grid's labels
+        System.Collections.Generic.List<DialogGUIBase> gridContents;
+        
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
-        int colNum = 4;  // # of columns in Health Report
-        static bool healthModulesEnabled = true, trainingEnabled = true;
+
+        // # of columns in Health Report
+        int colNum = 4;
+        
+        static bool healthModulesEnabled = true;
+        static bool trainingEnabled = true;
 
         public void Start()
         {
@@ -25,9 +34,9 @@ namespace KerbalHealth
                 return;
             Core.Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
-            GameEvents.onEditorShipModified.Add(delegate (ShipConstruct sc) { Invalidate(); });
+            GameEvents.onEditorShipModified.Add(x => Invalidate());
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(delegate (EditorScreen s) { Invalidate(); });
+            GameEvents.onEditorScreenChange.Add(x => Invalidate());
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {
@@ -44,7 +53,7 @@ namespace KerbalHealth
                 toolbarButton.Text = Localizer.Format("#KH_ER_ButtonTitle");
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
                 toolbarButton.ToolTip = "Kerbal Health";
-                toolbarButton.OnClick += (e) =>
+                toolbarButton.OnClick += e =>
                 {
                     if (reportWindow == null)
                         DisplayData();
@@ -89,7 +98,7 @@ namespace KerbalHealth
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
                 new MultiOptionDialog(
-                    "Health Report",
+                    "HealthReport",
                     "",
                     Localizer.Format("#KH_ER_Windowtitle"),//Health Report
                     HighLogic.UISkin,
@@ -242,7 +251,8 @@ namespace KerbalHealth
                     return;
                 }
 
-                if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)  // # of tracked kerbals has changed => close & reopen the window
+                // # of tracked kerbals has changed => close & reopen the window
+                if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)
                 {
                     Core.Log("Kerbals' number has changed. Recreating the Health Report window.", LogLevel.Important);
                     UndisplayData();
@@ -270,7 +280,8 @@ namespace KerbalHealth
 
                     gridContents[(i + 1) * colNum].SetOptionText(khs.FullName);
                     khs.HP = khs.MaxHP;
-                    double changePerDay = khs.HealthChangePerDay();  // Making this call here, so that GetBalanceHP doesn't have to
+                    // Making this call here, so that GetBalanceHP doesn't have to:
+                    double changePerDay = khs.HealthChangePerDay();
                     double balanceHP = khs.GetBalanceHP();
                     string s = balanceHP > 0
                         ? "-> " + balanceHP.ToString("F0") + " HP (" + (balanceHP / khs.MaxHP * 100).ToString("F0") + "%)"

@@ -14,27 +14,53 @@ namespace KerbalHealth
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT, GameScenes.EDITOR)]
     public class KerbalHealthScenario : ScenarioModule
     {
-        static double lastUpdated;  // UT at last health update
-        static double nextEventTime;  // UT when (or after) next event check occurs
-        Version version;  // Current Kerbal Health version
+        // UT at last health update
+        static double lastUpdated;
 
-        List<RadStorm> radStorms = new List<RadStorm>();  // List of scheduled radstorms
-        bool checkUntrainedKerbals = false;  // Whether the current vessel should be checked for untrained kerbals, to show notification
-        ScreenMessage untrainedKerbalsWarningMessage;
+        // UT when (or after) next event check occurs
+        static double nextEventTime;
+
+        // Current Kerbal Health version
+        Version version;
+
+        // List of scheduled radstorms
+        List<RadStorm> radStorms = new List<RadStorm>();
+
+        // Button handles
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
-        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;  // List of displayed kerbal, sorted according to current settings
+
+        // List of displayed kerbal, sorted according to current settings
+        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
+
+        // Change flags
         bool dirty = false, crewChanged = false, vesselChanged = false;
-        const int colNumMain = 8, colNumDetails = 6;  // # of columns in Health Monitor
-        const int colWidth = 100;  // Width of a cell
+
+        // Health Monitor dimensions
+        const int colNumMain = 8, colNumDetails = 6;
+        const int colWidth = 100;
         const int colSpacing = 10;
-        const int gridWidthList = colNumMain * (colWidth + colSpacing) - colSpacing,
-            gridWidthDetails = colNumDetails * (colWidth + colSpacing) - colSpacing;  // Grid width
+        const int gridWidthList = colNumMain * (colWidth + colSpacing) - colSpacing;
+        const int gridWidthDetails = colNumDetails * (colWidth + colSpacing) - colSpacing;
         Rect monitorPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
-        PopupDialog monitorWindow;  // Health Monitor window
-        System.Collections.Generic.List<DialogGUIBase> gridContents;  // Health Monitor grid's labels
-        KerbalHealthStatus selectedKHS = null;  // Currently selected kerbal for details view, null if list is shown
-        int page = 1;  // Current page in the list of kerbals
+
+        // Health Monitor window
+        PopupDialog monitorWindow;
+
+        // Health Monitor grid's labels
+        System.Collections.Generic.List<DialogGUIBase> gridContents;
+
+        // Currently selected kerbal for details view, null if list is shown
+        KerbalHealthStatus selectedKHS = null;
+
+        // Current page in the list of kerbals
+        int page = 1;
+
+        // Whether the current vessel should be checked for untrained kerbals, to show notification
+        bool checkUntrainedKerbals = false;
+
+        // Message handle for untrained kerbals warning
+        ScreenMessage untrainedKerbalsWarningMessage;
 
         public void Start()
         {
@@ -142,8 +168,6 @@ namespace KerbalHealth
 
             if (NeedsCheckForUntrainedCrew)
                 checkUntrainedKerbals = true;
-
-            Core.Log("KerbalHealthScenario.Start finished.", LogLevel.Important);
         }
 
         public void OnDisable()
@@ -176,7 +200,6 @@ namespace KerbalHealth
             UnregisterAppLauncherButton();
             if (toolbarButton != null)
                 toolbarButton.Destroy();
-            Core.Log("KerbalHealthScenario.OnDisable finished.", LogLevel.Important);
         }
 
         void RegisterAppLauncherButton()
