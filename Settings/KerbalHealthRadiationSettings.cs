@@ -3,36 +3,98 @@ namespace KerbalHealth
 {
     class KerbalHealthRadiationSettings : GameParameters.CustomParameterNode
     {
-    public override string Title => Localizer.Format("#KH_RS_title");//"Radiation"
-    public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
-    public override bool HasPresets => true;
-    public override string Section => "Kerbal Health (2)";
-    public override string DisplaySection => Section;
-    public override int SectionOrder => 1;
+        public override string Title => Localizer.Format("#KH_RS_title");//"Radiation"
+        public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
+        public override bool HasPresets => true;
+        public override string Section => "Kerbal Health (2)";
+        public override string DisplaySection => Section;
+        public override int SectionOrder => 1;
 
-    public override void SetDifficultyPreset(GameParameters.Preset preset)
-    {
-        switch (preset)
+        public override void SetDifficultyPreset(GameParameters.Preset preset)
         {
-            case GameParameters.Preset.Easy:
+            switch (preset)
+            {
+                case GameParameters.Preset.Easy:
                     RadiationEnabled = false;
                     ShieldingEffect = 2;
                     RadStormsEnabled = false;
                     break;
-            case GameParameters.Preset.Normal:
+
+                case GameParameters.Preset.Normal:
                     RadiationEnabled = true;
                     ShieldingEffect = 1;
                     break;
-            case GameParameters.Preset.Moderate:
+
+                case GameParameters.Preset.Moderate:
                     RadiationEnabled = true;
                     ShieldingEffect = 1;
                     break;
-            case GameParameters.Preset.Hard:
+
+                case GameParameters.Preset.Hard:
                     RadiationEnabled = true;
                     ShieldingEffect = 1;
                     break;
+            }
         }
-    }
+
+        /// <summary>
+        /// Reverts all settings to their mod-default values
+        /// </summary>
+        internal void Reset()
+        {
+            RadiationEnabled = true;
+            RadiationEffect = 0.1f;
+            ShieldingEffect = 1;
+            InSpaceHighCoefficient = 0.40f;
+            InSpaceLowCoefficient = 0.20f;
+            StratoCoefficient = 0.2f;
+            TroposphereCoefficient = 0.01f;
+            EVAExposure = 5;
+            SolarRadiation = 2500;
+            GalacticRadiation = 12500;
+            RadStormsEnabled = true;
+            RadStormFrequency = 1;
+            RadStormMagnitude = 1;
+            DecontaminationRate = 100000;
+            DecontaminationHealthLoss = 0.75f;
+            DecontaminationFundsCost = 100000;
+            DecontaminationScienceCost = 1000;
+            DecontaminationAstronautComplexLevel = 3;
+            DecontaminationRNDLevel = 3;
+            SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
+        }
+
+        /// <summary>
+        /// Assigns settings defined in settingsNode
+        /// </summary>
+        /// <param name="settingsNode"></param>
+        internal void ApplyConfig(ConfigNode settingsNode)
+        {
+            if (settingsNode == null)
+                return;
+            Core.Log("Applying KerbalHealthGeneralSettings settings: " + settingsNode);
+            settingsNode.TryGetValue("RadiationEnabled", ref RadiationEnabled);
+            settingsNode.TryGetValue("RadiationEffect", ref RadiationEffect);
+            settingsNode.TryGetValue("ShieldingEffect", ref ShieldingEffect);
+            settingsNode.TryGetValue("InSpaceHighCoefficient", ref InSpaceHighCoefficient);
+            settingsNode.TryGetValue("InSpaceLowCoefficient", ref InSpaceLowCoefficient);
+            settingsNode.TryGetValue("StratoCoefficient", ref StratoCoefficient);
+            settingsNode.TryGetValue("TroposphereCoefficient", ref TroposphereCoefficient);
+            settingsNode.TryGetValue("EVAExposure", ref EVAExposure);
+            settingsNode.TryGetValue("SolarRadiation", ref SolarRadiation);
+            settingsNode.TryGetValue("GalacticRadiation", ref GalacticRadiation);
+            settingsNode.TryGetValue("RadStormsEnabled", ref RadStormsEnabled);
+            settingsNode.TryGetValue("RadStormFrequency", ref RadStormFrequency);
+            settingsNode.TryGetValue("RadStormMagnitude", ref RadStormMagnitude);
+            settingsNode.TryGetValue("DecontaminationRate", ref DecontaminationRate);
+            settingsNode.TryGetValue("DecontaminationHealthLoss", ref DecontaminationHealthLoss);
+            settingsNode.TryGetValue("DecontaminationFundsCost", ref DecontaminationFundsCost);
+            settingsNode.TryGetValue("DecontaminationScienceCost", ref DecontaminationScienceCost);
+            settingsNode.TryGetValue("DecontaminationAstronautComplexLevel", ref DecontaminationAstronautComplexLevel);
+            settingsNode.TryGetValue("DecontaminationRNDLevel", ref DecontaminationRNDLevel);
+        }
+
+        public static KerbalHealthRadiationSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>();
 
         [GameParameters.CustomParameterUI("#KH_RS_RadiationEnabled", toolTip = "#KH_RS_RadiationEnabled_desc")]//Radiation Enabled""Degrade max health based on accumulated dose
         public bool RadiationEnabled = true;
@@ -68,7 +130,7 @@ namespace KerbalHealth
         public bool RadStormsEnabled = true;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequence", toolTip = "#KH_RS_RadStormFrequence_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
-        public float RadStormFrequence = 1;
+        public float RadStormFrequency = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormMagnitude", toolTip = "#KH_RS_RadStormMagnitude_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Magnitude""How strong radstorms are, relative to default values
         public float RadStormMagnitude = 1;

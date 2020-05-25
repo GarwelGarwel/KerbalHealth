@@ -17,11 +17,11 @@
         /// </summary>
         virtual public bool Cachable => true;
 
+        bool enabledInEditor = true;
+
         /// <summary>
         /// Is the factor considered when calculating estimated HP change in Health Report
         /// </summary>
-        //public bool EnabledInEditor { get; set; }
-        bool enabledInEditor = true;
         public bool IsEnabledInEditor() => enabledInEditor;
         public void SetEnabledInEditor(bool state) => enabledInEditor = state;
         virtual public void ResetEnabledInEditor() => SetEnabledInEditor(true);

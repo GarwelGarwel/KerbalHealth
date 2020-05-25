@@ -10,7 +10,9 @@
 
         public override void OnStart(StartState state)
         {
-            if (Core.IsInEditor) return;
+            if (Core.IsInEditor)
+                return;
+
             Core.Log("ModuleHealthEnvironmentSensor.OnStart(" + state + ") for " + part.name);
             switch (type.ToLower())
             {
@@ -32,7 +34,9 @@
 
         public void FixedUpdate()
         {
-            if (Core.IsInEditor) return;
+            if (Core.IsInEditor)
+                return;
+
             if (!isActiveAndEnabled || !vessel.IsControllable)
             {
                 Core.Log(vessel.vesselName + " is not controllable or the ModuleHealthEnvironmentSensor is inactive. No data is displayed by " + part.name);
@@ -40,6 +44,7 @@
                 return;
             }
             else Fields["displayData"].guiActive = true;
+
             switch (type.ToLower())
             {
                 case "radiation":

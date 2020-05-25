@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace KerbalHealth
 {
@@ -49,7 +46,10 @@ namespace KerbalHealth
             }
         }
 
-        public override string ToString() => RemoveOldCondition ? (Condition == "" ? "Remove current condition" : ("Change to " + Condition + " condition")) : ("Add " + Condition + " condition") + " with a chance of " + ChancePerDay + " with " + ChanceModifiers.Count + " chance modifiers";
+        public override string ToString()
+            => RemoveOldCondition
+            ? (Condition.Length == 0 ? "Remove current condition" : ("Change to " + Condition + " condition"))
+            : ("Add " + Condition + " condition") + " with a chance of " + ChancePerDay + " with " + ChanceModifiers.Count + " chance modifiers";
 
         public Outcome(ConfigNode node) => ConfigNode = node;
     }
