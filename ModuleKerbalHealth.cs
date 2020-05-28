@@ -215,13 +215,13 @@ namespace KerbalHealth
                 double requiredAmount = mkh.ecPerSec * elapsed_s;
                 if (mkh.resource != "ElectricCharge")
                     mkh.ecPerSec = 0;
-                availableResources.TryGetValue(mkh.resource, out double res2);
-                if (res2 < requiredAmount)
+                availableResources.TryGetValue(mkh.resource, out double availableAmount);
+                if (availableAmount <= 0)
                 {
-                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " @ " + mkh.ecPerSec + "EC/sec needed, " + res2 + " available.");
+                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " @ " + mkh.ecPerSec + "EC/sec needed, " + availableAmount + " available.");
                     mkh.starving = true;
                 }
-                else resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -requiredAmount));
+                resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -mkh.ecPerSec));
             }
             else mkh.ecPerSec = 0;
             return mkh.Title.ToLower();
