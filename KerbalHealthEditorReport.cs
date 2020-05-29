@@ -3,6 +3,7 @@ using System.IO;
 using UnityEngine;
 using KSP.UI.Screens;
 using KSP.Localization;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -168,10 +169,8 @@ namespace KerbalHealth
             KerbalHealthStatus khs;
             List<string> s = new List<string>();
             List<string> f = new List<string>();
-            foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
+            foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
             {
-                if (pcm == null)
-                    continue;
                 khs = Core.KerbalHealthList[pcm];
                 if (khs == null)
                     continue;
@@ -266,10 +265,8 @@ namespace KerbalHealth
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
 
-                foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false))
+                foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
                 {
-                    if (pcm == null)
-                        continue;
                     khs = Core.KerbalHealthList[pcm]?.Clone();
                     if (khs == null)
                     {

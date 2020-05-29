@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -33,14 +34,7 @@ namespace KerbalHealth
         /// <param name="level"></param>
         /// <returns></returns>
         public bool IsAvailableTo(KerbalHealthStatus khs, int level)
-        {
-            if (level < MinLevel)
-                return false;
-            foreach (string q in IncompatibleQuirks)
-                if (khs.Quirks.Contains(Core.GetQuirk(q)))
-                    return false;
-            return true;
-        }
+            => level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
 
         /// <summary>
         /// Applies valid effects of this quirk to the given kerbal's HealthModifierSet
@@ -50,12 +44,12 @@ namespace KerbalHealth
         public void Apply(KerbalHealthStatus khs, HealthModifierSet hms)
         {
             Core.Log("Applying " + Name + " quirk to " + khs.Name + ".");
-            foreach (HealthEffect eff in Effects)
-                if (eff.IsApplicable(khs))
-                    eff.Apply(hms);
+            foreach (HealthEffect eff in Effects.Where(eff => eff.IsApplicable(khs)))
+                eff.Apply(hms);
         }
 
         public override bool Equals(object obj) => (obj is Quirk) && (obj != null) && (((Quirk)obj).Name == Name);
+
         public override int GetHashCode() => Name.GetHashCode();
 
         public override string ToString()
@@ -81,13 +75,10 @@ namespace KerbalHealth
             Description = node.GetValue("description");
             IsVisible = Core.GetBool(node, "visible", true);
             MinLevel = Core.GetInt(node, "minLevel");
-            foreach (string t in node.GetValues("incompatibleWith"))
-                IncompatibleQuirks.Add(t);
+            IncompatibleQuirks = new List<string>(node.GetValues("incompatibleWith"));
             CourageWeight = Core.GetDouble(node, "courageWeight", 1);
             StupidityWeight = Core.GetDouble(node, "stupidityWeight", 1);
-            Effects = new List<HealthEffect>();
-            foreach (ConfigNode n in node.GetNodes("EFFECT"))
-                Effects.Add(new HealthEffect(n));
+            Effects = new List<HealthEffect>(node.GetNodes("EFFECT").Select(n => new HealthEffect(n)));
             Core.Log("Quirk loaded: " + this);
         }
 

@@ -91,7 +91,7 @@
     <Compile Include="HealthEffect.cs" />
     <Compile Include="Settings\KerbalHealthFactorsSettings.cs" />
     <Compile Include="Factors\HealthFactor.cs" />
-    <Compile Include="EVAFactor.cs" />
+    <Compile Include="Factors\EVAFactor.cs" />
     <Compile Include="Settings\KerbalHealthQuirkSettings.cs" />
     <Compile Include="Settings\KerbalHealthRadiationSettings.cs" />
     <Compile Include="Factors\KSCFactor.cs" />

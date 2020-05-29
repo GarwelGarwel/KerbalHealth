@@ -23,7 +23,9 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor)
                 if (IsEnabledInEditor())
-                    return (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || KerbalHealthEditorReport.TrainingEnabled) ? BaseChangePerDay * (1 - Core.TrainingCap) : BaseChangePerDay;
+                    return (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || KerbalHealthEditorReport.TrainingEnabled)
+                        ? BaseChangePerDay * (1 - Core.TrainingCap)
+                        : BaseChangePerDay;
                 else return 0;
             return (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? ChangePerDayActual(pcm) : 0;
         }

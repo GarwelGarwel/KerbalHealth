@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KSP.Localization;
+using Smooth.Collections;
 
 namespace KerbalHealth
 {
@@ -115,20 +117,14 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public HealthCondition GetCondition(string condition)
-        {
-            foreach (HealthCondition hc in Conditions)
-                if (hc.Name == condition)
-                    return hc;
-            return null;
-        }
+        public HealthCondition GetCondition(string condition) => Conditions.Find(hc => hc.Name == condition);
 
         /// <summary>
         /// Returns true if a given condition exists for the kerbal
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public bool HasCondition(string condition) => GetCondition(condition) != null;
+        public bool HasCondition(string condition) => Conditions.Exists(hc => hc.Name == condition);
 
         /// <summary>
         /// Returns true if a given condition exists for the kerbal
@@ -212,13 +208,12 @@ namespace KerbalHealth
             get
             {
                 string res = "";
-                foreach (HealthCondition hc in Conditions)
-                    if (hc.Visible)
-                    {
-                        if (res.Length != 0)
-                            res += ", ";
-                        res += hc.Title;
-                    }
+                foreach (HealthCondition hc in Conditions.Where(hc => hc.Visible))
+                {
+                    if (res.Length != 0)
+                        res += ", ";
+                    res += hc.Title;
+                }
                 if (res.Length == 0)
                     res = "OK";
                 return res;
@@ -228,7 +223,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns false if at least one of kerbal's current health conditions makes him/her incapacitated (i.e. turns into a Tourist), true otherwise
         /// </summary>
-        public bool IsCapable => !Conditions.Exists(hc => hc.Incapacitated);
+        public bool IsCapable => !Conditions.Any(hc => hc.Incapacitated);
 
         /// <summary>
         /// Turn a kerbal into a Tourist
@@ -272,9 +267,8 @@ namespace KerbalHealth
                 double xs = KerbalHealthGeneralSettings.Instance.ExhaustionStartHealth;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
                     foreach (Quirk q in Quirks)
-                        foreach (HealthEffect he in q.Effects)
-                            if (he.IsApplicable(this))
-                                xs *= he.ExhaustedStart;
+                        foreach (HealthEffect he in q.Effects.Where(he => he.IsApplicable(this)))
+                            xs *= he.ExhaustedStart;
                 return xs;
             }
         }
@@ -294,9 +288,8 @@ namespace KerbalHealth
                 double xe = KerbalHealthGeneralSettings.Instance.ExhaustionEndHealth;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
                     foreach (Quirk q in Quirks)
-                        foreach (HealthEffect he in q.Effects)
-                            if (he.IsApplicable(this))
-                                xe *= he.ExhaustedEnd;
+                        foreach (HealthEffect he in q.Effects.Where(he => he.IsApplicable(this)))
+                            xe *= he.ExhaustedEnd;
                 return xe;
             }
         }
@@ -349,15 +342,14 @@ namespace KerbalHealth
             List<Quirk> availableQuirks = new List<Quirk>();
             List<double> weights = new List<double>();
             double weightSum = 0;
-            foreach (Quirk q in Core.Quirks)
-                if (q.IsVisible && q.IsAvailableTo(this, level) && !Quirks.Contains(q))
-                {
-                    availableQuirks.Add(q);
-                    double w = KerbalHealthQuirkSettings.Instance.StatsAffectQuirkWeights ? GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight) : 1;
-                    weightSum += w;
-                    weights.Add(w);
-                    Core.Log("Available quirk: " + q.Name + " (weight " + w + ")");
-                }
+            foreach (Quirk q in Core.Quirks.Where(q => q.IsVisible && q.IsAvailableTo(this, level) && !Quirks.Contains(q)))
+            {
+                availableQuirks.Add(q);
+                double w = KerbalHealthQuirkSettings.Instance.StatsAffectQuirkWeights ? GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight) : 1;
+                weightSum += w;
+                weights.Add(w);
+                Core.Log("Available quirk: " + q.Name + " (weight " + w + ")");
+            }
 
             if ((availableQuirks.Count == 0) || (weightSum <= 0))
             {
@@ -529,9 +521,8 @@ namespace KerbalHealth
 
             // Step 1: Calculating training complexity of all not yet trained-for parts
             double totalComplexity = 0;
-            foreach (TrainingPart tp in TrainingFor)
-                if (TrainingLevels[tp.Id] < Core.TrainingCap)
-                    totalComplexity += GetPartTrainingComplexity(tp);
+            foreach (TrainingPart tp in TrainingFor.Where(tp => TrainingLevels[tp.Id] < Core.TrainingCap))
+                totalComplexity += GetPartTrainingComplexity(tp);
             if (totalComplexity == 0)
             {
                 Core.Log("No parts in need of training found.", LogLevel.Important);
@@ -626,14 +617,12 @@ namespace KerbalHealth
             {
                 double k = 1, a = 0;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (Quirk q in Quirks)
-                        if (q != null)
-                            foreach (HealthEffect he in q.Effects)
-                                if ((he != null) && he.IsApplicable(this))
-                                {
-                                    a += he.MaxHPBonus;
-                                    k *= he.MaxHP;
-                                }
+                    foreach (Quirk q in Quirks.Where(q => q != null))
+                        foreach (HealthEffect he in q.Effects.Where(he => (he != null) && he.IsApplicable(this)))
+                        {
+                            a += he.MaxHPBonus;
+                            k *= he.MaxHP;
+                        }
                 return (GetMaxHP(PCM) + MaxHPModifier + a) * RadiationMaxHPModifier * k;
             }
         }
@@ -1155,10 +1144,10 @@ namespace KerbalHealth
                 partsRadiation = Core.GetDouble(value, "partsRadiation");
                 LastExposure = Core.GetDouble(value, "exposure", 1);
                 ShelterExposure = Core.GetDouble(value, "shelterExposure", LastExposure);
-                foreach (string s in value.GetValues("condition"))
-                    Conditions.Add(Core.GetHealthCondition(s));
-                foreach (ConfigNode n in value.GetNodes("HealthCondition"))
-                    Conditions.Add(Core.GetHealthCondition(Core.GetString(n, "name")));
+                Conditions = new List<HealthCondition>(value.GetValues("condition").Select(s => Core.GetHealthCondition(s)));
+                //foreach (string s in value.GetValues("condition"))
+                //    Conditions.Add(Core.GetHealthCondition(s));
+                Conditions.AddRange(value.GetNodes("HealthCondition").Select(n => Core.GetHealthCondition(Core.GetString(n, "name"))));
                 if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && HasCondition("Training"))
                     RemoveCondition("Training", true);
                 foreach (string s in value.GetValues("quirk"))
@@ -1176,17 +1165,17 @@ namespace KerbalHealth
                     if (id != 0)
                         TrainingLevels[id] = Core.GetDouble(n, "trainingLevel");
                 }
-                foreach (string s in value.GetValues("familiarPartType"))
-                    FamiliarPartTypes.Add(s);
+                FamiliarPartTypes.AddAll(value.GetValues("familiarPartType"));
                 foreach (ConfigNode n in value.GetNodes("TRAINED_VESSEL"))
                 {
                     string name = Core.GetString(n, "name");
                     if (name != null)
                         TrainedVessels.Add(name, Core.GetDouble(n, "trainingLevel"));
                 }
-                TrainingFor.Clear();
-                foreach (ConfigNode n in value.GetNodes("TRAINING_PART"))
-                    TrainingFor.Add(new TrainingPart(n));
+                TrainingFor = new List<TrainingPart>(value.GetNodes("TRAINING_PART").Select(n => new TrainingPart(n)));
+                //TrainingFor.Clear();
+                //foreach (ConfigNode n in value.GetNodes("TRAINING_PART"))
+                //    TrainingFor.Add(new TrainingPart(n));
                 TrainingVessel = Core.GetString(value, "trainingVessel");
             }
         }

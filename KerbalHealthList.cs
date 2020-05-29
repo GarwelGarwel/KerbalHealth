@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -61,25 +62,23 @@ namespace KerbalHealth
             List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
             list.AddRange(kerbalRoster.Tourist);
             Core.Log(list.Count + " total trackable kerbals.", LogLevel.Important);
-            foreach (ProtoCrewMember pcm in list)
-                if (Core.IsKerbalTrackable(pcm))
-                    Add(pcm.name);
+            foreach (ProtoCrewMember pcm in list.Where(pcm => Core.IsKerbalTrackable(pcm)))
+                Add(pcm.name);
             Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", LogLevel.Important);
         }
 
         void RemoveUntrackable()
         {
-            List<string> toRemove = new List<string>();
-            foreach (KerbalHealthStatus khs in Values)
-            {
-                if (!Core.IsKerbalTrackable(khs.PCM) && !khs.IsFrozen)
-                {
-                    Core.Log(khs.Name + " is not trackable anymore. Marking for removal.");
-                    toRemove.Add(khs.Name);
-                }
-            }
+            List<string> toRemove = new List<string>(Values
+                .Where(khs => !Core.IsKerbalTrackable(khs.PCM) && !khs.IsFrozen)
+                .Select(khs => khs.Name));
+            //foreach (KerbalHealthStatus khs in Values.Where(khs => !Core.IsKerbalTrackable(khs.PCM) && !khs.IsFrozen))
+                //toRemove.Add(khs.Name);
             foreach (string name in toRemove)
+            {
+                Core.Log(name + " is not trackable anymore. Marking for removal.");
                 Remove(name);
+            }
             if (toRemove.Count > 0)
                 Core.Log(toRemove.Count + " kerbal(s) removed from the KerbalHealthList.");
         }

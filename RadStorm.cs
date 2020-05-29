@@ -95,9 +95,9 @@ namespace KerbalHealth
 
             set
             {
-                try
-                { Target = (RadStormTargetType)Enum.Parse(typeof(RadStormTargetType), value.GetValue("target"), true); }
-                catch (ArgumentException)
+                if (Enum.TryParse(value.GetValue("target"), true, out RadStormTargetType radStormTargetType))
+                    Target = radStormTargetType;
+                else
                 {
                     Core.Log("No valid 'target' value found in RadStorm ConfigNode:\r\n" + value, LogLevel.Error);
                     Target = RadStormTargetType.None;

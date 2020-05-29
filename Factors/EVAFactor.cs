@@ -12,12 +12,7 @@
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            if (Core.KerbalHealthList[pcm].IsOnEVA)
-            {
-                Core.Log("EVA factor is on.");
-                return BaseChangePerDay;
-            }
-            return 0;
+            return Core.KerbalHealthList[pcm].IsOnEVA ? BaseChangePerDay : 0;
         }
     }
 }

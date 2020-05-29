@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KSP.Localization;
 
 namespace KerbalHealth
@@ -101,29 +102,12 @@ namespace KerbalHealth
             get
             {
                 if (Core.IsInEditor)
-                    if (partCrewOnly)
-                    {
-                        int r = 0;
-                        foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew())
-                            if (pcm != null)
-                                r++;
-                        Core.Log(r + " kerbal(s) found in " + part?.name + ".");
-                        return r;
-                    }
-                    else return ShipConstruction.ShipManifest.CrewCount;
-                if (part == null)
+                    return partCrewOnly
+                        ? ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew().Where(pcm => pcm != null).Count()
+                        : ShipConstruction.ShipManifest.CrewCount;
+                if (vessel == null || part?.protoModuleCrew == null)
                 {
-                    Core.Log("TotalAffectedCrewCount: part is null!", LogLevel.Error);
-                    return 0;
-                }
-                if (part.protoModuleCrew == null)
-                {
-                    Core.Log("TotalAffectedCrewCount: part.protoModuleCrew is null!", LogLevel.Error);
-                    return 0;
-                }
-                if (vessel == null)
-                {
-                    Core.Log("TotalAffectedCrewCount: vessel is null!", LogLevel.Error);
+                    Core.Log("TotalAffectedCrewCount: vessel: " + (vessel?.vesselName ?? "NULL") + "; part: " + (part?.partName ?? "NULL") + "; protoModuleCrew: " + (part?.protoModuleCrew ?? new List<ProtoCrewMember>()).Count() + " members.", LogLevel.Error);
                     return 0;
                 }
                 return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();

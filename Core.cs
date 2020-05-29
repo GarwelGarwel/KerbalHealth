@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace KerbalHealth
@@ -123,20 +124,19 @@ namespace KerbalHealth
             ConfigNode config = GameDatabase.Instance.GetConfigNodes("KERBALHEALTH_CONFIG")[0];
 
             HealthConditions = new Dictionary<string, HealthCondition>();
-            foreach (ConfigNode n in  config.GetNodes("HEALTH_CONDITION"))
+            foreach (ConfigNode n in config.GetNodes("HEALTH_CONDITION"))
                 HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
             Core.Log(HealthConditions.Count + " health conditions loaded:");
-            foreach (HealthCondition hc in HealthConditions.Values)
-                Core.Log(hc.ToString());
 
             ResourceShielding = new Dictionary<int, double>();
             foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.", LogLevel.Important);
 
-            Quirks = new List<Quirk>();
-            foreach (ConfigNode n in config.GetNodes("HEALTH_QUIRK"))
-                Quirks.Add(new Quirk(n));
+            Quirks = new List<Quirk>(config.GetNodes("HEALTH_QUIRK").Select(n => new Quirk(n)));
+            //Quirks = new List<Quirk>();
+            //foreach (ConfigNode n in config.GetNodes("HEALTH_QUIRK"))
+            //    Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
             PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
@@ -264,12 +264,12 @@ namespace KerbalHealth
                 return kerbalVesselsCache[pcm.name];
 
             foreach (Vessel v in FlightGlobals.Vessels)
-                foreach (ProtoCrewMember k in v.GetVesselCrew())
-                    if (k == pcm)
-                    {
-                        kerbalVesselsCache.Add(pcm.name, v);
-                        return v;
-                    }
+                if (v.GetVesselCrew().Contains(pcm))
+                {
+                    kerbalVesselsCache.Add(pcm.name, v);
+                    return v;
+                }
+
             Log(pcm.name + " is " + pcm.rosterStatus + " and was not found in any of the " + FlightGlobals.Vessels.Count + " vessels!", LogLevel.Important);
             return null;
         }
@@ -296,7 +296,7 @@ namespace KerbalHealth
         {
             List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
             foreach (Part p in allParts)
-                res.AddRange(p.FindModulesImplementing<ModuleKerbalHealth>().FindAll(mkh => mkh.complexity != 0));
+                res.AddRange(p.FindModulesImplementing<ModuleKerbalHealth>().Where(mkh => mkh.complexity != 0));
             return res;
         }
 
@@ -309,40 +309,16 @@ namespace KerbalHealth
             => n.HasValue(key) ? n.GetValue(key) : defaultValue;
 
         public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
-        {
-            double res;
-            try {
-                res = Double.Parse(n.GetValue(key));
-                if (Double.IsNaN(res))
-                    throw new Exception();
-            }
-            catch (Exception) { res = defaultValue; }
-            return res;
-        }
+            => double.TryParse(n.GetValue(key), out double res) ? res : defaultValue;
 
         public static int GetInt(ConfigNode n, string key, int defaultValue = 0)
-        {
-            int res;
-            try { res = Int32.Parse(n.GetValue(key)); }
-            catch (Exception) { res = defaultValue; }
-            return res;
-        }
+            => int.TryParse(n.GetValue(key), out int res) ? res : defaultValue;
 
         public static uint GetUInt(ConfigNode n, string key, uint defaultValue = 0)
-        {
-            uint res;
-            try { res = UInt32.Parse(n.GetValue(key)); }
-            catch (Exception) { res = defaultValue; }
-            return res;
-        }
+            => uint.TryParse(n.GetValue(key), out uint res) ? res : defaultValue;
 
         public static bool GetBool(ConfigNode n, string key, bool defaultValue = false)
-        {
-            bool res;
-            try { res = Boolean.Parse(n.GetValue(key)); }
-            catch (Exception) { res = defaultValue; }
-            return res;
-        }
+            => bool.TryParse(n.GetValue(key), out bool res) ? res : defaultValue;
 
         /// <summary>
         /// Returns x*x
