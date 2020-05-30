@@ -18,7 +18,7 @@ namespace KerbalHealth
             set => name = value;
         }
 
-        public uint VesselId { get; set; }
+        public string VesselId { get; set; }
         public double Magnitutde { get; set; }
         public double Time { get; set; }
 
@@ -37,11 +37,11 @@ namespace KerbalHealth
 
         public Vessel Vessel
         {
-            get => (Target == RadStormTargetType.Vessel) && FlightGlobals.PersistentVesselIds.ContainsKey(VesselId) ? FlightGlobals.PersistentVesselIds[VesselId] : null;
+            get => Target == RadStormTargetType.Vessel ? FlightGlobals.FindVessel(new Guid(VesselId)) : null;
             set
             {
                 Target = RadStormTargetType.Vessel;
-                VesselId = value.persistentId;
+                VesselId = value.id.ToString();
             }
         }
 
@@ -68,7 +68,7 @@ namespace KerbalHealth
             if (Target == RadStormTargetType.Body)
                 return Core.GetPlanet(v.mainBody)?.name == Name;
             if (Target == RadStormTargetType.Vessel)
-                return v.persistentId == VesselId;
+                return v.id.ToString() == VesselId;
             return false;
         }
 
@@ -106,8 +106,8 @@ namespace KerbalHealth
 
                 if (Target == RadStormTargetType.Vessel)
                 {
-                    VesselId = Core.GetUInt(value, "id");
-                    if (!FlightGlobals.PersistentVesselIds.ContainsKey(VesselId))
+                    VesselId = Core.GetString(value, "id");
+                    if (FlightGlobals.FindVessel(new Guid(VesselId)) == null)
                     {
                         Core.Log("Vessel id " + VesselId + " from RadStorm ConfigNode not found.", LogLevel.Error);
                         Target = RadStormTargetType.None;
