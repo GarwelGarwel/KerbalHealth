@@ -73,11 +73,11 @@ namespace KerbalHealth
             Name = node.GetValue("name");
             Title = node.GetValue("title");
             Description = node.GetValue("description");
-            IsVisible = Core.GetBool(node, "visible", true);
-            MinLevel = Core.GetInt(node, "minLevel");
+            IsVisible = node.GetBool("visible", true);
+            MinLevel = node.GetInt("minLevel");
             IncompatibleQuirks = new List<string>(node.GetValues("incompatibleWith"));
-            CourageWeight = Core.GetDouble(node, "courageWeight", 1);
-            StupidityWeight = Core.GetDouble(node, "stupidityWeight", 1);
+            CourageWeight = node.GetDouble("courageWeight", 1);
+            StupidityWeight = node.GetDouble("stupidityWeight", 1);
             Effects = new List<HealthEffect>(node.GetNodes("EFFECT").Select(n => new HealthEffect(n)));
             Core.Log("Quirk loaded: " + this);
         }

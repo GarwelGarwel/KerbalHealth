@@ -102,17 +102,17 @@ namespace KerbalHealth
             set
             {
                 Name = value.GetValue("name");
-                Title = Core.GetString(value, "title");
-                Description = Core.GetString(value, "description", "");
-                Visible = Core.GetBool(value, "visible", true);
-                Stackable = Core.GetBool(value, "stackable");
+                Title = value.GetString("title");
+                Description = value.GetString("description", "");
+                Visible = value.GetBool("visible", true);
+                Stackable = value.GetBool("stackable");
                 IncompatibleConditions.AddRange(value.GetValues("incompatibleCondition"));
                 Logic.ConfigNode = value;
-                HPChangePerDay = Core.GetDouble(value, "hpChangePerDay");
-                HP = Core.GetDouble(value, "hp");
-                RestoreHP = Core.GetBool(value, "restoreHP");
-                Incapacitated = Core.GetBool(value, "incapacitated");
-                ChancePerDay = Core.GetDouble(value, "chancePerDay");
+                HPChangePerDay = value.GetDouble("hpChangePerDay");
+                HP = value.GetDouble("hp");
+                RestoreHP = value.GetBool("restoreHP");
+                Incapacitated = value.GetBool("incapacitated");
+                ChancePerDay = value.GetDouble("chancePerDay");
                 ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
                 //foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
                 //    ChanceModifiers.Add(new ChanceModifier(n));

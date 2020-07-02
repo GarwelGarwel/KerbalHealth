@@ -21,7 +21,7 @@ namespace KerbalHealth
     /// </summary>
     public static class Core
     {
-        public static bool IsLoaded = false;
+        public static bool ConfigLoaded = false;
 
         /// <summary>
         /// List of all tracked kerbals
@@ -130,13 +130,10 @@ namespace KerbalHealth
 
             ResourceShielding = new Dictionary<int, double>();
             foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
-                AddResourceShielding(n.GetValue("name"), GetDouble(n, "shielding"));
+                AddResourceShielding(n.GetValue("name"), n.GetDouble("shielding"));
             Log(ResourceShielding.Count + " resource shielding values loaded.", LogLevel.Important);
 
             Quirks = new List<Quirk>(config.GetNodes("HEALTH_QUIRK").Select(n => new Quirk(n)));
-            //Quirks = new List<Quirk>();
-            //foreach (ConfigNode n in config.GetNodes("HEALTH_QUIRK"))
-            //    Quirks.Add(new Quirk(n));
             Core.Log(Quirks.Count + " quirks loaded.", LogLevel.Important);
 
             PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
@@ -146,7 +143,7 @@ namespace KerbalHealth
             int i = 0;
             foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
             {
-                PlanetHealthConfig bc = GetPlanetConfig(GetString(n, "name"));
+                PlanetHealthConfig bc = GetPlanetConfig(n.GetString("name"));
                 if (bc != null)
                 {
                     bc.ConfigNode = n;
@@ -155,10 +152,10 @@ namespace KerbalHealth
             }
             Core.Log(i + " planet configs out of " + PlanetConfigs.Count + " bodies loaded.", LogLevel.Important);
 
-            SolarCycleDuration = GetDouble(config, "solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
-            SolarCycleStartingPhase = GetDouble(config, "solarCycleStartingPhase");
-            RadStormMinChancePerDay = GetDouble(config, "radStormMinChance", 0.00015);
-            RadStormMaxChancePerDay = GetDouble(config, "radStormMaxChance", 0.00229);
+            SolarCycleDuration = config.GetDouble("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
+            SolarCycleStartingPhase = config.GetDouble("solarCycleStartingPhase");
+            RadStormMinChancePerDay = config.GetDouble("radStormMinChance", 0.00015);
+            RadStormMaxChancePerDay = config.GetDouble("radStormMaxChance", 0.00229);
 
             RadStormTypes = new List<RadStormType>();
             i = 0;
@@ -172,13 +169,13 @@ namespace KerbalHealth
             trainingCaps = new List<double>(3) { 0.6, 0.75, 0.85 };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
-                int j = Core.GetInt(n, "level");
+                int j = n.GetInt("level");
                 if (j == 0)
                     continue;
-                trainingCaps[j - 1] = Core.GetDouble(n, "cap");
+                trainingCaps[j - 1] = n.GetDouble("cap");
             }
 
-            IsLoaded = true;
+            ConfigLoaded = true;
         }
 
         /// <summary>
@@ -192,7 +189,7 @@ namespace KerbalHealth
         /// <param name="pcm"></param>
         /// <returns></returns>
         public static int GetCrewCount(ProtoCrewMember pcm)
-            => IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (IsKerbalLoaded(pcm) ? KerbalVessel(pcm).GetCrewCount() : 1);
+            => IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm.IsLoaded() ? pcm.GetVessel().GetCrewCount() : 1);
 
         /// <summary>
         /// Returns number of maximum crew in a vessel the kerbal is in or in the currently constructed vessel
@@ -200,14 +197,14 @@ namespace KerbalHealth
         /// <param name="pcm"></param>
         /// <returns></returns>
         public static int GetCrewCapacity(ProtoCrewMember pcm)
-            => IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (IsKerbalLoaded(pcm) ? Math.Max(KerbalVessel(pcm).GetCrewCapacity(), 1) : 1);
+            => IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm.IsLoaded() ? Math.Max(pcm.GetVessel().GetCrewCapacity(), 1) : 1);
 
         /// <summary>
         /// Returns Part where ProtoCrewMember is currently located or null if none
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static Part GetCrewPart(ProtoCrewMember pcm)
+        public static Part GetCrewPart(this ProtoCrewMember pcm)
             => IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
 
         /// <summary>
@@ -215,18 +212,18 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalLoaded(ProtoCrewMember pcm) => KerbalVessel(pcm)?.loaded ?? false;
+        public static bool IsLoaded(this ProtoCrewMember pcm) => pcm.GetVessel()?.loaded ?? false;
 
         /// <summary>
         /// Returns true if kerbal exists and is either assigned or available
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsKerbalTrackable(ProtoCrewMember pcm)
-            => (pcm != null)
-            && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
-            || (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available)
-            || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001));
+        public static bool IsTrackable(this ProtoCrewMember pcm)
+            => pcm != null
+            && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
+            || pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available
+            || pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001);
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
@@ -244,7 +241,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static Vessel KerbalVessel(ProtoCrewMember pcm)
+        public static Vessel GetVessel(this ProtoCrewMember pcm)
         {
             if (pcm == null)
                 return null;
@@ -274,10 +271,10 @@ namespace KerbalHealth
             return null;
         }
 
-        public static double DistanceToSun(Vessel v) =>
-            (v.mainBody == Sun.Instance.sun)
+        public static double GetDistanceToSun(this Vessel v) =>
+            v.mainBody == Sun.Instance.sun
             ? v.altitude + Sun.Instance.sun.Radius
-            : ((v.distanceToSun > 0) ? v.distanceToSun : Core.GetPlanet(v.mainBody).orbit.altitude + Sun.Instance.sun.Radius);
+            : ((v.distanceToSun > 0) ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
 
         static List<double> trainingCaps;
 
@@ -300,24 +297,24 @@ namespace KerbalHealth
             return res;
         }
 
-        public static bool IsPlanet(CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
+        public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
-        public static CelestialBody GetPlanet(CelestialBody body)
-            => ((body == null) || IsPlanet(body)) ? body : GetPlanet(body?.orbit?.referenceBody);
+        public static CelestialBody GetPlanet(this CelestialBody body)
+            => (body == null || body.IsPlanet()) ? body : body.orbit?.referenceBody?.GetPlanet();
 
-        public static string GetString(ConfigNode n, string key, string defaultValue = null)
+        public static string GetString(this ConfigNode n, string key, string defaultValue = null)
             => n.HasValue(key) ? n.GetValue(key) : defaultValue;
 
-        public static double GetDouble(ConfigNode n, string key, double defaultValue = 0)
+        public static double GetDouble(this ConfigNode n, string key, double defaultValue = 0)
             => double.TryParse(n.GetValue(key), out double res) ? res : defaultValue;
 
-        public static int GetInt(ConfigNode n, string key, int defaultValue = 0)
+        public static int GetInt(this ConfigNode n, string key, int defaultValue = 0)
             => int.TryParse(n.GetValue(key), out int res) ? res : defaultValue;
 
-        public static uint GetUInt(ConfigNode n, string key, uint defaultValue = 0)
+        public static uint GetUInt(this ConfigNode n, string key, uint defaultValue = 0)
             => uint.TryParse(n.GetValue(key), out uint res) ? res : defaultValue;
 
-        public static bool GetBool(ConfigNode n, string key, bool defaultValue = false)
+        public static bool GetBool(this ConfigNode n, string key, bool defaultValue = false)
             => bool.TryParse(n.GetValue(key), out bool res) ? res : defaultValue;
 
         /// <summary>
@@ -437,15 +434,14 @@ namespace KerbalHealth
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
-            if (!KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled && ((pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available) || (pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001)))
-                return;
-            ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
+            if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != (ProtoCrewMember.RosterStatus﻿)9001))
+                ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 
         /// <summary>
         /// Mod-wide random number generator
         /// </summary>
-        public static System.Random rand = new System.Random();
+        internal static System.Random rand = new System.Random();
 
         /// <summary>
         /// Current <see cref="LogLevel"/>: either Debug or Important
@@ -464,7 +460,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="message">Text to log</param>
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
-        public static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
+        internal static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         {
             if (IsLogging(messageLevel) && (message.Length != 0))
                 Debug.Log("[KerbalHealth] " + (messageLevel == LogLevel.Error ? "ERROR: " : "") + message);

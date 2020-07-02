@@ -30,12 +30,12 @@ namespace KerbalHealth
         {
             set
             {
-                Name = Core.GetString(value, "name", "");
-                Weight = Core.GetDouble(value, "weight");
-                MeanMagnitude = Core.GetDouble(value, "magnitude");
-                MagnitudeDispersion = Core.GetDouble(value, "magnitudeDispersion", 0.4);
-                MeanVelocity = Core.GetDouble(value, "velocity", 500000);
-                VelocityDispersion = Core.GetDouble(value, "velocityDispersion", 0.5);
+                Name = value.GetString("name", "");
+                Weight = value.GetDouble("weight");
+                MeanMagnitude = value.GetDouble("magnitude");
+                MagnitudeDispersion = value.GetDouble("magnitudeDispersion", 0.4);
+                MeanVelocity = value.GetDouble("velocity", 500000);
+                VelocityDispersion = value.GetDouble("velocityDispersion", 0.5);
             }
         }
 

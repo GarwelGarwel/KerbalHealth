@@ -39,7 +39,7 @@ namespace KerbalHealth
                 Core.Log("In editor and VesselHealthInfo not found in cache. Calculating and adding to cache.");
                 return VesselCache[Guid.Empty] = new HealthModifierSet(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
             }
-            return pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned ? new HealthModifierSet() : GetVesselModifiers(Core.KerbalVessel(pcm));
+            return pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned ? new HealthModifierSet() : GetVesselModifiers(pcm.GetVessel());
         }
 
         public int CrewCapacity { get; set; }

@@ -18,14 +18,14 @@
             }
             set
             {
-                Id = Core.GetUInt(value, "id");
+                Id = value.GetUInt("id");
                 if (Id == 0)
                 {
                     Core.Log("Incorrect part id 0 for training part.", LogLevel.Error);
                     return;
                 }
-                Name = Core.GetString(value, "name", "");
-                Complexity = Core.GetDouble(value, "complexity", 1);
+                Name = value.GetString("name", "");
+                Complexity = value.GetDouble("complexity", 1);
             }
         }
 

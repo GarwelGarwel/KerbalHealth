@@ -34,7 +34,7 @@
         {
             set
             {
-                Name = Core.GetString(value, "name");
+                Name = value.GetString("name");
                 if (Name == null)
                 {
                     Core.Log("Missing 'name' key in body properties definition.", LogLevel.Error);
@@ -42,9 +42,9 @@
                 }
                 if (Body == null)
                     Core.Log("Body '" + Name + "' not found.", LogLevel.Important);
-                Magnetosphere = Core.GetDouble(value, "magnetosphere", Magnetosphere);
-                AtmosphericAbsorption = Core.GetDouble(value, "atmosphericAbsorption", AtmosphericAbsorption);
-                Radioactivity = Core.GetDouble(value, "radioactivity", Radioactivity);
+                Magnetosphere = value.GetDouble("magnetosphere", Magnetosphere);
+                AtmosphericAbsorption = value.GetDouble("atmosphericAbsorption", AtmosphericAbsorption);
+                Radioactivity = value.GetDouble("radioactivity", Radioactivity);
             }
         }
 
@@ -53,7 +53,7 @@
         public PlanetHealthConfig(CelestialBody body)
         {
             Name = body.bodyName;
-            Magnetosphere = Core.IsPlanet(body) ? 1 : 0;
+            Magnetosphere = body.IsPlanet() ? 1 : 0;
         }
 
         public PlanetHealthConfig(ConfigNode node) => ConfigNode = node;

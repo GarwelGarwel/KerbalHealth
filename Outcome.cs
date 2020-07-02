@@ -39,9 +39,9 @@ namespace KerbalHealth
         {
             set
             {
-                Condition = Core.GetString(value, "condition", "");
-                RemoveOldCondition = Core.GetBool(value, "removeOldCondition", true);
-                ChancePerDay = Core.GetDouble(value, "chancePerDay");
+                Condition = value.GetString("condition", "");
+                RemoveOldCondition = value.GetBool("removeOldCondition", true);
+                ChancePerDay = value.GetDouble("chancePerDay");
                 ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
             }
         }

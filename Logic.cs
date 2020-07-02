@@ -49,7 +49,7 @@ namespace KerbalHealth
                 Core.Log("ProtoCrewMember argument in Logic.Test is null!", LogLevel.Error);
                 return res;
             }
-            Vessel v = Core.KerbalVessel(pcm);
+            Vessel v = pcm.GetVessel();
             if (Situation != null)
                 if (v != null)
                 {
@@ -87,13 +87,13 @@ namespace KerbalHealth
                 else Op(ref res, false);
 
             if (InSOI != null)
-                Op(ref res, v != null ? InSOI.Equals(v.mainBody.name, StringComparison.CurrentCultureIgnoreCase) : false);
+                Op(ref res, v != null && InSOI.Equals(v.mainBody.name, StringComparison.CurrentCultureIgnoreCase));
             
             if (KerbalStatus != null)
                 Op(ref res, KerbalStatus.Equals(pcm.rosterStatus.ToString(), StringComparison.CurrentCultureIgnoreCase));
 
             if (!Double.IsNaN(MissionTime))
-                Op(ref res, v != null ? v.missionTime >= MissionTime : false);
+                Op(ref res, v != null && v.missionTime >= MissionTime);
 
             if (Gender != null)
             {
@@ -189,7 +189,7 @@ namespace KerbalHealth
         {
             set
             {
-                string s = Core.GetString(value, "operator") ?? Core.GetString(value, "logic");
+                string s = value.GetString("operator") ?? value.GetString("logic");
                 switch (s?.ToLower())
                 {
                     case "and":
@@ -197,24 +197,27 @@ namespace KerbalHealth
                     case null:
                         Operator = OperatorType.And;
                         break;
+
                     case "or":
                     case "any":
                         Operator = OperatorType.Or;
                         break;
+
                     default:
                         Core.Log("Unrecognized Logic operator '" + s + "' in config node " + value.name + ".", LogLevel.Error);
                         break;
                 }
-                Inverse = Core.GetBool(value, "inverse");
-                Situation = Core.GetString(value, "situation");
-                InSOI = Core.GetString(value, "inSOI");
-                if (InSOI?.ToLower() == "home") InSOI = FlightGlobals.GetHomeBodyName();
-                KerbalStatus = Core.GetString(value, "kerbalStatus");
-                MissionTime = Core.GetDouble(value, "missionTime", Double.NaN);
-                Gender = Core.GetString(value, "gender");
-                GenderPresent = Core.GetString(value, "genderPresent");
-                TraitPresent = Core.GetString(value, "traitPresent");
-                ConditionPresent = Core.GetString(value, "conditionPresent");
+                Inverse = value.GetBool("inverse");
+                Situation = value.GetString("situation");
+                InSOI = value.GetString("inSOI");
+                if (InSOI?.ToLower() == "home")
+                    InSOI = FlightGlobals.GetHomeBodyName();
+                KerbalStatus = value.GetString("kerbalStatus");
+                MissionTime = value.GetDouble("missionTime", Double.NaN);
+                Gender = value.GetString("gender");
+                GenderPresent = value.GetString("genderPresent");
+                TraitPresent = value.GetString("traitPresent");
+                ConditionPresent = value.GetString("conditionPresent");
                 Operands = new List<Logic>(value.GetNodes("LOGIC").Select(node => new Logic(node)));
             }
         }

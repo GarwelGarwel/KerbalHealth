@@ -54,7 +54,7 @@ namespace KerbalHealth
                     case RadStormTargetType.Body:
                         return CelestialBody.orbit.altitude + Sun.Instance.sun.Radius;
                     case RadStormTargetType.Vessel:
-                        return Core.DistanceToSun(Vessel);
+                        return Vessel.GetDistanceToSun();
                 }
                 return 0;
             }
@@ -62,11 +62,11 @@ namespace KerbalHealth
 
         public bool Affects(ProtoCrewMember pcm)
         {
-            Vessel v = Core.KerbalVessel(pcm);
+            Vessel v = pcm.GetVessel();
             if (v == null)
                 return false;
             if (Target == RadStormTargetType.Body)
-                return Core.GetPlanet(v.mainBody)?.name == Name;
+                return v.mainBody.GetPlanet()?.name == Name;
             if (Target == RadStormTargetType.Vessel)
                 return v.id.ToString() == VesselId;
             return false;
@@ -106,7 +106,7 @@ namespace KerbalHealth
 
                 if (Target == RadStormTargetType.Vessel)
                 {
-                    VesselId = Core.GetString(value, "id");
+                    VesselId = value.GetString("id");
                     if (FlightGlobals.FindVessel(new Guid(VesselId)) == null)
                     {
                         Core.Log("Vessel id " + VesselId + " from RadStorm ConfigNode not found.", LogLevel.Error);
@@ -114,9 +114,9 @@ namespace KerbalHealth
                         return;
                     }
                 }
-                else Name = Core.GetString(value, "body");
-                Magnitutde = Core.GetDouble(value, "magnitude");
-                Time = Core.GetDouble(value, "time");
+                else Name = value.GetString("body");
+                Magnitutde = value.GetDouble("magnitude");
+                Time = value.GetDouble("time");
             }
         }
 
