@@ -24,9 +24,14 @@ namespace KerbalHealth
         public static bool ConfigLoaded = false;
 
         /// <summary>
-        /// List of all tracked kerbals
+        /// List of all possible health conditions
         /// </summary>
-        public static KerbalHealthList KerbalHealthList { get; set; } = new KerbalHealthList();
+        public static Dictionary<string, HealthCondition> HealthConditions;
+
+        /// <summary>
+        /// Mod-wide random number generator
+        /// </summary>
+        internal static System.Random rand = new System.Random();
 
         static List<HealthFactor> factors = new List<HealthFactor>() {
             new StressFactor(),
@@ -40,6 +45,19 @@ namespace KerbalHealth
             new KSCFactor()
         };
 
+        static double radStormTypesTotalWeight = 0;
+
+        static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
+
+        static List<double> trainingCaps;
+
+        static string[] prefixes = { "", "K", "M", "G", "T" };
+
+        /// <summary>
+        /// List of all tracked kerbals
+        /// </summary>
+        public static KerbalHealthList KerbalHealthList { get; set; } = new KerbalHealthList();
+
         /// <summary>
         /// List of all factors to be checked
         /// </summary>
@@ -50,23 +68,53 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
+        /// </summary>
+        public static Dictionary<int, double> ResourceShielding { get; set; } = new Dictionary<int, double>();
+
+        public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
+
+        public static Dictionary<CelestialBody, PlanetHealthConfig> PlanetConfigs { get; set; }
+
+        public static List<RadStormType> RadStormTypes { get; set; }
+
+        public static double SolarCycleDuration { get; set; }
+
+        public static double SolarCycleStartingPhase { get; set; }
+
+        public static double RadStormMinChancePerDay { get; set; }
+
+        public static double RadStormMaxChancePerDay { get; set; }
+
+        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
+
+        public static double RadStormChance
+                    => RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+
+        /// <summary>
+        /// True if the current scene is Editor (VAB or SPH)
+        /// </summary>
+        public static bool IsInEditor => HighLogic.LoadedSceneIsEditor;
+
+        /// <summary>
+        /// Max amount of stress reduced by training depending on Astronaut Complex's level
+        /// </summary>
+        public static double TrainingCap
+            => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
+
+        /// <summary>
+        /// Current <see cref="LogLevel"/>: either Debug or Important
+        /// </summary>
+        public static LogLevel Level => KerbalHealthGeneralSettings.Instance.DebugMode ? LogLevel.Debug : LogLevel.Important;
+
+        /// <summary>
         /// Returns factor with a given id
         /// </summary>
         /// <param name="id">Factor id</param>
         /// <returns></returns>
         public static HealthFactor GetHealthFactor(string id) => Factors.Find(f => f.Name == id);
 
-        /// <summary>
-        /// List sof all possible health conditions
-        /// </summary>
-        public static Dictionary<string, HealthCondition> HealthConditions;
-
         public static HealthCondition GetHealthCondition(string s) => HealthConditions.ContainsKey(s) ? HealthConditions[s] : null;
-
-        /// <summary>
-        /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
-        /// </summary>
-        public static Dictionary<int, double> ResourceShielding { get; set; } = new Dictionary<int, double>();
 
         public static void AddResourceShielding(string name, double shieldingPerTon)
         {
@@ -79,20 +127,13 @@ namespace KerbalHealth
             ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
         }
 
-        public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
-
         public static Quirk GetQuirk(string name) => Quirks.Find(q => string.Compare(name, q.Name, true) == 0);
-
-        public static Dictionary<CelestialBody, PlanetHealthConfig> PlanetConfigs { get; set; }
 
         public static PlanetHealthConfig GetPlanetConfig(string name)
         {
             CelestialBody cb = FlightGlobals.GetBodyByName(name);
             return (cb == null) || !PlanetConfigs.ContainsKey(cb) ? null : PlanetConfigs[cb];
         }
-
-        public static List<RadStormType> RadStormTypes { get; set; }
-        static double radStormTypesTotalWeight = 0;
 
         public static RadStormType GetRandomRadStormType()
         {
@@ -106,16 +147,8 @@ namespace KerbalHealth
             return null;
         }
 
-        public static double SolarCycleDuration { get; set; }
-        public static double SolarCycleStartingPhase { get; set; }
-        public static double RadStormMinChancePerDay { get; set; }
-        public static double RadStormMaxChancePerDay { get; set; }
-        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
-        public static double RadStormChance
-            => RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
-
         /// <summary>
-        /// Loads necessary mod data from KerbalHealth.cfg and 
+        /// Loads necessary mod data from KerbalHealth.cfg and
         /// </summary>
         public static void LoadConfig()
         {
@@ -179,11 +212,6 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// True if the current scene is Editor (VAB or SPH)
-        /// </summary>
-        public static bool IsInEditor => HighLogic.LoadedSceneIsEditor;
-
-        /// <summary>
         /// Returns number of current crew in a vessel the kerbal is in or in the currently constructed vessel
         /// </summary>
         /// <param name="pcm"></param>
@@ -224,8 +252,6 @@ namespace KerbalHealth
             && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
             || pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available
             || pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001);
-
-        static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
         /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
@@ -275,14 +301,6 @@ namespace KerbalHealth
             v.mainBody == Sun.Instance.sun
             ? v.altitude + Sun.Instance.sun.Radius
             : ((v.distanceToSun > 0) ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
-
-        static List<double> trainingCaps;
-
-        /// <summary>
-        /// Max amount of stress reduced by training depending on Astronaut Complex's level
-        /// </summary>
-        public static double TrainingCap
-            => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
 
         /// <summary>
         /// Returns list of IDs of parts that are used in training and stress calculations
@@ -340,8 +358,6 @@ namespace KerbalHealth
         /// <param name="format">String format according to Double.ToString</param>
         /// <returns></returns>
         public static string SignValue(double value, string format) => ((value > 0) ? "+" : "") + value.ToString(format);
-
-        static string[] prefixes = { "", "K", "M", "G", "T" };
 
         /// <summary>
         /// Converts a number into a string with a multiplicative character (K, M, G or T), if applicable
@@ -437,16 +453,6 @@ namespace KerbalHealth
             if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != (ProtoCrewMember.RosterStatus﻿)9001))
                 ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
-
-        /// <summary>
-        /// Mod-wide random number generator
-        /// </summary>
-        internal static System.Random rand = new System.Random();
-
-        /// <summary>
-        /// Current <see cref="LogLevel"/>: either Debug or Important
-        /// </summary>
-        public static LogLevel Level => KerbalHealthGeneralSettings.Instance.DebugMode ? LogLevel.Debug : LogLevel.Important;
 
         /// <summary>
         /// Returns true if current logging allows logging of messages at messageLevel
