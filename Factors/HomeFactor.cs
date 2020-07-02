@@ -21,18 +21,19 @@ namespace KerbalHealth
                 Core.Log("Home factor is off when kerbal is not assigned.");
                 return 0;
             }
-            CelestialBody body = Core.KerbalVessel(pcm)?.mainBody;
+            Vessel vessel = pcm.GetVessel();
+            CelestialBody body = vessel?.mainBody;
             if (body == null)
             {
                 Core.Log("Could not find main body for " + pcm.name, LogLevel.Error);
                 return 0;
             }
-            if (body.isHomeWorld && (Core.KerbalVessel(pcm).altitude < body.scienceValues.flyingAltitudeThreshold))
+            if (body.isHomeWorld && (vessel.altitude < body.scienceValues.flyingAltitudeThreshold))
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
             }
-            Core.Log("Home factor is off. Main body: " + Core.KerbalVessel(pcm).mainBody.name + "; altitude: " + Core.KerbalVessel(pcm).altitude + ".");
+            Core.Log("Home factor is off. Main body: " + body.name + "; altitude: " + vessel.altitude + ".");
             return 0;
         }
     }

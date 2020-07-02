@@ -94,26 +94,26 @@ namespace KerbalHealth
 
         public HealthEffect(ConfigNode node)
         {
-            MaxHP = Core.GetDouble(node, "maxHP", 1);
-            MaxHPBonus = Core.GetDouble(node, "maxHPBonus");
-            ExhaustedStart = Core.GetDouble(node, "exhaustedStart", 1);
-            ExhaustedEnd = Core.GetDouble(node, "exhaustedEnd", 1);
-            Exposure = Core.GetDouble(node, "exposure", 1);
+            MaxHP = node.GetDouble("maxHP", 1);
+            MaxHPBonus = node.GetDouble("maxHPBonus");
+            ExhaustedStart = node.GetDouble("exhaustedStart", 1);
+            ExhaustedEnd = node.GetDouble("exhaustedEnd", 1);
+            Exposure = node.GetDouble("exposure", 1);
 
-            HPChangePerDay = Core.GetDouble(node, "hpChangePerDay");
-            Recuperation = Core.GetDouble(node, "recuperation");
-            Decay = Core.GetDouble(node, "decay");
+            HPChangePerDay = node.GetDouble("hpChangePerDay");
+            Recuperation = node.GetDouble("recuperation");
+            Decay = node.GetDouble("decay");
             MultiplyFactor = node.HasValue("multiplyFactor") ? node.GetValue("multiplyFactor") : "All";
-            Multiplier = Core.GetDouble(node, "multiplier", 1);
-            Space = Core.GetDouble(node, "space");
-            Shielding = Core.GetDouble(node, "shielding");
-            Radioactivity = Core.GetDouble(node, "radioactivity");
+            Multiplier = node.GetDouble("multiplier", 1);
+            Space = node.GetDouble("space");
+            Shielding = node.GetDouble("shielding");
+            Radioactivity = node.GetDouble("radioactivity");
 
-            AccidentChance = Core.GetDouble(node, "accidentChance", 1);
-            PanicAttackChance = Core.GetDouble(node, "panicAttackChance", 1);
-            SicknessChance = Core.GetDouble(node, "sicknessChance", 1);
-            CureChance = Core.GetDouble(node, "cureChance", 1);
-            LoseImmunityChance = Core.GetDouble(node, "loseImmunityChance", 1);
+            AccidentChance = node.GetDouble("accidentChance", 1);
+            PanicAttackChance = node.GetDouble("panicAttackChance", 1);
+            SicknessChance = node.GetDouble("sicknessChance", 1);
+            CureChance = node.GetDouble("cureChance", 1);
+            LoseImmunityChance = node.GetDouble("loseImmunityChance", 1);
 
             Logic.ConfigNode = node;
         }

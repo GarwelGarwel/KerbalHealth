@@ -88,8 +88,8 @@ namespace KerbalHealth
             {
                 if (value.HasValue("modification"))
                     Modification = (OperationType)Enum.Parse(typeof(OperationType), value.GetValue("modification"), true);
-                Value = Core.GetDouble(value, "value", Modification == OperationType.Add ? 0 : 1);
-                UseAttribute = Core.GetString(value, "useAttribute");
+                Value = value.GetDouble("value", Modification == OperationType.Add ? 0 : 1);
+                UseAttribute = value.GetString("useAttribute");
                 Logic.ConfigNode = value;
             }
         }

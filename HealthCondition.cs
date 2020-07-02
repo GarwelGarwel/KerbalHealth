@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -45,13 +46,7 @@ namespace KerbalHealth
 
         public bool IsCompatibleWith(string condition) => !IncompatibleConditions.Contains(condition);
 
-        public bool IsCompatibleWith(List<HealthCondition> conditions)
-        {
-            foreach (HealthCondition hc in conditions)
-                if (IncompatibleConditions.Contains(hc.Name))
-                    return false;
-            return true;
-        }
+        public bool IsCompatibleWith(List<HealthCondition> conditions) => !conditions.Any(hc => IncompatibleConditions.Contains(hc.Name));
 
         /// <summary>
         /// Logic required for this health condition to randomly appear
@@ -86,7 +81,7 @@ namespace KerbalHealth
         /// <summary>
         /// List of all chance modifiers for this condition
         /// </summary>
-        public List<ChanceModifier> ChanceModifiers { get; set; } = new List<ChanceModifier>();
+        public List<ChanceModifier> ChanceModifiers { get; set; }
 
         /// <summary>
         /// Returns actual chance per day of this condition considering all modifiers
@@ -107,22 +102,23 @@ namespace KerbalHealth
             set
             {
                 Name = value.GetValue("name");
-                Title = Core.GetString(value, "title");
-                Description = Core.GetString(value, "description", "");
-                Visible = Core.GetBool(value, "visible", true);
-                Stackable = Core.GetBool(value, "stackable");
-                foreach (string s in value.GetValues("incompatibleCondition"))
-                    IncompatibleConditions.Add(s);
+                Title = value.GetString("title");
+                Description = value.GetString("description", "");
+                Visible = value.GetBool("visible", true);
+                Stackable = value.GetBool("stackable");
+                IncompatibleConditions.AddRange(value.GetValues("incompatibleCondition"));
                 Logic.ConfigNode = value;
-                HPChangePerDay = Core.GetDouble(value, "hpChangePerDay");
-                HP = Core.GetDouble(value, "hp");
-                RestoreHP = Core.GetBool(value, "restoreHP");
-                Incapacitated = Core.GetBool(value, "incapacitated");
-                ChancePerDay = Core.GetDouble(value, "chancePerDay");
-                foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
-                    ChanceModifiers.Add(new ChanceModifier(n));
-                foreach (ConfigNode n in value.GetNodes("OUTCOME"))
-                    Outcomes.Add(new Outcome(n));
+                HPChangePerDay = value.GetDouble("hpChangePerDay");
+                HP = value.GetDouble("hp");
+                RestoreHP = value.GetBool("restoreHP");
+                Incapacitated = value.GetBool("incapacitated");
+                ChancePerDay = value.GetDouble("chancePerDay");
+                ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
+                //foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
+                //    ChanceModifiers.Add(new ChanceModifier(n));
+                Outcomes = new List<Outcome>(value.GetNodes("OUTCOME").Select(n => new Outcome(n)));
+                //foreach (ConfigNode n in value.GetNodes("OUTCOME"))
+                //    Outcomes.Add(new Outcome(n));
             }
         }
 

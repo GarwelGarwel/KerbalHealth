@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -61,27 +62,21 @@ namespace KerbalHealth
             List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
             list.AddRange(kerbalRoster.Tourist);
             Core.Log(list.Count + " total trackable kerbals.", LogLevel.Important);
-            foreach (ProtoCrewMember pcm in list)
-                if (Core.IsKerbalTrackable(pcm))
-                    Add(pcm.name);
+            foreach (ProtoCrewMember pcm in list.Where(pcm => pcm.IsTrackable()))
+                Add(pcm.name);
             Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", LogLevel.Important);
         }
 
         void RemoveUntrackable()
         {
-            List<string> toRemove = new List<string>();
-            foreach (KerbalHealthStatus khs in Values)
-            {
-                if (!Core.IsKerbalTrackable(khs.PCM) && !khs.IsFrozen)
-                {
-                    Core.Log(khs.Name + " is not trackable anymore. Marking for removal.");
-                    toRemove.Add(khs.Name);
-                }
-            }
+            List<string> toRemove = new List<string>(Values
+                .Where(khs => !khs.PCM.IsTrackable() && !khs.IsFrozen)
+                .Select(khs => khs.Name));
             foreach (string name in toRemove)
+            {
+                Core.Log(name + " is not trackable anymore. Marking for removal.");
                 Remove(name);
-            if (toRemove.Count > 0)
-                Core.Log(toRemove.Count + " kerbal(s) removed from the KerbalHealthList.");
+            }
         }
 
         public void Update(double interval)

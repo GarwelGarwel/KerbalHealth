@@ -474,7 +474,7 @@ namespace KerbalHealth
 
             foreach (ProtoCrewMember pcm in HighLogic.fetch.currentGame.CrewRoster.Kerbals(ProtoCrewMember.RosterStatus.Assigned))
             {
-                Vessel v = Core.KerbalVessel(pcm);
+                Vessel v = pcm.GetVessel();
                 if (v == null)
                     continue;
                 CelestialBody body = v.mainBody;
@@ -489,7 +489,7 @@ namespace KerbalHealth
                 }
                 else
                 {
-                    body = Core.GetPlanet(body);
+                    body = body.GetPlanet();
                     targetKey = body.name.GetHashCode();
                     if (!targets.ContainsKey(targetKey))
                         targets.Add(targetKey, new RadStorm(body));
@@ -509,7 +509,6 @@ namespace KerbalHealth
                     Core.ShowMessage(Localizer.Format("#KH_RadStorm_Alert", rst.Name, t.Name, KSPUtil.PrintDate(t.Time, true)), true);//A radiation storm of <color=\"yellow\">" + rst.Name + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!
                     radStorms.Add(t);
                 }
-                else Core.Log("No radstorm for " + t.Name);
         }
 
         /// <summary>
@@ -545,15 +544,14 @@ namespace KerbalHealth
                             double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun) * KerbalHealthRadiationSettings.Instance.RadStormMagnitude;
                             Core.Log("Radstorm " + i + " hits " + radStorms[i].Name + " with magnitude of " + m + " (" + radStorms[i].Magnitutde + " before modifiers).", LogLevel.Important);
                             string s = Localizer.Format("#KH_RadStorm_report1", Core.PrefixFormat(m, 5), radStorms[i].Name);//Radstorm of nominal magnitude <color=\"yellow\">" + Core.PrefixFormat(m, 5) + " BED</color> has just hit <color=\"yellow\">" + radStorms[i].Name + "</color>. Affected kerbals:";
-                            foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
-                                if (radStorms[i].Affects(khs.PCM))
-                                {
-                                    double d = m * KerbalHealthStatus.GetCosmicRadiationRate(Core.KerbalVessel(khs.PCM)) * khs.ShelterExposure;
-                                    khs.AddDose(d);
-                                    Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.");
-                                    s += Localizer.Format("#KH_RadStorm_report2", khs.Name, Core.PrefixFormat(d, 5)); //\r\n- <color=\"yellow\">" + khs.Name + "</color> for <color=\"yellow\">" + Core.PrefixFormat(d, 5) + " BED</color>
-                                    j++;
-                                }
+                            foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values.Where(khs => radStorms[i].Affects(khs.PCM)))
+                            {
+                                double d = m * KerbalHealthStatus.GetCosmicRadiationRate(khs.PCM.GetVessel()) * khs.ShelterExposure;
+                                khs.AddDose(d);
+                                Core.Log("The radstorm irradiates " + khs.Name + " by " + d.ToString("N0") + " BED.");
+                                s += Localizer.Format("#KH_RadStorm_report2", khs.Name, Core.PrefixFormat(d, 5)); //\r\n- <color=\"yellow\">" + khs.Name + "</color> for <color=\"yellow\">" + Core.PrefixFormat(d, 5) + " BED</color>
+                                j++;
+                            }
                             if (j > 0)
                                 Core.ShowMessage(s, true);
                             radStorms.RemoveAt(i--);
@@ -577,7 +575,7 @@ namespace KerbalHealth
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                         {
                             ProtoCrewMember pcm = khs.PCM;
-                            if (khs.IsFrozen || khs.IsDecontaminating || !Core.IsKerbalTrackable(pcm))
+                            if (khs.IsFrozen || khs.IsDecontaminating || !pcm.IsTrackable())
                                 continue;
                             for (int i = 0; i < khs.Conditions.Count; i++)
                             {
@@ -597,12 +595,16 @@ namespace KerbalHealth
                                     }
                             }
 
-                            foreach (HealthCondition hc in Core.HealthConditions.Values)
-                                if ((hc.ChancePerDay > 0) && (hc.Stackable || !khs.HasCondition(hc)) && hc.IsCompatibleWith(khs.Conditions) && hc.Logic.Test(pcm) && (Core.rand.NextDouble() < hc.GetChancePerDay(pcm) * KerbalHealthQuirkSettings.Instance.ConditionsChance))
-                                {
-                                    Core.Log(khs.Name + " acquires " + hc.Name + " condition.");
-                                    khs.AddCondition(hc);
-                                }
+                            foreach (HealthCondition hc in Core.HealthConditions.Values.Where(hc
+                                => hc.ChancePerDay > 0
+                                && (hc.Stackable || !khs.HasCondition(hc))
+                                && hc.IsCompatibleWith(khs.Conditions)
+                                && hc.Logic.Test(pcm)
+                                && Core.rand.NextDouble() < hc.GetChancePerDay(pcm) * KerbalHealthQuirkSettings.Instance.ConditionsChance))
+                            {
+                                Core.Log(khs.Name + " acquires " + hc.Name + " condition.");
+                                khs.AddCondition(hc);
+                            }
                         }
                     }
 
@@ -754,7 +756,7 @@ namespace KerbalHealth
                 gridContents.Add(new DialogGUILabel(""));
                 gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHPChange")));//"HP Change:"
                 gridContents.Add(new DialogGUILabel(""));
-                if (Core.IsKerbalLoaded(selectedKHS.PCM) && !selectedKHS.HasCondition("Frozen"))
+                if (selectedKHS.PCM.IsLoaded() && !selectedKHS.HasCondition("Frozen"))
                     foreach (HealthFactor f in Core.Factors)
                     {
                         gridContents.Add(new DialogGUILabel(f.Title + ":"));
@@ -973,9 +975,8 @@ namespace KerbalHealth
                 gridContents[5].SetOptionText("<color=\"white\">" + selectedKHS.ConditionString + "</color>");
 
                 string s = "";
-                foreach (Quirk q in selectedKHS.Quirks)
-                    if (q.IsVisible)
-                        s += ((s.Length != 0) ? ", " : "") + q.Title;
+                foreach (Quirk q in selectedKHS.Quirks.Where(q => q.IsVisible))
+                    s += ((s.Length != 0) ? ", " : "") + q.Title;
                 if (s.Length == 0)
                     s = Localizer.Format("#KH_HM_DNone");//None
                 gridContents[7].SetOptionText("<color=\"white\">" + s + "</color>");
@@ -985,7 +986,7 @@ namespace KerbalHealth
                 gridContents[13].SetOptionText("<color=\"white\">" + (healthFrozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2")) + "</color>");
 
                 int i = 15;
-                if (Core.IsKerbalLoaded(selectedKHS.PCM) && !healthFrozen)
+                if (selectedKHS.PCM.IsLoaded() && !healthFrozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
                         gridContents[i].SetOptionText("<color=\"white\">" + (selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : "N/A") + "</color>");
@@ -1017,15 +1018,14 @@ namespace KerbalHealth
                 node.AddNode(khs.ConfigNode);
                 i++;
             }
-            foreach (RadStorm rs in radStorms)
-                if (rs.Target != RadStormTargetType.None)
-                    node.AddNode(rs.ConfigNode);
+            foreach (RadStorm rs in radStorms.Where(rs => rs.Target != RadStormTargetType.None))
+                node.AddNode(rs.ConfigNode);
             Core.Log("KerbalHealthScenario.OnSave complete. " + i + " kerbal(s) saved.", LogLevel.Important);
         }
 
         public override void OnLoad(ConfigNode node)
         {
-            if (!Core.IsLoaded)
+            if (!Core.ConfigLoaded)
                 Core.LoadConfig();
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
@@ -1037,8 +1037,8 @@ namespace KerbalHealth
                 if (LoadSettingsFromConfig())
                     ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
 
-            version = new Version(Core.GetString(node, "version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
-            nextEventTime = Core.GetDouble(node, "nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
+            version = new Version(node.GetString("version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
+            nextEventTime = node.GetDouble("nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
 
             Core.KerbalHealthList.Clear();
             int i = 0;
@@ -1049,9 +1049,7 @@ namespace KerbalHealth
             }
             Core.Log("" + i + " kerbal(s) loaded.", LogLevel.Important);
 
-            radStorms.Clear();
-            foreach (ConfigNode n in node.GetNodes("RADSTORM"))
-                radStorms.Add(new RadStorm(n));
+            radStorms = new List<RadStorm>(node.GetNodes("RADSTORM").Select(n => new RadStorm(n)));
             Core.Log(radStorms.Count + " radstorms loaded.", LogLevel.Important);
             
             lastUpdated = Planetarium.GetUniversalTime();
@@ -1071,7 +1069,7 @@ namespace KerbalHealth
                 return y.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? 1 : 0;
             if (y.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                 return -1;
-            Vessel xv = Core.KerbalVessel(x), yv = Core.KerbalVessel(y);
+            Vessel xv = x.GetVessel(), yv = y.GetVessel();
             if (HighLogic.LoadedSceneIsFlight)
             {
                 if (xv.isActiveVessel)

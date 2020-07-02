@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -25,7 +26,7 @@ namespace KerbalHealth
         /// <summary>
         /// List of all chance modifiers for this outcome
         /// </summary>
-        public List<ChanceModifier> ChanceModifiers { get; set; } = new List<ChanceModifier>();
+        public List<ChanceModifier> ChanceModifiers { get; set; }
 
         /// <summary>
         /// Returns actual chance per day of this outcome considering all modifiers
@@ -38,11 +39,10 @@ namespace KerbalHealth
         {
             set
             {
-                Condition = Core.GetString(value, "condition", "");
-                RemoveOldCondition = Core.GetBool(value, "removeOldCondition", true);
-                ChancePerDay = Core.GetDouble(value, "chancePerDay");
-                foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
-                    ChanceModifiers.Add(new ChanceModifier(n));
+                Condition = value.GetString("condition", "");
+                RemoveOldCondition = value.GetBool("removeOldCondition", true);
+                ChancePerDay = value.GetDouble("chancePerDay");
+                ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
             }
         }
 

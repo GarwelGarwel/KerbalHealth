@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using KSP.Localization;
 
 namespace KerbalHealth
@@ -101,29 +102,12 @@ namespace KerbalHealth
             get
             {
                 if (Core.IsInEditor)
-                    if (partCrewOnly)
-                    {
-                        int r = 0;
-                        foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew())
-                            if (pcm != null)
-                                r++;
-                        Core.Log(r + " kerbal(s) found in " + part?.name + ".");
-                        return r;
-                    }
-                    else return ShipConstruction.ShipManifest.CrewCount;
-                if (part == null)
+                    return partCrewOnly
+                        ? ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew().Where(pcm => pcm != null).Count()
+                        : ShipConstruction.ShipManifest.CrewCount;
+                if (vessel == null || part?.protoModuleCrew == null)
                 {
-                    Core.Log("TotalAffectedCrewCount: part is null!", LogLevel.Error);
-                    return 0;
-                }
-                if (part.protoModuleCrew == null)
-                {
-                    Core.Log("TotalAffectedCrewCount: part.protoModuleCrew is null!", LogLevel.Error);
-                    return 0;
-                }
-                if (vessel == null)
-                {
-                    Core.Log("TotalAffectedCrewCount: vessel is null!", LogLevel.Error);
+                    Core.Log("TotalAffectedCrewCount: vessel: " + (vessel?.vesselName ?? "NULL") + "; part: " + (part?.partName ?? "NULL") + "; protoModuleCrew: " + (part?.protoModuleCrew ?? new List<ProtoCrewMember>()).Count() + " members.", LogLevel.Error);
                     return 0;
                 }
                 return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
@@ -215,13 +199,13 @@ namespace KerbalHealth
                 double requiredAmount = mkh.ecPerSec * elapsed_s;
                 if (mkh.resource != "ElectricCharge")
                     mkh.ecPerSec = 0;
-                availableResources.TryGetValue(mkh.resource, out double res2);
-                if (res2 < requiredAmount)
+                availableResources.TryGetValue(mkh.resource, out double availableAmount);
+                if (availableAmount <= 0)
                 {
-                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " @ " + mkh.ecPerSec + "EC/sec needed, " + res2 + " available.");
+                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " @ " + mkh.ecPerSec + "EC/sec needed, " + availableAmount + " available.");
                     mkh.starving = true;
                 }
-                else resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -requiredAmount));
+                resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -mkh.ecPerSec));
             }
             else mkh.ecPerSec = 0;
             return mkh.Title.ToLower();
