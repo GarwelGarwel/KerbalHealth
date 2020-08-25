@@ -166,7 +166,7 @@ namespace KerbalHealth
             }
             else Core.Log("Kerbal Health v" + version);
 
-            if (NeedsCheckForUntrainedCrew)
+            if (VesselNeedsCheckForUntrainedCrew(FlightGlobals.ActiveVessel))
                 checkUntrainedKerbals = true;
         }
 
@@ -402,10 +402,10 @@ namespace KerbalHealth
             vesselChanged = true;
         }
 
-        bool NeedsCheckForUntrainedCrew
+        bool VesselNeedsCheckForUntrainedCrew(Vessel v)
             => KerbalHealthFactorsSettings.Instance.TrainingEnabled
             && HighLogic.LoadedSceneIsFlight
-            && FlightGlobals.ActiveVessel.situation == Vessel.Situations.PRELAUNCH;
+            && v.situation == Vessel.Situations.PRELAUNCH;
 
         /// <summary>
         /// Checks the given vessel and displays an alert if any of the crew isn't fully trained
@@ -413,8 +413,10 @@ namespace KerbalHealth
         /// <param name="v"></param>
         void CheckUntrainedCrewWarning(Vessel v)
         {
+            if (v == null)
+                return;
             Core.Log("CheckUntrainedCrewWarning('" + v.vesselName + "')");
-            if (!NeedsCheckForUntrainedCrew)
+            if (!VesselNeedsCheckForUntrainedCrew(v))
             {
                 Core.Log("Disabling untrained crew warning.");
                 checkUntrainedKerbals = false;
