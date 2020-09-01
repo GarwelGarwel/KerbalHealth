@@ -31,7 +31,7 @@ namespace KerbalHealth
 
         public void Apply(HealthModifierSet hms)
         {
-            Core.Log("Applying effect:\n" + this);
+            Core.Log($"Applying effect:\n{this}");
             hms.ExposureMultiplier *= Exposure;
             hms.HPChange += HPChangePerDay;
             hms.RecuperationPower += Recuperation;
@@ -49,45 +49,45 @@ namespace KerbalHealth
         {
             string res = "";
             if (MaxHP != 1)
-                res += "\n" + Core.SignValue(MaxHP - 1, "P0") + " max HP";
+                res = $"{Core.SignValue(MaxHP - 1, "P0")} max HP";
             if (MaxHPBonus != 0)
-                res += "\n" + Core.SignValue(MaxHPBonus, "F0") + "x max HP";
+                res += $"\n{Core.SignValue(MaxHPBonus, "F0")}x max HP";
             if (ExhaustedStart != 1)
-                res += "\n" + ExhaustedStart.ToString("F2") + "x Exhausted condition start HP";
+                res += $"\n{ExhaustedStart:F2}x Exhausted condition start HP";
             if (ExhaustedEnd != 1)
-                res += "\n" + ExhaustedEnd.ToString("F2") + "x Exhausted condition end HP";
+                res += $"\n{ExhaustedEnd:F2}x Exhausted condition end HP";
             if (Exposure != 1)
-                res += "\n" + Exposure.ToString("F2") + "x Radiation Exposure";
+                res += $"\n{Exposure:F2}x Radiation Exposure";
 
             if (HPChangePerDay != 0)
-                res = "\n" + Core.SignValue(HPChangePerDay, "F1") + " HP/day";
+                res = $"\n{Core.SignValue(HPChangePerDay, "F1")} HP/day";
             if (Recuperation != 0)
-                res += "\n" + Recuperation.ToString("F1") + "%/day Recuperation";
+                res += $"\n{Recuperation:F1}%/day Recuperation";
             if (Decay != 0)
-                res += "\n" + Decay.ToString("F1") + "%/day Health Decay";
+                res += $"\n{Decay:F1}%/day Health Decay";
             if (Multiplier != 1)
-                res += "\n" + Multiplier.ToString("F2") + "x " + MultiplyFactor + " factor";
+                res += $"\n{Multiplier:F2}x {MultiplyFactor} factor";
             if (Space != 0)
-                res += "\n" + Core.SignValue(Space, "F1") + " Living Space";
+                res += $"\n{Core.SignValue(Space, "F1")} Living Space";
             if (Shielding != 0)
-                res += "\n" + Core.SignValue(Shielding, "F1") + " Shielding";
+                res += $"\n{Core.SignValue(Shielding, "F1")} Shielding";
             if (Radioactivity != 0)
-                res += "\n" + Core.SignValue(Radioactivity, "N0") + " banana/day radioactive emission";
+                res += $"\n{Core.SignValue(Radioactivity, "N0")} banana/day radioactive emission";
 
             if (AccidentChance != 1)
-                res += "\n" + AccidentChance.ToString("F2") + "x Accident chance";
+                res += $"\n{AccidentChance:F2}x Accident chance";
             if (PanicAttackChance != 1)
-                res += "\n" + PanicAttackChance.ToString("F2") + "x Panic attack chance";
+                res += $"\n{PanicAttackChance:F2}x Panic attack chance";
             if (SicknessChance != 1)
-                res += "\n" + SicknessChance.ToString("F2") + "x Sickness chance";
+                res += $"\n{SicknessChance:F2}x Sickness chance";
             if (CureChance != 1)
-                res += "\n" + CureChance.ToString("F2") + "x Cure chance";
+                res += $"\n{CureChance:F2}x Cure chance";
             if (LoseImmunityChance != 1)
-                res += "\n" + LoseImmunityChance.ToString("F2") + "x Lose immunity chance";
+                res += $"\n{LoseImmunityChance:F2}x Lose immunity chance";
 
             string l = Logic.ToString();
             if (l.Length != 0)
-                res += "\nLogic:\n" + l;
+                res += $"\nLogic:\n{l}";
 
             return res.Trim();
         }

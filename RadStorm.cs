@@ -99,7 +99,7 @@ namespace KerbalHealth
                     Target = radStormTargetType;
                 else
                 {
-                    Core.Log("No valid 'target' value found in RadStorm ConfigNode:\r\n" + value, LogLevel.Error);
+                    Core.Log($"No valid 'target' value found in RadStorm ConfigNode:\r\n{value}", LogLevel.Error);
                     Target = RadStormTargetType.None;
                     return;
                 }
@@ -109,7 +109,7 @@ namespace KerbalHealth
                     VesselId = value.GetString("id");
                     if (FlightGlobals.FindVessel(new Guid(VesselId)) == null)
                     {
-                        Core.Log("Vessel id " + VesselId + " from RadStorm ConfigNode not found.", LogLevel.Error);
+                        Core.Log($"Vessel id {VesselId} from RadStorm ConfigNode not found.", LogLevel.Error);
                         Target = RadStormTargetType.None;
                         return;
                     }

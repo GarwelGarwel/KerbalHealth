@@ -95,7 +95,7 @@ namespace KerbalHealth
         /// </summary>
         public List<Outcome> Outcomes { get; set; } = new List<Outcome>();
 
-        public override string ToString() => Title + " (" + Name + "): " + Description;
+        public override string ToString() => $"{Title} ({Name}): {Description}";
 
         public ConfigNode ConfigNode
         {
@@ -114,11 +114,7 @@ namespace KerbalHealth
                 Incapacitated = value.GetBool("incapacitated");
                 ChancePerDay = value.GetDouble("chancePerDay");
                 ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
-                //foreach (ConfigNode n in value.GetNodes("CHANCE_MODIFIER"))
-                //    ChanceModifiers.Add(new ChanceModifier(n));
                 Outcomes = new List<Outcome>(value.GetNodes("OUTCOME").Select(n => new Outcome(n)));
-                //foreach (ConfigNode n in value.GetNodes("OUTCOME"))
-                //    Outcomes.Add(new Outcome(n));
             }
         }
 

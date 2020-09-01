@@ -18,7 +18,7 @@ namespace KerbalHealth
         {
             if (ContainsKey(name))
                 return;
-            Core.Log("Registering " + name + ".", LogLevel.Important);
+            Core.Log($"Registering {name}.", LogLevel.Important);
             Add(name, new KerbalHealthStatus(name));
         }
 
@@ -39,7 +39,7 @@ namespace KerbalHealth
         /// <param name="name2"></param>
         public void Rename(string name1, string name2)
         {
-            Core.Log("KerbalHealthList.Rename('" + name1 + "', '" + name2 + "')");
+            Core.Log($"KerbalHealthList.Rename('{name1}', '{name2}')");
             if (name1 == name2)
                 return;
             if (ContainsKey(name1))
@@ -48,7 +48,7 @@ namespace KerbalHealth
                 Add(name2, this[name1]);
                 Remove(name1);
             }
-            else Core.Log("Could not find '" + name1 + "'.", LogLevel.Error);
+            else Core.Log($"Could not find '{name1}'.", LogLevel.Error);
         }
 
         /// <summary>
@@ -61,10 +61,10 @@ namespace KerbalHealth
             KerbalRoster kerbalRoster = HighLogic.fetch.currentGame.CrewRoster;
             List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
             list.AddRange(kerbalRoster.Tourist);
-            Core.Log(list.Count + " total trackable kerbals.", LogLevel.Important);
+            Core.Log($"{list.Count} total trackable kerbals.", LogLevel.Important);
             foreach (ProtoCrewMember pcm in list.Where(pcm => pcm.IsTrackable()))
                 Add(pcm.name);
-            Core.Log("KerbalHealthList updated: " + Count + " kerbals found.", LogLevel.Important);
+            Core.Log($"KerbalHealthList updated: {Count} kerbals found.", LogLevel.Important);
         }
 
         void RemoveUntrackable()
@@ -74,7 +74,7 @@ namespace KerbalHealth
                 .Select(khs => khs.Name));
             foreach (string name in toRemove)
             {
-                Core.Log(name + " is not trackable anymore. Marking for removal.");
+                Core.Log($"{name} is not trackable anymore. Marking for removal.");
                 Remove(name);
             }
         }
@@ -106,10 +106,11 @@ namespace KerbalHealth
         {
             string s = "";
             foreach (string n in Keys)
-                s += n + "\r\n";
+                s += $"{n}\r\n";
             return s.Trim();
         }
 
-        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count) { }
+        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
+        { }
     }
 }

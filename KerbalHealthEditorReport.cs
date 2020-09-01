@@ -70,17 +70,17 @@ namespace KerbalHealth
             Core.Log("KerbalHealthEditorReport.DisplayData");
             if ((ShipConstruction.ShipManifest == null) || !ShipConstruction.ShipManifest.HasAnyCrew())
             {
-                Core.Log("The ship is empty. Let's get outta here!", LogLevel.Important);
+                Core.Log("The ship construction is null.", LogLevel.Important);
                 return;
             }
 
             gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
                 // Creating column titles
-                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_Name") + "</color></b>", true),//Name
-                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_Trend") + "</color></b>", true),//Trend
-                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_MissionTime") + "</color></b>", true),//Mission Time
-                 new DialogGUILabel("<b><color=\"white\">" + Localizer.Format("#KH_ER_TrainingTime") + "</color></b>", true)//Training Time
+                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_Name")}</color></b>", true),//Name
+                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_Trend")}</color></b>", true),//Trend
+                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_MissionTime")}</color></b>", true),//Mission Time
+                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_TrainingTime")}</color></b>", true)//Training Time
             };
 
             // Initializing Health Report's grid with empty labels, to be filled in Update()
@@ -90,10 +90,22 @@ namespace KerbalHealth
             // Preparing factors checklist
             List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
             foreach (HealthFactor f in Core.Factors)
-                checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, (state) => { f.SetEnabledInEditor(state); Invalidate(); }));
+                checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
+                {
+                    f.SetEnabledInEditor(state);
+                    Invalidate();
+                }));
             if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
-                checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), (state) => { trainingEnabled = state; Invalidate(); }));
-            checklist.Add(new DialogGUIToggle(healthModulesEnabled, Localizer.Format("#KH_ER_HealthModules"), (state) => { healthModulesEnabled = state; Invalidate(); }));
+                checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), state =>
+                {
+                    trainingEnabled = state;
+                    Invalidate();
+                }));
+            checklist.Add(new DialogGUIToggle(healthModulesEnabled, Localizer.Format("#KH_ER_HealthModules"), state =>
+            {
+                healthModulesEnabled = state;
+                Invalidate();
+            }));
 
             reportWindow = PopupDialog.SpawnPopupDialog(
                 new Vector2(0.5f, 0.5f),
@@ -115,17 +127,17 @@ namespace KerbalHealth
                         colNum,
                         gridContents.ToArray()),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Space") + "</color>", false),//Space: 
-                        spaceLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Recuperation") + "</color>", false),//Recuperation: 
-                        recupLbl = new DialogGUILabel("N/A", true)),
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Space")}</color>", false),//Space: 
+                        spaceLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Recuperation")}</color>", false),//Recuperation: 
+                        recupLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Shielding") + "</color>", false),//Shielding: 
-                        shieldingLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_Exposure") + "</color>", false),
-                        exposureLbl = new DialogGUILabel("N/A", true),
-                        new DialogGUILabel("<color=\"white\">" + Localizer.Format("#KH_ER_ShelterExposure") + "</color>", false),
-                        shelterExposureLbl = new DialogGUILabel("N/A", true)),
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Shielding")}</color>", false),//Shielding: 
+                        shieldingLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Exposure")}</color>", false),
+                        exposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_ShelterExposure")}</color>", false),
+                        shelterExposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
                         new DialogGUILabel(Localizer.Format("#KH_ER_Factors"), true),
@@ -182,7 +194,7 @@ namespace KerbalHealth
                 }
                 else
                 {
-                    Core.Log(pcm.name + " can't train. They are " + pcm.rosterStatus + " and at " + khs.Health.ToString("P1") + " health.", LogLevel.Important);
+                    Core.Log($"{pcm.name} can't train. They are {pcm.rosterStatus} and at {khs.Health.ToString("P1")} health.", LogLevel.Important);
                     f.Add(pcm.name);
                 }
             }
@@ -195,7 +207,7 @@ namespace KerbalHealth
                 {
                     msg = Localizer.Format("#KH_ER_KerbalsStartedTraining"); //The following kerbals started training:
                     foreach (string k in s)
-                        msg += "\r\n- " + k;
+                        msg += $"\r\n- {k}";
                 }
 
             if (f.Count > 0)
@@ -206,9 +218,9 @@ namespace KerbalHealth
                     msg += Localizer.Format("#KH_ER_KerbalCantTrain", f[0]); //<color="red">* can't train.</color>
                 else
                 {
-                    msg += "<color=\"red\">" + Localizer.Format("#KH_ER_KerbalsCantTrain");  //The following kerbals can't train:
+                    msg += $"<color=\"red\">{Localizer.Format("#KH_ER_KerbalsCantTrain")}";  //The following kerbals can't train:
                     foreach (string k in f)
-                        msg += "\r\n- " + k;
+                        msg += $"\r\n- {k}";
                     msg += "</color>";
                 }
             }
@@ -270,7 +282,7 @@ namespace KerbalHealth
                     khs = Core.KerbalHealthList[pcm]?.Clone();
                     if (khs == null)
                     {
-                        Core.Log("Could not create a clone of KerbalHealthStatus for " + pcm.name + ". It is " + ((Core.KerbalHealthList[pcm] == null) ? "not " : "") + "found in KerbalHealthList, which contains " + Core.KerbalHealthList.Count + " records.", LogLevel.Error);
+                        Core.Log($"Could not create a clone of KerbalHealthStatus for {pcm.name}. It is {((Core.KerbalHealthList[pcm] == null) ? "not " : "")}found in KerbalHealthList, which contains {Core.KerbalHealthList.Count} records.", LogLevel.Error);
                         i++;
                         continue;
                     }
@@ -281,22 +293,22 @@ namespace KerbalHealth
                     double changePerDay = khs.HealthChangePerDay();
                     double balanceHP = khs.GetBalanceHP();
                     string s = balanceHP > 0
-                        ? "-> " + balanceHP.ToString("F0") + " HP (" + (balanceHP / khs.MaxHP * 100).ToString("F0") + "%)"
+                        ? $"-> {balanceHP:F0} HP ({balanceHP / khs.MaxHP * 100:F0}%)"
                         : Localizer.Format("#KH_ER_HealthPerDay", changePerDay.ToString("F1")); // + " HP/day"
                     gridContents[(i + 1) * colNum + 1].SetOptionText(s);
                     s = balanceHP > khs.NextConditionHP()
                         ? "—"
                         : ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
                     gridContents[(i + 1) * colNum + 2].SetOptionText(s);
-                    gridContents[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : "N/A");
+                    gridContents[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
                     i++;
                 }
 
-                spaceLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Space.ToString("F1") + "</color>");
-                recupLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Recuperation.ToString("F1") + "%</color>");
-                shieldingLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.Shielding.ToString("F1") + "</color>");
-                exposureLbl.SetOptionText("<color=\"white\">" + khs.LastExposure.ToString("P1") + "</color>");
-                shelterExposureLbl.SetOptionText("<color=\"white\">" + khs.VesselModifiers.ShelterExposure.ToString("P1") + "</color>");
+                spaceLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Space:F1}</color>");
+                recupLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Recuperation:F1}%</color>");
+                shieldingLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Shielding:F1}</color>");
+                exposureLbl.SetOptionText($"<color=\"white\">{khs.LastExposure:P1}</color>");
+                shelterExposureLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.ShelterExposure:P1}</color>");
 
                 dirty = false;
             }
