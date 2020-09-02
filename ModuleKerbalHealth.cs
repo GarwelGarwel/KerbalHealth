@@ -285,9 +285,9 @@ namespace KerbalHealth
             if (decay != 0)
                 res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
             if (multiplier != 1)
-                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"),multiplyFactor);//"\n" +  + "x " + 
+                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"), multiplyFactor);//"\n" +  + "x " + 
             if (crewCap > 0)
-                res += Localizer.Format("#KH_Module_info5", crewCap,(crewCap != 1 ? Localizer.Format("#KH_Module_info5_s") : ""));//" for up to " +  + " kerbal" + "s"
+                res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
             if (space != 0)
                 res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
             if (resourceConsumption != 0)

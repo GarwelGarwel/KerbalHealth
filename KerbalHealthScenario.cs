@@ -866,7 +866,7 @@ namespace KerbalHealth
             if (selectedKHS.IsDecontaminating)
             {
                 Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.");
-                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.Name);// + " is decontaminating. If you stop it, the process will stop and they will slowly regain health."
+                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.PCM.displayName);// + " is decontaminating. If you stop it, the process will stop and they will slowly regain health."
                 ok = () =>
                 {
                     selectedKHS.StopDecontamination();
@@ -886,7 +886,7 @@ namespace KerbalHealth
            
                 msg += Localizer.Format(
                     "#KH_DeconMsg4",
-                    selectedKHS.Name,
+                    selectedKHS.PCM.displayName,
                     (KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss * 100).ToString("N0"),
                     KerbalHealthRadiationSettings.Instance.DecontaminationRate.ToString("N0"),
                     Core.ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2)); //"<<1>> needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by <<2>>% during decontamination.\r\n\r\nAt a rate of <<3>> banana doses/day, it is expected to take about <color="yellow"><<4>></color>."
