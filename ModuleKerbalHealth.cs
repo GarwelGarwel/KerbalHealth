@@ -119,8 +119,8 @@ namespace KerbalHealth
         /// </summary>
         public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
 
-        public List<PartResourceDefinition> GetConsumedResources()
-            => (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
+        public List<PartResourceDefinition> GetConsumedResources() =>
+            (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
             ? new List<PartResourceDefinition>() { ResourceDefinition }
             : new List<PartResourceDefinition>();
 

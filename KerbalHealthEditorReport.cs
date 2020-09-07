@@ -89,12 +89,11 @@ namespace KerbalHealth
 
             // Preparing factors checklist
             List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
-            foreach (HealthFactor f in Core.Factors)
-                checklist.Add(new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
-                {
-                    f.SetEnabledInEditor(state);
-                    Invalidate();
-                }));
+            checklist.AddRange(Core.Factors.Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
+            {
+                f.SetEnabledInEditor(state);
+                Invalidate();
+            })));
             if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), state =>
                 {
@@ -237,13 +236,8 @@ namespace KerbalHealth
             }
         }
 
-        double TrainingTime(KerbalHealthStatus khs, List<ModuleKerbalHealth> parts)
-        {
-            double c = 0;
-            foreach (ModuleKerbalHealth mkh in parts)
-                c += (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh);
-            return c / khs.TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
-        }
+        double TrainingTime(KerbalHealthStatus khs, List<ModuleKerbalHealth> modules) =>
+            modules.Sum(mkh => (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh)) / khs.TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
 
         public void Update()
         {

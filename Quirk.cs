@@ -33,8 +33,8 @@ namespace KerbalHealth
         /// <param name="khs"></param>
         /// <param name="level"></param>
         /// <returns></returns>
-        public bool IsAvailableTo(KerbalHealthStatus khs, int level)
-            => level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
+        public bool IsAvailableTo(KerbalHealthStatus khs, int level) =>
+            level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
 
         /// <summary>
         /// Applies valid effects of this quirk to the given kerbal's HealthModifierSet

@@ -19,8 +19,8 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static HealthModifierSet GetVesselModifiers(Vessel v)
-            => VesselCache.ContainsKey(v.id) ? VesselCache[v.id] : (VesselCache[v.id] = new HealthModifierSet(v));
+        public static HealthModifierSet GetVesselModifiers(Vessel v) =>
+            VesselCache.ContainsKey(v.id) ? VesselCache[v.id] : (VesselCache[v.id] = new HealthModifierSet(v));
 
         /// <summary>
         /// Returns vessel health modifiers for the vessel with the given kerbal
@@ -65,8 +65,8 @@ namespace KerbalHealth
         /// <param name="shielding">Total shielding</param>
         /// <param name="crew">Crew capacity</param>
         /// <returns></returns>
-        public static double GetExposure(double shielding, double crew)
-            => Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crew, 2f / 3));
+        public static double GetExposure(double shielding, double crew) =>
+            Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crew, 2f / 3));
 
         /// <summary>
         /// Returns effective multiplier for the given factor
@@ -289,6 +289,7 @@ namespace KerbalHealth
         class PartExposureComparer : IComparable<PartExposureComparer>
         {
             public Part Part { get; set; }
+
             public double Exposure { get; private set; }
 
             public int CompareTo(PartExposureComparer other) => Exposure.CompareTo(other.Exposure);

@@ -168,9 +168,8 @@ namespace KerbalHealth
             {
                 double xs = KerbalHealthGeneralSettings.Instance.ExhaustionStartHealth;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (Quirk q in Quirks)
-                        foreach (HealthEffect he in q.Effects.Where(he => he.IsApplicable(this)))
-                            xs *= he.ExhaustedStart;
+                    foreach (HealthEffect he in Quirks.Select(q => q.Effects.Where(he => he.IsApplicable(this))))
+                        xs *= he.ExhaustedStart;
                 return xs;
             }
         }
@@ -189,9 +188,8 @@ namespace KerbalHealth
             {
                 double xe = KerbalHealthGeneralSettings.Instance.ExhaustionEndHealth;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (Quirk q in Quirks)
-                        foreach (HealthEffect he in q.Effects.Where(he => he.IsApplicable(this)))
-                            xe *= he.ExhaustedEnd;
+                    foreach (HealthEffect he in Quirks.Select(q => q.Effects.Where(he => he.IsApplicable(this))))
+                        xe *= he.ExhaustedEnd;
                 return xe;
             }
         }
@@ -454,16 +452,8 @@ namespace KerbalHealth
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
         /// </summary>
-        public double TrainingETA
-        {
-            get
-            {
-                double c = 0;
-                foreach (TrainingPart tp in TrainingFor)
-                    c += (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp);
-                return c / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
-            }
-        }
+        public double TrainingETA =>
+            TrainingFor.Sum(tp => (Core.TrainingCap - TrainingLevels[tp.Id]) * GetPartTrainingComplexity(tp)) / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
 
         public double TrainingLevel
         {
@@ -471,13 +461,9 @@ namespace KerbalHealth
             {
                 if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 {
-                    double totalTraining = 0, totalComplexity = 0;
-                    foreach (TrainingPart tp in TrainingFor)
-                    {
-                        totalTraining += TrainingLevels[tp.Id] * tp.Complexity;
-                        totalComplexity += tp.Complexity;
-                    }
-                    totalTraining = (totalComplexity != 0) ? totalTraining / totalComplexity : Core.TrainingCap;
+                    double totalTraining = TrainingFor.Sum(tp => TrainingLevels[tp.Id] * tp.Complexity);
+                    double totalComplexity = TrainingFor.Sum(tp => tp.Complexity);
+                    totalTraining = Math.Min(totalTraining / totalComplexity, Core.TrainingCap);
                     if (TrainingVessel != null)
                         TrainedVessels[TrainingVessel] = totalTraining;
                     return totalTraining;
@@ -495,11 +481,11 @@ namespace KerbalHealth
 
         public double TrainingLevelForPart(uint id) => TrainingLevels.ContainsKey(id) ? TrainingLevels[id] : 0;
 
-        public double GetPartTrainingComplexity(TrainingPart tp)
-            => IsFamiliarWithPartType(tp.Name) ? tp.Complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : tp.Complexity;
+        public double GetPartTrainingComplexity(TrainingPart tp) =>
+            IsFamiliarWithPartType(tp.Name) ? tp.Complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : tp.Complexity;
 
-        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh)
-            => IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : mkh.complexity;
+        public double GetPartTrainingComplexity(ModuleKerbalHealth mkh) =>
+            IsFamiliarWithPartType(mkh.part.name) ? mkh.complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : mkh.complexity;
 
         /// <summary>
         /// Start training the kerbal for a set of parts; also abandons all previous trainings
@@ -552,9 +538,7 @@ namespace KerbalHealth
             Core.Log($"{name} is training for {TrainingFor.Count} parts.");
 
             // Step 1: Calculating training complexity of all not yet trained-for parts
-            double totalComplexity = 0;
-            foreach (TrainingPart tp in TrainingFor.Where(tp => TrainingLevels[tp.Id] < Core.TrainingCap))
-                totalComplexity += GetPartTrainingComplexity(tp);
+            double totalComplexity = TrainingFor.Where(tp => TrainingLevels[tp.Id] < Core.TrainingCap).Sum(tp => GetPartTrainingComplexity(tp));
             if (totalComplexity == 0)
             {
                 Core.Log("No parts in need of training found.", LogLevel.Important);
@@ -623,12 +607,13 @@ namespace KerbalHealth
             {
                 double k = 1, a = 0;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (Quirk q in Quirks.Where(q => q != null))
-                        foreach (HealthEffect he in q.Effects.Where(he => (he != null) && he.IsApplicable(this)))
-                        {
-                            a += he.MaxHPBonus;
-                            k *= he.MaxHP;
-                        }
+                    foreach (HealthEffect he in Quirks
+                    .Where(q => q != null)
+                    .Select(q => q.Effects.Where(he => (he != null) && he.IsApplicable(this))))
+                    {
+                        a += he.MaxHPBonus;
+                        k *= he.MaxHP;
+                    }
                 return (GetMaxHP(PCM) + MaxHPModifier + a) * RadiationMaxHPModifier * k;
             }
         }
@@ -768,8 +753,8 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal can start decontamination now
         /// </summary>
-        public bool IsReadyForDecontamination
-            => (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+        public bool IsReadyForDecontamination =>
+            (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available)
             && (Health >= 1)
             && (Conditions.Count == 0)
             && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost))
@@ -972,13 +957,8 @@ namespace KerbalHealth
             // Processing factors
             Core.Log($"Processing {Core.Factors.Count} factors for {Name}...");
             int crewCount = Core.GetCrewCount(pcm);
-            foreach (HealthFactor f in Core.Factors)
+            foreach (HealthFactor f in Core.Factors.Where(f => recalculateCache || !f.Cachable))
             {
-                if (f.Cachable && !recalculateCache)
-                {
-                    Core.Log($"{f.Name} is not recalculated for {pcm.name} ({HighLogic.LoadedScene} scene, {(pcm.IsLoaded() ? "" : "not ")}loaded, {(IsOnEVA ? "" : "not ")}on EVA).");
-                    continue;
-                }
                 double c = f.ChangePerDay(pcm) * mods.GetMultiplier(f.Name, crewCount) * mods.GetMultiplier("All", crewCount);
                 Core.Log($"Multiplier for {f.Name} is {mods.GetMultiplier(f.Name, crewCount)} * {mods.FreeMultipliers[f.Name]} (bonus sum: {mods.BonusSums[f.Name]}; multipliers: {mods.MinMultipliers[f.Name]}..{mods.MaxMultipliers[f.Name]})");
                 Core.Log($"{f.Name}'s effect on {pcm.name} is {c} HP/day.");
