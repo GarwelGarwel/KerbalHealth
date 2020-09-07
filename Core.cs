@@ -137,7 +137,7 @@ namespace KerbalHealth
 
         public static RadStormType GetRandomRadStormType()
         {
-            double d = Core.rand.NextDouble() * radStormTypesTotalWeight;
+            double d = rand.NextDouble() * radStormTypesTotalWeight;
             foreach (RadStormType rst in RadStormTypes)
             {
                 d -= rst.Weight;

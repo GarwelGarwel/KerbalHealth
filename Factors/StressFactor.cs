@@ -6,7 +6,7 @@ namespace KerbalHealth
     {
         public override string Name => "Stress";
 
-        public override string Title => Localizer.Format("#KH_Stress");
+        public override string Title => Localizer.Format("#KH_Factor_Stress");
 
         public override bool Cachable => false;
 

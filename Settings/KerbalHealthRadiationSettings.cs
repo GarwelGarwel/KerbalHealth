@@ -72,7 +72,7 @@ namespace KerbalHealth
         {
             if (settingsNode == null)
                 return;
-            Core.Log("Applying KerbalHealthGeneralSettings settings: " + settingsNode);
+            Core.Log($"Applying KerbalHealthGeneralSettings settings: {settingsNode}");
             settingsNode.TryGetValue("RadiationEnabled", ref RadiationEnabled);
             settingsNode.TryGetValue("RadiationEffect", ref RadiationEffect);
             settingsNode.TryGetValue("ShieldingEffect", ref ShieldingEffect);

@@ -65,10 +65,13 @@ namespace KerbalHealth
             Vessel v = pcm.GetVessel();
             if (v == null)
                 return false;
-            if (Target == RadStormTargetType.Body)
-                return v.mainBody.GetPlanet()?.name == Name;
-            if (Target == RadStormTargetType.Vessel)
-                return v.id.ToString() == VesselId;
+            switch (Target)
+            {
+                case RadStormTargetType.Body:
+                    return v.mainBody.GetPlanet()?.name == Name;
+                case RadStormTargetType.Vessel:
+                    return v.id.ToString() == VesselId;
+            }
             return false;
         }
 

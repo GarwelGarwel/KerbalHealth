@@ -6,7 +6,7 @@ namespace KerbalHealth
     {
         public override string Name => "Home";
 
-        public override string Title => Localizer.Format("#KH_Home");//Home
+        public override string Title => Localizer.Format("#KH_Factor_Home");//Home
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
@@ -25,7 +25,7 @@ namespace KerbalHealth
             CelestialBody body = vessel?.mainBody;
             if (body == null)
             {
-                Core.Log("Could not find main body for " + pcm.name, LogLevel.Error);
+                Core.Log($"Could not find main body for {pcm.name}.", LogLevel.Error);
                 return 0;
             }
             if (body.isHomeWorld && (vessel.altitude < body.scienceValues.flyingAltitudeThreshold))
@@ -33,7 +33,7 @@ namespace KerbalHealth
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;
             }
-            Core.Log("Home factor is off. Main body: " + body.name + "; altitude: " + vessel.altitude + ".");
+            Core.Log($"Home factor is off. Main body: {body.name}; altitude: {vessel.altitude:N0}.");
             return 0;
         }
     }

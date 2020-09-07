@@ -57,7 +57,7 @@ namespace KerbalHealth
         {
             if (settingsNode == null)
                 return;
-            Core.Log("Applying KerbalHealthGeneralSettings settings: " + settingsNode);
+            Core.Log($"Applying KerbalHealthGeneralSettings settings: {settingsNode}");
             settingsNode.TryGetValue("ModEnabled", ref modEnabled);
             settingsNode.TryGetValue("ShowAppLauncherButton", ref ShowAppLauncherButton);
             settingsNode.TryGetValue("SortByLocation", ref SortByLocation);

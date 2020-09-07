@@ -59,7 +59,7 @@ namespace KerbalHealth
         {
             if (settingsNode == null)
                 return;
-            Core.Log("Applying KerbalHealthQuirkSettings settings: " + settingsNode);
+            Core.Log($"Applying KerbalHealthQuirkSettings settings: {settingsNode}");
             settingsNode.TryGetValue("ConditionsEnabled", ref ConditionsEnabled);
             settingsNode.TryGetValue("KSCNotificationsEnabled", ref KSCNotificationsEnabled);
             settingsNode.TryGetValue("ConditionsChance", ref ConditionsChance);
