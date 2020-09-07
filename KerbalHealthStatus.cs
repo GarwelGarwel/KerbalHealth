@@ -31,8 +31,8 @@ namespace KerbalHealth
             }
         }
 
-        public string FullName
-            => $"{Name}{(KerbalHealthGeneralSettings.Instance.ShowTraitLevel ? $" ({Localizer.Format($"#KH_TraitSymbol_{PCM.trait}")}{PCM.experienceLevel})" : "")}";
+        public string FullName =>
+            $"{Name}{(KerbalHealthGeneralSettings.Instance.ShowTraitLevel ? $" ({Localizer.Format($"#KH_TraitSymbol_{PCM.trait}")}{PCM.experienceLevel})" : "")}";
 
         /// <summary>
         /// Returns true if the kerbal is marked as being on EVA
@@ -110,10 +110,10 @@ namespace KerbalHealth
 
         #region CONDITIONS
 
-        internal const string Condition_Training = "Training";
-        internal const string Condition_Frozen = "Frozen";
-        internal const string Condition_Exhausted = "Exhausted";
-        internal const string Condition_Decontaminating = "Decontaminating";
+        public const string Condition_Exhausted = "Exhausted";
+        public const string Condition_Decontaminating = "Decontaminating";
+        public const string Condition_Training = "Training";
+        public const string Condition_Frozen = "Frozen";
 
         /// <summary>
         /// Returns a list of all active health conditions for the kerbal
@@ -914,7 +914,7 @@ namespace KerbalHealth
                 LastExposure = ShelterExposure = 1;
                 Factors = new Dictionary<string, double>(Core.Factors.Count);
             }
-            else Core.Log($"Cached HP change for {pcm.name} is {CachedChange} HP/day.");
+            else Core.Log($"Cached HP change for {Name} is {CachedChange} HP/day.");
 
             // Processing parts and quirks
             HealthModifierSet mods;
@@ -924,11 +924,11 @@ namespace KerbalHealth
                 VesselModifiers = HealthModifierSet.GetVesselModifiers(pcm);
                 mods = VesselModifiers.Clone();
                 Core.Log($"Vessel health modifiers before applying part and kerbal effects:\n{mods}");
-                Core.Log($"Now about to process part {pcm.GetCrewPart()?.name} where {Name} is located.");
+                Core.Log($"Now about to process part {pcm.GetCrewPart()?.partName ?? "NULL"} where {Name} is located.");
                 if (IsOnEVA)
                     mods.ExposureMultiplier *= KerbalHealthRadiationSettings.Instance.EVAExposure;
                 ShelterExposure = mods.ShelterExposure * mods.ExposureMultiplier;
-                Core.Log($"Shelter exposure for {name} is {ShelterExposure}.");
+                Core.Log($"Shelter exposure for {Name} is {ShelterExposure}.");
                 mods.ProcessPart(pcm.GetCrewPart(), true);
                 mods.ExposureMultiplier *= mods.Exposure;
             }
@@ -961,7 +961,7 @@ namespace KerbalHealth
             {
                 double c = f.ChangePerDay(pcm) * mods.GetMultiplier(f.Name, crewCount) * mods.GetMultiplier("All", crewCount);
                 Core.Log($"Multiplier for {f.Name} is {mods.GetMultiplier(f.Name, crewCount)} * {mods.FreeMultipliers[f.Name]} (bonus sum: {mods.BonusSums[f.Name]}; multipliers: {mods.MinMultipliers[f.Name]}..{mods.MaxMultipliers[f.Name]})");
-                Core.Log($"{f.Name}'s effect on {pcm.name} is {c} HP/day.");
+                Core.Log($"{f.Name}'s effect on {Name} is {c} HP/day.");
                 Factors[f.Name] = c;
                 if (f.Cachable)
                     CachedChange += c;
@@ -971,8 +971,8 @@ namespace KerbalHealth
             double mc = MarginalChange;
             LastChangeTotal = LastChange + mc;
 
-            Core.Log($"Recuperation/decay change for {pcm.name}: {mc} (+{LastRecuperation}%, -{LastDecay}%).");
-            Core.Log($"Total change for {pcm.name}: {LastChangeTotal} HP/day.");
+            Core.Log($"Recuperation/decay change for {Name}: {mc} (+{LastRecuperation}%, -{LastDecay}%).");
+            Core.Log($"Total change for {Name}: {LastChangeTotal} HP/day.");
             if (recalculateCache)
                 Core.Log($"Total shielding: {mods.Shielding}; crew capacity: {Core.GetCrewCapacity(pcm)}");
             return LastChangeTotal;
