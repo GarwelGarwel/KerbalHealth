@@ -19,7 +19,7 @@ namespace KerbalHealth
         PopupDialog reportWindow;
         
         // Health Report grid's labels
-        System.Collections.Generic.List<DialogGUIBase> gridContents;
+        System.Collections.Generic.List<DialogGUIBase> gridContent;
         
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
 
@@ -74,7 +74,7 @@ namespace KerbalHealth
                 return;
             }
 
-            gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
+            gridContent = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
                 // Creating column titles
                  new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_Name")}</color></b>", true),//Name
@@ -85,7 +85,7 @@ namespace KerbalHealth
 
             // Initializing Health Report's grid with empty labels, to be filled in Update()
             for (int i = 0; i < ShipConstruction.ShipManifest.CrewCount * colNum; i++)
-                gridContents.Add(new DialogGUILabel("", true));
+                gridContent.Add(new DialogGUILabel("", true));
 
             // Preparing factors checklist
             List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
@@ -124,7 +124,7 @@ namespace KerbalHealth
                         TextAnchor.MiddleCenter,
                         UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
                         colNum,
-                        gridContents.ToArray()),
+                        gridContent.ToArray()),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Space")}</color>", false),//Space: 
                         spaceLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
@@ -193,7 +193,7 @@ namespace KerbalHealth
                 }
                 else
                 {
-                    Core.Log($"{pcm.name} can't train. They are {pcm.rosterStatus} and at {khs.Health.ToString("P1")} health.", LogLevel.Important);
+                    Core.Log($"{pcm.name} can't train. They are {pcm.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
                     f.Add(pcm.name);
                 }
             }
@@ -214,14 +214,14 @@ namespace KerbalHealth
                 if (msg.Length != 0)
                     msg += "\r\n\n";
                 if (f.Count == 1)
-                    msg += Localizer.Format("#KH_ER_KerbalCantTrain", f[0]); //<color="red">* can't train.</color>
+                    msg += $"<color=\"red\">{Localizer.Format("#KH_ER_KerbalCantTrain", f[0])}"; //* can't train.
                 else
                 {
                     msg += $"<color=\"red\">{Localizer.Format("#KH_ER_KerbalsCantTrain")}";  //The following kerbals can't train:
                     foreach (string k in f)
                         msg += $"\r\n- {k}";
-                    msg += "</color>";
                 }
+                msg += "</color>";
             }
             Core.ShowMessage(msg, false);
         }
@@ -250,14 +250,14 @@ namespace KerbalHealth
 
             if ((reportWindow != null) && dirty)
             {
-                if (gridContents == null)
+                if (gridContent == null)
                 {
-                    Core.Log("gridContents is null.", LogLevel.Error);
+                    Core.Log("gridContent is null.", LogLevel.Error);
                     return;
                 }
 
                 // # of tracked kerbals has changed => close & reopen the window
-                if (gridContents.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)
+                if (gridContent.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * colNum)
                 {
                     Core.Log("Kerbals' number has changed. Recreating the Health Report window.", LogLevel.Important);
                     UndisplayData();
@@ -281,7 +281,7 @@ namespace KerbalHealth
                         continue;
                     }
 
-                    gridContents[(i + 1) * colNum].SetOptionText(khs.FullName);
+                    gridContent[(i + 1) * colNum].SetOptionText(khs.FullName);
                     khs.HP = khs.MaxHP;
                     // Making this call here, so that GetBalanceHP doesn't have to:
                     double changePerDay = khs.HealthChangePerDay();
@@ -289,12 +289,12 @@ namespace KerbalHealth
                     string s = balanceHP > 0
                         ? $"-> {balanceHP:F0} HP ({balanceHP / khs.MaxHP * 100:F0}%)"
                         : Localizer.Format("#KH_ER_HealthPerDay", changePerDay.ToString("F1")); // + " HP/day"
-                    gridContents[(i + 1) * colNum + 1].SetOptionText(s);
+                    gridContent[(i + 1) * colNum + 1].SetOptionText(s);
                     s = balanceHP > khs.NextConditionHP()
                         ? "—"
                         : ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
-                    gridContents[(i + 1) * colNum + 2].SetOptionText(s);
-                    gridContents[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
+                    gridContent[(i + 1) * colNum + 2].SetOptionText(s);
+                    gridContent[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
                     i++;
                 }
 
@@ -318,7 +318,7 @@ namespace KerbalHealth
                 toolbarButton.Destroy();
             if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
-            Core.Log("KerbalHealthEditorReport.OnDisable finished.", LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.OnDisable finished.");
         }
     }
 }

@@ -396,7 +396,7 @@ namespace KerbalHealth
 
             if (gridContents == null)
             {
-                Core.Log("KerbalHealthScenario.gridContents is null.", LogLevel.Error);
+                Core.Log("KerbalHealthScenario.gridContent is null.", LogLevel.Error);
                 monitorWindow.Dismiss();
                 return;
             }
