@@ -25,7 +25,7 @@ namespace KerbalHealth
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)
                 res += hc.HPChangePerDay * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
-            Core.Log($"Conditions HP chande per day: {res}");
+            Core.Log($"Conditions HP change per day: {res}");
             return Core.IsInEditor ? (IsEnabledInEditor() ? res : 0) : res;
         }
     }
