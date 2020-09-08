@@ -168,7 +168,7 @@ namespace KerbalHealth
             {
                 double xs = KerbalHealthGeneralSettings.Instance.ExhaustionStartHealth;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (HealthEffect he in Quirks.Select(q => q.Effects.Where(he => he.IsApplicable(this))))
+                    foreach (HealthEffect he in Quirks.SelectMany(q => q.Effects.Where(he => he.IsApplicable(this))))
                         xs *= he.ExhaustedStart;
                 return xs;
             }
@@ -188,7 +188,7 @@ namespace KerbalHealth
             {
                 double xe = KerbalHealthGeneralSettings.Instance.ExhaustionEndHealth;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (HealthEffect he in Quirks.Select(q => q.Effects.Where(he => he.IsApplicable(this))))
+                    foreach (HealthEffect he in Quirks.SelectMany(q => q.Effects.Where(he => he.IsApplicable(this))))
                         xe *= he.ExhaustedEnd;
                 return xe;
             }
@@ -325,7 +325,7 @@ namespace KerbalHealth
         /// <param name="quirk"></param>
         public void AddQuirk(Quirk quirk)
         {
-            if (!Quirks.Contains(quirk))
+            if (quirk != null && !Quirks.Contains(quirk))
                 Quirks.Add(quirk);
         }
 
@@ -380,8 +380,11 @@ namespace KerbalHealth
         public Quirk AddRandomQuirk(int level)
         {
             Quirk q = GetRandomQuirk(level);
-            Quirks.Add(q);
-            Core.ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name, q), PCM);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
+            if (q != null)
+            {
+                Quirks.Add(q);
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name, q), PCM);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
+            }
             return q;
         }
 
@@ -607,9 +610,7 @@ namespace KerbalHealth
             {
                 double k = 1, a = 0;
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
-                    foreach (HealthEffect he in Quirks
-                    .Where(q => q != null)
-                    .SelectMany(q => q.Effects.Where(he => (he != null) && he.IsApplicable(this))))
+                    foreach (HealthEffect he in Quirks.SelectMany(q => q.Effects.Where(he => (he != null) && he.IsApplicable(this))))
                     {
                         a += he.MaxHPBonus;
                         k *= he.MaxHP;
@@ -1003,9 +1004,15 @@ namespace KerbalHealth
 
             if (KerbalHealthRadiationSettings.Instance.RadiationEnabled)
             {
-                if ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || frozen)
+                if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned || frozen)
                 {
-                    Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(PCM.GetVessel())) * KSPUtil.dateTimeFormatter.Day / 21600;
+                    Vessel v = PCM.GetVessel();
+                    if (v == null)
+                    {
+                        Core.Log($"Vessel for {Name} not found!", LogLevel.Error);
+                        return;
+                    }
+                    Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600;
                     Core.Log($"{Name}'s radiation level is {Radiation} bananas/day. Total accumulated dose is {Dose} BEDs.");
                     if (decontaminating)
                         StopDecontamination();
