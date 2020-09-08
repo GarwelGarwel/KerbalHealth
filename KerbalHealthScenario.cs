@@ -1,4 +1,5 @@
-﻿using KSP.Localization;
+﻿using KerbalHealth.Wrappers;
+using KSP.Localization;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
@@ -661,11 +662,19 @@ namespace KerbalHealth
         public override void OnLoad(ConfigNode node)
         {
             if (!Core.ConfigLoaded)
+            {
                 Core.LoadConfig();
+                Kerbalism.Init();
+            }
+
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
 
             Core.Log("KerbalHealthScenario.OnLoad", LogLevel.Important);
+
+            if (Kerbalism.Found)
+                Core.Log($"Kerbalism radiation is {(Kerbalism.IsRadiationEnabled() ? "enabled" : "disabled")}.", LogLevel.Important);
+            else Core.Log("Kerbalism not found.", LogLevel.Important);
 
             // If loading scenario for the first time, try to load settings from config
             if (!node.HasValue("nextEventTime"))
