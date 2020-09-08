@@ -269,22 +269,19 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel GetVessel(this ProtoCrewMember pcm)
         {
-            if (pcm == null)
-                return null;
-
-            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
-            {
-                Vessel v = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
-                Log($"{pcm.name} found in FrozenKerbals.");
-                kerbalVesselsCache.Add(pcm.name, v);
-                return v;
-            }
-
-            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (pcm == null || pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                 return null;
 
             if (kerbalVesselsCache.ContainsKey(pcm.name))
                 return kerbalVesselsCache[pcm.name];
+
+            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
+            {
+                Vessel v = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
+                Log($"{pcm.name} found frozen in {v?.vesselName ?? "NULL"}.");
+                kerbalVesselsCache.Add(pcm.name, v);
+                return v;
+            }
 
             foreach (Vessel v in FlightGlobals.Vessels)
                 if (v.GetVesselCrew().Contains(pcm))
@@ -324,7 +321,7 @@ namespace KerbalHealth
             n.HasValue(key) ? n.GetValue(key) : defaultValue;
 
         public static double GetDouble(this ConfigNode n, string key, double defaultValue = 0) =>
-            double.TryParse(n.GetValue(key), out double res) ? res : defaultValue;
+            double.TryParse(n.GetValue(key), out double res) && !double.IsNaN(res) ? res : defaultValue;
 
         public static int GetInt(this ConfigNode n, string key, int defaultValue = 0) =>
             int.TryParse(n.GetValue(key), out int res) ? res : defaultValue;

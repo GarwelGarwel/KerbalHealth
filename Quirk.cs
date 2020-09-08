@@ -79,7 +79,7 @@ namespace KerbalHealth
             CourageWeight = node.GetDouble("courageWeight", 1);
             StupidityWeight = node.GetDouble("stupidityWeight", 1);
             Effects = new List<HealthEffect>(node.GetNodes("EFFECT").Select(n => new HealthEffect(n)));
-            Core.Log("Quirk loaded: " + this);
+            Core.Log($"Quirk loaded: {this}");
         }
 
         public Quirk(string name)
