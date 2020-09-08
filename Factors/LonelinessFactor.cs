@@ -6,7 +6,7 @@ namespace KerbalHealth
     {
         public override string Name => "Loneliness";
 
-        public override string Title => Localizer.Format("#KH_Loneliness");//Loneliness
+        public override string Title => Localizer.Format("#KH_Factor_Loneliness");//Loneliness
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.LonelinessFactor;
 

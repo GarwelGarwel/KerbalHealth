@@ -33,8 +33,8 @@ namespace KerbalHealth
         /// <param name="khs"></param>
         /// <param name="level"></param>
         /// <returns></returns>
-        public bool IsAvailableTo(KerbalHealthStatus khs, int level)
-            => level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
+        public bool IsAvailableTo(KerbalHealthStatus khs, int level) =>
+            level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
 
         /// <summary>
         /// Applies valid effects of this quirk to the given kerbal's HealthModifierSet
@@ -43,27 +43,27 @@ namespace KerbalHealth
         /// <param name="hms"></param>
         public void Apply(KerbalHealthStatus khs, HealthModifierSet hms)
         {
-            Core.Log("Applying " + Name + " quirk to " + khs.Name + ".");
+            Core.Log($"Applying {Name} quirk to {khs.Name}.");
             foreach (HealthEffect eff in Effects.Where(eff => eff.IsApplicable(khs)))
                 eff.Apply(hms);
         }
 
-        public override bool Equals(object obj) => (obj is Quirk) && (obj != null) && (((Quirk)obj).Name == Name);
+        public override bool Equals(object obj) => (obj != null) && (obj is Quirk quirk) && (quirk.Name == Name);
 
         public override int GetHashCode() => Name.GetHashCode();
 
         public override string ToString()
         {
-            string res = Title + ".";
-            if ((Description != null) && (Description != ""))
-                res += "\n" + Description;
+            string res = $"{Title}.";
+            if (!string.IsNullOrEmpty(Description))
+                res += $"\n{Description}";
             if (Effects.Count == 1)
-                res += "\nEffect: " + Effects[0];
+                res += $"\nEffect: {Effects[0]}";
             if (Effects.Count > 1)
             {
                 res += "\nEffects:";
                 foreach (HealthEffect he in Effects)
-                    res += "\n" + he;
+                    res += $"\n{he}";
             }
             return res;
         }

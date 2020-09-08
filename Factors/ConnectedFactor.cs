@@ -5,7 +5,8 @@ namespace KerbalHealth
     public class ConnectedFactor : HealthFactor
     {
         public override string Name => "Connected";
-        public override string Title => Localizer.Format("#KH_Connected");//Connected
+
+        public override string Title => Localizer.Format("#KH_Factor_Connected");//Connected
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.ConnectedFactor;
 

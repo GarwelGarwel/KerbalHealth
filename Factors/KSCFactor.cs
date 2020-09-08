@@ -6,7 +6,7 @@ namespace KerbalHealth
     {
         public override string Name => "KSC";
 
-        public override string Title => Localizer.Format("#KH_KSC");
+        public override string Title => Localizer.Format("#KH_Factor_KSC");
 
         public override bool Cachable => false;
 

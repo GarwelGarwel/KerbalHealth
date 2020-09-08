@@ -107,7 +107,7 @@ namespace KerbalHealth
                         : ShipConstruction.ShipManifest.CrewCount;
                 if (vessel == null || part?.protoModuleCrew == null)
                 {
-                    Core.Log("TotalAffectedCrewCount: vessel: " + (vessel?.vesselName ?? "NULL") + "; part: " + (part?.partName ?? "NULL") + "; protoModuleCrew: " + (part?.protoModuleCrew ?? new List<ProtoCrewMember>()).Count() + " members.", LogLevel.Error);
+                    Core.Log($"TotalAffectedCrewCount: vessel: {vessel?.vesselName ?? "NULL"}; part: {part?.partName ?? "NULL"}; protoModuleCrew: {(part?.protoModuleCrew ?? new List<ProtoCrewMember>()).Count()} members.", LogLevel.Error);
                     return 0;
                 }
                 return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
@@ -119,8 +119,8 @@ namespace KerbalHealth
         /// </summary>
         public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
 
-        public List<PartResourceDefinition> GetConsumedResources()
-            => (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
+        public List<PartResourceDefinition> GetConsumedResources() =>
+            (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
             ? new List<PartResourceDefinition>() { ResourceDefinition }
             : new List<PartResourceDefinition>();
 
@@ -138,7 +138,7 @@ namespace KerbalHealth
 
         public override void OnStart(StartState state)
         {
-            Core.Log("ModuleKerbalHealth.OnStart(" + state + ") for " + part.name);
+            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.name}");
             base.OnStart(state);
             if ((complexity != 0) && (id == 0))
                 id = part.persistentId;
@@ -168,7 +168,7 @@ namespace KerbalHealth
                     ecPerSec = 0;
                 starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
                 if (starving)
-                    Core.Log(Title + " Module is starving of " + resource + " (" + requiredAmount + " needed, " + providedAmount + " provided).");
+                    Core.Log($"{Title} Module is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
             }
             else ecPerSec = 0;
             lastUpdated = time;
@@ -202,7 +202,7 @@ namespace KerbalHealth
                 availableResources.TryGetValue(mkh.resource, out double availableAmount);
                 if (availableAmount <= 0)
                 {
-                    Core.Log(mkh.Title + " Module is starving of " + mkh.resource + " (" + requiredAmount + " @ " + mkh.ecPerSec + "EC/sec needed, " + availableAmount + " available.");
+                    Core.Log($"{mkh.Title} Module is starving of {mkh.resource} ({requiredAmount} @ {mkh.ecPerSec} EC/sec needed, {availableAmount} available.");
                     mkh.starving = true;
                 }
                 resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -mkh.ecPerSec));
@@ -285,9 +285,9 @@ namespace KerbalHealth
             if (decay != 0)
                 res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
             if (multiplier != 1)
-                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"),multiplyFactor);//"\n" +  + "x " + 
+                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"), multiplyFactor);//"\n" +  + "x " + 
             if (crewCap > 0)
-                res += Localizer.Format("#KH_Module_info5", crewCap,(crewCap != 1 ? Localizer.Format("#KH_Module_info5_s") : ""));//" for up to " +  + " kerbal" + "s"
+                res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
             if (space != 0)
                 res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
             if (resourceConsumption != 0)

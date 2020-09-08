@@ -74,7 +74,7 @@ namespace KerbalHealth
         {
             if (settingsNode == null)
                 return;
-            Core.Log("Applying KerbalHealthFactorsSettings settings: " + settingsNode);
+            Core.Log($"Applying KerbalHealthFactorsSettings settings: {settingsNode}");
             settingsNode.TryGetValue("StressFactor", ref StressFactor);
             settingsNode.TryGetValue("ConfinementBaseFactor", ref ConfinementBaseFactor);
             settingsNode.TryGetValue("LonelinessFactor", ref LonelinessFactor);

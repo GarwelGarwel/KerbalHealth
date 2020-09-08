@@ -41,14 +41,14 @@
                     return;
                 }
                 if (Body == null)
-                    Core.Log("Body '" + Name + "' not found.", LogLevel.Important);
+                    Core.Log($"Body '{Name}' not found.", LogLevel.Important);
                 Magnetosphere = value.GetDouble("magnetosphere", Magnetosphere);
                 AtmosphericAbsorption = value.GetDouble("atmosphericAbsorption", AtmosphericAbsorption);
                 Radioactivity = value.GetDouble("radioactivity", Radioactivity);
             }
         }
 
-        public override string ToString() => Name + "\r\nMagnetosphere: " + Magnetosphere.ToString("F2") + "\r\nAtmospheric Absorption: " + AtmosphericAbsorption.ToString("F2") + "\r\nRadioactivity: " + Radioactivity.ToString("F0");
+        public override string ToString() => $"{Name}\r\nMagnetosphere: {Magnetosphere:F2}\r\nAtmospheric Absorption: {AtmosphericAbsorption:F2}\r\nRadioactivity: {Radioactivity:F0}";
 
         public PlanetHealthConfig(CelestialBody body)
         {

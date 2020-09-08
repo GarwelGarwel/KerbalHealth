@@ -78,7 +78,7 @@ namespace KerbalHealth
             double v = baseValue;
             foreach (ChanceModifier m in modifiers)
                 v = m.Calculate(v, pcm);
-            Core.Log("Base chance: " + baseValue + "; modified chance: " + v);
+            Core.Log($"Base chance: {baseValue:P1}; modified chance: {v:P1}.");
             return v;
         }
 
@@ -109,7 +109,7 @@ namespace KerbalHealth
                     res = "Base chance's power of ";
                     break;
             }
-            res += Value + "\r\nLogic: " + Logic;
+            res += $"{Value}\r\nLogic: {Logic}";
             return res;
         }
 

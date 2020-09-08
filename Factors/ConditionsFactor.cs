@@ -5,7 +5,8 @@ namespace KerbalHealth
     public class ConditionsFactor : HealthFactor
     {
         public override string Name => "Conditions";
-        public override string Title => Localizer.Format("#KH_Condition");//Conditions
+
+        public override string Title => Localizer.Format("#KH_Factor_Conditions");//Conditions
 
         // Not applicable to this factor
         public override double BaseChangePerDay => 0;
@@ -24,7 +25,7 @@ namespace KerbalHealth
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)
                 res += hc.HPChangePerDay * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
-            Core.Log("Conditions HP chande per day: " + res);
+            Core.Log($"Conditions HP chande per day: {res}");
             return Core.IsInEditor ? (IsEnabledInEditor() ? res : 0) : res;
         }
     }
