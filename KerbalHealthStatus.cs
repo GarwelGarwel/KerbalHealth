@@ -609,7 +609,7 @@ namespace KerbalHealth
                 if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
                     foreach (HealthEffect he in Quirks
                     .Where(q => q != null)
-                    .Select(q => q.Effects.Where(he => (he != null) && he.IsApplicable(this))))
+                    .SelectMany(q => q.Effects.Where(he => (he != null) && he.IsApplicable(this))))
                     {
                         a += he.MaxHPBonus;
                         k *= he.MaxHP;
