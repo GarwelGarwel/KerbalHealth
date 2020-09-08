@@ -466,7 +466,7 @@ namespace KerbalHealth
                 {
                     double totalTraining = TrainingFor.Sum(tp => TrainingLevels[tp.Id] * tp.Complexity);
                     double totalComplexity = TrainingFor.Sum(tp => tp.Complexity);
-                    totalTraining = Math.Min(totalTraining / totalComplexity, Core.TrainingCap);
+                    totalTraining = (totalComplexity != 0) ? totalTraining / totalComplexity : Core.TrainingCap;
                     if (TrainingVessel != null)
                         TrainedVessels[TrainingVessel] = totalTraining;
                     return totalTraining;
@@ -960,12 +960,9 @@ namespace KerbalHealth
             int crewCount = Core.GetCrewCount(pcm);
             foreach (HealthFactor f in Core.Factors.Where(f => recalculateCache || !f.Cachable))
             {
-                double c = f.ChangePerDay(pcm) * mods.GetMultiplier(f.Name, crewCount) * mods.GetMultiplier("All", crewCount);
-                if (Core.IsLogging())
-                {
-                    Core.Log($"Multiplier for {f.Name} is {mods.GetMultiplier(f.Name, crewCount)} * {mods.FreeMultipliers[f.Name]} (bonus sum: {mods.BonusSums[f.Name]}; multipliers: {mods.MinMultipliers[f.Name]}..{mods.MaxMultipliers[f.Name]})");
-                    Core.Log($"{f.Name}'s effect on {Name} is {c} HP/day.");
-                }
+                double baseChange = f.ChangePerDay(pcm), factorMultiplier = mods.GetMultiplier(f.Name, crewCount), freeMultiplier = mods.GetMultiplier("All", crewCount);
+                double c = baseChange * factorMultiplier * freeMultiplier;
+                Core.Log($"{f.Name}'s effect on {Name}: {c:D2} = {baseChange:D2} * {factorMultiplier} * {freeMultiplier}");
                 Factors[f.Name] = c;
                 if (f.Cachable)
                     CachedChange += c;
