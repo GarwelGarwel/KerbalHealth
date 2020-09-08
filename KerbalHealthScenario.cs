@@ -52,7 +52,7 @@ namespace KerbalHealth
         Rect monitorPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
 
         // Health Monitor grid's labels
-        System.Collections.Generic.List<DialogGUIBase> gridContents;
+        System.Collections.Generic.List<DialogGUIBase> gridContent;
 
         // Currently selected kerbal for details view, null if list is shown
         KerbalHealthStatus selectedKHS = null;
@@ -394,7 +394,7 @@ namespace KerbalHealth
             if ((monitorWindow == null) || !dirty)
                 return;
 
-            if (gridContents == null)
+            if (gridContent == null)
             {
                 Core.Log("KerbalHealthScenario.gridContent is null.", LogLevel.Error);
                 monitorWindow.Dismiss();
@@ -427,13 +427,13 @@ namespace KerbalHealth
                             formatUntag = "</color>";
                         }
                     }
-                    gridContents[(i + 1) * colNumMain].SetOptionText(formatTag + khs.FullName + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 3].SetOptionText($"{formatTag}{100 * khs.Health:F2}% ({khs.HP:F2}){formatUntag}");
-                    gridContents[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((change > 0) ? "+" : "") + change.ToString("F2"))) + formatUntag);
-                    gridContents[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
-                    gridContents[((i + 1) * colNumMain) + 6].SetOptionText($"{formatTag}{Core.PrefixFormat(khs.Dose, 3)}{(khs.Radiation != 0 ? $" ({Localizer.Format("#KH_HM_perDay", Core.PrefixFormat(khs.Radiation, 3, true))})" : "")}{formatUntag}");
+                    gridContent[(i + 1) * colNumMain].SetOptionText(formatTag + khs.FullName + formatUntag);
+                    gridContent[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
+                    gridContent[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
+                    gridContent[(i + 1) * colNumMain + 3].SetOptionText($"{formatTag}{100 * khs.Health:F2}% ({khs.HP:F2}){formatUntag}");
+                    gridContent[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((change > 0) ? "+" : "") + change.ToString("F2"))) + formatUntag);
+                    gridContent[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
+                    gridContent[((i + 1) * colNumMain) + 6].SetOptionText($"{formatTag}{Core.PrefixFormat(khs.Dose, 3)}{(khs.Radiation != 0 ? $" ({Localizer.Format("#KH_HM_perDay", Core.PrefixFormat(khs.Radiation, 3, true))})" : "")}{formatUntag}");
                 }
             }
             else  // Showing details for one particular kerbal
@@ -445,35 +445,35 @@ namespace KerbalHealth
                     Invalidate();
                 }
                 bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
-                gridContents[1].SetOptionText($"<color=\"white\">{selectedKHS.Name}</color>");
-                gridContents[3].SetOptionText($"<color=\"white\">{pcm.experienceLevel} {pcm.trait}</color>");
-                gridContents[5].SetOptionText($"<color=\"white\">{selectedKHS.ConditionString}</color>");
+                gridContent[1].SetOptionText($"<color=\"white\">{selectedKHS.Name}</color>");
+                gridContent[3].SetOptionText($"<color=\"white\">{pcm.experienceLevel} {pcm.trait}</color>");
+                gridContent[5].SetOptionText($"<color=\"white\">{selectedKHS.ConditionString}</color>");
 
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks.Where(q => q.IsVisible))
                     s += ((s.Length != 0) ? ", " : "") + q.Title;
                 if (s.Length == 0)
                     s = Localizer.Format("#KH_HM_DNone");//None
-                gridContents[7].SetOptionText($"<color=\"white\">{s}</color>");
+                gridContent[7].SetOptionText($"<color=\"white\">{s}</color>");
 
-                gridContents[9].SetOptionText($"<color=\"white\">{selectedKHS.MaxHP:F2}</color>");
-                gridContents[11].SetOptionText($"<color=\"white\">{selectedKHS.HP:F2} ({selectedKHS.Health:P2})</color>");
-                gridContents[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"))}</color>");
+                gridContent[9].SetOptionText($"<color=\"white\">{selectedKHS.MaxHP:F2}</color>");
+                gridContent[11].SetOptionText($"<color=\"white\">{selectedKHS.HP:F2} ({selectedKHS.Health:P2})</color>");
+                gridContent[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"))}</color>");
 
                 int i = 15;
                 if (selectedKHS.PCM.IsLoaded() && !healthFrozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
-                        gridContents[i].SetOptionText($"<color=\"white\">{(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : Localizer.Format("#KH_NA"))}</color>");
+                        gridContent[i].SetOptionText($"<color=\"white\">{(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : Localizer.Format("#KH_NA"))}</color>");
                         i += 2;
                     }
-                gridContents[i].children[0].SetOptionText($"<color=\"white\">{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
-                gridContents[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.LastRecuperation:F1}%{(selectedKHS.LastDecay != 0 ? $"/ {-selectedKHS.LastDecay:F1}%" : "")} ({selectedKHS.MarginalChange:F2} HP)")}</color>");
-                gridContents[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.LastExposure:P1}</color>");
-                gridContents[i + 6].SetOptionText($"<color=\"white\">{selectedKHS.ShelterExposure:P1}</color>");
-                gridContents[i + 8].SetOptionText($"<color=\"white\">{selectedKHS.Radiation:N0}/day</color>");
-                gridContents[i + 10].children[0].SetOptionText($"<color=\"white\">{Core.PrefixFormat(selectedKHS.Dose, 6)}</color>");
-                gridContents[i + 12].SetOptionText($"<color=\"white\">{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
+                gridContent[i].children[0].SetOptionText($"<color=\"white\">{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
+                gridContent[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.LastRecuperation:F1}%{(selectedKHS.LastDecay != 0 ? $"/ {-selectedKHS.LastDecay:F1}%" : "")} ({selectedKHS.MarginalChange:F2} HP)")}</color>");
+                gridContent[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.LastExposure:P1}</color>");
+                gridContent[i + 6].SetOptionText($"<color=\"white\">{selectedKHS.ShelterExposure:P1}</color>");
+                gridContent[i + 8].SetOptionText($"<color=\"white\">{selectedKHS.Radiation:N0}/day</color>");
+                gridContent[i + 10].children[0].SetOptionText($"<color=\"white\">{Core.PrefixFormat(selectedKHS.Dose, 6)}</color>");
+                gridContent[i + 12].SetOptionText($"<color=\"white\">{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
             }
             dirty = false;
         }
@@ -506,7 +506,7 @@ namespace KerbalHealth
                         new DialogGUIHorizontalLayout(TextAnchor.LowerCenter, new DialogGUILabel(Localizer.Format("#KH_HM_Page", page, PageCount))),
                         new DialogGUIButton(">", PageDown, () => page < PageCount, false),
                         new DialogGUIButton(">>", LastPage, () => page < PageCount, true)));
-                gridContents = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain)
+                gridContent = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain)
                 {
                     // Creating column titles
                     new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Name")}</color></b>", true),//Name
@@ -523,8 +523,8 @@ namespace KerbalHealth
                 for (int i = FirstLine; i < FirstLine + LineCount; i++)
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
-                        gridContents.Add(new DialogGUILabel("", true));
-                    gridContents.Add(new DialogGUIButton<int>(Localizer.Format("#KH_HM_Details"), n =>
+                        gridContent.Add(new DialogGUILabel("", true));
+                    gridContent.Add(new DialogGUIButton<int>(Localizer.Format("#KH_HM_Details"), n =>
                     {
                         selectedKHS = kerbals.Values[n];
                         Invalidate();
@@ -540,7 +540,7 @@ namespace KerbalHealth
                     TextAnchor.MiddleCenter,
                     UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
                     colNumMain,
-                    gridContents.ToArray()));
+                    gridContent.ToArray()));
                 monitorPosition.width = gridWidthList + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(
                     new Vector2(0.5f, 0.5f),
@@ -553,46 +553,46 @@ namespace KerbalHealth
             else
             {
                 // Creating the grid for detailed view, which will be filled in Update method
-                Core.Log("Showing details for " + selectedKHS.Name + ".");
-                gridContents = new List<DialogGUIBase>();
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DName")));//"Name:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DLevel")));//"Level:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DCondition")));//"Condition:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DQuirks")));//"Quirks:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DMaxHP")));//"Max HP:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHp")));//"HP:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHPChange")));//"HP Change:"
-                gridContents.Add(new DialogGUILabel(""));
+                Core.Log($"Showing details for {selectedKHS.Name}.");
+                gridContent = new List<DialogGUIBase>();
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DName")));//"Name:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DLevel")));//"Level:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DCondition")));//"Condition:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DQuirks")));//"Quirks:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DMaxHP")));//"Max HP:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHp")));//"HP:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHPChange")));//"HP Change:"
+                gridContent.Add(new DialogGUILabel(""));
                 if (selectedKHS.PCM.IsLoaded() && !selectedKHS.IsFrozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
-                        gridContents.Add(new DialogGUILabel($"{f.Title}:"));
-                        gridContents.Add(new DialogGUILabel(""));
+                        gridContent.Add(new DialogGUILabel($"{f.Title}:"));
+                        gridContent.Add(new DialogGUILabel(""));
                     }
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DTraining")));
-                gridContents.Add(new DialogGUIHorizontalLayout(
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DTraining")));
+                gridContent.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
                     new DialogGUIButton("?", OnTrainingInfo, 20, 20, false)));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRecuperation")));//"Recuperation:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DExposure")));//"Exposure:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DShelterExposure")));//Shelter Exposure:
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadiation")));//"Radiation:"
-                gridContents.Add(new DialogGUILabel(""));
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DLifetimeDose")));//"Lifetime Dose:"
-                gridContents.Add(new DialogGUIHorizontalLayout(
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRecuperation")));//"Recuperation:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DExposure")));//"Exposure:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DShelterExposure")));//Shelter Exposure:
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadiation")));//"Radiation:"
+                gridContent.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DLifetimeDose")));//"Lifetime Dose:"
+                gridContent.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
                     new DialogGUIButton(Localizer.Format("#KH_HM_DDecon"), OnDecontamination, 50, 20, false)));//"Decon"
-                gridContents.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadHPLoss")));//"Rad HP Loss:"
-                gridContents.Add(new DialogGUILabel(""));
+                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadHPLoss")));//"Rad HP Loss:"
+                gridContent.Add(new DialogGUILabel(""));
                 monitorPosition.width = gridWidthDetails + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(
                     new Vector2(0.5f, 0.5f),
@@ -613,7 +613,7 @@ namespace KerbalHealth
                                 TextAnchor.MiddleCenter,
                                 UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
                                 colNumDetails,
-                                gridContents.ToArray()),
+                                gridContent.ToArray()),
                             new DialogGUIButton(
                                 Localizer.Format("#KH_HM_backbtn"),
                                 () =>

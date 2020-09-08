@@ -960,8 +960,11 @@ namespace KerbalHealth
             foreach (HealthFactor f in Core.Factors.Where(f => recalculateCache || !f.Cachable))
             {
                 double c = f.ChangePerDay(pcm) * mods.GetMultiplier(f.Name, crewCount) * mods.GetMultiplier("All", crewCount);
-                Core.Log($"Multiplier for {f.Name} is {mods.GetMultiplier(f.Name, crewCount)} * {mods.FreeMultipliers[f.Name]} (bonus sum: {mods.BonusSums[f.Name]}; multipliers: {mods.MinMultipliers[f.Name]}..{mods.MaxMultipliers[f.Name]})");
-                Core.Log($"{f.Name}'s effect on {Name} is {c} HP/day.");
+                if (Core.IsLogging())
+                {
+                    Core.Log($"Multiplier for {f.Name} is {mods.GetMultiplier(f.Name, crewCount)} * {mods.FreeMultipliers[f.Name]} (bonus sum: {mods.BonusSums[f.Name]}; multipliers: {mods.MinMultipliers[f.Name]}..{mods.MaxMultipliers[f.Name]})");
+                    Core.Log($"{f.Name}'s effect on {Name} is {c} HP/day.");
+                }
                 Factors[f.Name] = c;
                 if (f.Cachable)
                     CachedChange += c;
@@ -973,7 +976,7 @@ namespace KerbalHealth
 
             Core.Log($"Recuperation/decay change for {Name}: {mc} (+{LastRecuperation}%, -{LastDecay}%).");
             Core.Log($"Total change for {Name}: {LastChangeTotal} HP/day.");
-            if (recalculateCache)
+            if (recalculateCache && Core.IsLogging())
                 Core.Log($"Total shielding: {mods.Shielding}; crew capacity: {Core.GetCrewCapacity(pcm)}");
             return LastChangeTotal;
         }
