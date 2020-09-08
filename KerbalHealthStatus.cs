@@ -962,7 +962,7 @@ namespace KerbalHealth
             {
                 double baseChange = f.ChangePerDay(pcm), factorMultiplier = mods.GetMultiplier(f.Name, crewCount), freeMultiplier = mods.GetMultiplier("All", crewCount);
                 double c = baseChange * factorMultiplier * freeMultiplier;
-                Core.Log($"{f.Name}'s effect on {Name}: {c:D2} = {baseChange:D2} * {factorMultiplier} * {freeMultiplier}");
+                Core.Log($"{f.Name}'s effect on {Name}: {c:F2} = {baseChange:F2} * {factorMultiplier} * {freeMultiplier}");
                 Factors[f.Name] = c;
                 if (f.Cachable)
                     CachedChange += c;
