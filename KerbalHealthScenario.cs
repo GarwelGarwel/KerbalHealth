@@ -194,6 +194,11 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnDisable", LogLevel.Important);
             if (Core.IsInEditor)
                 return;
+
+            // Kerbalism test results
+            if (Kerbalism.Found && Core.IsLogging())
+                Kerbalism.PrintRadiationMeasurements();
+
             UndisplayData();
 
             GameEvents.OnGameSettingsApplied.Remove(OnGameSettingsApplied);
@@ -664,7 +669,11 @@ namespace KerbalHealth
             if (!Core.ConfigLoaded)
             {
                 Core.LoadConfig();
-                Kerbalism.Init();
+                if (Kerbalism.Found)
+                {
+                    Core.Log("Kerbalism found!", LogLevel.Important);
+                    Kerbalism.Init();
+                }
             }
 
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
