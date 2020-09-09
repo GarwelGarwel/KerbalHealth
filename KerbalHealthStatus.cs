@@ -1014,14 +1014,14 @@ namespace KerbalHealth
                     double bedPerDay = 0;
 
                     // Kerbalism radiation
-                    if (Kerbalism.Found)
+                    if (Kerbalism.Found && KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
                     {
                         if (Core.IsLogging())
                         {
-                            Core.Log($"Kerbalism environment radiaiton: {Kerbalism.Radiation(v)} rad/s = {Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v))} BED/day. Kerbalism habitat radiation: {Kerbalism.HabitatRadiation(v)}");
+                            Core.Log($"Kerbalism environment radiaiton: {Kerbalism.Radiation(v)} rad/s = {Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v))} BED/day. Kerbalism exposure: {Kerbalism.HabitatRadiation(v) / Kerbalism.Radiation(v):P1}");
                             Kerbalism.AddRadiationMeasurement(v.mainBody.bodyName, v.altitude, GetCosmicRadiation(v) * KSPUtil.dateTimeFormatter.Day / 21600, Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v)));
                         }
-                        bedPerDay = Kerbalism.RadPerSecToBEDPerDay(Kerbalism.HabitatRadiation(v));
+                        bedPerDay = Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v)) * KerbalHealthRadiationSettings.Instance.KerbalismRadiationRatio;
                     }
                     else bedPerDay = (partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600;
 
