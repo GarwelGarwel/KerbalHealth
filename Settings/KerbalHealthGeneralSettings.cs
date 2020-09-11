@@ -45,6 +45,7 @@ namespace KerbalHealth
             DeathEnabled = true;
             ExhaustionStartHealth = 0.2f;
             ExhaustionEndHealth = 0.25f;
+            KerbalismIntegration = true;
             ResetSettings = false;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
@@ -71,6 +72,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("DeathEnabled", ref DeathEnabled);
             settingsNode.TryGetValue("ExhaustionStartHealth", ref ExhaustionStartHealth);
             settingsNode.TryGetValue("ExhaustionEndHealth", ref ExhaustionEndHealth);
+            settingsNode.TryGetValue("KerbalismIntegration", ref KerbalismIntegration);
         }
 
         public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
@@ -113,6 +115,9 @@ namespace KerbalHealth
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionEndHealth", toolTip = "#KH_GS_ExhaustionEndHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion End Health""Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)
         public float ExhaustionEndHealth = 0.25f;
+
+        [GameParameters.CustomParameterUI("#KH_GS_KerbalismIntegration", toolTip = "#KH_GS_KerbalismIntegration_desc")]//Enforce Kerbalism Integration""If Kerbalism is installed, some of its features (stress, comforts, living space, and radiation damage) will be disabled in favour of Kerbal Health's mechanics
+        public bool KerbalismIntegration = true;
 
         [GameParameters.CustomParameterUI("#KH_GS_DebugMode", toolTip = "#KH_GS_DebugMode_desc")]//Debug Logging""Controls amount of logging
         public bool DebugMode = false;

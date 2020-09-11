@@ -1,4 +1,5 @@
-﻿using KSP.Localization;
+﻿using KerbalHealth.Wrappers;
+using KSP.Localization;
 using Smooth.Collections;
 using System;
 using System.Collections.Generic;
@@ -962,7 +963,7 @@ namespace KerbalHealth
             {
                 double baseChange = f.ChangePerDay(pcm), factorMultiplier = mods.GetMultiplier(f.Name, crewCount), freeMultiplier = mods.GetMultiplier("All", crewCount);
                 double c = baseChange * factorMultiplier * freeMultiplier;
-                Core.Log($"{f.Name}'s effect on {Name}: {c:F2} = {baseChange:F2} * {factorMultiplier} * {freeMultiplier}");
+                Core.Log($"{f.Name}'s effect on {Name}: {c:N2} = {baseChange:N2} * {factorMultiplier} * {freeMultiplier}");
                 Factors[f.Name] = c;
                 if (f.Cachable)
                     CachedChange += c;
@@ -1009,8 +1010,24 @@ namespace KerbalHealth
                         Core.Log($"Vessel for {Name} not found!", LogLevel.Error);
                         return;
                     }
-                    Radiation = LastExposure * (partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600;
-                    Core.Log($"{Name}'s radiation level is {Radiation} bananas/day. Total accumulated dose is {Dose} BEDs.");
+
+                    double bedPerDay = 0;
+
+                    // Kerbalism radiation
+                    if (Kerbalism.Found && KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
+                    {
+                        if (Core.IsLogging())
+                        {
+                            Core.Log($"Kerbalism environment radiaiton: {Kerbalism.GetRadiation(v) * 3600:N3} rad/h = {Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v))} BED/day. Kerbalism exposure: {Kerbalism.GetHabitatRadiation(v) / Kerbalism.GetRadiation(v):P1}");
+                            Core.Log($"Kerbal Health radiation: {(partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600:N1} BED/day.");
+                            Kerbalism.AddRadiationMeasurement(v.mainBody.bodyName, v.altitude, GetCosmicRadiation(v) * KSPUtil.dateTimeFormatter.Day / 21600, Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)));
+                        }
+                        bedPerDay = Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)) * KerbalHealthRadiationSettings.Instance.KerbalismRadiationRatio;
+                    }
+                    else bedPerDay = (partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600;
+
+                    Radiation = LastExposure * bedPerDay;
+                    Core.Log($"{Name}'s vessel receives {bedPerDay:N1} BED/day @ {LastExposure:P1} exposure for a radiation level of {Radiation:N1} BED/day. Total accumulated dose is {Dose} BEDs.");
                     if (decontaminating)
                         StopDecontamination();
                 }

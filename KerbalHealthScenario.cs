@@ -1,4 +1,5 @@
-﻿using KSP.Localization;
+﻿using KerbalHealth.Wrappers;
+using KSP.Localization;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
@@ -129,6 +130,8 @@ namespace KerbalHealth
                 else Core.Log("Could not find onKerbalThaw event!", LogLevel.Error);
             }
 
+            SetupKerbalism();
+
             // Automatically updating settings from older versions
             Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != v)
@@ -193,6 +196,11 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnDisable", LogLevel.Important);
             if (Core.IsInEditor)
                 return;
+
+            // Kerbalism test results
+            if (Kerbalism.Found && Core.IsLogging())
+                Kerbalism.PrintRadiationMeasurements();
+
             UndisplayData();
 
             GameEvents.OnGameSettingsApplied.Remove(OnGameSettingsApplied);
@@ -243,6 +251,9 @@ namespace KerbalHealth
 
             if (!KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton || !KerbalHealthGeneralSettings.Instance.modEnabled)
                 UnregisterAppLauncherButton();
+
+            if (KerbalHealthGeneralSettings.Instance.modEnabled)
+                SetupKerbalism();
 
             kerbalComparer = new KerbalComparer(KerbalHealthGeneralSettings.Instance.SortByLocation);
         }
@@ -662,6 +673,7 @@ namespace KerbalHealth
         {
             if (!Core.ConfigLoaded)
                 Core.LoadConfig();
+
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
 
@@ -753,8 +765,27 @@ namespace KerbalHealth
             return true;
         }
 
-        bool VesselNeedsCheckForUntrainedCrew(Vessel v)
-            => KerbalHealthFactorsSettings.Instance.TrainingEnabled
+        void SetupKerbalism()
+        {
+            if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.KerbalismIntegration && Kerbalism.Found && !Kerbalism.IsSetup)
+            {
+                Core.Log("Disabling some Kerbalism features for better integration with Kerbal Health.", LogLevel.Important);
+                Kerbalism.SetRuleProperty("radiation", "degeneration", 0);
+                Kerbalism.SetRuleProperty("stress", "degeneration", 0);
+                Kerbalism.FeatureComfort = false;
+                Kerbalism.FeatureLivingSpace = false;
+                Core.Log($"New Kerbalism radiation degeneration: {Kerbalism.GetRuleProperty("radiation", "degeneration")}");
+                Core.Log($"Kerbalism stress degeneration: {Kerbalism.GetRuleProperty("stress", "degeneration")}");
+                Core.Log($"Kerbalism radiation feature is {(Kerbalism.FeatureRadiation ? "enabled" : "disabled")}.");
+                Core.Log($"Kerbalism Comfort feature is {(Kerbalism.FeatureComfort ? "enabled" : "disabled")}.");
+                Core.Log($"Kerbalism Living Space feature is {(Kerbalism.FeatureLivingSpace ? "enabled" : "disabled")}.");
+                //Core.ShowMessage("Kerbalism was found and set up to work with Kerbal Health.", false);
+                Kerbalism.IsSetup = true;
+            }
+        }
+
+        bool VesselNeedsCheckForUntrainedCrew(Vessel v) =>
+            KerbalHealthFactorsSettings.Instance.TrainingEnabled
             && HighLogic.LoadedSceneIsFlight
             && v.situation == Vessel.Situations.PRELAUNCH;
 
@@ -785,7 +816,7 @@ namespace KerbalHealth
                     Core.Log($"KerbalHealthStatus for {pcm.name} in {v.vesselName} not found!", LogLevel.Error);
                     continue;
                 }
-                Core.Log($"{pcm.name} is trained {khs.TrainingLevel:P1} / {Core.TrainingCap:P1}");
+                Core.Log($"{pcm.name} is trained {khs.TrainingLevel:P1} / {Core.TrainingCap:P1}.");
                 if (khs.TrainingLevel < Core.TrainingCap)
                 {
                     msg += (msg.Length == 0 ? "" : ", ") + pcm.name;
@@ -890,7 +921,7 @@ namespace KerbalHealth
                 CheckUntrainedCrewWarning(FlightGlobals.ActiveVessel);
 
             // Processing radiation storms' effects
-            if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && KerbalHealthRadiationSettings.Instance.RadStormsEnabled)
+            if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && KerbalHealthRadiationSettings.Instance.RadStormsEnabled && !KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
             {
                 for (int i = 0; i < radStorms.Count; i++)
                     if (time >= radStorms[i].Time)
@@ -960,7 +991,7 @@ namespace KerbalHealth
                     }
                 }
 
-                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && KerbalHealthRadiationSettings.Instance.RadStormsEnabled)
+                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && KerbalHealthRadiationSettings.Instance.RadStormsEnabled && !KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
                     SpawnRadStorms();
 
                 nextEventTime += GetNextEventInterval();
