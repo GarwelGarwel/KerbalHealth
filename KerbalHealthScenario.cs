@@ -767,13 +767,9 @@ namespace KerbalHealth
 
         void SetupKerbalism()
         {
-            if (!Kerbalism.Found)
+            if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.KerbalismIntegration && Kerbalism.Found && !Kerbalism.IsSetup)
             {
-                Core.Log("Kerbalism not found.");
-                return;
-            }
-            if (KerbalHealthGeneralSettings.Instance.modEnabled && !Kerbalism.IsSetup)
-            {
+                Core.Log("Disabling some Kerbalism features for better integration with Kerbal Health.", LogLevel.Important);
                 Kerbalism.SetRuleProperty("radiation", "degeneration", 0);
                 Kerbalism.SetRuleProperty("stress", "degeneration", 0);
                 Kerbalism.FeatureComfort = false;
@@ -783,7 +779,7 @@ namespace KerbalHealth
                 Core.Log($"Kerbalism radiation feature is {(Kerbalism.FeatureRadiation ? "enabled" : "disabled")}.");
                 Core.Log($"Kerbalism Comfort feature is {(Kerbalism.FeatureComfort ? "enabled" : "disabled")}.");
                 Core.Log($"Kerbalism Living Space feature is {(Kerbalism.FeatureLivingSpace ? "enabled" : "disabled")}.");
-                Core.ShowMessage("Kerbalism was found and set up to work with Kerbal Health.", false);
+                //Core.ShowMessage("Kerbalism was found and set up to work with Kerbal Health.", false);
                 Kerbalism.IsSetup = true;
             }
         }

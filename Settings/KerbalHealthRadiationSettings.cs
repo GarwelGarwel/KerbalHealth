@@ -44,6 +44,8 @@ namespace KerbalHealth
         {
             RadiationEnabled = true;
             RadiationEffect = 0.1f;
+            UseKerbalismRadiation = false;
+            KerbalismRadiationRatio = 0.25f;
             ShieldingEffect = 1;
             InSpaceHighCoefficient = 0.40f;
             InSpaceLowCoefficient = 0.20f;
@@ -76,6 +78,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("RadiationEnabled", ref RadiationEnabled);
             settingsNode.TryGetValue("RadiationEffect", ref RadiationEffect);
             settingsNode.TryGetValue("UseKerbalismRadiation", ref UseKerbalismRadiation);
+            settingsNode.TryGetValue("KerbalismRadiationRatio", ref KerbalismRadiationRatio);
             settingsNode.TryGetValue("ShieldingEffect", ref ShieldingEffect);
             settingsNode.TryGetValue("InSpaceHighCoefficient", ref InSpaceHighCoefficient);
             settingsNode.TryGetValue("InSpaceLowCoefficient", ref InSpaceLowCoefficient);
@@ -103,10 +106,10 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadiationEffect", toolTip = "#KH_RS_RadiationEffect_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 41)]//Radiation Effect""Percentage of max health drained by 1e7 (10M) doses. 0 to disable effect
         public float RadiationEffect = 0.1f;
 
-        [GameParameters.CustomParameterUI("Use Kerbalism for Radiation", toolTip = "Use radiation values provided by Kerbalism (if installed) instead of Kerbal Health's own. Kerbalism uses a more complex and realistic radiation model")]
+        [GameParameters.CustomParameterUI("#KH_RS_UseKerbalismRadiation", toolTip = "#KH_RS_UseKerbalismRadiation_desc")]//Use Kerbalism for Radiation""Use radiation values provided by Kerbalism (if installed) instead of Kerbal Health's own. Kerbalism uses a more complex and realistic radiation model
         public bool UseKerbalismRadiation = false;
 
-        [GameParameters.CustomFloatParameterUI("Kerbalism Radiation Ratio", toolTip = "Use this multiplier to translate Kerbalism radiation into KerbalHealth units", minValue = 0.01f, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 101)]
+        [GameParameters.CustomFloatParameterUI("#KH_RS_KerbalismRadiationRatio", toolTip = "#KH_RS_KerbalismRadiationRatio_desc", minValue = 0.01f, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 101)]//Kerbalism Radiation Ratio""Multiplier for translating Kerbalism's radiation units into Kerbal Health radiation units
         public float KerbalismRadiationRatio = 0.25f;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_ShieldingEffect", toolTip = "#KH_RS_ShieldingEffect_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//Shielding Multiplier""Efficiency of radiation shielding provided by parts and resources
