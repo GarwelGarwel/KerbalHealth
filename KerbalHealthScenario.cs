@@ -770,16 +770,16 @@ namespace KerbalHealth
             if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.KerbalismIntegration && Kerbalism.Found && !Kerbalism.IsSetup)
             {
                 Core.Log("Disabling some Kerbalism features for better integration with Kerbal Health.", LogLevel.Important);
-                Kerbalism.SetRuleProperty("radiation", "degeneration", 0);
+                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled)
+                    Kerbalism.SetRuleProperty("radiation", "degeneration", 0);
+                else Kerbalism.SetRuleProperty("radiation", "degeneration", 1);
                 Kerbalism.SetRuleProperty("stress", "degeneration", 0);
                 Kerbalism.FeatureComfort = false;
                 Kerbalism.FeatureLivingSpace = false;
-                Core.Log($"New Kerbalism radiation degeneration: {Kerbalism.GetRuleProperty("radiation", "degeneration")}");
+                Core.Log($"Kerbalism radiation degeneration: {Kerbalism.GetRuleProperty("radiation", "degeneration")}");
                 Core.Log($"Kerbalism stress degeneration: {Kerbalism.GetRuleProperty("stress", "degeneration")}");
-                Core.Log($"Kerbalism radiation feature is {(Kerbalism.FeatureRadiation ? "enabled" : "disabled")}.");
                 Core.Log($"Kerbalism Comfort feature is {(Kerbalism.FeatureComfort ? "enabled" : "disabled")}.");
                 Core.Log($"Kerbalism Living Space feature is {(Kerbalism.FeatureLivingSpace ? "enabled" : "disabled")}.");
-                //Core.ShowMessage("Kerbalism was found and set up to work with Kerbal Health.", false);
                 Kerbalism.IsSetup = true;
             }
         }
