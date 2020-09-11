@@ -943,12 +943,12 @@ namespace KerbalHealth
                 mods.PartsRadiation = partsRadiation;
             }
 
+            Core.Log($"Health modifiers after applying all effects:\n{mods}");
+
             // Applying quirks
             if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
                 foreach (Quirk q in Quirks)
                     q.Apply(this, mods);
-
-            Core.Log($"Health modifiers after applying all effects:\n{mods}");
 
             LastChange = mods.HPChange;
             LastRecuperation = mods.Recuperation;
@@ -1018,10 +1018,11 @@ namespace KerbalHealth
                     {
                         if (Core.IsLogging())
                         {
-                            Core.Log($"Kerbalism environment radiaiton: {Kerbalism.Radiation(v)} rad/s = {Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v))} BED/day. Kerbalism exposure: {Kerbalism.HabitatRadiation(v) / Kerbalism.Radiation(v):P1}");
-                            Kerbalism.AddRadiationMeasurement(v.mainBody.bodyName, v.altitude, GetCosmicRadiation(v) * KSPUtil.dateTimeFormatter.Day / 21600, Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v)));
+                            Core.Log($"Kerbalism environment radiaiton: {Kerbalism.GetRadiation(v) * 3600:N3} rad/h = {Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v))} BED/day. Kerbalism exposure: {Kerbalism.GetHabitatRadiation(v) / Kerbalism.GetRadiation(v):P1}");
+                            Core.Log($"Kerbal Health radiation: {(partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600:N1} BED/day.");
+                            Kerbalism.AddRadiationMeasurement(v.mainBody.bodyName, v.altitude, GetCosmicRadiation(v) * KSPUtil.dateTimeFormatter.Day / 21600, Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)));
                         }
-                        bedPerDay = Kerbalism.RadPerSecToBEDPerDay(Kerbalism.Radiation(v)) * KerbalHealthRadiationSettings.Instance.KerbalismRadiationRatio;
+                        bedPerDay = Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)) * KerbalHealthRadiationSettings.Instance.KerbalismRadiationRatio;
                     }
                     else bedPerDay = (partsRadiation + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600;
 
