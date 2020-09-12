@@ -259,7 +259,7 @@ namespace KerbalHealth
         public static void ClearCache()
         {
             kerbalVesselsCache.Clear();
-            HealthModifierSet.VesselCache.Clear();
+            HealthEffect.VesselCache.Clear();
         }
 
         /// <summary>

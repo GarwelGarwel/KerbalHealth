@@ -25,7 +25,7 @@ namespace KerbalHealth
         public double CourageWeight { get; set; } = 1;
         public double StupidityWeight { get; set; } = 1;
 
-        public List<HealthEffect> Effects { get; set; } = new List<HealthEffect>();
+        public List<ConditionalEffect> Effects { get; set; } = new List<ConditionalEffect>();
 
         /// <summary>
         /// Returns true if this quirk can be assigned to the given kerbal at a certain experience level
@@ -37,14 +37,14 @@ namespace KerbalHealth
             level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
 
         /// <summary>
-        /// Applies valid effects of this quirk to the given kerbal's HealthModifierSet
+        /// Applies valid effects of this quirk to the given kerbal's HealthEffect
         /// </summary>
         /// <param name="khs"></param>
         /// <param name="hms"></param>
-        public void Apply(KerbalHealthStatus khs, HealthModifierSet hms)
+        public void Apply(KerbalHealthStatus khs, HealthEffect hms)
         {
             Core.Log($"Applying {Name} quirk to {khs.Name}.");
-            foreach (HealthEffect eff in Effects.Where(eff => eff.IsApplicable(khs)))
+            foreach (ConditionalEffect eff in Effects.Where(eff => eff.IsApplicable(khs)))
                 eff.Apply(hms);
         }
 
@@ -62,7 +62,7 @@ namespace KerbalHealth
             if (Effects.Count > 1)
             {
                 res += "\nEffects:";
-                foreach (HealthEffect he in Effects)
+                foreach (ConditionalEffect he in Effects)
                     res += $"\n{he}";
             }
             return res;
@@ -78,7 +78,7 @@ namespace KerbalHealth
             IncompatibleQuirks = new List<string>(node.GetValues("incompatibleWith"));
             CourageWeight = node.GetDouble("courageWeight", 1);
             StupidityWeight = node.GetDouble("stupidityWeight", 1);
-            Effects = new List<HealthEffect>(node.GetNodes("EFFECT").Select(n => new HealthEffect(n)));
+            Effects = new List<ConditionalEffect>(node.GetNodes("EFFECT").Select(n => new ConditionalEffect(n)));
             Core.Log($"Quirk loaded: {this}");
         }
 

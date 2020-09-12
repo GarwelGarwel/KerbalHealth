@@ -90,7 +90,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="Wrappers\DFWrapper.cs" />
     <Compile Include="HealthCondition.cs" />
-    <Compile Include="HealthEffect.cs" />
+    <Compile Include="ConditionalEffect.cs" />
     <Compile Include="Settings\KerbalHealthFactorsSettings.cs" />
     <Compile Include="Factors\HealthFactor.cs" />
     <Compile Include="Factors\EVAFactor.cs" />
@@ -113,7 +113,7 @@
     <Compile Include="Wrappers\Kerbalism.cs" />
     <Compile Include="Wrappers\ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
-    <Compile Include="HealthModifierSet.cs" />
+    <Compile Include="HealthEffect.cs" />
     <Compile Include="TrainingPart.cs" />
   </ItemGroup>
   <ItemGroup>

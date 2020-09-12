@@ -267,7 +267,7 @@ namespace KerbalHealth
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;
-                HealthModifierSet.VesselCache.Clear();
+                HealthEffect.VesselCache.Clear();
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
 
@@ -299,7 +299,7 @@ namespace KerbalHealth
                 }
 
                 spaceLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Space:F1}</color>");
-                recupLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Recuperation:F1}%</color>");
+                recupLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.EffectiveRecuperation:F1}%</color>");
                 shieldingLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Shielding:F1}</color>");
                 exposureLbl.SetOptionText($"<color=\"white\">{khs.LastExposure:P1}</color>");
                 shelterExposureLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.ShelterExposure:P1}</color>");
