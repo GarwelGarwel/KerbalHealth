@@ -77,6 +77,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FactorMultiplier.cs" />
+    <Compile Include="FactorMultiplierList.cs" />
     <Compile Include="RadStorm.cs" />
     <Compile Include="RadStormType.cs" />
     <Compile Include="Factors\StressFactor.cs" />
