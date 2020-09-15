@@ -20,9 +20,13 @@ namespace KerbalHealth
         public string Description { get; set; }
 
         public bool IsVisible { get; set; } = true;
+
         public int MinLevel { get; set; } = 0;
+
         public List<string> IncompatibleQuirks { get; set; } = new List<string>();
+
         public double CourageWeight { get; set; } = 1;
+
         public double StupidityWeight { get; set; } = 1;
 
         public List<ConditionalEffect> Effects { get; set; } = new List<ConditionalEffect>();
@@ -36,17 +40,7 @@ namespace KerbalHealth
         public bool IsAvailableTo(KerbalHealthStatus khs, int level) =>
             level >= MinLevel && !IncompatibleQuirks.Any(q => khs.Quirks.Contains(Core.GetQuirk(q)));
 
-        /// <summary>
-        /// Applies valid effects of this quirk to the given kerbal's HealthEffect
-        /// </summary>
-        /// <param name="khs"></param>
-        /// <param name="hms"></param>
-        public void Apply(KerbalHealthStatus khs, HealthEffect hms)
-        {
-            Core.Log($"Applying {Name} quirk to {khs.Name}.");
-            foreach (ConditionalEffect eff in Effects.Where(eff => eff.IsApplicable(khs)))
-                eff.Apply(hms);
-        }
+        public IEnumerable<HealthEffect> GetApplicableEffects(KerbalHealthStatus khs) => Effects.Where(effect => effect.IsApplicable(khs));
 
         public override bool Equals(object obj) => (obj != null) && (obj is Quirk quirk) && (quirk.Name == Name);
 

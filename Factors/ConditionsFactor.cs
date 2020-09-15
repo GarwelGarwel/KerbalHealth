@@ -11,16 +11,13 @@ namespace KerbalHealth
         // Not applicable to this factor
         public override double BaseChangePerDay => 0;
 
-        public override bool Cachable => false;
+        public override bool ConstantForUnloaded => false;
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
+        public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
-                return 0;
-            KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
-            if (khs == null)
                 return 0;
             double res = 0;
             foreach (HealthCondition hc in khs.Conditions)

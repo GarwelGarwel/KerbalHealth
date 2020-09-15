@@ -1,5 +1,4 @@
-﻿using Expansions.Missions;
-using System;
+﻿using System;
 
 namespace KerbalHealth
 {
@@ -7,13 +6,13 @@ namespace KerbalHealth
     {
         internal const string ConfigNodeName = "FACTOR_MULTIPLIER";
 
-        public string FactorName { get; set; }
-
-        public HealthFactor Factor
+        public string FactorName
         {
-            get => Core.GetHealthFactor(FactorName);
-            set => FactorName = value.Name;
+            get => Factor?.Name ?? "All";
+            set => Factor = Core.GetHealthFactor(value);
         }
+
+        public HealthFactor Factor { get; set; }
 
         public double BonusSum { get; set; } = 0;
 
@@ -49,6 +48,7 @@ namespace KerbalHealth
                     node.AddValue("maxMultiplier", MaxMultiplier);
                 return node;
             }
+
             set
             {
                 FactorName = value.GetString("factor");
@@ -59,12 +59,7 @@ namespace KerbalHealth
             }
         }
 
-        public FactorMultiplier(string factor = null, double multiplier = 1)
-        {
-            if (!string.IsNullOrEmpty(factor) && !factor.Equals("All", System.StringComparison.OrdinalIgnoreCase))
-                FactorName = factor;
-            AddFreeMultiplier(multiplier);
-        }
+        public FactorMultiplier(HealthFactor factor = null) => Factor = factor;
 
         public FactorMultiplier(ConfigNode configNode) => ConfigNode = configNode;
 
@@ -90,6 +85,20 @@ namespace KerbalHealth
                 MaxMultiplier = multiplier;
         }
 
+        public FactorMultiplier CombineWith(FactorMultiplier fm)
+        {
+            if (Factor != fm.Factor)
+            {
+                Core.Log($"Could not combine {FactorName} and {fm.FactorName} multipliers.", LogLevel.Error);
+                return this;
+            }
+            BonusSum += fm.BonusSum;
+            FreeMultiplier *= fm.FreeMultiplier;
+            MinMultiplier = Math.Min(MinMultiplier, fm.MinMultiplier);
+            MaxMultiplier = Math.Max(MaxMultiplier, fm.MaxMultiplier);
+            return this;
+        }
+
         /// <summary>
         /// Combines two factor multipliers into one, adding bonus sums and multiplying their multipliers
         /// </summary>
@@ -97,8 +106,8 @@ namespace KerbalHealth
         /// <returns></returns>
         public static FactorMultiplier Combine(FactorMultiplier fm1, FactorMultiplier fm2)
         {
-            FactorMultiplier res = new FactorMultiplier(fm1.FactorName);
-            if (fm1.FactorName != fm2.FactorName)
+            FactorMultiplier res = new FactorMultiplier(fm1.Factor);
+            if (fm1.Factor != fm2.Factor)
             {
                 Core.Log($"Could not combine {fm1.FactorName} and {fm2.FactorName} multipliers.", LogLevel.Error);
                 return res;

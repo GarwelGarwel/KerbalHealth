@@ -216,8 +216,13 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static int GetCrewCount(ProtoCrewMember pcm) =>
-            IsInEditor ? ShipConstruction.ShipManifest.CrewCount : (pcm.IsLoaded() ? pcm.GetVessel().GetCrewCount() : 1);
+        public static int GetCrewCount(ProtoCrewMember pcm)
+        {
+            if (IsInEditor)
+                return ShipConstruction.ShipManifest.CrewCount;
+            Vessel vessel = pcm.GetVessel();
+            return vessel != null ? vessel.GetCrewCount() : 1;
+        }
 
         /// <summary>
         /// Returns number of maximum crew in a vessel the kerbal is in or in the currently constructed vessel

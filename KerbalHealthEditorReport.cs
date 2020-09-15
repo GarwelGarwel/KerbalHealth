@@ -241,7 +241,7 @@ namespace KerbalHealth
 
         public void Update()
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || ShipConstruction.ShipManifest == null || ShipConstruction.ShipManifest.CrewCount == 0)
             {
                 if (reportWindow != null)
                     reportWindow.Dismiss();
@@ -281,10 +281,11 @@ namespace KerbalHealth
                         continue;
                     }
 
+                    khs.SetDirty();
                     gridContent[(i + 1) * colNum].SetOptionText(khs.FullName);
                     khs.HP = khs.MaxHP;
                     // Making this call here, so that GetBalanceHP doesn't have to:
-                    double changePerDay = khs.HealthChangePerDay();
+                    double changePerDay = khs.HPChangeTotal;
                     double balanceHP = khs.GetBalanceHP();
                     string s = balanceHP > 0
                         ? $"-> {balanceHP:F0} HP ({balanceHP / khs.MaxHP * 100:F0}%)"
@@ -292,7 +293,7 @@ namespace KerbalHealth
                     gridContent[(i + 1) * colNum + 1].SetOptionText(s);
                     s = balanceHP > khs.NextConditionHP()
                         ? "—"
-                        : ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
+                        : ((khs.Recuperation > khs.Decay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
                     gridContent[(i + 1) * colNum + 2].SetOptionText(s);
                     gridContent[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
                     i++;
@@ -301,7 +302,7 @@ namespace KerbalHealth
                 spaceLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Space:F1}</color>");
                 recupLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.EffectiveRecuperation:F1}%</color>");
                 shieldingLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Shielding:F1}</color>");
-                exposureLbl.SetOptionText($"<color=\"white\">{khs.LastExposure:P1}</color>");
+                exposureLbl.SetOptionText($"<color=\"white\">{khs.Exposure:P1}</color>");
                 shelterExposureLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.ShelterExposure:P1}</color>");
 
                 dirty = false;

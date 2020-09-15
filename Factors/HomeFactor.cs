@@ -12,20 +12,20 @@ namespace KerbalHealth
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.HomeFactor;
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
+        public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            if (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (khs.PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 Core.Log("Home factor is off when kerbal is not assigned.");
                 return 0;
             }
-            Vessel vessel = pcm.GetVessel();
+            Vessel vessel = khs.PCM.GetVessel();
             CelestialBody body = vessel?.mainBody;
             if (body == null)
             {
-                Core.Log($"Could not find main body for {pcm.name}.", LogLevel.Error);
+                Core.Log($"Could not find main body for {khs.Name}.", LogLevel.Error);
                 return 0;
             }
             if (body.isHomeWorld && (vessel.altitude < body.scienceValues.flyingAltitudeThreshold))

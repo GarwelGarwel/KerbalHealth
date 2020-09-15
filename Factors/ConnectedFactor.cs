@@ -10,11 +10,12 @@ namespace KerbalHealth
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.ConnectedFactor;
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
+        public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            return (pcm.IsLoaded() && (pcm.GetVessel().Connection != null) && pcm.GetVessel().Connection.IsConnectedHome)
+            Vessel v = khs.PCM.GetVessel();
+            return (v.loaded && (v.Connection != null) && v.Connection.IsConnectedHome)
                 ? BaseChangePerDay
                 : 0;
         }

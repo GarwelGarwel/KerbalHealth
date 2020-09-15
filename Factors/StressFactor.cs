@@ -8,7 +8,7 @@ namespace KerbalHealth
 
         public override string Title => Localizer.Format("#KH_Factor_Stress");
 
-        public override bool Cachable => false;
+        public override bool ConstantForUnloaded => false;
 
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor;
 
@@ -17,9 +17,9 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        double ChangePerDayActual(ProtoCrewMember pcm) => BaseChangePerDay * (1 - Core.KerbalHealthList[pcm].TrainingLevel);
+        double ChangePerDayActual(KerbalHealthStatus khs) => BaseChangePerDay * (1 - khs.TrainingLevel);
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
+        public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor)
                 if (IsEnabledInEditor())
@@ -27,7 +27,7 @@ namespace KerbalHealth
                         ? BaseChangePerDay * (1 - Core.TrainingCap)
                         : BaseChangePerDay;
                 else return 0;
-            return (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? ChangePerDayActual(pcm) : 0;
+            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) ? ChangePerDayActual(khs) : 0;
         }
     }
 }

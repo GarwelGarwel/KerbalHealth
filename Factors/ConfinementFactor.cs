@@ -11,9 +11,9 @@ namespace KerbalHealth
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor;
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
-            => ((Core.IsInEditor && !IsEnabledInEditor()) || Core.KerbalHealthList[pcm].IsOnEVA)
+        public override double ChangePerDay(KerbalHealthStatus khs)
+            => ((Core.IsInEditor && !IsEnabledInEditor()) || (!Core.IsInEditor && khs.IsOnEVA))
             ? 0
-            : BaseChangePerDay * Core.GetCrewCount(pcm) / Math.Max(HealthEffect.GetVesselModifiers(pcm).Space, 0.1);
+            : BaseChangePerDay * Core.GetCrewCount(khs.PCM) / Math.Max(khs.HealthEffects.Space, 0.1);
     }
 }

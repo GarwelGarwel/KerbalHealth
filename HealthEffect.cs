@@ -9,6 +9,8 @@ namespace KerbalHealth
     /// </summary>
     public class HealthEffect
     {
+        public const string ConfigNodeName = "HEALTH_EFFECTS";
+
         /// <summary>
         /// Cache of processed vessels, refreshed at every update
         /// </summary>
@@ -41,7 +43,7 @@ namespace KerbalHealth
 
         public double Radioactivity { get; set; }
 
-        public double Exposure { get; set; } = 1;
+        public double ExposureMultiplier { get; set; } = 1;
 
         public double ShelterExposure { get; set; } = 1;
 
@@ -63,7 +65,7 @@ namespace KerbalHealth
         {
             get
             {
-                ConfigNode node = new ConfigNode("HEALTH_MODIFIERS");
+                ConfigNode node = new ConfigNode(ConfigNodeName);
                 if (HPChange != 0)
                     node.AddValue("hpChange", HPChange);
                 if (MaxHP != 1)
@@ -86,8 +88,8 @@ namespace KerbalHealth
                     node.AddValue("shielding", Shielding);
                 if (Radioactivity != 0)
                     node.AddValue("radioactivity", Radioactivity);
-                if (Exposure != 1)
-                    node.AddValue("exposure", Exposure);
+                if (ExposureMultiplier != 1)
+                    node.AddValue("exposure", ExposureMultiplier);
                 if (ShelterExposure != 1)
                     node.AddValue("shelterExposure", ShelterExposure);
                 if (AccidentChance != 1)
@@ -104,8 +106,11 @@ namespace KerbalHealth
                     node.AddNode(fm.ConfigNode);
                 return node;
             }
+
             set
             {
+                if (value == null)
+                    return;
                 HPChange = value.GetDouble("hpChange");
                 MaxHP = value.GetDouble("maxHP", 1);
                 MaxHPBonus = value.GetDouble("maxHPBonus");
@@ -117,26 +122,29 @@ namespace KerbalHealth
                 Decay = value.GetDouble("decay");
                 Shielding = value.GetDouble("shielding");
                 Radioactivity = value.GetDouble("radioactivity");
-                Exposure = value.GetDouble("exposure", 1);
+                ExposureMultiplier = value.GetDouble("exposure", 1);
                 ShelterExposure = value.GetDouble("shelterExposure", 1);
                 AccidentChance = value.GetDouble("accidentChance", 1);
                 PanicAttackChance = value.GetDouble("panicAttackChance", 1);
                 SicknessChance = value.GetDouble("sicknessChance", 1);
                 CureChance = value.GetDouble("cureChance", 1);
                 LoseImmunityChance = value.GetDouble("loseImmunityChance", 1);
+                FactorMultipliers.Clear();
                 foreach (FactorMultiplier fm in value.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
                     FactorMultipliers.Add(fm);
             }
         }
 
-        FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
+        public FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
 
         public HealthEffect()
         {
             foreach (HealthFactor f in Core.Factors)
-                FactorMultipliers.Add(new FactorMultiplier(f.Name));
+                FactorMultipliers.Add(new FactorMultiplier(f));
             FactorMultipliers.Add(new FactorMultiplier());
         }
+
+        public HealthEffect(ConfigNode configNode) => ConfigNode = configNode;
 
         public HealthEffect(Vessel v) : this() => ProcessParts(v?.Parts, v.GetCrewCount());
 
@@ -223,31 +231,52 @@ namespace KerbalHealth
             return GetExposure(s, part.CrewCapacity);
         }
 
-        public static HealthEffect Combine(HealthEffect hms1, HealthEffect hms2)
+        /// <summary>
+        /// Adds effects from another effect to this one and returns this object
+        /// </summary>
+        /// <param name="effect"></param>
+        /// <returns></returns>
+        public HealthEffect CombineWith(HealthEffect effect)
         {
-            HealthEffect res = new HealthEffect();
-            res.HPChange = hms1.HPChange + hms2.HPChange;
-            res.MaxHP = hms1.MaxHP * hms2.MaxHP;
-            res.MaxHPBonus = hms1.MaxHPBonus + hms2.MaxHPBonus;
-            res.ExhaustedStart = hms1.ExhaustedStart * hms2.ExhaustedStart;
-            res.ExhaustedEnd = hms1.ExhaustedEnd * hms2.ExhaustedEnd;
-            res.Space = hms1.Space + hms2.Space;
-            res.Recuperation = hms1.Recuperation + hms2.Recuperation;
-            res.MaxRecuperaction = Math.Max(hms1.MaxRecuperaction, hms2.MaxRecuperaction);
-            res.Decay = hms1.Decay + hms2.Decay;
-            res.Shielding = hms1.Shielding + hms2.Shielding;
-            res.Radioactivity = hms1.Radioactivity + hms2.Radioactivity;
-            res.Exposure = hms1.Exposure * hms2.Exposure;
-            res.ShelterExposure = Math.Min(hms1.ShelterExposure, hms2.ShelterExposure);
-            res.AccidentChance = hms1.AccidentChance * hms2.AccidentChance;
-            res.PanicAttackChance = hms1.PanicAttackChance * hms2.PanicAttackChance;
-            res.SicknessChance = hms1.SicknessChance * hms2.SicknessChance;
-            res.CureChance = hms1.CureChance * hms2.CureChance;
-            res.LoseImmunityChance = hms1.LoseImmunityChance * hms2.LoseImmunityChance;
-            res.FactorMultipliers.Clear();
-            for (int i = 0; i < hms1.FactorMultipliers.Count; i++)
-                res.FactorMultipliers[i] = FactorMultiplier.Combine(hms1.FactorMultipliers[i], hms2.FactorMultipliers[i]);
-            return res;
+            if (effect == null)
+                return this;
+            HPChange += effect.HPChange;
+            MaxHP *= effect.MaxHP;
+            MaxHPBonus += effect.MaxHPBonus;
+            ExhaustedStart *= effect.ExhaustedStart;
+            ExhaustedEnd *= effect.ExhaustedEnd;
+            Space += effect.Space;
+            Recuperation += effect.Recuperation;
+            MaxRecuperaction = Math.Max(MaxRecuperaction, effect.MaxRecuperaction);
+            Decay += effect.Decay;
+            Shielding += effect.Shielding;
+            Radioactivity += effect.Radioactivity;
+            ExposureMultiplier *= effect.ExposureMultiplier;
+            ShelterExposure = Math.Min(ShelterExposure, effect.ShelterExposure);
+            AccidentChance *= effect.AccidentChance;
+            PanicAttackChance *= effect.PanicAttackChance;
+            SicknessChance *= effect.SicknessChance;
+            CureChance *= effect.CureChance;
+            LoseImmunityChance *= effect.LoseImmunityChance;
+            FactorMultipliers.Clear();
+            FactorMultipliers.CombineWith(effect.FactorMultipliers);
+            return this;
+        }
+
+        /// <summary>
+        /// Creates a new effect that combines effects from two objects
+        /// </summary>
+        /// <param name="effect1"></param>
+        /// <param name="effect2"></param>
+        /// <returns></returns>
+        public static HealthEffect Combine(HealthEffect effect1, HealthEffect effect2)
+        {
+            if (effect1 == null)
+                return effect2.Clone();
+            else if (effect2 == null)
+                return effect1.Clone();
+            HealthEffect res = effect1.Clone();
+            return res.CombineWith(effect2);
         }
 
         /// <summary>
@@ -255,8 +284,8 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="part">Part to process</param>
         /// <param name="crewCount">Current crew</param>
-        /// <param name="crewInPart">Whether the current kerbal is in this part</param>
-        public void ProcessPart(Part part, int crewCount, bool crewInPart)
+        /// <param name="partCrewModules">Whether to analyze modules with partCrewOnly flag or without</param>
+        public void ProcessPart(Part part, int crewCount, bool partCrewModules)
         {
             if (part == null)
             {
@@ -264,10 +293,10 @@ namespace KerbalHealth
                 return;
             }
 
-            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(m => m.IsModuleActive && (!m.partCrewOnly ^ crewInPart)))
+            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(m => m.IsModuleActive && (m.partCrewOnly == partCrewModules)))
             {
                 Core.Log($"Processing {mkh.Title} Module in {part.name}.");
-                Core.Log($"PartCrewOnly: {mkh.partCrewOnly}; CrewInPart: {crewInPart}; condition: {(!mkh.partCrewOnly ^ crewInPart)}");
+                Core.Log($"PartCrewOnly: {mkh.partCrewOnly}; CrewInPart: {partCrewModules}; condition: {(!mkh.partCrewOnly ^ partCrewModules)}");
                 HPChange += mkh.hpChangePerDay;
                 Space += mkh.space;
                 if (mkh.recuperation != 0)
@@ -303,7 +332,6 @@ namespace KerbalHealth
         public void ProcessParts(List<Part> parts, int crewCount)
         {
             Core.Log($"Processing {parts.Count} parts...");
-            //CrewCapacity = 0;
             List<PartExposureComparer> exposures = new List<PartExposureComparer>();
             foreach (Part p in parts)
             {
@@ -311,9 +339,8 @@ namespace KerbalHealth
                 Shielding += GetResourceShielding(p);
                 if (p.CrewCapacity > 0)
                 {
-                    Core.Log($"Possible shelter part: {p.name} with exposure {GetPartExtendedExposure(p):P1}");
+                    Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");
                     exposures.Add(new PartExposureComparer(p));
-                    //CrewCapacity += p.CrewCapacity;
                 }
                 exposures.Sort();
             }
@@ -323,14 +350,14 @@ namespace KerbalHealth
             int c = 0;
             for (int i = 0; i < exposures.Count; i++)
             {
-                Core.Log($"Part {exposures[i].Part.name} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
+                Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
                 x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
                 c += exposures[i].Part.CrewCapacity;
                 if (c >= crewCount)
                     break;
             }
-            Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {Exposure:P1}.");
-            ShelterExposure = Math.Min(x / crewCount, Exposure);
+            Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {ExposureMultiplier:P1}.");
+            ShelterExposure = Math.Min(x / crewCount, GetExposure(Shielding, crewCount));
         }
 
         /// <summary>
@@ -342,6 +369,14 @@ namespace KerbalHealth
             string res = "";
             if (HPChange != 0)
                 res = $"HP change per day: {HPChange:F2}";
+            if (MaxHP != 1)
+                res += $"\nMax HP: x{MaxHP}";
+            if (MaxHPBonus != 0)
+                res += $"\nMax HP bonus: {MaxHPBonus}";
+            if (ExhaustedStart != 1)
+                res += $"\nExhaustion start: x{ExhaustedStart}";
+            if (ExhaustedEnd != 1)
+                res += $"\nExhaustion end: x{ExhaustedEnd}";
             if (Space != 0)
                 res += $"\nSpace: {Space:F1}";
             if (Recuperation != 0)
@@ -351,11 +386,13 @@ namespace KerbalHealth
             if (Shielding != 0)
                 res += $"\nShielding: {Shielding:F1}";
             if (Radioactivity != 0)
-                res += $"\nParts radiation: {Radioactivity:F0}";
-
+                res += $"\nParts radioactivity: {Radioactivity:F0}";
+            if (ExposureMultiplier != 1)
+                res += $"\nExposure multiplier: {ExposureMultiplier:P1}";
+            if (ShelterExposure != 1)
+                res += $"\nShelter exposure: {ShelterExposure:P1}";
             foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
                 res += $"\n{fm}";
-
             return res.Trim();
         }
 
@@ -370,9 +407,7 @@ namespace KerbalHealth
             return hms;
         }
 
-        FactorMultiplier GetFactorMultiplier(string factorName) =>
-            FactorMultipliers.Find(fm =>
-            fm.FactorName == factorName || (fm.FactorName == null && factorName.Equals("All", StringComparison.OrdinalIgnoreCase)));
+        FactorMultiplier GetFactorMultiplier(string factorName) => FactorMultipliers[Core.GetHealthFactor(factorName)];
 
         class PartExposureComparer : IComparable<PartExposureComparer>
         {

@@ -426,7 +426,7 @@ namespace KerbalHealth
                 {
                     KerbalHealthStatus khs = kerbals.Values[FirstLine + i];
                     bool healthFrozen = khs.IsFrozen || khs.IsDecontaminating;
-                    double change = khs.LastChangeTotal;
+                    double change = khs.HPChangeTotal;
                     string formatTag = "", formatUntag = "", s;
                     if (healthFrozen || (change == 0) || ((khs.GetBalanceHP() - khs.NextConditionHP()) * change < 0)) s = "—";
                     else
@@ -447,6 +447,7 @@ namespace KerbalHealth
                     gridContent[((i + 1) * colNumMain) + 6].SetOptionText($"{formatTag}{Core.PrefixFormat(khs.Dose, 3)}{(khs.Radiation != 0 ? $" ({Localizer.Format("#KH_HM_perDay", Core.PrefixFormat(khs.Radiation, 3, true))})" : "")}{formatUntag}");
                 }
             }
+
             else  // Showing details for one particular kerbal
             {
                 ProtoCrewMember pcm = selectedKHS.PCM;
@@ -469,22 +470,20 @@ namespace KerbalHealth
 
                 gridContent[9].SetOptionText($"<color=\"white\">{selectedKHS.MaxHP:F2}</color>");
                 gridContent[11].SetOptionText($"<color=\"white\">{selectedKHS.HP:F2} ({selectedKHS.Health:P2})</color>");
-                gridContent[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.LastChangeTotal.ToString("F2"))}</color>");
+                gridContent[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.HPChangeTotal.ToString("F2"))}</color>");
 
                 int i = 15;
-                if (selectedKHS.PCM.IsLoaded() && !healthFrozen)
                     foreach (HealthFactor f in Core.Factors)
                     {
-                        gridContent[i].SetOptionText($"<color=\"white\">{(selectedKHS.Factors.ContainsKey(f.Name) ? selectedKHS.Factors[f.Name].ToString("F2") : Localizer.Format("#KH_NA"))}</color>");
+                        gridContent[i].SetOptionText($"<color=\"white\">{selectedKHS.GetFactorHPChange(f):N2}</color>");
                         i += 2;
                     }
                 gridContent[i].children[0].SetOptionText($"<color=\"white\">{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
-                gridContent[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.LastRecuperation:F1}%{(selectedKHS.LastDecay != 0 ? $"/ {-selectedKHS.LastDecay:F1}%" : "")} ({selectedKHS.MarginalChange:F2} HP)")}</color>");
-                gridContent[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.LastExposure:P1}</color>");
-                gridContent[i + 6].SetOptionText($"<color=\"white\">{selectedKHS.ShelterExposure:P1}</color>");
-                gridContent[i + 8].SetOptionText($"<color=\"white\">{selectedKHS.Radiation:N0}/day</color>");
-                gridContent[i + 10].children[0].SetOptionText($"<color=\"white\">{Core.PrefixFormat(selectedKHS.Dose, 6)}</color>");
-                gridContent[i + 12].SetOptionText($"<color=\"white\">{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
+                gridContent[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
+                gridContent[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
+                gridContent[i + 6].SetOptionText($"<color=\"white\">{selectedKHS.Radiation:N0}/day</color>");
+                gridContent[i + 8].children[0].SetOptionText($"<color=\"white\">{Core.PrefixFormat(selectedKHS.Dose, 6)}</color>");
+                gridContent[i + 10].SetOptionText($"<color=\"white\">{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
             }
             dirty = false;
         }
@@ -561,6 +560,7 @@ namespace KerbalHealth
                     HighLogic.UISkin,
                     false);
             }
+
             else
             {
                 // Creating the grid for detailed view, which will be filled in Update method
@@ -580,12 +580,11 @@ namespace KerbalHealth
                 gridContent.Add(new DialogGUILabel(""));
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DHPChange")));//"HP Change:"
                 gridContent.Add(new DialogGUILabel(""));
-                if (selectedKHS.PCM.IsLoaded() && !selectedKHS.IsFrozen)
-                    foreach (HealthFactor f in Core.Factors)
-                    {
-                        gridContent.Add(new DialogGUILabel($"{f.Title}:"));
-                        gridContent.Add(new DialogGUILabel(""));
-                    }
+                foreach (HealthFactor f in Core.Factors)
+                {
+                    gridContent.Add(new DialogGUILabel($"{f.Title}:"));
+                    gridContent.Add(new DialogGUILabel(""));
+                }
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DTraining")));
                 gridContent.Add(new DialogGUIHorizontalLayout(
                     new DialogGUILabel(""),
@@ -593,8 +592,6 @@ namespace KerbalHealth
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRecuperation")));//"Recuperation:"
                 gridContent.Add(new DialogGUILabel(""));
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DExposure")));//"Exposure:"
-                gridContent.Add(new DialogGUILabel(""));
-                gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DShelterExposure")));//Shelter Exposure:
                 gridContent.Add(new DialogGUILabel(""));
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadiation")));//"Radiation:"
                 gridContent.Add(new DialogGUILabel(""));
@@ -604,7 +601,7 @@ namespace KerbalHealth
                     new DialogGUIButton(Localizer.Format("#KH_HM_DDecon"), OnDecontamination, 50, 20, false)));//"Decon"
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadHPLoss")));//"Rad HP Loss:"
                 gridContent.Add(new DialogGUILabel(""));
-                monitorPosition.width = gridWidthDetails + 10;
+                monitorPosition.width = gridWidthDetails + 8;
                 monitorWindow = PopupDialog.SpawnPopupDialog(
                     new Vector2(0.5f, 0.5f),
                     new Vector2(0.5f, 0.5f),
@@ -703,17 +700,10 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled || v == null)
                 return;
             Core.Log($"CheckEVA('{v.vesselName}')");
-            foreach (ProtoCrewMember pcm in v.GetVesselCrew())
-            {
-                KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
-                if (khs == null)
-                {
-                    khs = new KerbalHealthStatus(pcm.name);
-                    Core.KerbalHealthList.Add(khs);
-                }
-                khs.IsOnEVA = v.isEVA || (pcm.seat?.part == null) || pcm.seat.part.HasModuleImplementing<KerbalSeat>();
-                Core.Log($"{pcm.name} is {(khs.IsOnEVA ? "" : "not ")}on EVA.");
-            }
+            if (v.isEVA)
+                Core.Log($"{v.vesselName} is EVA.");
+            foreach (KerbalHealthStatus khs in v.GetVesselCrew().Select(pcm => Core.KerbalHealthList[pcm]).Where(khs => khs != null))
+                khs.IsOnEVA = v.isEVA;
         }
 
         void RegisterAppLauncherButton()
@@ -733,19 +723,13 @@ namespace KerbalHealth
         bool LoadSettingsFromConfig()
         {
             Core.Log("LoadSettingsFromConfig", LogLevel.Important);
-            ConfigNode settingsNode;
-            try
-            {
-                settingsNode = GameDatabase.Instance.GetMergedConfigNodes("KERBALHEALTH_CONFIG");
-                Core.Log($"KERBALHEALTH_CONFIG node: {settingsNode}");
-                settingsNode = settingsNode.GetNode("SETTINGS") ?? throw new Exception("settingsNode is null");
-            }
-            catch (Exception e)
+            ConfigNode settingsNode = GameDatabase.Instance.GetMergedConfigNodes("KERBALHEALTH_CONFIG")?.GetNode("SETTINGS");
+            if (settingsNode == null)
             {
                 Core.Log("KERBALHEALTH_CONFIG/SETTINGS node not found.", LogLevel.Important);
-                Core.Log($"Exception: {e}");
                 return false;
             }
+            Core.Log($"KERBALHEALTH_CONFIG node: {settingsNode}");
 
             KerbalHealthGeneralSettings.Instance.ApplyConfig(settingsNode);
             KerbalHealthFactorsSettings.Instance.ApplyConfig(settingsNode);
