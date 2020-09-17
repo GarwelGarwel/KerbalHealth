@@ -96,8 +96,6 @@ namespace KerbalHealth
             }
         }
 
-        public HealthEffect VesselModifiers { get; set; } = new HealthEffect();
-
         /// <summary>
         /// Returns saved kerbal's trait or current trait if nothing is saved
         /// </summary>
@@ -186,9 +184,6 @@ namespace KerbalHealth
             if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.Contains(PCM))
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
-            Core.Log("Crew manifest contains:");
-            foreach (ProtoCrewMember crew in ShipConstruction.ShipManifest.GetAllCrew(false))
-                Core.Log($"- {crew.name}");
             locationEffect = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
             Part p = EditorLogic.SortedShipList.Find(part => part.protoModuleCrew.Contains(PCM));
             if (p != null)
@@ -1215,7 +1210,7 @@ namespace KerbalHealth
         public KerbalHealthStatus(string name)
         {
             Name = name;
-            HP = MaxHP;
+            HP = GetDefaultMaxHP(PCM);
             Core.Log($"Created record for {name} with {HP} HP.");
         }
 

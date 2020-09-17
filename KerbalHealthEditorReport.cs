@@ -177,26 +177,22 @@ namespace KerbalHealth
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
-            KerbalHealthStatus khs;
             List<string> s = new List<string>();
             List<string> f = new List<string>();
-            foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
-            {
-                khs = Core.KerbalHealthList[pcm];
-                if (khs == null)
-                    continue;
+            foreach (KerbalHealthStatus khs in ShipConstruction.ShipManifest.GetAllCrew(false)
+                .Select(pcm => Core.KerbalHealthList[pcm])
+                .Where(khs => khs != null))
                 if (khs.CanTrainAtKSC)
                 {
                     khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
                     khs.AddCondition("Training");
-                    s.Add(pcm.name);
+                    s.Add(khs.Name);
                 }
                 else
                 {
-                    Core.Log($"{pcm.name} can't train. They are {pcm.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
-                    f.Add(pcm.name);
+                    Core.Log($"{khs.Name} can't train. They are {khs.PCM.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
+                    f.Add(khs.Name);
                 }
-            }
 
             string msg = "";
             if (s.Count > 0)
@@ -299,11 +295,14 @@ namespace KerbalHealth
                     i++;
                 }
 
-                spaceLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Space:F1}</color>");
-                recupLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.EffectiveRecuperation:F1}%</color>");
-                shieldingLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Shielding:F1}</color>");
-                exposureLbl.SetOptionText($"<color=\"white\">{khs.Exposure:P1}</color>");
-                shelterExposureLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.ShelterExposure:P1}</color>");
+                HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
+                Core.Log($"Vessel effects: {vesselEffects}");
+
+                spaceLbl.SetOptionText($"<color=\"white\">{vesselEffects.Space:F1}</color>");
+                recupLbl.SetOptionText($"<color=\"white\">{vesselEffects.EffectiveRecuperation:F1}%</color>");
+                shieldingLbl.SetOptionText($"<color=\"white\">{vesselEffects.Shielding:F1}</color>");
+                exposureLbl.SetOptionText($"<color=\"white\">{HealthEffect.GetExposure(vesselEffects.Shielding, ShipConstruction.ShipManifest.CrewCount):P1}</color>");
+                shelterExposureLbl.SetOptionText($"<color=\"white\">{vesselEffects.ShelterExposure:P1}</color>");
 
                 dirty = false;
             }
