@@ -122,6 +122,6 @@ namespace KerbalHealth
         public override string ToString() =>
             IsTrivial
                 ? ""
-                : $"{Factor?.Name ?? "All factors "} x{Multiplier:P1} (bonus sum: {BonusSum}; free multiplier: {FreeMultiplier}: multipliers {MinMultiplier}..{MaxMultiplier}";
+                : $"{Factor?.Name ?? "All factors "} {Multiplier:P1} (bonus sum: {BonusSum}; free multiplier: {FreeMultiplier}: multipliers {MinMultiplier}..{MaxMultiplier})";
     }
 }

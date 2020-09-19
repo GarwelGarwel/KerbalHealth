@@ -9,7 +9,7 @@ namespace KerbalHealth
         public new FactorMultiplier Add(FactorMultiplier factorMultiplier)
         {
             if (Find(factorMultiplier.Factor) == null)
-                Add(factorMultiplier);
+                base.Add(factorMultiplier);
             return factorMultiplier;
         }
 
