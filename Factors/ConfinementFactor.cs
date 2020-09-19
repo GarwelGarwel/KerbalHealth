@@ -5,7 +5,9 @@ namespace KerbalHealth
 {
     public class ConfinementFactor : HealthFactor
     {
-        public override string Name => "Confinement";
+        public const string Id = "Confinement";
+
+        public override string Name => Id;
 
         public override string Title => Localizer.Format("#KH_Factor_Confinement");//Confinement
 

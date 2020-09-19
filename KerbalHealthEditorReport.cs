@@ -35,9 +35,9 @@ namespace KerbalHealth
                 return;
             Core.Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
-            GameEvents.onEditorShipModified.Add(x => Invalidate());
+            GameEvents.onEditorShipModified.Add(_ => Invalidate());
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(x => Invalidate());
+            GameEvents.onEditorScreenChange.Add(_ => Invalidate());
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {

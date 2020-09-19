@@ -258,7 +258,6 @@ namespace KerbalHealth
             SicknessChance *= effect.SicknessChance;
             CureChance *= effect.CureChance;
             LoseImmunityChance *= effect.LoseImmunityChance;
-            FactorMultipliers.Clear();
             FactorMultipliers.CombineWith(effect.FactorMultipliers);
             return this;
         }
@@ -275,8 +274,7 @@ namespace KerbalHealth
                 return effect2.Clone();
             else if (effect2 == null)
                 return effect1.Clone();
-            HealthEffect res = effect1.Clone();
-            return res.CombineWith(effect2);
+            return effect1.Clone().CombineWith(effect2);
         }
 
         /// <summary>
@@ -298,7 +296,7 @@ namespace KerbalHealth
                 Core.Log($"Processing {mkh.Title} Module in {part.name}.");
                 Core.Log($"PartCrewOnly: {mkh.partCrewOnly}; CrewInPart: {partCrewModules}; condition: {(!mkh.partCrewOnly ^ partCrewModules)}");
                 HPChange += mkh.hpChangePerDay;
-                Space += mkh.space;
+                Space += mkh.Space;
                 if (mkh.recuperation != 0)
                 {
                     Recuperation += mkh.RecuperationPower;
@@ -308,13 +306,13 @@ namespace KerbalHealth
                 Decay += mkh.DecayPower;
 
                 // Processing factor multiplier
-                if (mkh.multiplier != 1)
+                if (mkh.Multiplier != 1)
                 {
-                    Core.Log($"Factor multiplier for {mkh.MultiplyFactor}: {mkh.multiplier:P1}.");
+                    Core.Log($"Factor multiplier for {mkh.MultiplyFactor}: {mkh.Multiplier:P1}.");
                     FactorMultiplier factorMultiplier = GetFactorMultiplier(mkh.multiplyFactor);
                     if (mkh.crewCap > 0)
-                        factorMultiplier.AddRestrictedMultiplier(mkh.multiplier, mkh.crewCap, crewCount);
-                    else factorMultiplier.AddFreeMultiplier(mkh.multiplier);
+                        factorMultiplier.AddRestrictedMultiplier(mkh.Multiplier, mkh.crewCap, crewCount);
+                    else factorMultiplier.AddFreeMultiplier(mkh.Multiplier);
                 }
                 Shielding += mkh.shielding;
                 if (mkh.shielding != 0)
@@ -403,7 +401,7 @@ namespace KerbalHealth
         public HealthEffect Clone()
         {
             HealthEffect hms = (HealthEffect)this.MemberwiseClone();
-            hms.FactorMultipliers = new FactorMultiplierList();
+            hms.FactorMultipliers = new FactorMultiplierList(FactorMultipliers);
             return hms;
         }
 

@@ -11,9 +11,6 @@ namespace KerbalHealth
         // Module title displayed in right-click menu (empty string for auto)
         public string title = "";
 
-        [KSPField(isPersistant = true)]
-        public uint id = 0;
-
         [KSPField]
         // How many raw HP per day every affected kerbal gains
         public float hpChangePerDay = 0;
@@ -44,7 +41,7 @@ namespace KerbalHealth
 
         [KSPField]
         // Points of living space provided by the part (used to calculate Confinement factor)
-        public double space = 0;
+        public float space = 0;
 
         [KSPField]
         // Number of halving-thicknesses
@@ -71,6 +68,9 @@ namespace KerbalHealth
         public float complexity = 0;
 
         [KSPField(isPersistant = true)]
+        public uint id = 0;
+
+        [KSPField(isPersistant = true)]
         // If not alwaysActive, this determines if the module is active
         public bool isActive = true;
 
@@ -82,6 +82,13 @@ namespace KerbalHealth
         // Electric Charge usage per second
         public float ecPerSec = 0;
 
+        [KSPField(isPersistant = true)]
+        // For modules that have two modes (Living Space or Confinement multiplier), determines if the alternative mode is enabled
+        public bool multiplierMode = false;
+
+        [KSPField(isPersistant = true, guiName = "Health Module Config", guiActive = true, guiActiveEditor = true)]
+        public string configName = "";
+
         double lastUpdated;
 
         public HealthFactor MultiplyFactor
@@ -89,6 +96,15 @@ namespace KerbalHealth
             get => Core.GetHealthFactor(multiplyFactor);
             set => multiplyFactor = value.Name;
         }
+
+        public float Multiplier => multiplierMode || !IsSwitchable ? multiplier : 1;
+
+        public float Space => multiplierMode ? 0 : space;
+
+        /// <summary>
+        /// Returns true if this module has two modes (Living Space and Confinement multipler) that can be switched in the editor
+        /// </summary>
+        public bool IsSwitchable => space != 0 && multiplyFactor.Equals(ConfinementFactor.Id, StringComparison.OrdinalIgnoreCase);
 
         public bool IsAlwaysActive => (resourceConsumption == 0) && (resourceConsumptionPerKerbal == 0);
 
@@ -241,7 +257,9 @@ namespace KerbalHealth
                     case "stress":
                         return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
                     case "confinement":
-                        return Localizer.Format("#KH_Module_type4");//"Comforts"
+                        if (multiplierMode || !IsSwitchable)
+                            return Localizer.Format("#KH_Module_type4");//"Comforts"
+                        break;
                     case "loneliness":
                         return Localizer.Format("#KH_Module_type5");//"Meditation"
                     case "microgravity":
@@ -251,7 +269,7 @@ namespace KerbalHealth
                     case "conditions":
                         return Localizer.Format("#KH_Module_type9");//"Sick Bay"
                 }
-                if (space > 0)
+                if (space > 0 && !multiplierMode)
                     return Localizer.Format("#KH_Module_type10");//"Living Space"
                 if (shielding > 0)
                     return Localizer.Format("#KH_Module_type11");//"RadShield"
@@ -264,6 +282,10 @@ namespace KerbalHealth
 
         void UpdateGUIName()
         {
+            Core.Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
+            if (IsSwitchable)
+                Fields.SetValue("configName", Title);
+            else Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
             Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
             Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
         }
@@ -273,6 +295,17 @@ namespace KerbalHealth
         {
             isActive = IsAlwaysActive || !isActive;
             UpdateGUIName();
+            GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+        }
+
+        [KSPEvent(name = "OnSwitchConfig", guiActiveEditor = true, guiName = "Switch Health Module Config")]
+        public void OnSwitchConfig()
+        {
+            Core.Log("ModuleKerbalHealth.OnSwitchConfig");
+            if (IsSwitchable && Core.IsInEditor)
+                multiplierMode = !multiplierMode;
+            UpdateGUIName();
+            GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
         public override string GetInfo()
@@ -302,6 +335,8 @@ namespace KerbalHealth
                 res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
             if (string.IsNullOrEmpty(res))
                 return "";
+            if (IsSwitchable)
+                res += "\n\n<color=\"yellow\">Configuration switchable in the VAB/SPH</color>";
             return  Localizer.Format("#KH_Module_typetitle", Title) + res;//"Module type: " + 
         }
     }
