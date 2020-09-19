@@ -38,7 +38,7 @@ namespace KerbalHealth
 
         [KSPField]
         // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
-        public int crewCap = 0;
+        public int crewCap = -1;
 
         [KSPField]
         // Points of living space provided by the part (used to calculate Confinement factor)
@@ -155,8 +155,10 @@ namespace KerbalHealth
 
         public override void OnStart(StartState state)
         {
-            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.name}");
             base.OnStart(state);
+            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
+            if (crewCap < 0)
+                crewCap = part.CrewCapacity;
             if ((complexity != 0) && (id == 0))
                 id = part.persistentId;
             if (IsAlwaysActive)
