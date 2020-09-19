@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using KSP.Localization;
 
 namespace KerbalHealth
@@ -242,41 +243,45 @@ namespace KerbalHealth
             return Title.ToLower();
         }
 
+        public string GetTitle(bool configSelected)
+        {
+            if (!string.IsNullOrEmpty(title))
+                return title;
+            if (recuperation > 0)
+                return Localizer.Format("#KH_Module_type1");//"R&R"
+            if (decay > 0)
+                return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
+            switch (multiplyFactor.ToLower())
+            {
+                case "stress":
+                    return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
+                case "confinement":
+                    if (multiplierMode || !IsSwitchable)
+                        return Localizer.Format("#KH_Module_type4");//"Comforts"
+                    break;
+                case "loneliness":
+                    return Localizer.Format("#KH_Module_type5");//"Meditation"
+                case "microgravity":
+                    return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
+                case "connected":
+                    return Localizer.Format("#KH_Module_type8");//"TV Set"
+                case "conditions":
+                    return Localizer.Format("#KH_Module_type9");//"Sick Bay"
+            }
+            if (space > 0 && configSelected && !multiplierMode)
+                return Localizer.Format("#KH_Module_type10");//"Living Space"
+            if (shielding > 0)
+                return Localizer.Format("#KH_Module_type11");//"RadShield"
+            if (radioactivity > 0)
+                return Localizer.Format("#KH_Module_type12");//"Radiation"
+            if (IsSwitchable && !configSelected)
+                return Localizer.Format("#KH_Module_Type_Switchable");
+            return Localizer.Format("#KH_Module_title");//"Health Module"
+        }
+
         public string Title
         {
-            get
-            {
-                if (!string.IsNullOrEmpty(title))
-                    return title;
-                if (recuperation > 0)
-                    return Localizer.Format("#KH_Module_type1");//"R&R"
-                if (decay > 0)
-                    return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
-                switch (multiplyFactor.ToLower())
-                {
-                    case "stress":
-                        return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
-                    case "confinement":
-                        if (multiplierMode || !IsSwitchable)
-                            return Localizer.Format("#KH_Module_type4");//"Comforts"
-                        break;
-                    case "loneliness":
-                        return Localizer.Format("#KH_Module_type5");//"Meditation"
-                    case "microgravity":
-                        return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
-                    case "connected":
-                        return Localizer.Format("#KH_Module_type8");//"TV Set"
-                    case "conditions":
-                        return Localizer.Format("#KH_Module_type9");//"Sick Bay"
-                }
-                if (space > 0 && !multiplierMode)
-                    return Localizer.Format("#KH_Module_type10");//"Living Space"
-                if (shielding > 0)
-                    return Localizer.Format("#KH_Module_type11");//"RadShield"
-                if (radioactivity > 0)
-                    return Localizer.Format("#KH_Module_type12");//"Radiation"
-                return Localizer.Format("#KH_Module_title");//"Health Module"
-            }
+            get => GetTitle(true);
             set => title = value;
         }
 
@@ -298,7 +303,7 @@ namespace KerbalHealth
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
-        [KSPEvent(name = "OnSwitchConfig", guiActiveEditor = true, guiName = "Switch Health Module Config")]
+        [KSPEvent(name = "OnSwitchConfig", guiActiveEditor = true, guiName = "#KH_Module_SwitchConfig")]
         public void OnSwitchConfig()
         {
             Core.Log("ModuleKerbalHealth.OnSwitchConfig");
@@ -317,12 +322,17 @@ namespace KerbalHealth
                 res += Localizer.Format("#KH_Module_info2", recuperation.ToString("F1"));//"\nRecuperation: " +  + "%/day"
             if (decay != 0)
                 res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
-            if (multiplier != 1)
-                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"), multiplyFactor);//"\n" +  + "x " + 
+            if (IsSwitchable)
+                res += Localizer.Format("#KH_Module_Info_Configs", space.ToString("F1"), multiplyFactor, multiplier.ToString("F2"));
+            else
+            {
+                if (space != 0)
+                    res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
+                if (multiplier != 1)
+                    res += Localizer.Format("#KH_Module_info4", multiplyFactor, multiplier.ToString("F2"));//"\n" +  + "x " + 
+            }
             if (crewCap > 0)
                 res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
-            if (space != 0)
-                res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
             if (resourceConsumption != 0)
                 res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
             if (resourceConsumptionPerKerbal != 0)
@@ -336,8 +346,8 @@ namespace KerbalHealth
             if (string.IsNullOrEmpty(res))
                 return "";
             if (IsSwitchable)
-                res += "\n\n<color=\"yellow\">Configuration switchable in the VAB/SPH</color>";
-            return  Localizer.Format("#KH_Module_typetitle", Title) + res;//"Module type: " + 
+                res += $"\n\n<color=\"yellow\">{Localizer.Format("#KH_Module_Info_Switchable")}</color>";
+            return Localizer.Format("#KH_Module_typetitle", GetTitle(false)) + res;//"Module type: " + 
         }
     }
 }
