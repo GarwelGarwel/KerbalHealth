@@ -170,6 +170,12 @@ namespace KerbalHealth
             if (Core.IsInEditor && (resource == "ElectricCharge"))
                 ecPerSec = TotalResourceConsumption;
             Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
+            if (!IsSwitchable)
+            {
+                Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
+                Events["OnSwitchConfig"].guiActiveEditor = false;
+            }
+
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
         }
@@ -292,7 +298,6 @@ namespace KerbalHealth
             Core.Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
             if (IsSwitchable)
                 Fields.SetValue("configName", Title);
-            else Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
             Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
             Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
         }
