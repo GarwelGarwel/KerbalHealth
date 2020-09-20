@@ -265,19 +265,19 @@ namespace KerbalHealth
                     return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
                 case "confinement":
                     if (multiplierMode || !IsSwitchable)
-                        return Localizer.Format("#KH_Module_type4");//"Comforts"
+                        return Localizer.Format("#KH_Module_type4");//"Lounge"
                     break;
                 case "loneliness":
                     return Localizer.Format("#KH_Module_type5");//"Meditation"
                 case "microgravity":
-                    return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
+                    return Localizer.Format("#KH_Module_type6");//"Paragravity"
                 case "connected":
-                    return Localizer.Format("#KH_Module_type8");//"TV Set"
+                    return Localizer.Format("#KH_Module_type8");//"Broadband Internet"
                 case "conditions":
                     return Localizer.Format("#KH_Module_type9");//"Sick Bay"
             }
             if (space > 0 && configSelected && !multiplierMode)
-                return Localizer.Format("#KH_Module_type10");//"Living Space"
+                return Localizer.Format("#KH_Module_type10");//"Living Quarters"
             if (shielding > 0)
                 return Localizer.Format("#KH_Module_type11");//"RadShield"
             if (radioactivity > 0)
