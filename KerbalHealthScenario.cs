@@ -133,15 +133,15 @@ namespace KerbalHealth
             SetupKerbalism();
 
             // Automatically updating settings from older versions
-            Version v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-            if (version != v)
+            Version currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (version != currentVersion)
             {
-                Core.Log($"Current mod version {v} is different from v{version} used to save the game. Most likely, Kerbal Health has been recently updated.", LogLevel.Important);
+                Core.Log($"Current mod version {currentVersion} is different from v{version} used to save the game. Kerbal Health has been recently updated.", LogLevel.Important);
                 if ((version < new Version("1.1.0")) && (KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
                 {
                     Core.Log($"Confinement Factor is {KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor} instead of -3. Automatically fixing.");
                     KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor = -3;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg1", v.ToString(3)), true);//"Kerbal Health has been updated to v" +  + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg110", currentVersion.ToString(3)), true);//"Kerbal Health has been updated to v" +  + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
                 }
 
                 if (version < new Version("1.2.1.2"))
@@ -151,7 +151,7 @@ namespace KerbalHealth
                     KerbalHealthRadiationSettings.Instance.InSpaceLowCoefficient = 0.2f;
                     KerbalHealthRadiationSettings.Instance.StratoCoefficient = 0.2f;
                     KerbalHealthRadiationSettings.Instance.TroposphereCoefficient = 0.01f;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg2", v.ToString()), true);//"Kerbal Health has been updated to v" + + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg130", currentVersion.ToString()), true);//"Kerbal Health has been updated to v" + + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
                 }
 
                 if (version < new Version("1.3.8.1"))
@@ -162,10 +162,18 @@ namespace KerbalHealth
                     KerbalHealthRadiationSettings.Instance.GalacticRadiation = 12500;
                     KerbalHealthRadiationSettings.Instance.InSpaceHighCoefficient = 0.4f;
                     KerbalHealthFactorsSettings.Instance.TrainingEnabled = false;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg3", v.ToString(3)), true);
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg139", currentVersion.ToString(3)), true);
                 }
 
-                version = v;
+                if (version < new Version("1.4.6.101"))
+                {
+                    Core.Log($"Pre-1.5 Loneliness factor: {KerbalHealthFactorsSettings.Instance.LonelinessFactor}");
+                    if (KerbalHealthFactorsSettings.Instance.LonelinessFactor == -1)
+                        KerbalHealthFactorsSettings.Instance.LonelinessFactor = -2;
+                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg150", currentVersion.ToString(3)), true);
+                }
+
+                version = currentVersion;
             }
             else Core.Log($"Kerbal Health v{version}");
 
@@ -179,7 +187,7 @@ namespace KerbalHealth
                 toolbarButton.Text = "Kerbal Health Monitor";
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
                 toolbarButton.ToolTip = "Kerbal Health";
-                toolbarButton.OnClick += (e) =>
+                toolbarButton.OnClick += e =>
                 {
                     if (monitorWindow == null)
                         DisplayData();
