@@ -37,7 +37,7 @@ namespace KerbalHealth
             SortByLocation = true;
             LinesPerPage = 10;
             ShowTraitLevel = true;
-            UpdateInterval = 30;
+            UpdateInterval = 10;
             MinUpdateInterval = 1;
             BaseMaxHP = 100;
             HPPerLevel = 10;
@@ -93,7 +93,7 @@ namespace KerbalHealth
         public bool ShowTraitLevel = true;
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_UpdateInterval", toolTip = "#KH_GS_UpdateInterval_desc", minValue = 0.04f, maxValue = 60)]
-        public float UpdateInterval = 30;
+        public float UpdateInterval = 10;
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_MinUpdateInterval", toolTip = "#KH_GS_MinUpdateInterval_desc", minValue = 0.04f, maxValue = 60)]//Minimum Update Interval""Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval
         public float MinUpdateInterval = 1;

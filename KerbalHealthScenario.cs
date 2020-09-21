@@ -170,6 +170,7 @@ namespace KerbalHealth
                     Core.Log($"Pre-1.5 Loneliness factor: {KerbalHealthFactorsSettings.Instance.LonelinessFactor}");
                     if (KerbalHealthFactorsSettings.Instance.LonelinessFactor == -1)
                         KerbalHealthFactorsSettings.Instance.LonelinessFactor = -2;
+                    KerbalHealthGeneralSettings.Instance.UpdateInterval = 10;
                     Core.ShowMessage(Localizer.Format("#KH_Versionmsg150", currentVersion.ToString(3)), true);
                 }
 
