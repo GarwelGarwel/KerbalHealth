@@ -62,6 +62,8 @@ namespace KerbalHealth
                 };
             }
 
+            Core.KerbalHealthList.RegisterKerbals();
+
             Core.Log("KerbalHealthEditorReport.Start finished.", LogLevel.Important);
         }
 
