@@ -840,7 +840,7 @@ namespace KerbalHealth
         /// <summary>
         /// Proportion of radiation that gets absorbed by the kerbal
         /// </summary>
-        public double Exposure => HealthEffect.GetExposure(HealthEffects.Shielding, Core.GetCrewCount(PCM)) * HealthEffects.ExposureMultiplier;
+        public double Exposure => HealthEffect.GetExposure(HealthEffects.Shielding, Core.GetCrewCapacity(PCM)) * HealthEffects.ExposureMultiplier;
 
         /// <summary>
         /// Exposure in radiaiton shelter (used for radstorms)
