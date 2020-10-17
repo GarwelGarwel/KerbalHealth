@@ -41,9 +41,9 @@ namespace KerbalHealth
             if (Core.IsInEditor)
                 return;
 
-            if (!isActiveAndEnabled || !vessel.IsControllable)
+            if (!isActiveAndEnabled || !vessel.IsControllable || !KerbalHealthGeneralSettings.Instance.modEnabled || !KerbalHealthRadiationSettings.Instance.RadiationEnabled || KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
             {
-                Core.Log($"{vessel.vesselName} is not controllable or the ModuleHealthEnvironmentSensor is inactive. No data is displayed by {part.name}.");
+                Core.Log($"{vessel.vesselName} is not controllable, the ModuleHealthEnvironmentSensor is inactive, radiation feature is disabled or Kerbalism radiation is used. No data is displayed by {part.name}.");
                 Fields["displayData"].guiActive = false;
                 return;
             }
@@ -65,6 +65,6 @@ namespace KerbalHealth
             }
         }
 
-        public override string GetInfo() => Localizer.Format("#KH_ModuleSensorInfo", type.ToLower());
+        public override string GetInfo() => Localizer.Format($"#KH_ModuleSensorInfo_{type.ToLowerInvariant()}");
     }
 }
