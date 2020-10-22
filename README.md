@@ -22,7 +22,7 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 The following factors may affect kerbal's health:
 - **Stress** (kerbal is on a mission): -2 x (1 - *Training Level*) HP/day (max Training Level depends on your Astronaut Complex level; if training is enabled, you should first assign your crew to training in the Editor)
 - **Confinement** (scaled effect): -3 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
-- **Loneliness** (only 1 kerbal in the vessel): -1 HP/day
+- **Loneliness** (only 1 kerbal in the vessel): -2 HP/day
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
 - **EVA**: -10 HP/day
 - **Connected** (having a working CommNet connection to home): +0.5 HP/day
@@ -136,7 +136,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [USI Kolonization Systems (MKS/OKS) + Karibou](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS) (see notes below)
 
-DLCs are supported but not required.
+Making History is supported but not required.
 
 If you would like to include special support for your (or your favorite) mod, let me know.
 
@@ -144,7 +144,7 @@ If you would like to include special support for your (or your favorite) mod, le
 
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - Custom solar systems with multiple stars can work in strange ways with radiation mechanics. Disable radiation in the settings if you have problems.
-- It is recommended to disable habitation mechanics of USI-LS (and other mods) as these largely have the same goal as Kerbal Health.
+- It is recommended to disable habitation mechanics of USI-LS (and other similar mods) as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
 
 ## Copyright and License
