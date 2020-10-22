@@ -35,9 +35,9 @@ namespace KerbalHealth
                 return;
             Core.Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
-            GameEvents.onEditorShipModified.Add(x => Invalidate());
+            GameEvents.onEditorShipModified.Add(_ => Invalidate());
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(x => Invalidate());
+            GameEvents.onEditorScreenChange.Add(_ => Invalidate());
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {
@@ -61,6 +61,8 @@ namespace KerbalHealth
                     else UndisplayData();
                 };
             }
+
+            Core.KerbalHealthList.RegisterKerbals();
 
             Core.Log("KerbalHealthEditorReport.Start finished.", LogLevel.Important);
         }
@@ -177,26 +179,22 @@ namespace KerbalHealth
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
-            KerbalHealthStatus khs;
             List<string> s = new List<string>();
             List<string> f = new List<string>();
-            foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
-            {
-                khs = Core.KerbalHealthList[pcm];
-                if (khs == null)
-                    continue;
+            foreach (KerbalHealthStatus khs in ShipConstruction.ShipManifest.GetAllCrew(false)
+                .Select(pcm => Core.KerbalHealthList[pcm])
+                .Where(khs => khs != null))
                 if (khs.CanTrainAtKSC)
                 {
                     khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
                     khs.AddCondition("Training");
-                    s.Add(pcm.name);
+                    s.Add(khs.Name);
                 }
                 else
                 {
-                    Core.Log($"{pcm.name} can't train. They are {pcm.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
-                    f.Add(pcm.name);
+                    Core.Log($"{khs.Name} can't train. They are {khs.PCM.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
+                    f.Add(khs.Name);
                 }
-            }
 
             string msg = "";
             if (s.Count > 0)
@@ -241,7 +239,7 @@ namespace KerbalHealth
 
         public void Update()
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || ShipConstruction.ShipManifest == null || ShipConstruction.ShipManifest.CrewCount == 0)
             {
                 if (reportWindow != null)
                     reportWindow.Dismiss();
@@ -267,7 +265,7 @@ namespace KerbalHealth
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;
-                HealthModifierSet.VesselCache.Clear();
+                HealthEffect.VesselCache.Clear();
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
 
@@ -281,10 +279,11 @@ namespace KerbalHealth
                         continue;
                     }
 
+                    khs.SetDirty();
                     gridContent[(i + 1) * colNum].SetOptionText(khs.FullName);
                     khs.HP = khs.MaxHP;
                     // Making this call here, so that GetBalanceHP doesn't have to:
-                    double changePerDay = khs.HealthChangePerDay();
+                    double changePerDay = khs.HPChangeTotal;
                     double balanceHP = khs.GetBalanceHP();
                     string s = balanceHP > 0
                         ? $"-> {balanceHP:F0} HP ({balanceHP / khs.MaxHP * 100:F0}%)"
@@ -292,17 +291,20 @@ namespace KerbalHealth
                     gridContent[(i + 1) * colNum + 1].SetOptionText(s);
                     s = balanceHP > khs.NextConditionHP()
                         ? "—"
-                        : ((khs.LastRecuperation > khs.LastDecay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
+                        : ((khs.Recuperation > khs.Decay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
                     gridContent[(i + 1) * colNum + 2].SetOptionText(s);
                     gridContent[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
                     i++;
                 }
 
-                spaceLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Space:F1}</color>");
-                recupLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Recuperation:F1}%</color>");
-                shieldingLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.Shielding:F1}</color>");
-                exposureLbl.SetOptionText($"<color=\"white\">{khs.LastExposure:P1}</color>");
-                shelterExposureLbl.SetOptionText($"<color=\"white\">{khs.VesselModifiers.ShelterExposure:P1}</color>");
+                HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
+                Core.Log($"Vessel effects: {vesselEffects}");
+
+                spaceLbl.SetOptionText($"<color=\"white\">{vesselEffects.Space:F1}</color>");
+                recupLbl.SetOptionText($"<color=\"white\">{vesselEffects.EffectiveRecuperation:F1}%</color>");
+                shieldingLbl.SetOptionText($"<color=\"white\">{vesselEffects.Shielding:F1}</color>");
+                exposureLbl.SetOptionText($"<color=\"white\">{HealthEffect.GetExposure(vesselEffects.Shielding, ShipConstruction.ShipManifest.CrewCount):P1}</color>");
+                shelterExposureLbl.SetOptionText($"<color=\"white\">{vesselEffects.ShelterExposure:P1}</color>");
 
                 dirty = false;
             }

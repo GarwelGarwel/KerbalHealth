@@ -22,7 +22,7 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 The following factors may affect kerbal's health:
 - **Stress** (kerbal is on a mission): -2 x (1 - *Training Level*) HP/day (max Training Level depends on your Astronaut Complex level; if training is enabled, you should first assign your crew to training in the Editor)
 - **Confinement** (scaled effect): -3 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
-- **Loneliness** (only 1 kerbal in the vessel): -1 HP/day
+- **Loneliness** (only 1 kerbal in the vessel): -2 HP/day
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
 - **EVA**: -10 HP/day
 - **Connected** (having a working CommNet connection to home): +0.5 HP/day
@@ -70,6 +70,8 @@ You can protect kerbals from radiation (both cosmic and artificial) by adding sh
 
 Beware of solar radiation storms! They can blast your kerbals in a planet's SOI or in interplanetary space with amounts of radiation ranging from high to enormous. You will be warned, usually, a few hours in advance and the kerbals will automatically take cover in the shelter, if there is one. The shelter is determined as the most protected part (or set of parts) that can fit the entire crew. You will see shelter exposure in the Health Report and Health Monitor details. The frequence of solar storms depends on the phase of the solar cycle going (on average) from one storm every 6,667 days to one storm every 437 days.
 
+If you have Kerbalism installed and enabled "Use Kerbalism Radiation" option in the settings, Kerbal Health's radiation calculations will be replaced with those of Kerbalism (but Kerbal Health shielding will still apply). Kerbalism has a more realistic and complex radiation model, but its balance is very different from Kerbal Health's.
+
 It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
 
 ## Quirks
@@ -110,7 +112,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [FTmN Atomic Rockets](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-18x-spacetux-industries-recycled-parts/) (classic and Improved)
 - [JNSQ](https://forum.kerbalspaceprogram.com/index.php?/topic/184880-17x-jnsq-07-17-june-2019/)
 - [Kerbal Atomics](http://forum.kerbalspaceprogram.com/index.php?/topic/130503-10511-kerbal-atomics-fancy-nuclear-engines-initial-11-test/)
-- [Kerbalism](https://kerbalism.github.io/Kerbalism/) (see notes below)
+- [Kerbalism](https://kerbalism.github.io/Kerbalism/) (stress, comforts, living space, and radiation features are disabled by Kerbal Health by default; you can use Kerbalism's radiation model instead of Kerbal Health's)
 - [Kerbal Planetary Base Systems](http://forum.kerbalspaceprogram.com/index.php?/topic/133606-130-kerbal-planetary-base-systems-v144-6-june-2017/)
 - [KSP-AVC](http://ksp-avc.cybutek.net)
 - [KSP Interstellar Extended](https://forum.kerbalspaceprogram.com/index.php?/topic/155255-12213-kspi-extended)
@@ -134,7 +136,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [USI Kolonization Systems (MKS/OKS) + Karibou](https://github.com/BobPalmer/MKS)
 - [USI-LS](https://github.com/BobPalmer/USI-LS) (see notes below)
 
-Making History expansion is fully supported too but not required.
+Making History is supported but not required.
 
 If you would like to include special support for your (or your favorite) mod, let me know.
 
@@ -142,8 +144,7 @@ If you would like to include special support for your (or your favorite) mod, le
 
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - Custom solar systems with multiple stars can work in strange ways with radiation mechanics. Disable radiation in the settings if you have problems.
-- It is recommended to disable Habitat, Stress and Sick Bay in the config for Kerbalism.
-- It is recommended to disable habitation mechanics of USI-LS' (and other mods') as these largely have the same goal as Kerbal Health.
+- It is recommended to disable habitation mechanics of USI-LS (and other similar mods) as these largely have the same goal as Kerbal Health.
 - RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
 
 ## Copyright and License

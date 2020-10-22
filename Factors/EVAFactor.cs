@@ -12,11 +12,11 @@ namespace KerbalHealth
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.EVAFactor;
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
+        public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            return Core.KerbalHealthList[pcm].IsOnEVA ? BaseChangePerDay : 0;
+            return khs.IsOnEVA ? BaseChangePerDay : 0;
         }
     }
 }

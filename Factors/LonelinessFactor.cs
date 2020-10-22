@@ -10,11 +10,11 @@ namespace KerbalHealth
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.LonelinessFactor;
 
-        public override double ChangePerDay(ProtoCrewMember pcm)
+        public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor && !IsEnabledInEditor())
                 return 0;
-            return (Core.GetCrewCount(pcm) <= 1) && !pcm.isBadass ? BaseChangePerDay : 0;
+            return (Core.GetCrewCount(khs.PCM) <= 1) && !khs.PCM.isBadass ? BaseChangePerDay : 0;
         }
     }
 }

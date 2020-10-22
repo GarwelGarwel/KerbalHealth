@@ -37,7 +37,7 @@ namespace KerbalHealth
             SortByLocation = true;
             LinesPerPage = 10;
             ShowTraitLevel = true;
-            UpdateInterval = 30;
+            UpdateInterval = 10;
             MinUpdateInterval = 1;
             BaseMaxHP = 100;
             HPPerLevel = 10;
@@ -45,6 +45,7 @@ namespace KerbalHealth
             DeathEnabled = true;
             ExhaustionStartHealth = 0.2f;
             ExhaustionEndHealth = 0.25f;
+            KerbalismIntegration = true;
             ResetSettings = false;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
@@ -71,6 +72,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("DeathEnabled", ref DeathEnabled);
             settingsNode.TryGetValue("ExhaustionStartHealth", ref ExhaustionStartHealth);
             settingsNode.TryGetValue("ExhaustionEndHealth", ref ExhaustionEndHealth);
+            settingsNode.TryGetValue("KerbalismIntegration", ref KerbalismIntegration);
         }
 
         public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
@@ -91,7 +93,7 @@ namespace KerbalHealth
         public bool ShowTraitLevel = true;
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_UpdateInterval", toolTip = "#KH_GS_UpdateInterval_desc", minValue = 0.04f, maxValue = 60)]
-        public float UpdateInterval = 30;
+        public float UpdateInterval = 10;
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_MinUpdateInterval", toolTip = "#KH_GS_MinUpdateInterval_desc", minValue = 0.04f, maxValue = 60)]//Minimum Update Interval""Minimum number of REAL seconds between updated on high time warp\nMust be <= Update Interval
         public float MinUpdateInterval = 1;
@@ -113,6 +115,9 @@ namespace KerbalHealth
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionEndHealth", toolTip = "#KH_GS_ExhaustionEndHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion End Health""Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)
         public float ExhaustionEndHealth = 0.25f;
+
+        [GameParameters.CustomParameterUI("#KH_GS_KerbalismIntegration", toolTip = "#KH_GS_KerbalismIntegration_desc")]//Enforce Kerbalism Integration""If Kerbalism is installed, some of its features (stress, comforts, living space, and radiation damage) will be disabled in favour of Kerbal Health's mechanics
+        public bool KerbalismIntegration = true;
 
         [GameParameters.CustomParameterUI("#KH_GS_DebugMode", toolTip = "#KH_GS_DebugMode_desc")]//Debug Logging""Controls amount of logging
         public bool DebugMode = false;

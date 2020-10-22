@@ -77,6 +77,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FactorMultiplier.cs" />
+    <Compile Include="FactorMultiplierList.cs" />
     <Compile Include="RadStorm.cs" />
     <Compile Include="RadStormType.cs" />
     <Compile Include="Factors\StressFactor.cs" />
@@ -88,7 +90,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="Wrappers\DFWrapper.cs" />
     <Compile Include="HealthCondition.cs" />
-    <Compile Include="HealthEffect.cs" />
+    <Compile Include="ConditionalEffect.cs" />
     <Compile Include="Settings\KerbalHealthFactorsSettings.cs" />
     <Compile Include="Factors\HealthFactor.cs" />
     <Compile Include="Factors\EVAFactor.cs" />
@@ -108,9 +110,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings\KerbalHealthGeneralSettings.cs" />
     <Compile Include="Factors\ConditionsFactor.cs" />
+    <Compile Include="Wrappers\Kerbalism.cs" />
     <Compile Include="Wrappers\ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
-    <Compile Include="HealthModifierSet.cs" />
+    <Compile Include="HealthEffect.cs" />
     <Compile Include="TrainingPart.cs" />
   </ItemGroup>
   <ItemGroup>

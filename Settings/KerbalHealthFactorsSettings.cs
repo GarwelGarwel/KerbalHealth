@@ -23,21 +23,21 @@ namespace KerbalHealth
                     break;
 
                 case GameParameters.Preset.Normal:
-                    LonelinessFactor = -1;
+                    LonelinessFactor = -2;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
                     ConnectedFactor = 0.5f;
                     break;
 
                 case GameParameters.Preset.Moderate:
-                    LonelinessFactor = -1;
+                    LonelinessFactor = -2;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
                     ConnectedFactor = 0.5f;
                     break;
 
                 case GameParameters.Preset.Hard:
-                    LonelinessFactor = -1;
+                    LonelinessFactor = -2;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
                     ConnectedFactor = 0.5f;
@@ -52,7 +52,7 @@ namespace KerbalHealth
         {
             StressFactor = -2;
             ConfinementBaseFactor = -3;
-            LonelinessFactor = -1;
+            LonelinessFactor = -2;
             MicrogravityFactor = -1;
             EVAFactor = -10;
             ConnectedFactor = 0.5f;
@@ -99,7 +99,7 @@ namespace KerbalHealth
         public float ConfinementBaseFactor = -3;
 
         [GameParameters.CustomFloatParameterUI("#KH_Loneliness", toolTip = "#KH_FS_Loneliness_desc", minValue = -20, maxValue = 0, stepCount = 41)]//Loneliness""HP change per day when the kerbal has no crewmates
-        public float LonelinessFactor = -1;
+        public float LonelinessFactor = -2;
 
         [GameParameters.CustomFloatParameterUI("#KH_Microgravity", toolTip = "#KH_FS_Microgravity_desc", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]//Microgravity""HP change per day when in orbital/suborbital flight or g-force < 0.1
         public float MicrogravityFactor = -1;

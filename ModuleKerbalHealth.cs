@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using KSP.Localization;
 
 namespace KerbalHealth
@@ -10,9 +11,6 @@ namespace KerbalHealth
         [KSPField]
         // Module title displayed in right-click menu (empty string for auto)
         public string title = "";
-
-        [KSPField(isPersistant = true)]
-        public uint id = 0;
 
         [KSPField]
         // How many raw HP per day every affected kerbal gains
@@ -40,11 +38,11 @@ namespace KerbalHealth
 
         [KSPField]
         // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
-        public int crewCap = 0;
+        public int crewCap = -1;
 
         [KSPField]
         // Points of living space provided by the part (used to calculate Confinement factor)
-        public double space = 0;
+        public float space = 0;
 
         [KSPField]
         // Number of halving-thicknesses
@@ -71,6 +69,9 @@ namespace KerbalHealth
         public float complexity = 0;
 
         [KSPField(isPersistant = true)]
+        public uint id = 0;
+
+        [KSPField(isPersistant = true)]
         // If not alwaysActive, this determines if the module is active
         public bool isActive = true;
 
@@ -82,6 +83,13 @@ namespace KerbalHealth
         // Electric Charge usage per second
         public float ecPerSec = 0;
 
+        [KSPField(isPersistant = true)]
+        // For modules that have two modes (Living Space or Confinement multiplier), determines if the alternative mode is enabled
+        public bool multiplierMode = false;
+
+        [KSPField(isPersistant = true, guiName = "Health Module Config", guiActive = true, guiActiveEditor = true)]
+        public string configName = "";
+
         double lastUpdated;
 
         public HealthFactor MultiplyFactor
@@ -89,6 +97,15 @@ namespace KerbalHealth
             get => Core.GetHealthFactor(multiplyFactor);
             set => multiplyFactor = value.Name;
         }
+
+        public float Multiplier => multiplierMode || !IsSwitchable ? multiplier : 1;
+
+        public float Space => multiplierMode ? 0 : space;
+
+        /// <summary>
+        /// Returns true if this module has two modes (Living Space and Confinement multipler) that can be switched in the editor
+        /// </summary>
+        public bool IsSwitchable => space != 0 && multiplyFactor.Equals(ConfinementFactor.Id, StringComparison.OrdinalIgnoreCase);
 
         public bool IsAlwaysActive => (resourceConsumption == 0) && (resourceConsumptionPerKerbal == 0);
 
@@ -138,8 +155,10 @@ namespace KerbalHealth
 
         public override void OnStart(StartState state)
         {
-            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.name}");
             base.OnStart(state);
+            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
+            if (crewCap < 0)
+                crewCap = part.CrewCapacity;
             if ((complexity != 0) && (id == 0))
                 id = part.persistentId;
             if (IsAlwaysActive)
@@ -151,6 +170,12 @@ namespace KerbalHealth
             if (Core.IsInEditor && (resource == "ElectricCharge"))
                 ecPerSec = TotalResourceConsumption;
             Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
+            if (!IsSwitchable)
+            {
+                Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
+                Events["OnSwitchConfig"].guiActiveEditor = false;
+            }
+
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
         }
@@ -226,44 +251,53 @@ namespace KerbalHealth
             return Title.ToLower();
         }
 
+        public string GetTitle(bool configSelected)
+        {
+            if (!string.IsNullOrEmpty(title))
+                return title;
+            if (recuperation > 0)
+                return Localizer.Format("#KH_Module_type1");//"R&R"
+            if (decay > 0)
+                return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
+            switch (multiplyFactor.ToLower())
+            {
+                case "stress":
+                    return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
+                case "confinement":
+                    if (multiplierMode || !IsSwitchable)
+                        return Localizer.Format("#KH_Module_type4");//"Lounge"
+                    break;
+                case "loneliness":
+                    return Localizer.Format("#KH_Module_type5");//"Meditation"
+                case "microgravity":
+                    return Localizer.Format("#KH_Module_type6");//"Paragravity"
+                case "connected":
+                    return Localizer.Format("#KH_Module_type8");//"Broadband Internet"
+                case "conditions":
+                    return Localizer.Format("#KH_Module_type9");//"Sick Bay"
+            }
+            if (space > 0 && configSelected && !multiplierMode)
+                return Localizer.Format("#KH_Module_type10");//"Living Quarters"
+            if (shielding > 0)
+                return Localizer.Format("#KH_Module_type11");//"RadShield"
+            if (radioactivity > 0)
+                return Localizer.Format("#KH_Module_type12");//"Radiation"
+            if (IsSwitchable && !configSelected)
+                return Localizer.Format("#KH_Module_Type_Switchable");
+            return Localizer.Format("#KH_Module_title");//"Health Module"
+        }
+
         public string Title
         {
-            get
-            {
-                if (!string.IsNullOrEmpty(title))
-                    return title;
-                if (recuperation > 0)
-                    return Localizer.Format("#KH_Module_type1");//"R&R"
-                if (decay > 0)
-                    return Localizer.Format("#KH_Module_type2");//"Health Poisoning"
-                switch (multiplyFactor.ToLower())
-                {
-                    case "stress":
-                        return Localizer.Format("#KH_Module_type3");  //"Stress Relief"
-                    case "confinement":
-                        return Localizer.Format("#KH_Module_type4");//"Comforts"
-                    case "loneliness":
-                        return Localizer.Format("#KH_Module_type5");//"Meditation"
-                    case "microgravity":
-                        return (multiplier <= 0.25) ? Localizer.Format("#KH_Module_type6") : Localizer.Format("#KH_Module_type7");//"Paragravity""Exercise Equipment"
-                    case "connected":
-                        return Localizer.Format("#KH_Module_type8");//"TV Set"
-                    case "conditions":
-                        return Localizer.Format("#KH_Module_type9");//"Sick Bay"
-                }
-                if (space > 0)
-                    return Localizer.Format("#KH_Module_type10");//"Living Space"
-                if (shielding > 0)
-                    return Localizer.Format("#KH_Module_type11");//"RadShield"
-                if (radioactivity > 0)
-                    return Localizer.Format("#KH_Module_type12");//"Radiation"
-                return Localizer.Format("#KH_Module_title");//"Health Module"
-            }
+            get => GetTitle(true);
             set => title = value;
         }
 
         void UpdateGUIName()
         {
+            Core.Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
+            if (IsSwitchable)
+                Fields.SetValue("configName", Title);
             Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
             Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
         }
@@ -273,6 +307,17 @@ namespace KerbalHealth
         {
             isActive = IsAlwaysActive || !isActive;
             UpdateGUIName();
+            GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+        }
+
+        [KSPEvent(name = "OnSwitchConfig", guiActiveEditor = true, guiName = "#KH_Module_SwitchConfig")]
+        public void OnSwitchConfig()
+        {
+            Core.Log("ModuleKerbalHealth.OnSwitchConfig");
+            if (IsSwitchable && Core.IsInEditor)
+                multiplierMode = !multiplierMode;
+            UpdateGUIName();
+            GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
         public override string GetInfo()
@@ -284,12 +329,17 @@ namespace KerbalHealth
                 res += Localizer.Format("#KH_Module_info2", recuperation.ToString("F1"));//"\nRecuperation: " +  + "%/day"
             if (decay != 0)
                 res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
-            if (multiplier != 1)
-                res += Localizer.Format("#KH_Module_info4", multiplier.ToString("F2"), multiplyFactor);//"\n" +  + "x " + 
+            if (IsSwitchable)
+                res += Localizer.Format("#KH_Module_Info_Configs", space.ToString("F1"), multiplyFactor, multiplier.ToString("F2"));
+            else
+            {
+                if (space != 0)
+                    res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
+                if (multiplier != 1)
+                    res += Localizer.Format("#KH_Module_info4", multiplyFactor, multiplier.ToString("F2"));//"\n" +  + "x " + 
+            }
             if (crewCap > 0)
                 res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
-            if (space != 0)
-                res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
             if (resourceConsumption != 0)
                 res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
             if (resourceConsumptionPerKerbal != 0)
@@ -302,7 +352,9 @@ namespace KerbalHealth
                 res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
             if (string.IsNullOrEmpty(res))
                 return "";
-            return  Localizer.Format("#KH_Module_typetitle", Title) + res;//"Module type: " + 
+            if (IsSwitchable)
+                res += $"\n\n<color=\"yellow\">{Localizer.Format("#KH_Module_Info_Switchable")}</color>";
+            return Localizer.Format("#KH_Module_typetitle", GetTitle(false)) + res;//"Module type: " + 
         }
     }
 }

@@ -15,9 +15,9 @@
         virtual public string Title => Name;
 
         /// <summary>
-        /// This factor can/should be cached for unloaded kerbals
+        /// This factor doesn't change for unloaded vessels (or can't be recalculated for them)
         /// </summary>
-        virtual public bool Cachable => true;
+        virtual public bool ConstantForUnloaded => true;
 
         /// <summary>
         /// Returns factor's HP change per day as set in the Settings (use KerbalHealthFactorsSettings.[factorName])
@@ -38,8 +38,8 @@
         /// <summary>
         /// Returns actual factor's HP change per day for a given kerbal, before factor multipliers
         /// </summary>
-        /// <param name="pcm"></param>
+        /// <param name="khs"></param>
         /// <returns></returns>
-        abstract public double ChangePerDay(ProtoCrewMember pcm);
+        abstract public double ChangePerDay(KerbalHealthStatus khs);
     }
 }
