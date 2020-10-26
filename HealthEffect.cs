@@ -45,7 +45,11 @@ namespace KerbalHealth
 
         public double ExposureMultiplier { get; set; } = 1;
 
+        public double VesselExposure => GetExposure(Shielding, Math.Max(CrewCapacity, 1));
+
         public double ShelterExposure { get; set; } = 1;
+
+        public int CrewCapacity { get; set; }
 
         public double AccidentChance { get; set; } = 1;
 
@@ -92,6 +96,8 @@ namespace KerbalHealth
                     node.AddValue("exposure", ExposureMultiplier);
                 if (ShelterExposure != 1)
                     node.AddValue("shelterExposure", ShelterExposure);
+                if (CrewCapacity != 0)
+                    node.AddValue("crewCapacity", CrewCapacity);
                 if (AccidentChance != 1)
                     node.AddValue("accidentChance", AccidentChance);
                 if (PanicAttackChance != 1)
@@ -124,6 +130,7 @@ namespace KerbalHealth
                 Radioactivity = value.GetDouble("radioactivity");
                 ExposureMultiplier = value.GetDouble("exposure", 1);
                 ShelterExposure = value.GetDouble("shelterExposure", 1);
+                CrewCapacity = value.GetInt("crewCapacity");
                 AccidentChance = value.GetDouble("accidentChance", 1);
                 PanicAttackChance = value.GetDouble("panicAttackChance", 1);
                 SicknessChance = value.GetDouble("sicknessChance", 1);
@@ -182,10 +189,10 @@ namespace KerbalHealth
         /// Returns exposure provided by shielding
         /// </summary>
         /// <param name="shielding">Total shielding</param>
-        /// <param name="crew">Crew capacity</param>
+        /// <param name="crewCap">Crew capacity</param>
         /// <returns></returns>
-        public static double GetExposure(double shielding, double crew) =>
-            Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crew, 2f / 3));
+        public static double GetExposure(double shielding, double crewCap) =>
+            Math.Pow(2, -shielding * KerbalHealthRadiationSettings.Instance.ShieldingEffect / Math.Pow(crewCap, 2f / 3));
 
         /// <summary>
         /// Returns amoung of shielding provided by resources held in the part
@@ -232,6 +239,21 @@ namespace KerbalHealth
         }
 
         /// <summary>
+        /// Creates a new effect that combines effects from two objects
+        /// </summary>
+        /// <param name="effect1"></param>
+        /// <param name="effect2"></param>
+        /// <returns></returns>
+        public static HealthEffect Combine(HealthEffect effect1, HealthEffect effect2)
+        {
+            if (effect1 == null)
+                return effect2.Clone();
+            else if (effect2 == null)
+                return effect1.Clone();
+            return effect1.Clone().CombineWith(effect2);
+        }
+
+        /// <summary>
         /// Adds effects from another effect to this one and returns this object
         /// </summary>
         /// <param name="effect"></param>
@@ -253,6 +275,7 @@ namespace KerbalHealth
             Radioactivity += effect.Radioactivity;
             ExposureMultiplier *= effect.ExposureMultiplier;
             ShelterExposure = Math.Min(ShelterExposure, effect.ShelterExposure);
+            CrewCapacity += effect.CrewCapacity;
             AccidentChance *= effect.AccidentChance;
             PanicAttackChance *= effect.PanicAttackChance;
             SicknessChance *= effect.SicknessChance;
@@ -260,21 +283,6 @@ namespace KerbalHealth
             LoseImmunityChance *= effect.LoseImmunityChance;
             FactorMultipliers.CombineWith(effect.FactorMultipliers);
             return this;
-        }
-
-        /// <summary>
-        /// Creates a new effect that combines effects from two objects
-        /// </summary>
-        /// <param name="effect1"></param>
-        /// <param name="effect2"></param>
-        /// <returns></returns>
-        public static HealthEffect Combine(HealthEffect effect1, HealthEffect effect2)
-        {
-            if (effect1 == null)
-                return effect2.Clone();
-            else if (effect2 == null)
-                return effect1.Clone();
-            return effect1.Clone().CombineWith(effect2);
         }
 
         /// <summary>
@@ -331,6 +339,7 @@ namespace KerbalHealth
         {
             Core.Log($"Processing {parts.Count} parts...");
             List<PartExposureComparer> exposures = new List<PartExposureComparer>();
+            CrewCapacity = 0;
             foreach (Part p in parts)
             {
                 ProcessPart(p, crewCount, false);
@@ -339,6 +348,7 @@ namespace KerbalHealth
                 {
                     Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");
                     exposures.Add(new PartExposureComparer(p));
+                    CrewCapacity += p.CrewCapacity;
                 }
                 exposures.Sort();
             }
@@ -355,7 +365,7 @@ namespace KerbalHealth
                     break;
             }
             Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {ExposureMultiplier:P1}.");
-            ShelterExposure = Math.Min(x / crewCount, GetExposure(Shielding, crewCount));
+            ShelterExposure = Math.Min(x / c, VesselExposure);
         }
 
         /// <summary>
@@ -389,6 +399,8 @@ namespace KerbalHealth
                 res += $"\nExposure multiplier: {ExposureMultiplier:P1}";
             if (ShelterExposure != 1)
                 res += $"\nShelter exposure: {ShelterExposure:P1}";
+            if (CrewCapacity != 0)
+                res += $"\nCrew capacity: {CrewCapacity}";
             foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
                 res += $"\n{fm}";
             return res.Trim();
