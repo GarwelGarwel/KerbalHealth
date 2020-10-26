@@ -20,6 +20,7 @@ namespace KerbalHealth
                 case GameParameters.Preset.Normal:
                     DeathEnabled = false;
                     break;
+
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
                     DeathEnabled = true;

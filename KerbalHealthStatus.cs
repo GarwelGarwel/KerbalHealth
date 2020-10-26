@@ -840,7 +840,7 @@ namespace KerbalHealth
         /// <summary>
         /// Proportion of radiation that gets absorbed by the kerbal
         /// </summary>
-        public double Exposure => HealthEffect.GetExposure(HealthEffects.Shielding, Core.GetCrewCapacity(PCM)) * HealthEffects.ExposureMultiplier;
+        public double Exposure => HealthEffects.VesselExposure * HealthEffects.ExposureMultiplier;
 
         /// <summary>
         /// Exposure in radiaiton shelter (used for radstorms)
@@ -953,7 +953,7 @@ namespace KerbalHealth
                 {
                     Core.Log($"Kerbalism environment radiaiton: {Kerbalism.GetRadiation(v) * 3600:N3} rad/h = {Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v))} BED/day. Kerbalism exposure: {Kerbalism.GetHabitatRadiation(v) / Kerbalism.GetRadiation(v):P1}");
                     Core.Log($"Kerbal Health radiation: {(HealthEffects.Radioactivity + GetCosmicRadiation(v)) * KSPUtil.dateTimeFormatter.Day / 21600:N1} BED/day.");
-                    Kerbalism.AddRadiationMeasurement(v.mainBody.bodyName, v.altitude, GetCosmicRadiation(v) * KSPUtil.dateTimeFormatter.Day / 21600, Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)));
+                    //Kerbalism.AddRadiationMeasurement(v.mainBody.bodyName, v.altitude, GetCosmicRadiation(v) * KSPUtil.dateTimeFormatter.Day / 21600, Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)));
                 }
                 return Kerbalism.RadPerSecToBEDPerDay(Kerbalism.GetRadiation(v)) * KerbalHealthRadiationSettings.Instance.KerbalismRadiationRatio;
             }
@@ -1040,15 +1040,13 @@ namespace KerbalHealth
             if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
                 CheckForAvailableQuirks();
 
-            bool decontaminating = IsDecontaminating;
-
             if (KerbalHealthRadiationSettings.Instance.RadiationEnabled)
             {
                 Radiation = GetRadiation();
                 AddDose(Radiation * interval / KSPUtil.dateTimeFormatter.Day);
                 if (Dose < 0)
                     Dose = 0;
-                if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && decontaminating)
+                if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && IsDecontaminating)
                     StopDecontamination();
             }
 

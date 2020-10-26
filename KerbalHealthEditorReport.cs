@@ -303,7 +303,7 @@ namespace KerbalHealth
                 spaceLbl.SetOptionText($"<color=\"white\">{vesselEffects.Space:F1}</color>");
                 recupLbl.SetOptionText($"<color=\"white\">{vesselEffects.EffectiveRecuperation:F1}%</color>");
                 shieldingLbl.SetOptionText($"<color=\"white\">{vesselEffects.Shielding:F1}</color>");
-                exposureLbl.SetOptionText($"<color=\"white\">{HealthEffect.GetExposure(vesselEffects.Shielding, ShipConstruction.ShipManifest.CrewCount):P1}</color>");
+                exposureLbl.SetOptionText($"<color=\"white\">{vesselEffects.VesselExposure:P1}</color>");
                 shelterExposureLbl.SetOptionText($"<color=\"white\">{vesselEffects.ShelterExposure:P1}</color>");
 
                 dirty = false;
