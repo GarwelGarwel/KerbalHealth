@@ -120,6 +120,7 @@
     <Content Include="GameData\KerbalHealth\icon.png" />
     <None Include="GameData\KerbalHealth\Localization\en-us.cfg" />
     <None Include="GameData\KerbalHealth\Localization\zh-cn.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHRationalResources.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHDMOS.cfg" />
     <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>
