@@ -48,8 +48,6 @@
             }
         }
 
-        public override string ToString() => $"{Name}\r\nMagnetosphere: {Magnetosphere:F2}\r\nAtmospheric Absorption: {AtmosphericAbsorption:F2}\r\nRadioactivity: {Radioactivity:F0}";
-
         public PlanetHealthConfig(CelestialBody body)
         {
             Name = body.bodyName;
@@ -57,5 +55,8 @@
         }
 
         public PlanetHealthConfig(ConfigNode node) => ConfigNode = node;
+
+        public override string ToString() =>
+            $"{Name}\r\nMagnetosphere: {Magnetosphere:F2}\r\nAtmospheric Absorption: {AtmosphericAbsorption:F2}\r\nRadioactivity: {Radioactivity:F0}";
     }
 }

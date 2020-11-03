@@ -8,9 +8,10 @@ namespace KerbalHealth
     /// </summary>
     public class Quirk
     {
+        string title;
+
         public string Name { get; set; }
 
-        string title;
         public string Title
         {
             get => title ?? Name;
@@ -30,6 +31,26 @@ namespace KerbalHealth
         public double StupidityWeight { get; set; } = 1;
 
         public List<ConditionalEffect> Effects { get; set; } = new List<ConditionalEffect>();
+
+        public Quirk(ConfigNode node)
+        {
+            Name = node.GetValue("name");
+            Title = node.GetValue("title");
+            Description = node.GetValue("description");
+            IsVisible = node.GetBool("visible", true);
+            MinLevel = node.GetInt("minLevel");
+            IncompatibleQuirks = new List<string>(node.GetValues("incompatibleWith"));
+            CourageWeight = node.GetDouble("courageWeight", 1);
+            StupidityWeight = node.GetDouble("stupidityWeight", 1);
+            Effects = new List<ConditionalEffect>(node.GetNodes("EFFECT").Select(n => new ConditionalEffect(n)));
+            Core.Log($"Quirk loaded: {this}");
+        }
+
+        public Quirk(string name)
+        {
+            Name = name;
+            IsVisible = false;
+        }
 
         /// <summary>
         /// Returns true if this quirk can be assigned to the given kerbal at a certain experience level
@@ -60,26 +81,6 @@ namespace KerbalHealth
                     res += $"\n{he}";
             }
             return res;
-        }
-
-        public Quirk(ConfigNode node)
-        {
-            Name = node.GetValue("name");
-            Title = node.GetValue("title");
-            Description = node.GetValue("description");
-            IsVisible = node.GetBool("visible", true);
-            MinLevel = node.GetInt("minLevel");
-            IncompatibleQuirks = new List<string>(node.GetValues("incompatibleWith"));
-            CourageWeight = node.GetDouble("courageWeight", 1);
-            StupidityWeight = node.GetDouble("stupidityWeight", 1);
-            Effects = new List<ConditionalEffect>(node.GetNodes("EFFECT").Select(n => new ConditionalEffect(n)));
-            Core.Log($"Quirk loaded: {this}");
-        }
-
-        public Quirk(string name)
-        {
-            Name = name;
-            IsVisible = false;
         }
     }
 }

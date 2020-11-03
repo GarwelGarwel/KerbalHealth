@@ -1,8 +1,7 @@
-﻿using System;
+﻿using KSP.Localization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using KSP.Localization;
 
 namespace KerbalHealth
 {
@@ -136,10 +135,17 @@ namespace KerbalHealth
         /// </summary>
         public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
 
-        public List<PartResourceDefinition> GetConsumedResources() =>
-            (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
-            ? new List<PartResourceDefinition>() { ResourceDefinition }
-            : new List<PartResourceDefinition>();
+        public float TotalResourceConsumption => resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
+
+        public double RecuperationPower => crewCap > 0 ? recuperation * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : recuperation;
+
+        public double DecayPower => crewCap > 0 ? decay * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : decay;
+
+        public string Title
+        {
+            get => GetTitle(true);
+            set => title = value;
+        }
 
         PartResourceDefinition ResourceDefinition
         {
@@ -147,57 +153,7 @@ namespace KerbalHealth
             set => resource = value?.name;
         }
 
-        public float TotalResourceConsumption => resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
-
-        public double RecuperationPower => crewCap > 0 ? recuperation * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : recuperation;
-
-        public double DecayPower => crewCap > 0 ? decay * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : decay;
-
-        public override void OnStart(StartState state)
-        {
-            base.OnStart(state);
-            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
-            if (crewCap < 0)
-                crewCap = part.CrewCapacity;
-            if ((complexity != 0) && (id == 0))
-                id = part.persistentId;
-            if (IsAlwaysActive)
-            {
-                isActive = true;
-                Events["OnToggleActive"].guiActive = false;
-                Events["OnToggleActive"].guiActiveEditor = false;
-            }
-            if (Core.IsInEditor && (resource == "ElectricCharge"))
-                ecPerSec = TotalResourceConsumption;
-            Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
-            if (!IsSwitchable)
-            {
-                Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
-                Events["OnSwitchConfig"].guiActiveEditor = false;
-            }
-
-            UpdateGUIName();
-            lastUpdated = Planetarium.GetUniversalTime();
-        }
-
-        public void FixedUpdate()
-        {
-            if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
-                return;
-            double time = Planetarium.GetUniversalTime();
-            if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
-            {
-                ecPerSec = TotalResourceConsumption;
-                double requiredAmount = ecPerSec * (time - lastUpdated), providedAmount;
-                if (resource != "ElectricCharge")
-                    ecPerSec = 0;
-                starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
-                if (starving)
-                    Core.Log($"{Title} Module is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
-            }
-            else ecPerSec = 0;
-            lastUpdated = time;
-        }
+        #region KERBALISM
 
         /// <summary>
         /// Kerbalism background processing compatibility method
@@ -251,6 +207,59 @@ namespace KerbalHealth
             return Title.ToLower();
         }
 
+        #endregion KERBALISM
+
+        public List<PartResourceDefinition> GetConsumedResources() =>
+            (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
+            ? new List<PartResourceDefinition>() { ResourceDefinition }
+            : new List<PartResourceDefinition>();
+
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
+            if (crewCap < 0)
+                crewCap = part.CrewCapacity;
+            if ((complexity != 0) && (id == 0))
+                id = part.persistentId;
+            if (IsAlwaysActive)
+            {
+                isActive = true;
+                Events["OnToggleActive"].guiActive = false;
+                Events["OnToggleActive"].guiActiveEditor = false;
+            }
+            if (Core.IsInEditor && (resource == "ElectricCharge"))
+                ecPerSec = TotalResourceConsumption;
+            Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
+            if (!IsSwitchable)
+            {
+                Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
+                Events["OnSwitchConfig"].guiActiveEditor = false;
+            }
+
+            UpdateGUIName();
+            lastUpdated = Planetarium.GetUniversalTime();
+        }
+
+        public void FixedUpdate()
+        {
+            if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
+                return;
+            double time = Planetarium.GetUniversalTime();
+            if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
+            {
+                ecPerSec = TotalResourceConsumption;
+                double requiredAmount = ecPerSec * (time - lastUpdated), providedAmount;
+                if (resource != "ElectricCharge")
+                    ecPerSec = 0;
+                starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
+                if (starving)
+                    Core.Log($"{Title} Module is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
+            }
+            else ecPerSec = 0;
+            lastUpdated = time;
+        }
+
         public string GetTitle(bool configSelected)
         {
             if (!string.IsNullOrEmpty(title))
@@ -267,6 +276,7 @@ namespace KerbalHealth
                     if (multiplierMode || !IsSwitchable)
                         return Localizer.Format("#KH_Module_type4");//"Lounge"
                     break;
+
                 case "loneliness":
                     return Localizer.Format("#KH_Module_type5");//"Meditation"
                 case "microgravity":
@@ -287,21 +297,6 @@ namespace KerbalHealth
             return Localizer.Format("#KH_Module_title");//"Health Module"
         }
 
-        public string Title
-        {
-            get => GetTitle(true);
-            set => title = value;
-        }
-
-        void UpdateGUIName()
-        {
-            Core.Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
-            if (IsSwitchable)
-                Fields.SetValue("configName", Title);
-            Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
-            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
-        }
-        
         [KSPEvent(name = "OnToggleActive", guiActive = true, guiName = "#KH_Module_Toggle", guiActiveEditor = true)] //Toggle Health Module
         public void OnToggleActive()
         {
@@ -320,6 +315,8 @@ namespace KerbalHealth
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
+        public override string GetModuleDisplayName() => GetTitle(false);
+
         public override string GetInfo()
         {
             string res = "";
@@ -334,18 +331,18 @@ namespace KerbalHealth
             else
             {
                 if (space != 0)
-                    res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " + 
+                    res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " +
                 if (multiplier != 1)
-                    res += Localizer.Format("#KH_Module_info4", multiplyFactor, multiplier.ToString("F2"));//"\n" +  + "x " + 
+                    res += Localizer.Format("#KH_Module_info4", multiplyFactor, multiplier.ToString("F2"));//"\n" +  + "x " +
             }
             if (crewCap > 0)
                 res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
             if (resourceConsumption != 0)
-                res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation,resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
+                res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation, resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
             if (resourceConsumptionPerKerbal != 0)
-                res += Localizer.Format("#KH_Module_info8", ResourceDefinition.abbreviation,resourceConsumptionPerKerbal.ToString("F2"));//"\n" +  + " per Kerbal: " +  + "/sec."
+                res += Localizer.Format("#KH_Module_info8", ResourceDefinition.abbreviation, resourceConsumptionPerKerbal.ToString("F2"));//"\n" +  + " per Kerbal: " +  + "/sec."
             if (shielding != 0)
-                res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " + 
+                res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " +
             if (radioactivity != 0)
                 res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
             if (complexity != 0)
@@ -354,7 +351,16 @@ namespace KerbalHealth
                 return "";
             if (IsSwitchable)
                 res += $"\n\n<color=\"yellow\">{Localizer.Format("#KH_Module_Info_Switchable")}</color>";
-            return Localizer.Format("#KH_Module_typetitle", GetTitle(false)) + res;//"Module type: " + 
+            return Localizer.Format("#KH_Module_typetitle", GetTitle(false)) + res;//"Module type: " +
+        }
+
+        void UpdateGUIName()
+        {
+            Core.Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
+            if (IsSwitchable)
+                Fields.SetValue("configName", Title);
+            Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
+            Fields["ecPerSec"].guiActive = Fields["ecPerSec"].guiActiveEditor = KerbalHealthGeneralSettings.Instance.modEnabled && isActive && ecPerSec != 0;
         }
     }
 }

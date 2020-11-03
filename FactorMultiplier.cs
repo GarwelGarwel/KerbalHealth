@@ -35,6 +35,7 @@ namespace KerbalHealth
             {
                 if (IsTrivial)
                     return null;
+
                 ConfigNode node = new ConfigNode(ConfigNodeName);
                 if (Factor != null)
                     node.AddValue("factor", FactorName);
@@ -62,6 +63,26 @@ namespace KerbalHealth
         public FactorMultiplier(HealthFactor factor = null) => Factor = factor;
 
         public FactorMultiplier(ConfigNode configNode) => ConfigNode = configNode;
+
+        /// <summary>
+        /// Combines two factor multipliers into one, adding bonus sums and multiplying their multipliers
+        /// </summary>
+        /// <param name="fm2"></param>
+        /// <returns></returns>
+        public static FactorMultiplier Combine(FactorMultiplier fm1, FactorMultiplier fm2)
+        {
+            FactorMultiplier res = new FactorMultiplier(fm1.Factor);
+            if (fm1.Factor != fm2.Factor)
+            {
+                Core.Log($"Could not combine {fm1.FactorName} and {fm2.FactorName} multipliers.", LogLevel.Error);
+                return res;
+            }
+            res.BonusSum = fm1.BonusSum + fm2.BonusSum;
+            res.FreeMultiplier = fm1.FreeMultiplier * fm2.FreeMultiplier;
+            res.MinMultiplier = Math.Min(fm1.MinMultiplier, fm2.MinMultiplier);
+            res.MaxMultiplier = Math.Max(fm1.MaxMultiplier, fm2.MaxMultiplier);
+            return res;
+        }
 
         /// <summary>
         /// Adds a free (i.e. not restricted by crew cap) multiplier
@@ -92,6 +113,7 @@ namespace KerbalHealth
                 Core.Log($"Could not combine {FactorName} and {fm.FactorName} multipliers.", LogLevel.Error);
                 return this;
             }
+
             BonusSum += fm.BonusSum;
             FreeMultiplier *= fm.FreeMultiplier;
             MinMultiplier = Math.Min(MinMultiplier, fm.MinMultiplier);
@@ -99,28 +121,7 @@ namespace KerbalHealth
             return this;
         }
 
-        /// <summary>
-        /// Combines two factor multipliers into one, adding bonus sums and multiplying their multipliers
-        /// </summary>
-        /// <param name="fm2"></param>
-        /// <returns></returns>
-        public static FactorMultiplier Combine(FactorMultiplier fm1, FactorMultiplier fm2)
-        {
-            FactorMultiplier res = new FactorMultiplier(fm1.Factor);
-            if (fm1.Factor != fm2.Factor)
-            {
-                Core.Log($"Could not combine {fm1.FactorName} and {fm2.FactorName} multipliers.", LogLevel.Error);
-                return res;
-            }
-            res.BonusSum = fm1.BonusSum + fm2.BonusSum;
-            res.FreeMultiplier = fm1.FreeMultiplier * fm2.FreeMultiplier;
-            res.MinMultiplier = Math.Min(fm1.MinMultiplier, fm2.MinMultiplier);
-            res.MaxMultiplier = Math.Max(fm1.MaxMultiplier, fm2.MaxMultiplier);
-            return res;
-        }
-
-        public override string ToString() =>
-            IsTrivial
+        public override string ToString() => IsTrivial
                 ? ""
                 : $"{Factor?.Name ?? "All factors "} {Multiplier:P1} (bonus sum: {BonusSum}; free multiplier: {FreeMultiplier}: multipliers {MinMultiplier}..{MaxMultiplier})";
     }

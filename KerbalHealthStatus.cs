@@ -220,7 +220,7 @@ namespace KerbalHealth
             Core.Log($"Total effect:\n{totalEffect}");
         }
 
-        #endregion
+        #endregion EFFECTS
 
         #region CONDITIONS
 
@@ -733,6 +733,18 @@ namespace KerbalHealth
             protected set => factorsOriginal = value;
         }
 
+        public Dictionary<HealthFactor, double> Factors => HealthEffects.FactorMultipliers.ApplyToFactors(FactorsOriginal);
+
+        public double HPChangeFactors => Factors.Sum(kvp => kvp.Value);
+
+        public double Recuperation => HealthEffects.EffectiveRecuperation;
+
+        public double Decay => HealthEffects.Decay;
+
+        public double HPChangeMarginal => (Recuperation / 100) * (MaxHP - HP) - (Decay / 100) * HP;
+
+        public double HPChangeTotal => HPChangeFactors + HPChangeMarginal;
+
         public void CalculateFactors()
         {
             factorsDirty = false;
@@ -759,19 +771,7 @@ namespace KerbalHealth
             Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value)} HP/day.");
         }
 
-        public Dictionary<HealthFactor, double> Factors => HealthEffects.FactorMultipliers.ApplyToFactors(FactorsOriginal);
-
         public double GetFactorHPChange(HealthFactor factor) => Factors.ContainsKey(factor) ? Factors[factor] : 0;
-
-        public double HPChangeFactors => Factors.Sum(kvp => kvp.Value);
-
-        public double Recuperation => HealthEffects.EffectiveRecuperation;
-
-        public double Decay => HealthEffects.Decay;
-
-        public double HPChangeMarginal => (Recuperation / 100) * (MaxHP - HP) - (Decay / 100) * HP;
-
-        public double HPChangeTotal => HPChangeFactors + HPChangeMarginal;
 
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
