@@ -327,13 +327,13 @@ namespace KerbalHealth
             if (decay != 0)
                 res += Localizer.Format("#KH_Module_info3", decay.ToString("F1"));//"\nHealth decay: " +  + "%/day"
             if (IsSwitchable)
-                res += Localizer.Format("#KH_Module_Info_Configs", space.ToString("F1"), multiplyFactor, multiplier.ToString("F2"));
+                res += Localizer.Format("#KH_Module_Info_Configs", space.ToString("F1"), multiplyFactor, multiplier * 100);
             else
             {
                 if (space != 0)
                     res += Localizer.Format("#KH_Module_info6", space.ToString("F1"));//"\nSpace: " +
                 if (multiplier != 1)
-                    res += Localizer.Format("#KH_Module_info4", multiplyFactor, multiplier.ToString("F2"));//"\n" +  + "x " +
+                    res += Localizer.Format("#KH_Module_info4", multiplyFactor, multiplier * 100);//"\n" +  + "x " +
             }
             if (crewCap > 0)
                 res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
