@@ -302,7 +302,8 @@ namespace KerbalHealth
         {
             isActive = IsAlwaysActive || !isActive;
             UpdateGUIName();
-            GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            if (Core.IsInEditor)
+                GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
         [KSPEvent(name = "OnSwitchConfig", guiActiveEditor = true, guiName = "#KH_Module_SwitchConfig")]
@@ -312,7 +313,8 @@ namespace KerbalHealth
             if (IsSwitchable && Core.IsInEditor)
                 multiplierMode = !multiplierMode;
             UpdateGUIName();
-            GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            if (Core.IsInEditor)
+                GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
         public override string GetModuleDisplayName() => GetTitle(false);
