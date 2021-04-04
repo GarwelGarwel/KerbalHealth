@@ -367,20 +367,26 @@ namespace KerbalHealth
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
 
+        void LogInventory() =>
+            Core.Log($"{Name}'s ({PCM.trait}) inventory node contains {PCM.KerbalInventoryModule.InventoryItemCount} items: {PCM.InventoryNode.GetNodes("STOREDPART").Select(node => $"{Core.GetString(node, "partName", "N/A")} ")}");
+
+
         /// <summary>
         /// Turn a kerbal into a Tourist
         /// </summary>
         void MakeIncapacitated()
         {
-            if ((Trait != null) && (PCM.type == ProtoCrewMember.KerbalType.Tourist))
+            if (Trait != null && PCM.type == ProtoCrewMember.KerbalType.Tourist)
             {
                 Core.Log($"{Name} is already incapacitated.", LogLevel.Important);
                 return;
             }
+            LogInventory();
             Core.Log($"{Name} ({Trait}) is incapacitated.", LogLevel.Important);
             Trait = PCM.trait;
             PCM.type = ProtoCrewMember.KerbalType.Tourist;
             KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
+            LogInventory();
         }
 
         /// <summary>
@@ -390,6 +396,7 @@ namespace KerbalHealth
         {
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist)
                 return;  // Apparently, the kerbal has already been revived by another mod
+            LogInventory();
             Core.Log($"{Name} is becoming {Trait ?? "something strange"} again.", LogLevel.Important);
             if ((Trait != null) && (Trait != "Tourist"))
             {
@@ -397,6 +404,7 @@ namespace KerbalHealth
                 KerbalRoster.SetExperienceTrait(PCM, Trait);
             }
             Trait = null;
+            LogInventory();
         }
 
         #endregion CONDITIONS
@@ -855,9 +863,9 @@ namespace KerbalHealth
             && (Health >= 1)
             && (Conditions.Count == 0)
             && ((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost))
-            && (((HighLogic.CurrentGame.Mode != Game.Modes.CAREER) && ((HighLogic.CurrentGame.Mode != Game.Modes.SCIENCE_SANDBOX)) || ResearchAndDevelopment.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost)))
-            && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel)
-            && (ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) >= KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel);
+            && ((HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX) || ResearchAndDevelopment.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost))
+            && (!KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination || ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= Core.GetInternalFacilityLevel(KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel))
+            && (!KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination || ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment) >= Core.GetInternalFacilityLevel(KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel));
 
         /// <summary>
         /// Returns true if the kerbal is currently decontaminating (i.e. has 'Decontaminating' condition)
@@ -903,7 +911,6 @@ namespace KerbalHealth
                 Core.Log("Vessel is null. No radiation added.", LogLevel.Important);
                 return 0;
             }
-            Core.Log($"{v.vesselName} is in {v.mainBody.bodyName}'s SOI at an altitude of {v.altitude}, distance to Sun: {v.distanceToSun}");
 
             if (v.mainBody == Sun.Instance.sun)
                 return 1;
@@ -976,7 +983,7 @@ namespace KerbalHealth
 
                 return Exposure * bedPerDay;
             }
-            return IsDecontaminating ? KerbalHealthRadiationSettings.Instance.DecontaminationRate : 0;
+            return IsDecontaminating ? -KerbalHealthRadiationSettings.Instance.DecontaminationRate : 0;
         }
 
         public void StartDecontamination()
@@ -1044,10 +1051,16 @@ namespace KerbalHealth
             {
                 Radiation = GetRadiation();
                 AddDose(Radiation * interval / KSPUtil.dateTimeFormatter.Day);
-                if (Dose < 0)
-                    Dose = 0;
-                if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && IsDecontaminating)
-                    StopDecontamination();
+                if (IsDecontaminating)
+                {
+                    if (Dose <= 0)
+                    {
+                        Dose = 0;
+                        StopDecontamination();
+                    }
+                    if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                        StopDecontamination();
+                }
             }
 
             HP += HPChangeTotal * interval / KSPUtil.dateTimeFormatter.Day;
@@ -1079,7 +1092,7 @@ namespace KerbalHealth
             }
 
             // Train
-            if ((((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition(Condition_Training))))
+            if (((TrainingFor.Count > 0) && (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)) || ((PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) && HasCondition(Condition_Training)))
                 Train(interval);
 
             if (HasCondition(Condition_Exhausted))

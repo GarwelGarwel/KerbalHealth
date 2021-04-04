@@ -317,6 +317,8 @@ namespace KerbalHealth
             return res;
         }
 
+        public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
+
         public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
         public static CelestialBody GetPlanet(this CelestialBody body) =>

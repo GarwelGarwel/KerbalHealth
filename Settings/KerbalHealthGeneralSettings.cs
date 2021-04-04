@@ -1,5 +1,4 @@
 ﻿using KSP.Localization;
-using System.ComponentModel;
 
 namespace KerbalHealth
 {
@@ -23,7 +22,6 @@ namespace KerbalHealth
 
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
-                    DeathEnabled = true;
                     break;
             }
         }

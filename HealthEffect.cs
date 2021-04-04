@@ -20,13 +20,10 @@ namespace KerbalHealth
 
         public double MaxHP { get; set; } = 1;
 
-        // Max HP multiplier, 1 means no change, 2 means 200% etc.
         public double MaxHPBonus { get; set; } = 0;
 
-        // Max HP change
         public double ExhaustedStart { get; set; } = 1;
 
-        // Exhausted start level multiplier
         public double ExhaustedEnd { get; set; } = 1;
 
         public double Space { get; set; }
@@ -53,16 +50,12 @@ namespace KerbalHealth
 
         public double AccidentChance { get; set; } = 1;
 
-        // Accident chance multiplier
         public double PanicAttackChance { get; set; } = 1;
 
-        // Panic attack chance multiplier
         public double SicknessChance { get; set; } = 1;
 
-        // Getting infected/sick chance multiplier
         public double CureChance { get; set; } = 1;
 
-        // Sickness cure chance multiplier
         public double LoseImmunityChance { get; set; } = 1;
 
         public ConfigNode ConfigNode

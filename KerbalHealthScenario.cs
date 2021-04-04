@@ -482,11 +482,11 @@ namespace KerbalHealth
                 gridContent[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.HPChangeTotal.ToString("F2"))}</color>");
 
                 int i = 15;
-                    foreach (HealthFactor f in Core.Factors)
-                    {
-                        gridContent[i].SetOptionText($"<color=\"white\">{selectedKHS.GetFactorHPChange(f):N2}</color>");
-                        i += 2;
-                    }
+                foreach (HealthFactor f in Core.Factors)
+                {
+                    gridContent[i].SetOptionText($"<color=\"white\">{selectedKHS.GetFactorHPChange(f):N2}</color>");
+                    i += 2;
+                }
                 gridContent[i].children[0].SetOptionText($"<color=\"white\">{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
                 gridContent[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
                 gridContent[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
@@ -686,9 +686,8 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", LogLevel.Important);
 
             // If loading scenario for the first time, try to load settings from config
-            if (!node.HasValue("nextEventTime"))
-                if (LoadSettingsFromConfig())
-                    ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
+            if (!node.HasValue("nextEventTime") && LoadSettingsFromConfig())
+                ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
 
             version = new Version(node.GetString("version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
             nextEventTime = node.GetDouble("nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
@@ -819,7 +818,10 @@ namespace KerbalHealth
             Core.Log($"{n} kerbals are untrained: {msg}");
             if (n == 0)
                 return;
-            untrainedKerbalsWarningMessage = new ScreenMessage(Localizer.Format(n == 1 ? "#KH_TrainingAlert1" : "#KH_TrainingAlertMany", msg), KerbalHealthGeneralSettings.Instance.UpdateInterval, ScreenMessageStyle.UPPER_CENTER);
+            untrainedKerbalsWarningMessage = new ScreenMessage(
+                Localizer.Format(n == 1 ? "#KH_TrainingAlert1" : "#KH_TrainingAlertMany", msg),
+                KerbalHealthGeneralSettings.Instance.UpdateInterval,
+                ScreenMessageStyle.UPPER_CENTER);
             ScreenMessages.PostScreenMessage(untrainedKerbalsWarningMessage);
         }
 
@@ -1058,19 +1060,30 @@ namespace KerbalHealth
             if (selectedKHS == null)
                 return;
             string msg = "<color=\"white\">";
+            Func<bool> condition = () => false;
             Callback ok = null;
             if (selectedKHS.IsDecontaminating)
             {
                 Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.");
-                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.PCM.displayName);// + " is decontaminating. If you stop it, the process will stop and they will slowly regain health."
+
+                condition = () => selectedKHS.IsDecontaminating;
                 ok = () =>
                 {
                     selectedKHS.StopDecontamination();
                     Invalidate();
                 };
+
+                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.PCM.displayName);// + " is decontaminating. If you stop it, the process will stop and they will slowly regain health."
             }
             else
             {
+                condition = () => selectedKHS.IsReadyForDecontamination;
+                ok = () =>
+                {
+                    selectedKHS.StartDecontamination();
+                    Invalidate();
+                };
+
                 if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
                     msg += Localizer.Format("#KH_DeconMsg2", KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel, KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel); //"Your Astronaut Complex has to be <color=\"yellow\">level " +  + "</color> and your R&D Facility <color=\"yellow\">level " +  + "</color> to allow decontamination.\r\n\r\n"
 
@@ -1082,20 +1095,26 @@ namespace KerbalHealth
 
                 msg += Localizer.Format(
                     "#KH_DeconMsg4",
-                    selectedKHS.PCM.displayName,
+                    selectedKHS.PCM.nameWithGender,
                     (KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss * 100).ToString("N0"),
                     KerbalHealthRadiationSettings.Instance.DecontaminationRate.ToString("N0"),
                     Core.ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2)); //"<<1>> needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by <<2>>% during decontamination.\r\n\r\nAt a rate of <<3>> banana doses/day, it is expected to take about <color="yellow"><<4>></color>."
 
-                if (selectedKHS.IsReadyForDecontamination)
-                    ok = () =>
-                    {
-                        selectedKHS.StartDecontamination();
-                        Invalidate();
-                    };
-                else msg += Localizer.Format("#KH_DeconMsg5");//"</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>"
+                if (!selectedKHS.IsReadyForDecontamination)
+                {
+                    Core.Log($"{selectedKHS.Name} is {selectedKHS.PCM.rosterStatus}, has {selectedKHS.Health:P2} health and {selectedKHS.Conditions.Count} conditions. Game mode: {HighLogic.CurrentGame.Mode}. Astronaut Complex at level {ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex)}, R&D at level {ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment)}.", LogLevel.Important);
+                    msg += Localizer.Format("#KH_DeconMsg5");//"</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>"
+                }
             }
-            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Decontamination", msg, Localizer.Format("#KH_DeconWinTitle"), HighLogic.UISkin, new DialogGUIButton(Localizer.Format("#KH_DeconWinOKbtn"), ok, () => selectedKHS.IsReadyForDecontamination, true), new DialogGUIButton(Localizer.Format("#KH_DeconWinCancelbtn"), null, true)), false, HighLogic.UISkin);//"Decontamination""OK""Cancel"
+            PopupDialog.SpawnPopupDialog(new MultiOptionDialog(
+                "Decontamination", 
+                msg, 
+                Localizer.Format("#KH_DeconWinTitle"), 
+                HighLogic.UISkin, 
+                new DialogGUIButton(Localizer.Format("#KH_DeconWinOKbtn"), ok, condition, true),
+                new DialogGUIButton(Localizer.Format("#KH_DeconWinCancelbtn"), null, true)),
+                false,
+                HighLogic.UISkin);//"Decontamination""OK""Cancel"
         }
     }
 
