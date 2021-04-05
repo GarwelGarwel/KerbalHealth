@@ -341,7 +341,7 @@ namespace KerbalHealth
         /// <summary>
         /// Removes a condition with from the kerbal
         /// </summary>
-        /// <param name="condition">Name of condition to remove</param>
+        /// <param name="condition">Condition to remove</param>
         /// <param name="removeAll">If true, all conditions with the same name will be removed. Makes sense for additive conditions. Default is false</param>
         public void RemoveCondition(HealthCondition condition, bool removeAll = false)
         {
@@ -359,16 +359,16 @@ namespace KerbalHealth
             else n = Conditions.Remove(condition) ? 1 : 0;
             if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled && condition.RestoreHP)
                 HP -= condition.HP * n * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
-            if ((n > 0) && condition.Incapacitated && IsCapable)
+            if (n > 0 && condition.Incapacitated && IsCapable)
                 MakeCapable();
-            if ((n > 0) && condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Lost", Name, condition.Title), PCM);//"<color=\"white\">" +  + "</color> has lost <color=\"white\">" +  + "</color> condition!"
+            if (n > 0 && condition.Visible)
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Lost", Name, condition.Title), PCM);
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
 
-        void LogInventory() =>
-            Core.Log($"{Name}'s ({PCM.trait}) inventory node contains {PCM.KerbalInventoryModule.InventoryItemCount} items: {PCM.InventoryNode.GetNodes("STOREDPART").Select(node => $"{Core.GetString(node, "partName", "N/A")} ")}");
+        //void LogInventory() =>
+        //    Core.Log($"{Name}'s ({PCM.trait}) inventory node contains {PCM.KerbalInventoryModule.InventoryItemCount} items: {PCM.InventoryNode.GetNodes("STOREDPART").Select(node => $"{Core.GetString(node, "partName", "N/A")} ")}");
 
 
         /// <summary>
@@ -381,12 +381,12 @@ namespace KerbalHealth
                 Core.Log($"{Name} is already incapacitated.", LogLevel.Important);
                 return;
             }
-            LogInventory();
+            //LogInventory();
             Core.Log($"{Name} ({Trait}) is incapacitated.", LogLevel.Important);
             Trait = PCM.trait;
             PCM.type = ProtoCrewMember.KerbalType.Tourist;
             KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
-            LogInventory();
+            //LogInventory();
         }
 
         /// <summary>
@@ -394,17 +394,18 @@ namespace KerbalHealth
         /// </summary>
         void MakeCapable()
         {
+            // Check if the kerbal has already been revived by another mod
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist)
-                return;  // Apparently, the kerbal has already been revived by another mod
-            LogInventory();
+                return;
+            //LogInventory();
             Core.Log($"{Name} is becoming {Trait ?? "something strange"} again.", LogLevel.Important);
-            if ((Trait != null) && (Trait != "Tourist"))
+            if (Trait != null && Trait != "Tourist")
             {
                 PCM.type = ProtoCrewMember.KerbalType.Crew;
                 KerbalRoster.SetExperienceTrait(PCM, Trait);
             }
             Trait = null;
-            LogInventory();
+            //LogInventory();
         }
 
         #endregion CONDITIONS
