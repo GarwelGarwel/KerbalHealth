@@ -9,9 +9,10 @@ namespace KerbalHealth
     /// </summary>
     public class RadStorm
     {
-        public RadStormTargetType Target { get; set; }
-        
         string name;
+
+        public RadStormTargetType Target { get; set; }
+
         public string Name
         {
             get => (Target == RadStormTargetType.Vessel) ? Vessel?.vesselName : name;
@@ -19,7 +20,9 @@ namespace KerbalHealth
         }
 
         public string VesselId { get; set; }
+
         public double Magnitutde { get; set; }
+        
         public double Time { get; set; }
 
         /// <summary>
@@ -53,26 +56,12 @@ namespace KerbalHealth
                 {
                     case RadStormTargetType.Body:
                         return CelestialBody.orbit.altitude + Sun.Instance.sun.Radius;
+
                     case RadStormTargetType.Vessel:
                         return Vessel.GetDistanceToSun();
                 }
                 return 0;
             }
-        }
-
-        public bool Affects(ProtoCrewMember pcm)
-        {
-            Vessel v = pcm.GetVessel();
-            if (v == null)
-                return false;
-            switch (Target)
-            {
-                case RadStormTargetType.Body:
-                    return v.mainBody.GetPlanet()?.name == Name;
-                case RadStormTargetType.Vessel:
-                    return v.id.ToString() == VesselId;
-            }
-            return false;
         }
 
         public ConfigNode ConfigNode
@@ -128,5 +117,21 @@ namespace KerbalHealth
         public RadStorm(Vessel vessel) => Vessel = vessel;
 
         public RadStorm(ConfigNode node) => ConfigNode = node;
+
+        public bool Affects(ProtoCrewMember pcm)
+        {
+            Vessel v = pcm.GetVessel();
+            if (v == null)
+                return false;
+            switch (Target)
+            {
+                case RadStormTargetType.Body:
+                    return v.mainBody.GetPlanet()?.name == Name;
+
+                case RadStormTargetType.Vessel:
+                    return v.id.ToString() == VesselId;
+            }
+            return false;
+        }
     }
 }

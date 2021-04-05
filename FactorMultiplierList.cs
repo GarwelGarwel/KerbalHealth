@@ -1,23 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace KerbalHealth
 {
     public class FactorMultiplierList : List<FactorMultiplier>
     {
-        public new FactorMultiplier Add(FactorMultiplier factorMultiplier)
-        {
-            if (Find(factorMultiplier.Factor) == null)
-                base.Add(factorMultiplier);
-            return factorMultiplier;
-        }
-
-        public FactorMultiplier Find(HealthFactor factor) => Find(fm => fm.Factor == factor);
-
         public FactorMultiplier this[HealthFactor factor]
         {
             get => Find(fm => fm.Factor == factor) ?? new FactorMultiplier(factor);
+
             set
             {
                 if (factor != value.Factor)
@@ -25,6 +16,7 @@ namespace KerbalHealth
                     Core.Log($"Failed assignment operation for factor multiplier for {value.FactorName}. Index factor is {factor.Name}.", LogLevel.Error);
                     throw new IndexOutOfRangeException();
                 }
+
                 for (int i = 0; i < Count; i++)
                     if (this[i].Factor == value.Factor)
                     {
@@ -34,6 +26,26 @@ namespace KerbalHealth
                 Add(value);
             }
         }
+
+        public FactorMultiplierList()
+        {
+            foreach (HealthFactor f in Core.Factors)
+                base.Add(new FactorMultiplier(f));
+            base.Add(new FactorMultiplier());
+        }
+
+        public FactorMultiplierList(FactorMultiplierList list)
+            : base(list)
+        { }
+
+        public new FactorMultiplier Add(FactorMultiplier factorMultiplier)
+        {
+            if (Find(factorMultiplier.Factor) == null)
+                base.Add(factorMultiplier);
+            return factorMultiplier;
+        }
+
+        public FactorMultiplier Find(HealthFactor factor) => Find(fm => fm.Factor == factor);
 
         public double GetMultiplier(HealthFactor healthFactor) => this[healthFactor].Multiplier * this[null].Multiplier;
 
@@ -52,16 +64,5 @@ namespace KerbalHealth
                 this[fm.Factor].CombineWith(fm);
             return this;
         }
-
-        public FactorMultiplierList()
-        {
-            foreach (HealthFactor f in Core.Factors)
-                base.Add(new FactorMultiplier(f));
-            base.Add(new FactorMultiplier());
-        }
-
-        public FactorMultiplierList(FactorMultiplierList list)
-            : base(list)
-        { }
     }
 }

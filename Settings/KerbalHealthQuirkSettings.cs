@@ -1,4 +1,5 @@
 ﻿using KSP.Localization;
+
 namespace KerbalHealth
 {
     class KerbalHealthQuirkSettings : GameParameters.CustomParameterNode
@@ -19,16 +20,12 @@ namespace KerbalHealth
                     break;
 
                 case GameParameters.Preset.Normal:
-                    ConditionsEnabled = true;
                     ConditionsChance = 0.5f;
                     ConditionsEffect = 0.5f;
                     break;
 
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
-                    ConditionsEnabled = true;
-                    ConditionsChance = 1;
-                    ConditionsEffect = 1;
                     break;
             }
         }

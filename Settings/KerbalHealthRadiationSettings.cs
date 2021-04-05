@@ -1,4 +1,5 @@
 ﻿using KSP.Localization;
+
 namespace KerbalHealth
 {
     class KerbalHealthRadiationSettings : GameParameters.CustomParameterNode
@@ -18,21 +19,12 @@ namespace KerbalHealth
                     RadiationEnabled = false;
                     ShieldingEffect = 2;
                     RadStormsEnabled = false;
+                    RequireUpgradedFacilityForDecontamination = false;
                     break;
 
                 case GameParameters.Preset.Normal:
-                    RadiationEnabled = true;
-                    ShieldingEffect = 1;
-                    break;
-
                 case GameParameters.Preset.Moderate:
-                    RadiationEnabled = true;
-                    ShieldingEffect = 1;
-                    break;
-
                 case GameParameters.Preset.Hard:
-                    RadiationEnabled = true;
-                    ShieldingEffect = 1;
                     break;
             }
         }
@@ -61,8 +53,7 @@ namespace KerbalHealth
             DecontaminationHealthLoss = 0.75f;
             DecontaminationFundsCost = 100000;
             DecontaminationScienceCost = 1000;
-            DecontaminationAstronautComplexLevel = 3;
-            DecontaminationRNDLevel = 3;
+            RequireUpgradedFacilityForDecontamination = true;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
 
@@ -94,6 +85,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("DecontaminationHealthLoss", ref DecontaminationHealthLoss);
             settingsNode.TryGetValue("DecontaminationFundsCost", ref DecontaminationFundsCost);
             settingsNode.TryGetValue("DecontaminationScienceCost", ref DecontaminationScienceCost);
+            settingsNode.TryGetValue("RequireUpgradedFacilityForDecontamination", ref RequireUpgradedFacilityForDecontamination);
             settingsNode.TryGetValue("DecontaminationAstronautComplexLevel", ref DecontaminationAstronautComplexLevel);
             settingsNode.TryGetValue("DecontaminationRNDLevel", ref DecontaminationRNDLevel);
         }
@@ -157,10 +149,11 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationScienceCost", toolTip = "#KH_RS_DecontaminationScienceCost_desc", minValue = 0, maxValue = 10000, displayFormat = "N0")]//Decontamination Science Cost""How much Science each decontamination procedure costs (Career & Science modes)
         public float DecontaminationScienceCost = 1000;
 
-        [GameParameters.CustomIntParameterUI("#KH_RS_DecontaminationAstronautComplexLevel", toolTip = "#KH_RS_DecontaminationAstronautComplexLevel_desc", minValue = 0, maxValue = 3)]//Astronaut Complex Level for Decon""Min level of the Astronaut Complex for Decontamination
+        [GameParameters.CustomParameterUI("#KH_RS_DecontaminationUpgrades", toolTip = "#KH_RS_DecontaminationUpgrades_desc")]//Require Upgraded Facilities for Decontamination
+        public bool RequireUpgradedFacilityForDecontamination = true;
+
         public int DecontaminationAstronautComplexLevel = 3;
 
-        [GameParameters.CustomIntParameterUI("#KH_RS_DecontaminationRNDLevel", toolTip = "#KH_RS_DecontaminationRNDLevel_desc", minValue = 0, maxValue = 3)]//R&D Level for Decon""Min level of the Research & Development Facility for Decontamination
         public int DecontaminationRNDLevel = 3;
     }
 }

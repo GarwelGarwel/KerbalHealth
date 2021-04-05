@@ -27,6 +27,36 @@ namespace KerbalHealth
         /// </summary>
         public Logic Logic { get; set; } = new Logic();
 
+        public ConfigNode ConfigNode
+        {
+            set
+            {
+                if (value.HasValue("modification"))
+                    Modification = (OperationType)Enum.Parse(typeof(OperationType), value.GetValue("modification"), true);
+                Value = value.GetDouble("value", Modification == OperationType.Add ? 0 : 1);
+                UseAttribute = value.GetString("useAttribute");
+                Logic.ConfigNode = value;
+            }
+        }
+
+        public ChanceModifier(ConfigNode node) => ConfigNode = node;
+
+        /// <summary>
+        /// Applies all modifiers in the list to baseValue chance for pcm and returns resulting chance
+        /// </summary>
+        /// <param name="modifiers"></param>
+        /// <param name="baseValue"></param>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public static double Calculate(List<ChanceModifier> modifiers, double baseValue, ProtoCrewMember pcm)
+        {
+            double v = baseValue;
+            foreach (ChanceModifier m in modifiers)
+                v = m.Calculate(v, pcm);
+            Core.Log($"Base chance: {baseValue:P1}; modified chance: {v:P1}.");
+            return v;
+        }
+
         /// <summary>
         /// Returns the chance for pcm modified according to this modifier's rules
         /// </summary>
@@ -45,6 +75,7 @@ namespace KerbalHealth
                     case "courage":
                         v *= pcm.courage;
                         break;
+
                     case "stupidity":
                         v *= pcm.stupidity;
                         break;
@@ -55,43 +86,17 @@ namespace KerbalHealth
                 case OperationType.Multiply:
                     v *= baseValue;
                     break;
+
                 case OperationType.Add:
                     v += baseValue;
                     break;
+
                 case OperationType.Power:
                     v = Math.Pow(baseValue, v);
                     break;
             }
 
             return v;
-        }
-
-        /// <summary>
-        /// Applies all modifiers in the list to baseValue chance for pcm and returns resulting chance
-        /// </summary>
-        /// <param name="modifiers"></param>
-        /// <param name="baseValue"></param>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public static double Calculate(List<ChanceModifier> modifiers, double baseValue, ProtoCrewMember pcm)
-        {
-            double v = baseValue;
-            foreach (ChanceModifier m in modifiers)
-                v = m.Calculate(v, pcm);
-            Core.Log($"Base chance: {baseValue:P1}; modified chance: {v:P1}.");
-            return v;
-        }
-
-        public ConfigNode ConfigNode
-        {
-            set
-            {
-                if (value.HasValue("modification"))
-                    Modification = (OperationType)Enum.Parse(typeof(OperationType), value.GetValue("modification"), true);
-                Value = value.GetDouble("value", Modification == OperationType.Add ? 0 : 1);
-                UseAttribute = value.GetString("useAttribute");
-                Logic.ConfigNode = value;
-            }
         }
 
         public override string ToString()
@@ -102,9 +107,11 @@ namespace KerbalHealth
                 case OperationType.Multiply:
                     res = "Multiply base chance by ";
                     break;
+
                 case OperationType.Add:
                     res = "Increase base chance by ";
                     break;
+
                 case OperationType.Power:
                     res = "Base chance's power of ";
                     break;
@@ -112,7 +119,5 @@ namespace KerbalHealth
             res += $"{Value}\r\nLogic: {Logic}";
             return res;
         }
-
-        public ChanceModifier(ConfigNode node) => ConfigNode = node;
     }
 }

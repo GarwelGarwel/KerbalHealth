@@ -79,6 +79,7 @@
   <ItemGroup>
     <Compile Include="FactorMultiplier.cs" />
     <Compile Include="FactorMultiplierList.cs" />
+    <Compile Include="KerbalComparer.cs" />
     <Compile Include="RadStorm.cs" />
     <Compile Include="RadStormType.cs" />
     <Compile Include="Factors\StressFactor.cs" />
@@ -120,6 +121,7 @@
     <Content Include="GameData\KerbalHealth\icon.png" />
     <None Include="GameData\KerbalHealth\Localization\en-us.cfg" />
     <None Include="GameData\KerbalHealth\Localization\zh-cn.cfg" />
+    <None Include="GameData\KerbalHealth\Patches\KHRationalResources.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHDMOS.cfg" />
     <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>

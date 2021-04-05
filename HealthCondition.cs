@@ -29,7 +29,7 @@ namespace KerbalHealth
         /// </summary>
         public string Description { get; set; } = "";
 
-            /// <summary>
+        /// <summary>
         /// Whether this condition should be visible to the player
         /// </summary>
         public bool Visible { get; set; } = true;
@@ -43,10 +43,6 @@ namespace KerbalHealth
         /// If either of these conditions exist, this one will not be randomly acquired
         /// </summary>
         public List<string> IncompatibleConditions { get; set; } = new List<string>();
-
-        public bool IsCompatibleWith(string condition) => !IncompatibleConditions.Contains(condition);
-
-        public bool IsCompatibleWith(List<HealthCondition> conditions) => !conditions.Any(hc => IncompatibleConditions.Contains(hc.Name));
 
         /// <summary>
         /// Logic required for this health condition to randomly appear
@@ -84,18 +80,9 @@ namespace KerbalHealth
         public List<ChanceModifier> ChanceModifiers { get; set; }
 
         /// <summary>
-        /// Returns actual chance per day of this condition considering all modifiers
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
-
-        /// <summary>
         /// Possible outcomes of the condition; it is recommended to have at least one so that it may disappear
         /// </summary>
         public List<Outcome> Outcomes { get; set; } = new List<Outcome>();
-
-        public override string ToString() => $"{Title} ({Name}): {Description}";
 
         public ConfigNode ConfigNode
         {
@@ -119,5 +106,18 @@ namespace KerbalHealth
         }
 
         public HealthCondition(ConfigNode n) => ConfigNode = n;
+
+        public bool IsCompatibleWith(string condition) => !IncompatibleConditions.Contains(condition);
+
+        public bool IsCompatibleWith(List<HealthCondition> conditions) => !conditions.Any(hc => IncompatibleConditions.Contains(hc.Name));
+
+        /// <summary>
+        /// Returns actual chance per day of this condition considering all modifiers
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
+
+        public override string ToString() => $"{Title} ({Name}): {Description}";
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace KerbalHealth
@@ -9,6 +8,21 @@ namespace KerbalHealth
     /// </summary>
     public class KerbalHealthList : Dictionary<string, KerbalHealthStatus>
     {
+        public new KerbalHealthStatus this[string name]
+        {
+            get => ContainsKey(name) ? base[name] : null;
+            set => base[name] = value;
+        }
+
+        public KerbalHealthStatus this[ProtoCrewMember pcm]
+        {
+            get => ContainsKey(pcm.name) ? base[pcm.name] : null;
+            set => base[pcm.name] = value;
+        }
+
+        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
+        { }
+
         /// <summary>
         /// Adds a kerbal to the list, unless already exists
         /// </summary>
@@ -67,35 +81,11 @@ namespace KerbalHealth
             Core.Log($"KerbalHealthList updated: {Count} kerbals found.", LogLevel.Important);
         }
 
-        void RemoveUntrackable()
-        {
-            List<string> toRemove = new List<string>(Values
-                .Where(khs => !khs.PCM.IsTrackable() && !khs.IsFrozen)
-                .Select(khs => khs.Name));
-            foreach (string name in toRemove)
-            {
-                Core.Log($"{name} is not trackable anymore. Marking for removal.");
-                Remove(name);
-            }
-        }
-
         public void Update(double interval)
         {
             RemoveUntrackable();
             foreach (KerbalHealthStatus khs in Values)
                 khs.Update(interval);
-        }
-
-        public new KerbalHealthStatus this[string name]
-        {
-            get => ContainsKey(name) ? base[name] : null;
-            set => base[name] = value;
-        }
-
-        public KerbalHealthStatus this[ProtoCrewMember pcm]
-        {
-            get => ContainsKey(pcm.name) ? base[pcm.name] : null;
-            set => base[pcm.name] = value;
         }
 
         /// <summary>
@@ -110,7 +100,16 @@ namespace KerbalHealth
             return s.Trim();
         }
 
-        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
-        { }
+        void RemoveUntrackable()
+        {
+            List<string> toRemove = new List<string>(Values
+                .Where(khs => !khs.PCM.IsTrackable() && !khs.IsFrozen)
+                .Select(khs => khs.Name));
+            foreach (string name in toRemove)
+            {
+                Core.Log($"{name} is not trackable anymore. Marking for removal.");
+                Remove(name);
+            }
+        }
     }
 }

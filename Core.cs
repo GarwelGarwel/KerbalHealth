@@ -256,7 +256,7 @@ namespace KerbalHealth
             pcm != null
             && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
             || pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available
-            || pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001);
+            || pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001);  // Used by DeepFreeze
 
         /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
@@ -309,13 +309,10 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="allParts"></param>
         /// <returns></returns>
-        public static List<ModuleKerbalHealth> GetTrainingCapableParts(List<Part> allParts)
-        {
-            List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
-            foreach (Part p in allParts)
-                res.AddRange(p.FindModulesImplementing<ModuleKerbalHealth>().Where(mkh => mkh.complexity != 0));
-            return res;
-        }
+        public static List<ModuleKerbalHealth> GetTrainingCapableParts(List<Part> allParts) =>
+            allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
+
+        public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
 
         public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
@@ -394,7 +391,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
-            if (Double.IsNaN(time) || (time == 0))
+            if (double.IsNaN(time) || (time == 0))
                 return "—";
             if (time > KSPUtil.dateTimeFormatter.Year * 10)
                 return "10y+";
@@ -452,7 +449,8 @@ namespace KerbalHealth
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
-            if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != (ProtoCrewMember.RosterStatus﻿)9001))
+            if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled
+                || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != (ProtoCrewMember.RosterStatus﻿)9001))
                 ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 

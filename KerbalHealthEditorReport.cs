@@ -1,33 +1,37 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using UnityEngine;
+﻿using KSP.Localization;
 using KSP.UI.Screens;
-using KSP.Localization;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnityEngine;
 
 namespace KerbalHealth
 {
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
     class KerbalHealthEditorReport : MonoBehaviour
     {
+        static bool healthModulesEnabled = true;
+        static bool trainingEnabled = true;
+
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
         bool dirty = false;
         Rect reportPosition = new Rect(0.5f, 0.5f, 420, 50);
-        
+
         // Health Report window
         PopupDialog reportWindow;
-        
+
         // Health Report grid's labels
-        System.Collections.Generic.List<DialogGUIBase> gridContent;
-        
+        List<DialogGUIBase> gridContent;
+
         DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
 
         // # of columns in Health Report
         int colNum = 4;
-        
-        static bool healthModulesEnabled = true;
-        static bool trainingEnabled = true;
+
+        public static bool HealthModulesEnabled => healthModulesEnabled;
+
+        public static bool TrainingEnabled => trainingEnabled;
 
         public void Start()
         {
@@ -96,12 +100,14 @@ namespace KerbalHealth
                 f.SetEnabledInEditor(state);
                 Invalidate();
             })));
+
             if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), state =>
                 {
                     trainingEnabled = state;
                     Invalidate();
                 }));
+
             checklist.Add(new DialogGUIToggle(healthModulesEnabled, Localizer.Format("#KH_ER_HealthModules"), state =>
             {
                 healthModulesEnabled = state;
@@ -128,12 +134,12 @@ namespace KerbalHealth
                         colNum,
                         gridContent.ToArray()),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Space")}</color>", false),//Space: 
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Space")}</color>", false),//Space:
                         spaceLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Recuperation")}</color>", false),//Recuperation: 
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Recuperation")}</color>", false),//Recuperation:
                         recupLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Shielding")}</color>", false),//Shielding: 
+                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Shielding")}</color>", false),//Shielding:
                         shieldingLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
                         new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Exposure")}</color>", false),
                         exposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
@@ -160,10 +166,6 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        public static bool HealthModulesEnabled => healthModulesEnabled;
-
-        public static bool TrainingEnabled => trainingEnabled;
-
         public void OnResetButtonSelected()
         {
             foreach (HealthFactor f in Core.Factors)
@@ -181,6 +183,7 @@ namespace KerbalHealth
 
             List<string> s = new List<string>();
             List<string> f = new List<string>();
+
             foreach (KerbalHealthStatus khs in ShipConstruction.ShipManifest.GetAllCrew(false)
                 .Select(pcm => Core.KerbalHealthList[pcm])
                 .Where(khs => khs != null))
@@ -233,9 +236,6 @@ namespace KerbalHealth
                 reportWindow.Dismiss();
             }
         }
-
-        double TrainingTime(KerbalHealthStatus khs, List<ModuleKerbalHealth> modules) =>
-            modules.Sum(mkh => (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh)) / khs.TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
 
         public void Update()
         {
@@ -322,5 +322,10 @@ namespace KerbalHealth
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
             Core.Log("KerbalHealthEditorReport.OnDisable finished.");
         }
+
+        double TrainingTime(KerbalHealthStatus khs, List<ModuleKerbalHealth> modules) =>
+            modules.Sum(mkh => (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh))
+            / khs.TrainingPerDay
+            * KSPUtil.dateTimeFormatter.Day;
     }
 }

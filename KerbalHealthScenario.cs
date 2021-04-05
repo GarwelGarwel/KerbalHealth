@@ -37,7 +37,6 @@ namespace KerbalHealth
 
         // Button handles
         ApplicationLauncherButton appLauncherButton;
-
         IButton toolbarButton;
 
         // List of displayed kerbal, sorted according to current settings
@@ -53,7 +52,7 @@ namespace KerbalHealth
         Rect monitorPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
 
         // Health Monitor grid's labels
-        System.Collections.Generic.List<DialogGUIBase> gridContent;
+        List<DialogGUIBase> gridContent;
 
         // Currently selected kerbal for details view, null if list is shown
         KerbalHealthStatus selectedKHS = null;
@@ -482,11 +481,11 @@ namespace KerbalHealth
                 gridContent[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.HPChangeTotal.ToString("F2"))}</color>");
 
                 int i = 15;
-                    foreach (HealthFactor f in Core.Factors)
-                    {
-                        gridContent[i].SetOptionText($"<color=\"white\">{selectedKHS.GetFactorHPChange(f):N2}</color>");
-                        i += 2;
-                    }
+                foreach (HealthFactor f in Core.Factors)
+                {
+                    gridContent[i].SetOptionText($"<color=\"white\">{selectedKHS.GetFactorHPChange(f):N2}</color>");
+                    i += 2;
+                }
                 gridContent[i].children[0].SetOptionText($"<color=\"white\">{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
                 gridContent[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
                 gridContent[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
@@ -539,15 +538,15 @@ namespace KerbalHealth
                 };
 
                 // Initializing Health Monitor's grid with empty labels, to be filled in Update()
-                for (int i = FirstLine; i < FirstLine + LineCount; i++)
+                for (int i = 0; i < LineCount; i++)
                 {
                     for (int j = 0; j < colNumMain - 1; j++)
                         gridContent.Add(new DialogGUILabel("", true));
                     gridContent.Add(new DialogGUIButton<int>(Localizer.Format("#KH_HM_Details"), n =>
                     {
-                        selectedKHS = kerbals.Values[n];
+                        selectedKHS = kerbals.Values[FirstLine + n];
                         Invalidate();
-                    }, i));//"Details"
+                    }, i));
                 }
 
                 layout.AddChild(new DialogGUIGridLayout(
@@ -686,9 +685,8 @@ namespace KerbalHealth
             Core.Log("KerbalHealthScenario.OnLoad", LogLevel.Important);
 
             // If loading scenario for the first time, try to load settings from config
-            if (!node.HasValue("nextEventTime"))
-                if (LoadSettingsFromConfig())
-                    ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
+            if (!node.HasValue("nextEventTime") && LoadSettingsFromConfig())
+                ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
 
             version = new Version(node.GetString("version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
             nextEventTime = node.GetDouble("nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
@@ -819,7 +817,10 @@ namespace KerbalHealth
             Core.Log($"{n} kerbals are untrained: {msg}");
             if (n == 0)
                 return;
-            untrainedKerbalsWarningMessage = new ScreenMessage(Localizer.Format(n == 1 ? "#KH_TrainingAlert1" : "#KH_TrainingAlertMany", msg), KerbalHealthGeneralSettings.Instance.UpdateInterval, ScreenMessageStyle.UPPER_CENTER);
+            untrainedKerbalsWarningMessage = new ScreenMessage(
+                Localizer.Format(n == 1 ? "#KH_TrainingAlert1" : "#KH_TrainingAlertMany", msg),
+                KerbalHealthGeneralSettings.Instance.UpdateInterval,
+                ScreenMessageStyle.UPPER_CENTER);
             ScreenMessages.PostScreenMessage(untrainedKerbalsWarningMessage);
         }
 
@@ -922,13 +923,13 @@ namespace KerbalHealth
                         int j = 0;
                         double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun) * KerbalHealthRadiationSettings.Instance.RadStormMagnitude;
                         Core.Log($"Radstorm {i} hits {radStorms[i].Name} with magnitude of {m} ({radStorms[i].Magnitutde} before modifiers).", LogLevel.Important);
-                        string s = Localizer.Format("#KH_RadStorm_report1", Core.PrefixFormat(m, 5), radStorms[i].Name);//Radstorm of nominal magnitude <color=\"yellow\">" + Core.PrefixFormat(m, 5) + " BED</color> has just hit <color=\"yellow\">" + radStorms[i].Name + "</color>. Affected kerbals:";
+                        string s = Localizer.Format("#KH_RadStorm_report1", Core.PrefixFormat(m, 5), radStorms[i].Name);
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values.Where(khs => radStorms[i].Affects(khs.PCM)))
                         {
                             double d = m * KerbalHealthStatus.GetCosmicRadiationRate(khs.PCM.GetVessel()) * khs.ShelterExposure;
                             khs.AddDose(d);
                             Core.Log($"The radstorm irradiates {khs.Name} by {d:N0} BED.");
-                            s += Localizer.Format("#KH_RadStorm_report2", khs.Name, Core.PrefixFormat(d, 5)); //\r\n- <color=\"yellow\">" + khs.Name + "</color> for <color=\"yellow\">" + Core.PrefixFormat(d, 5) + " BED</color>
+                            s += Localizer.Format("#KH_RadStorm_report2", khs.Name, Core.PrefixFormat(d, 5));
                             j++;
                         }
                         if (j > 0)
@@ -984,7 +985,9 @@ namespace KerbalHealth
                     }
                 }
 
-                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && KerbalHealthRadiationSettings.Instance.RadStormsEnabled && !KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
+                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled
+                    && KerbalHealthRadiationSettings.Instance.RadStormsEnabled
+                    && !KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
                     SpawnRadStorms();
 
                 nextEventTime += GetNextEventInterval();
@@ -1036,21 +1039,36 @@ namespace KerbalHealth
             if (selectedKHS == null)
                 return;
             string msg = (selectedKHS.TrainingVessel != null)
-               ? Localizer.Format("#KH_TI_KerbalTraining", selectedKHS.Name, selectedKHS.TrainingVessel, selectedKHS.TrainingFor.Count, (selectedKHS.TrainingLevel * 100).ToString("N1"), (Core.TrainingCap * 100).ToString("N0"), Core.ParseUT(selectedKHS.TrainingETA, false, 10)) //<color=\"white\">" +  + "</color> is training for <color=\"white\">" +  + "</color> (" +  + " parts).\r\nProgress: <color=\"white\">" +  + "% / " +  + "%</color>.\r\n<color=\"white\">" +  + "</color> to go.
-               : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);//<color=\"white\">" + + "</color> is not currently training.
+               ? Localizer.Format(
+                   "#KH_TI_KerbalTraining",
+                   selectedKHS.Name,
+                   selectedKHS.TrainingVessel,
+                   selectedKHS.TrainingFor.Count,
+                   (selectedKHS.TrainingLevel * 100).ToString("N1"),
+                   (Core.TrainingCap * 100).ToString("N0"),
+                   Core.ParseUT(selectedKHS.TrainingETA, false, 10))
+               : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
             if (selectedKHS.TrainedVessels.Count > 0)
             {
-                msg += Localizer.Format("#KH_TI_TrainedVessels", selectedKHS.Name);//\r\n\n" + + " is trained for the following vessels:
+                msg += Localizer.Format("#KH_TI_TrainedVessels", selectedKHS.Name);
                 foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
-                    msg += Localizer.Format("#KH_TI_TrainedVessel", kvp.Key, (kvp.Value * 100).ToString("N1"));//\r\n- <color=\"white\">" + + ":\t" +  + "%</color>
+                    msg += Localizer.Format("#KH_TI_TrainedVessel", kvp.Key, (kvp.Value * 100).ToString("N1"));
             }
             if (selectedKHS.FamiliarPartTypes.Count > 0)
             {
-                msg += Localizer.Format("#KH_TI_FamiliarParts", selectedKHS.Name);//\r\n\n<color=\"white\">" + + "</color> is familiar with the following part types:
+                msg += Localizer.Format("#KH_TI_FamiliarParts", selectedKHS.Name);
                 foreach (string s in selectedKHS.FamiliarPartTypes)
                     msg += $"\r\n- <color=\"white\">{PartLoader.getPartInfoByName(s)?.title ?? s}</color>";
             }
-            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Training Info", msg, Localizer.Format("#KH_TI_Title"), HighLogic.UISkin, new DialogGUIButton(Localizer.Format("#KH_TI_Close"), null, true)), false, HighLogic.UISkin);//Training Info""Close
+            PopupDialog.SpawnPopupDialog(
+                new MultiOptionDialog(
+                    "Training Info",
+                    msg,
+                    Localizer.Format("#KH_TI_Title"),
+                    HighLogic.UISkin,
+                    new DialogGUIButton(Localizer.Format("#KH_TI_Close"), null, true)),
+                false,
+                HighLogic.UISkin);
         }
 
         void OnDecontamination()
@@ -1058,83 +1076,64 @@ namespace KerbalHealth
             if (selectedKHS == null)
                 return;
             string msg = "<color=\"white\">";
+            Func<bool> condition = () => false;
             Callback ok = null;
             if (selectedKHS.IsDecontaminating)
             {
                 Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.");
-                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.PCM.displayName);// + " is decontaminating. If you stop it, the process will stop and they will slowly regain health."
+
+                condition = () => selectedKHS.IsDecontaminating;
                 ok = () =>
                 {
                     selectedKHS.StopDecontamination();
                     Invalidate();
                 };
+
+                msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.PCM.nameWithGender);
             }
             else
             {
-                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
-                    msg += Localizer.Format("#KH_DeconMsg2", KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel, KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel); //"Your Astronaut Complex has to be <color=\"yellow\">level " +  + "</color> and your R&D Facility <color=\"yellow\">level " +  + "</color> to allow decontamination.\r\n\r\n"
+                condition = () => selectedKHS.IsReadyForDecontamination;
+                ok = () =>
+                {
+                    selectedKHS.StartDecontamination();
+                    Invalidate();
+                };
+
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination)
+                    msg += Localizer.Format(
+                        "#KH_DeconMsg2",
+                        KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel,
+                        KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel);
 
                 if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX))
                     msg += Localizer.Format(
                         "#KH_DeconMsg3",
                         HighLogic.CurrentGame.Mode == Game.Modes.CAREER ? Localizer.Format("#KH_DeconMsg3_CAREERMode", KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost.ToString("N0")) : "",
-                        KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost.ToString("N0")); //"Decontamination will cost <color=\"yellow\">" +  +  + " science</color>. "( <<1>>" funds and ")
+                        KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost.ToString("N0"));
 
                 msg += Localizer.Format(
                     "#KH_DeconMsg4",
-                    selectedKHS.PCM.displayName,
+                    selectedKHS.PCM.nameWithGender,
                     (KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss * 100).ToString("N0"),
                     KerbalHealthRadiationSettings.Instance.DecontaminationRate.ToString("N0"),
-                    Core.ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2)); //"<<1>> needs to be at KSC at 100% health and have no health conditions for the process to start. Their health will be reduced by <<2>>% during decontamination.\r\n\r\nAt a rate of <<3>> banana doses/day, it is expected to take about <color="yellow"><<4>></color>."
+                    Core.ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2));
 
-                if (selectedKHS.IsReadyForDecontamination)
-                    ok = () =>
-                    {
-                        selectedKHS.StartDecontamination();
-                        Invalidate();
-                    };
-                else msg += Localizer.Format("#KH_DeconMsg5");//"</color>\r\n<align=\"center\"><color=\"red\">You cannot start decontamination now.</color></align>"
+                if (!selectedKHS.IsReadyForDecontamination)
+                {
+                    Core.Log($"{selectedKHS.Name} is {selectedKHS.PCM.rosterStatus}, has {selectedKHS.Health:P2} health and {selectedKHS.Conditions.Count} conditions. Game mode: {HighLogic.CurrentGame.Mode}. Astronaut Complex at level {ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex)}, R&D at level {ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment)}.", LogLevel.Important);
+                    msg += Localizer.Format("#KH_DeconMsg5");
+                }
             }
-            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("Decontamination", msg, Localizer.Format("#KH_DeconWinTitle"), HighLogic.UISkin, new DialogGUIButton(Localizer.Format("#KH_DeconWinOKbtn"), ok, () => selectedKHS.IsReadyForDecontamination, true), new DialogGUIButton(Localizer.Format("#KH_DeconWinCancelbtn"), null, true)), false, HighLogic.UISkin);//"Decontamination""OK""Cancel"
-        }
-    }
-
-    /// <summary>
-    /// Class used for ordering vessels in Health Monitor
-    /// </summary>
-    public class KerbalComparer : Comparer<ProtoCrewMember>
-    {
-        readonly bool sortByLocation;
-
-        public KerbalComparer(bool sortByLocation) => this.sortByLocation = sortByLocation;
-
-        public static int CompareLocation(ProtoCrewMember x, ProtoCrewMember y)
-        {
-            if (x.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
-                return y.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? 1 : 0;
-            if (y.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
-                return -1;
-            Vessel xv = x.GetVessel(), yv = y.GetVessel();
-            if (HighLogic.LoadedSceneIsFlight)
-            {
-                if (xv.isActiveVessel)
-                    return yv.isActiveVessel ? 0 : -1;
-                if (yv.isActiveVessel)
-                    return 1;
-            }
-            if (xv.isEVA)
-                return yv.isEVA ? 0 : -1;
-            return yv.isEVA ? 1 : string.Compare(xv.vesselName, yv.vesselName, true);
-        }
-
-        public override int Compare(ProtoCrewMember x, ProtoCrewMember y)
-        {
-            if (sortByLocation)
-            {
-                int l = CompareLocation(x, y);
-                return (l != 0) ? l : string.Compare(x.name, y.name, true);
-            }
-            return string.Compare(x.name, y.name, true);
+            PopupDialog.SpawnPopupDialog(new MultiOptionDialog(
+                "Decontamination", 
+                msg, 
+                Localizer.Format("#KH_DeconWinTitle"), 
+                HighLogic.UISkin, 
+                new DialogGUIButton(Localizer.Format("#KH_DeconWinOKbtn"), ok, condition, true),
+                new DialogGUIButton(Localizer.Format("#KH_DeconWinCancelbtn"), null, true)),
+                false,
+                HighLogic.UISkin);
         }
     }
 }

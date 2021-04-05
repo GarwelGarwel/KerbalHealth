@@ -43,7 +43,8 @@ namespace KerbalHealth
 
             if (!isActiveAndEnabled || !vessel.IsControllable || !KerbalHealthGeneralSettings.Instance.modEnabled || !KerbalHealthRadiationSettings.Instance.RadiationEnabled || KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
             {
-                Core.Log($"{vessel.vesselName} is not controllable, the ModuleHealthEnvironmentSensor is inactive, radiation feature is disabled or Kerbalism radiation is used. No data is displayed by {part.name}.");
+                if (Fields["displayData"].guiActive)
+                    Core.Log($"{vessel.vesselName} is not controllable, the ModuleHealthEnvironmentSensor in {part.name} is inactive, radiation feature is disabled or Kerbalism radiation is used. No environment data is displayed.");
                 Fields["displayData"].guiActive = false;
                 return;
             }

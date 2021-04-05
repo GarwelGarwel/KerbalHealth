@@ -28,13 +28,6 @@ namespace KerbalHealth
         /// </summary>
         public List<ChanceModifier> ChanceModifiers { get; set; }
 
-        /// <summary>
-        /// Returns actual chance per day of this outcome considering all modifiers
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
-
         public ConfigNode ConfigNode
         {
             set
@@ -46,9 +39,16 @@ namespace KerbalHealth
             }
         }
 
+        public Outcome(ConfigNode node) => ConfigNode = node;
+
+        /// <summary>
+        /// Returns actual chance per day of this outcome considering all modifiers
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
+
         public override string ToString() =>
             $"{(RemoveOldCondition ? (Condition.Length == 0 ? "Remove current" : $"Change to {Condition}") : $"Add {Condition}")} condition with a chance of {ChancePerDay} with {ChanceModifiers.Count} chance modifiers";
-
-        public Outcome(ConfigNode node) => ConfigNode = node;
     }
 }
