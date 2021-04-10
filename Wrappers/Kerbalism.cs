@@ -29,7 +29,8 @@ namespace KerbalHealth.Wrappers
             {
                 if (kerbalismFound == null)
                 {
-                    kerbalismAssembly = AssemblyLoader.loadedAssemblies.FirstOrDefault(la => la.name == "Kerbalism18")?.assembly;
+                    kerbalismAssembly = AssemblyLoader.loadedAssemblies
+                        .FirstOrDefault(la => new AssemblyName(la.assembly.FullName)?.Name == "Kerbalism")?.assembly;
                     kerbalismFound = kerbalismAssembly != null;
 
                     if (kerbalismAssembly == null)

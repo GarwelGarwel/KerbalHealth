@@ -84,7 +84,8 @@ namespace KerbalHealth
             if (Core.IsInEditor)
                 return;
 
-            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);  // This needs to be run even if the mod is disabled, so that its settings can be reset
+            // This needs to be run even if the mod is disabled, so that its settings can be reset:
+            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);
 
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
@@ -107,28 +108,7 @@ namespace KerbalHealth
             GameEvents.OnProgressComplete.Add(OnProgressComplete);
             GameEvents.onVesselWasModified.Add(onVesselWasModified);
 
-            if (!DFWrapper.InstanceExists)
-            {
-                Core.Log("Initializing DFWrapper...", LogLevel.Important);
-                DFWrapper.InitDFWrapper();
-                if (DFWrapper.InstanceExists)
-                    Core.Log("DFWrapper initialized.", LogLevel.Important);
-                else Core.Log("DeepFreeze not found.", LogLevel.Important);
-            }
-
-            if (DFWrapper.InstanceExists)
-            {
-                EventData<Part, ProtoCrewMember> dfEvent;
-                dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
-                if (dfEvent != null)
-                    dfEvent.Add(OnKerbalFrozen);
-                else Core.Log("Could not find onKerbalFrozen event!", LogLevel.Error);
-                dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
-                if (dfEvent != null)
-                    dfEvent.Add(OnKerbalThaw);
-                else Core.Log("Could not find onKerbalThaw event!", LogLevel.Error);
-            }
-
+            SetupDeepFreeze();
             SetupKerbalism();
 
             // Automatically updating settings from older versions
@@ -756,14 +736,37 @@ namespace KerbalHealth
             return true;
         }
 
+        private void SetupDeepFreeze()
+        {
+            if (!DFWrapper.InstanceExists)
+            {
+                Core.Log("Initializing DFWrapper...", LogLevel.Important);
+                DFWrapper.InitDFWrapper();
+                if (DFWrapper.InstanceExists)
+                    Core.Log("DFWrapper initialized.", LogLevel.Important);
+                else Core.Log("DeepFreeze not found.", LogLevel.Important);
+            }
+
+            if (DFWrapper.InstanceExists)
+            {
+                EventData<Part, ProtoCrewMember> dfEvent;
+                dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
+                if (dfEvent != null)
+                    dfEvent.Add(OnKerbalFrozen);
+                else Core.Log("Could not find onKerbalFrozen event!", LogLevel.Error);
+                dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
+                if (dfEvent != null)
+                    dfEvent.Add(OnKerbalThaw);
+                else Core.Log("Could not find onKerbalThaw event!", LogLevel.Error);
+            }
+        }
+
         void SetupKerbalism()
         {
             if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.KerbalismIntegration && Kerbalism.Found && !Kerbalism.IsSetup)
             {
                 Core.Log("Disabling some Kerbalism features for better integration with Kerbal Health.", LogLevel.Important);
-                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled)
-                    Kerbalism.SetRuleProperty("radiation", "degeneration", 0);
-                else Kerbalism.SetRuleProperty("radiation", "degeneration", 1);
+                Kerbalism.SetRuleProperty("radiation", "degeneration", KerbalHealthRadiationSettings.Instance.RadiationEnabled ? 0 : 1);
                 Kerbalism.SetRuleProperty("stress", "degeneration", 0);
                 Kerbalism.FeatureComfort = false;
                 Kerbalism.FeatureLivingSpace = false;
@@ -1048,18 +1051,21 @@ namespace KerbalHealth
                    (Core.TrainingCap * 100).ToString("N0"),
                    Core.ParseUT(selectedKHS.TrainingETA, false, 10))
                : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
+
             if (selectedKHS.TrainedVessels.Count > 0)
             {
                 msg += Localizer.Format("#KH_TI_TrainedVessels", selectedKHS.Name);
                 foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
                     msg += Localizer.Format("#KH_TI_TrainedVessel", kvp.Key, (kvp.Value * 100).ToString("N1"));
             }
+
             if (selectedKHS.FamiliarPartTypes.Count > 0)
             {
                 msg += Localizer.Format("#KH_TI_FamiliarParts", selectedKHS.Name);
                 foreach (string s in selectedKHS.FamiliarPartTypes)
                     msg += $"\r\n- <color=\"white\">{PartLoader.getPartInfoByName(s)?.title ?? s}</color>";
             }
+
             PopupDialog.SpawnPopupDialog(
                 new MultiOptionDialog(
                     "Training Info",
@@ -1078,6 +1084,7 @@ namespace KerbalHealth
             string msg = "<color=\"white\">";
             Func<bool> condition = () => false;
             Callback ok = null;
+
             if (selectedKHS.IsDecontaminating)
             {
                 Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.");
