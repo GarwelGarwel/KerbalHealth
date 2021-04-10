@@ -190,7 +190,7 @@ namespace KerbalHealth
                 if (khs.CanTrainAtKSC)
                 {
                     khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
-                    khs.AddCondition("Training");
+                    khs.AddCondition(KerbalHealthStatus.Condition_Training);
                     s.Add(khs.Name);
                 }
                 else
