@@ -284,14 +284,13 @@ namespace KerbalHealth
                     khs.HP = khs.MaxHP;
                     // Making this call here, so that GetBalanceHP doesn't have to:
                     double changePerDay = khs.HPChangeTotal;
-                    double balanceHP = khs.GetBalanceHP();
+                    double balanceHP = khs.BalanceHP;
                     string s = balanceHP > 0
                         ? $"-> {balanceHP:F0} HP ({balanceHP / khs.MaxHP * 100:F0}%)"
                         : Localizer.Format("#KH_ER_HealthPerDay", changePerDay.ToString("F1")); // + " HP/day"
                     gridContent[(i + 1) * colNum + 1].SetOptionText(s);
-                    s = balanceHP > khs.NextConditionHP()
-                        ? "—"
-                        : ((khs.Recuperation > khs.Decay) ? "> " : "") + Core.ParseUT(khs.TimeToNextCondition(), false, 100);
+                    s = balanceHP > khs.NextConditionHP                        ? "—"
+                        : ((khs.Recuperation > khs.Decay) ? "> " : "") + Core.ParseUT(khs.ETAToNextCondition, false, 100);
                     gridContent[(i + 1) * colNum + 2].SetOptionText(s);
                     gridContent[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
                     i++;

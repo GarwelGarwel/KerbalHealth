@@ -367,10 +367,6 @@ namespace KerbalHealth
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
 
-        //void LogInventory() =>
-        //    Core.Log($"{Name}'s ({PCM.trait}) inventory node contains {PCM.KerbalInventoryModule.InventoryItemCount} items: {PCM.InventoryNode.GetNodes("STOREDPART").Select(node => $"{Core.GetString(node, "partName", "N/A")} ")}");
-
-
         /// <summary>
         /// Turn a kerbal into a Tourist
         /// </summary>
@@ -381,12 +377,10 @@ namespace KerbalHealth
                 Core.Log($"{Name} is already incapacitated.", LogLevel.Important);
                 return;
             }
-            //LogInventory();
             Core.Log($"{Name} ({Trait}) is incapacitated.", LogLevel.Important);
             Trait = PCM.trait;
             PCM.type = ProtoCrewMember.KerbalType.Tourist;
             KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
-            //LogInventory();
         }
 
         /// <summary>
@@ -397,7 +391,6 @@ namespace KerbalHealth
             // Check if the kerbal has already been revived by another mod
             if (PCM.type != ProtoCrewMember.KerbalType.Tourist)
                 return;
-            //LogInventory();
             Core.Log($"{Name} is becoming {Trait ?? "something strange"} again.", LogLevel.Important);
             if (Trait != null && Trait != "Tourist")
             {
@@ -405,7 +398,6 @@ namespace KerbalHealth
                 KerbalRoster.SetExperienceTrait(PCM, Trait);
             }
             Trait = null;
-            //LogInventory();
         }
 
         #endregion CONDITIONS
@@ -638,7 +630,7 @@ namespace KerbalHealth
 
         void Train(double interval)
         {
-            Core.Log($"KerbalHealthStatus.Train({interval}) for {name}");
+            Core.Log($"KerbalHealthStatus.Train({interval} s) for {name}");
             if (IsOnEVA)
             {
                 Core.Log($"{name} is on EVA. No training.");
@@ -650,7 +642,7 @@ namespace KerbalHealth
             double totalComplexity = TrainingFor.Where(tp => TrainingLevels[tp.Id] < Core.TrainingCap).Sum(tp => GetPartTrainingComplexity(tp));
             if (totalComplexity == 0)
             {
-                Core.Log("No parts in need of training found.", LogLevel.Important);
+                Core.Log("No parts need training.", LogLevel.Important);
                 FinishTraining();
                 return;
             }
@@ -658,7 +650,7 @@ namespace KerbalHealth
             double totalTraining = 0, trainingProgress = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / totalComplexity;  // Training progress is inverse proportional to total complexity of parts
             Core.Log($"Training progress: {trainingProgress:P}. Training cap: {Core.TrainingCap:P0}.");
 
-            // Step 1: Updating parts' training progress and calculating their base complexity to update vessel's training level
+            // Step 2: Updating parts' training progress and calculating their base complexity to update vessel's training level
             totalComplexity = 0;
             foreach (TrainingPart tp in TrainingFor)
             {
@@ -785,7 +777,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="target">Target HP level</param>
         /// <returns></returns>
-        public double TimeToValue(double target)
+        public double ETAToHP(double target)
         {
             if (HPChangeTotal == 0)
                 return double.NaN;
@@ -794,35 +786,33 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns HP number for the next condition (OK, Exhausted or death)
+        /// Health Points for the next condition (OK, Exhausted or death)
         /// </summary>
-        /// <returns></returns>
-        public double NextConditionHP()
+        public double NextConditionHP
         {
-            if (HPChangeTotal > 0)
-                return HasCondition(Condition_Exhausted) ? ExhaustionEndHP : MaxHP;
-            if (HPChangeTotal < 0)
-                return HasCondition(Condition_Exhausted) ? 0 : ExhaustionStartHP;
-            return double.NaN;
+            get
+            {
+                if (HPChangeTotal > 0)
+                    return HasCondition(Condition_Exhausted) ? ExhaustionEndHP : MaxHP;
+                if (HPChangeTotal < 0)
+                    return HasCondition(Condition_Exhausted) ? 0 : ExhaustionStartHP;
+                return double.NaN;
+            }
         }
 
         /// <summary>
-        /// Returns number of seconds until the next condition is reached
+        /// Number of seconds until the next condition is reached
         /// </summary>
-        /// <returns></returns>
-        public double TimeToNextCondition() => TimeToValue(NextConditionHP());
+        public double ETAToNextCondition => ETAToHP(NextConditionHP);
 
         /// <summary>
         /// Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
         /// </summary>
         /// <returns></returns>
-        public double GetBalanceHP()
-        {
-            //Core.Log($"{Name}'s last change: {LastChange}. Recuperation: {LastRecuperation}%. Decay: {LastDecay}%.");
-            return Recuperation + Decay == 0
+        public double BalanceHP =>
+            Recuperation + Decay == 0
                 ? (HPChangeFactors < 0 ? 0 : MaxHP)
                 : (MaxHP * Recuperation + HPChangeFactors * 100) / (Recuperation + Decay);
-        }
 
         #endregion HP CHANGE
 

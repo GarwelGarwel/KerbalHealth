@@ -185,10 +185,6 @@ namespace KerbalHealth
             if (Core.IsInEditor)
                 return;
 
-            // Kerbalism test results
-            if (Kerbalism.Found && Core.IsLogging())
-                Kerbalism.PrintRadiationMeasurements();
-
             UndisplayData();
 
             GameEvents.OnGameSettingsApplied.Remove(OnGameSettingsApplied);
@@ -416,13 +412,13 @@ namespace KerbalHealth
                     bool healthFrozen = khs.IsFrozen || khs.IsDecontaminating;
                     double change = khs.HPChangeTotal;
                     string formatTag = "", formatUntag = "", s;
-                    if (healthFrozen || (change == 0) || ((khs.GetBalanceHP() - khs.NextConditionHP()) * change < 0)) s = "—";
+                    if (healthFrozen || (change == 0) || ((khs.BalanceHP - khs.NextConditionHP) * change < 0)) s = "—";
                     else
                     {
-                        s = Core.ParseUT(khs.TimeToNextCondition(), false, 100);
+                        s = Core.ParseUT(khs.ETAToNextCondition, false, 100);
                         if (change < 0)
                         {
-                            formatTag = khs.TimeToNextCondition() < KSPUtil.dateTimeFormatter.Day ? "<color=\"red\">" : "<color=\"orange\">";
+                            formatTag = khs.ETAToNextCondition< KSPUtil.dateTimeFormatter.Day ? "<color=\"red\">" : "<color=\"orange\">";
                             formatUntag = "</color>";
                         }
                     }
