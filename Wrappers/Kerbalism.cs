@@ -17,8 +17,6 @@ namespace KerbalHealth.Wrappers
         static bool? kerbalismFound;
         static Assembly kerbalismAssembly;
 
-        static FieldInfo featureRadiation;
-
         static FieldInfo featureLivingSpace;
 
         static FieldInfo featureComfort;
@@ -29,7 +27,9 @@ namespace KerbalHealth.Wrappers
             {
                 if (kerbalismFound == null)
                 {
-                    kerbalismAssembly = AssemblyLoader.loadedAssemblies.FirstOrDefault(la => la.name == "Kerbalism18")?.assembly;
+                    kerbalismAssembly = AssemblyLoader.loadedAssemblies
+                        .FirstOrDefault(la => new AssemblyName(la.assembly.FullName)?.Name == "Kerbalism")?.assembly;
+
                     kerbalismFound = kerbalismAssembly != null;
 
                     if (kerbalismAssembly == null)
@@ -42,7 +42,6 @@ namespace KerbalHealth.Wrappers
                     GetHabitatRadiation = (Func<Vessel, double>)Delegate.CreateDelegate(typeof(Func<Vessel, double>), t.GetMethod("HabitatRadiation"));
 
                     t = kerbalismAssembly.GetType("KERBALISM.Features");
-                    featureRadiation = t.GetField("Radiation");
                     featureLivingSpace = t.GetField("LivingSpace");
                     featureComfort = t.GetField("Comfort");
                     return true;
@@ -52,12 +51,6 @@ namespace KerbalHealth.Wrappers
         }
 
         public static bool IsSetup { get; set; }
-
-        public static bool FeatureRadiation
-        {
-            get => (bool)featureRadiation.GetValue(null);
-            set => featureRadiation.SetValue(null, value);
-        }
 
         public static bool FeatureLivingSpace
         {
@@ -71,91 +64,37 @@ namespace KerbalHealth.Wrappers
             set => featureComfort.SetValue(null, value);
         }
 
-        public static object GetRuleProperty(string ruleName, string propertyName)
+        static FieldInfo GetField(string name) => kerbalismAssembly.GetType("KERBALISM.Rule").GetField(name);
+
+        static object GetRule(string ruleName, string propertyName)
         {
-            Type profileType = kerbalismAssembly.GetType("KERBALISM.Profile");
-            Type ruleType = kerbalismAssembly.GetType("KERBALISM.Rule");
-            IEnumerable rules;
-            try { rules = (IEnumerable)profileType.GetField("rules").GetValue(null); }
+            IEnumerable<object> rules;
+            try { rules = (IEnumerable<object>)kerbalismAssembly.GetType("KERBALISM.Profile").GetField("rules").GetValue(null); }
             catch (ArgumentException e)
             {
                 Core.Log($"KERBALISM.Profile.rules field not found. Exception: {e}", LogLevel.Error);
                 return null;
             }
-            foreach (object rule in rules)
-                if ((string)ruleType.GetField("name").GetValue(rule) == ruleName)
-                    return ruleType.GetField(propertyName).GetValue(rule);
+            return rules.FirstOrDefault(rule => (string)GetField("name").GetValue(rule) == ruleName);
+        }
+
+        public static object GetRuleProperty(string ruleName, string propertyName)
+        {
+            object rule = GetRule(ruleName, propertyName);
+            if (rule != null)
+                return GetField(propertyName).GetValue(rule);
             Core.Log($"Rule {ruleName} not found.", LogLevel.Error);
             return null;
         }
 
         public static void SetRuleProperty(string ruleName, string propertyName, object value)
         {
-            Type profileType = kerbalismAssembly.GetType("KERBALISM.Profile");
-            Type ruleType = kerbalismAssembly.GetType("KERBALISM.Rule");
-            IEnumerable rules;
-            try { rules = (IEnumerable)profileType.GetField("rules").GetValue(null); }
-            catch (ArgumentException e)
-            {
-                Core.Log($"KERBALISM.Profile.rules field not found. Exception: {e}", LogLevel.Error);
-                return;
-            }
-            foreach (object rule in rules)
-                if ((string)ruleType.GetField("name").GetValue(rule) == ruleName)
-                {
-                    ruleType.GetField(propertyName).SetValue(rule, value);
-                    return;
-                }
-            Core.Log($"Rule {ruleName} not found.", LogLevel.Error);
-            return;
+            object rule = GetRule(ruleName, propertyName);
+            if (rule != null)
+                GetField(propertyName).SetValue(rule, value);
+            else Core.Log($"Rule {ruleName} not found.", LogLevel.Error);
         }
-
-        public static double RadToBED(double rad) => rad * 1e5;
-
-        public static double BEDToRad(double bed) => bed / 1e5;
 
         public static double RadPerSecToBEDPerDay(double radPerSec) => radPerSec * KSPUtil.dateTimeFormatter.Day * 1e5;
-
-        #region TESTING
-
-        public static List<Tuple<string, double, double, double>> radiationComparison = new List<Tuple<string, double, double, double>>();
-
-        public static void AddRadiationMeasurement(string body, double altitude, double kerbalHealth, double kerbalism) => radiationComparison.Add(new Tuple<string, double, double, double>(body, altitude, kerbalHealth, kerbalism));
-
-        public static void PrintRadiationMeasurements()
-        {
-            if (radiationComparison.Count == 0)
-                return;
-            Core.Log($"Average KH/Kerbalism coefficient: {radiationComparison.Sum(t => t.Item3) / radiationComparison.Sum(t => t.Item4)}.");
-            Core.Log($"Coefficients varied from {radiationComparison.Min(t => t.Item3 / t.Item4)} to {radiationComparison.Max(t => t.Item3 / t.Item4)}.");
-            Core.Log($"KerbalHealth radiation varied from {radiationComparison.Min(t => t.Item3):N2} to {radiationComparison.Max(t => t.Item3):N2}.");
-            Core.Log($"Kerbalism radiation varied from {radiationComparison.Min(t => t.Item4):N2} to {radiationComparison.Max(t => t.Item4):N2}.");
-            string s = "";
-            foreach (Tuple<string, double, double, double> t in radiationComparison)
-                s += $"{t.Item1},{t.Item2},{t.Item3},{t.Item4}\n";
-            Core.Log($"Radiation measurements:\n{s}");
-        }
-
-        #endregion TESTING
-
-        //public static void Init()
-        //{
-        //    if (kerbalismAssembly == null)
-        //    {
-        //        Core.Log("Kerbalism assembly not found and API could not be initialized.", LogLevel.Important);
-        //        return;
-        //    }
-        //    Type t = kerbalismAssembly.GetType("KERBALISM.API");
-
-        //    Radiation = (Func<Vessel, double>)Delegate.CreateDelegate(typeof(Func<Vessel, double>), t.GetMethod("Radiation"));
-        //    HabitatRadiation = (Func<Vessel, double>)Delegate.CreateDelegate(typeof(Func<Vessel, double>), t.GetMethod("HabitatRadiation"));
-
-        //    t = kerbalismAssembly.GetType("KERBALISM.Features");
-        //    featureRadiation = t.GetField("Radiation");
-        //    featureLivingSpace = t.GetField("LivingSpace");
-        //    featureComfort = t.GetField("Comfort");
-
-        //    IsInitialized = true;
-        //}
     }
 }
