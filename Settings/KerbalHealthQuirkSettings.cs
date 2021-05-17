@@ -17,15 +17,21 @@ namespace KerbalHealth
             {
                 case GameParameters.Preset.Easy:
                     ConditionsEnabled = false;
+                    ConditionsChance = 0.5f;
+                    ConditionsEffect = 0.5f;
                     break;
 
                 case GameParameters.Preset.Normal:
+                    ConditionsEnabled = true;
                     ConditionsChance = 0.5f;
                     ConditionsEffect = 0.5f;
                     break;
 
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
+                    ConditionsEnabled = true;
+                    ConditionsChance = 1;
+                    ConditionsEffect = 1;
                     break;
             }
         }

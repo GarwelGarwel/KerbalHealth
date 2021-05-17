@@ -8,7 +8,12 @@ namespace KerbalHealth
     /// </summary>
     public class ChanceModifier
     {
-        public enum OperationType { Multiply, Add, Power };
+        public enum OperationType
+        { 
+            Multiply, 
+            Add, 
+            Power 
+        };
 
         /// <summary>
         /// Type of modification: multiply the base chance, add to it or find power of it
@@ -27,19 +32,16 @@ namespace KerbalHealth
         /// </summary>
         public Logic Logic { get; set; } = new Logic();
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
-            {
-                if (value.HasValue("modification"))
-                    Modification = (OperationType)Enum.Parse(typeof(OperationType), value.GetValue("modification"), true);
-                Value = value.GetDouble("value", Modification == OperationType.Add ? 0 : 1);
-                UseAttribute = value.GetString("useAttribute");
-                Logic.ConfigNode = value;
-            }
+            if (node.HasValue("modification"))
+                Modification = (OperationType)Enum.Parse(typeof(OperationType), node.GetValue("modification"), true);
+            Value = node.GetDouble("value", Modification == OperationType.Add ? 0 : 1);
+            UseAttribute = node.GetString("useAttribute");
+            Logic.Load(node);
         }
 
-        public ChanceModifier(ConfigNode node) => ConfigNode = node;
+        public ChanceModifier(ConfigNode node) => Load(node);
 
         /// <summary>
         /// Applies all modifiers in the list to baseValue chance for pcm and returns resulting chance

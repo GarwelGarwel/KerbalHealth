@@ -30,22 +30,19 @@
         /// </summary>
         public double Radioactivity { get; set; } = 0;
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
+            Name = node.GetString("name");
+            if (Name == null)
             {
-                Name = value.GetString("name");
-                if (Name == null)
-                {
-                    Core.Log("Missing 'name' key in body properties definition.", LogLevel.Error);
-                    return;
-                }
-                if (Body == null)
-                    Core.Log($"Body '{Name}' not found.", LogLevel.Important);
-                Magnetosphere = value.GetDouble("magnetosphere", Magnetosphere);
-                AtmosphericAbsorption = value.GetDouble("atmosphericAbsorption", AtmosphericAbsorption);
-                Radioactivity = value.GetDouble("radioactivity", Radioactivity);
+                Core.Log("Missing 'name' key in body properties definition.", LogLevel.Error);
+                return;
             }
+            if (Body == null)
+                Core.Log($"Body '{Name}' not found.", LogLevel.Important);
+            Magnetosphere = node.GetDouble("magnetosphere", Magnetosphere);
+            AtmosphericAbsorption = node.GetDouble("atmosphericAbsorption", AtmosphericAbsorption);
+            Radioactivity = node.GetDouble("radioactivity", Radioactivity);
         }
 
         public PlanetHealthConfig(CelestialBody body)
@@ -54,7 +51,7 @@
             Magnetosphere = body.IsPlanet() ? 1 : 0;
         }
 
-        public PlanetHealthConfig(ConfigNode node) => ConfigNode = node;
+        public PlanetHealthConfig(ConfigNode node) => Load(node);
 
         public override string ToString() =>
             $"{Name}\r\nMagnetosphere: {Magnetosphere:F2}\r\nAtmospheric Absorption: {AtmosphericAbsorption:F2}\r\nRadioactivity: {Radioactivity:F0}";

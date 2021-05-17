@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -64,20 +63,6 @@ namespace KerbalHealth.Wrappers
             set => featureComfort.SetValue(null, value);
         }
 
-        static FieldInfo GetField(string name) => kerbalismAssembly.GetType("KERBALISM.Rule").GetField(name);
-
-        static object GetRule(string ruleName, string propertyName)
-        {
-            IEnumerable<object> rules;
-            try { rules = (IEnumerable<object>)kerbalismAssembly.GetType("KERBALISM.Profile").GetField("rules").GetValue(null); }
-            catch (ArgumentException e)
-            {
-                Core.Log($"KERBALISM.Profile.rules field not found. Exception: {e}", LogLevel.Error);
-                return null;
-            }
-            return rules.FirstOrDefault(rule => (string)GetField("name").GetValue(rule) == ruleName);
-        }
-
         public static object GetRuleProperty(string ruleName, string propertyName)
         {
             object rule = GetRule(ruleName, propertyName);
@@ -96,5 +81,19 @@ namespace KerbalHealth.Wrappers
         }
 
         public static double RadPerSecToBEDPerDay(double radPerSec) => radPerSec * KSPUtil.dateTimeFormatter.Day * 1e5;
+
+        static FieldInfo GetField(string name) => kerbalismAssembly.GetType("KERBALISM.Rule").GetField(name);
+
+        static object GetRule(string ruleName, string propertyName)
+        {
+            IEnumerable<object> rules;
+            try { rules = (IEnumerable<object>)kerbalismAssembly.GetType("KERBALISM.Profile").GetField("rules").GetValue(null); }
+            catch (ArgumentException e)
+            {
+                Core.Log($"KERBALISM.Profile.rules field not found. Exception: {e}", LogLevel.Error);
+                return null;
+            }
+            return rules.FirstOrDefault(rule => (string)GetField("name").GetValue(rule) == ruleName);
+        }
     }
 }

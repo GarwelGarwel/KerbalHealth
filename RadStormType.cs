@@ -19,20 +19,17 @@ namespace KerbalHealth
         
         public double VelocityDispersion { get; set; }
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
-            {
-                Name = value.GetString("name", "");
-                Weight = value.GetDouble("weight");
-                MeanMagnitude = value.GetDouble("magnitude");
-                MagnitudeDispersion = value.GetDouble("magnitudeDispersion", 0.4);
-                MeanVelocity = value.GetDouble("velocity", 500000);
-                VelocityDispersion = value.GetDouble("velocityDispersion", 0.5);
-            }
+            Name = node.GetString("name", "");
+            Weight = node.GetDouble("weight");
+            MeanMagnitude = node.GetDouble("magnitude");
+            MagnitudeDispersion = node.GetDouble("magnitudeDispersion", 0.4);
+            MeanVelocity = node.GetDouble("velocity", 500000);
+            VelocityDispersion = node.GetDouble("velocityDispersion", 0.5);
         }
 
-        public RadStormType(ConfigNode node) => ConfigNode = node;
+        public RadStormType(ConfigNode node) => Load(node);
 
         /// <summary>
         /// Returns a random, Gaussian-dispersed magnitude of a radstorm in BED

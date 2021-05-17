@@ -63,7 +63,7 @@ namespace KerbalHealth
 
         public IEnumerable<HealthEffect> GetApplicableEffects(KerbalHealthStatus khs) => Effects.Where(effect => effect.IsApplicable(khs));
 
-        public override bool Equals(object obj) => (obj != null) && (obj is Quirk quirk) && (quirk.Name == Name);
+        public override bool Equals(object obj) => obj != null && obj is Quirk quirk && quirk.Name == Name;
 
         public override int GetHashCode() => Name.GetHashCode();
 

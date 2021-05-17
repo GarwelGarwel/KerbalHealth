@@ -7,7 +7,7 @@ namespace KerbalHealth
     /// <summary>
     /// Keeps modifiers introduced by vessel, parts, quirks or conditions
     /// </summary>
-    public class HealthEffect
+    public class HealthEffect : IConfigNode
     {
         public const string ConfigNodeName = "HEALTH_EFFECTS";
 
@@ -58,81 +58,79 @@ namespace KerbalHealth
 
         public double LoseImmunityChance { get; set; } = 1;
 
-        public ConfigNode ConfigNode
+        public void Save(ConfigNode node)
         {
-            get
+            if (HPChange != 0)
+                node.AddValue("hpChange", HPChange);
+            if (MaxHP != 1)
+                node.AddValue("maxHP", MaxHP);
+            if (MaxHPBonus != 0)
+                node.AddValue("maxHPBonus", MaxHPBonus);
+            if (ExhaustedStart != 1)
+                node.AddValue("exhaustedStart", ExhaustedStart);
+            if (ExhaustedEnd != 1)
+                node.AddValue("exhaustedEnd", ExhaustedEnd);
+            if (Space != 0)
+                node.AddValue("space", Space);
+            if (Recuperation != 0)
+                node.AddValue("recuperation", Recuperation);
+            if (MaxRecuperaction != 0)
+                node.AddValue("maxRecuperation", MaxRecuperaction);
+            if (Decay != 0)
+                node.AddValue("decay", Decay);
+            if (Shielding != 0)
+                node.AddValue("shielding", Shielding);
+            if (Radioactivity != 0)
+                node.AddValue("radioactivity", Radioactivity);
+            if (ExposureMultiplier != 1)
+                node.AddValue("exposure", ExposureMultiplier);
+            if (ShelterExposure != 1)
+                node.AddValue("shelterExposure", ShelterExposure);
+            if (CrewCapacity != 0)
+                node.AddValue("crewCapacity", CrewCapacity);
+            if (AccidentChance != 1)
+                node.AddValue("accidentChance", AccidentChance);
+            if (PanicAttackChance != 1)
+                node.AddValue("panicAttackChance", PanicAttackChance);
+            if (SicknessChance != 1)
+                node.AddValue("sicknessChance", SicknessChance);
+            if (CureChance != 1)
+                node.AddValue("cureChance", CureChance);
+            if (LoseImmunityChance != 1)
+                node.AddValue("loseImmunityChance", LoseImmunityChance);
+            foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
             {
-                ConfigNode node = new ConfigNode(ConfigNodeName);
-                if (HPChange != 0)
-                    node.AddValue("hpChange", HPChange);
-                if (MaxHP != 1)
-                    node.AddValue("maxHP", MaxHP);
-                if (MaxHPBonus != 0)
-                    node.AddValue("maxHPBonus", MaxHPBonus);
-                if (ExhaustedStart != 1)
-                    node.AddValue("exhaustedStart", ExhaustedStart);
-                if (ExhaustedEnd != 1)
-                    node.AddValue("exhaustedEnd", ExhaustedEnd);
-                if (Space != 0)
-                    node.AddValue("space", Space);
-                if (Recuperation != 0)
-                    node.AddValue("recuperation", Recuperation);
-                if (MaxRecuperaction != 0)
-                    node.AddValue("maxRecuperation", MaxRecuperaction);
-                if (Decay != 0)
-                    node.AddValue("decay", Decay);
-                if (Shielding != 0)
-                    node.AddValue("shielding", Shielding);
-                if (Radioactivity != 0)
-                    node.AddValue("radioactivity", Radioactivity);
-                if (ExposureMultiplier != 1)
-                    node.AddValue("exposure", ExposureMultiplier);
-                if (ShelterExposure != 1)
-                    node.AddValue("shelterExposure", ShelterExposure);
-                if (CrewCapacity != 0)
-                    node.AddValue("crewCapacity", CrewCapacity);
-                if (AccidentChance != 1)
-                    node.AddValue("accidentChance", AccidentChance);
-                if (PanicAttackChance != 1)
-                    node.AddValue("panicAttackChance", PanicAttackChance);
-                if (SicknessChance != 1)
-                    node.AddValue("sicknessChance", SicknessChance);
-                if (CureChance != 1)
-                    node.AddValue("cureChance", CureChance);
-                if (LoseImmunityChance != 1)
-                    node.AddValue("loseImmunityChance", LoseImmunityChance);
-                foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
-                    node.AddNode(fm.ConfigNode);
-                return node;
+                ConfigNode n2 = new ConfigNode(FactorMultiplier.ConfigNodeName);
+                fm.Save(n2);
             }
+        }
 
-            set
-            {
-                if (value == null)
-                    return;
-                HPChange = value.GetDouble("hpChange");
-                MaxHP = value.GetDouble("maxHP", 1);
-                MaxHPBonus = value.GetDouble("maxHPBonus");
-                ExhaustedStart = value.GetDouble("exhaustedStart", 1);
-                ExhaustedEnd = value.GetDouble("exhaustedEnd", 1);
-                Space = value.GetDouble("space");
-                Recuperation = value.GetDouble("recuperation");
-                MaxRecuperaction = value.GetDouble("maxRecuperation");
-                Decay = value.GetDouble("decay");
-                Shielding = value.GetDouble("shielding");
-                Radioactivity = value.GetDouble("radioactivity");
-                ExposureMultiplier = value.GetDouble("exposure", 1);
-                ShelterExposure = value.GetDouble("shelterExposure", 1);
-                CrewCapacity = value.GetInt("crewCapacity");
-                AccidentChance = value.GetDouble("accidentChance", 1);
-                PanicAttackChance = value.GetDouble("panicAttackChance", 1);
-                SicknessChance = value.GetDouble("sicknessChance", 1);
-                CureChance = value.GetDouble("cureChance", 1);
-                LoseImmunityChance = value.GetDouble("loseImmunityChance", 1);
-                FactorMultipliers.Clear();
-                foreach (FactorMultiplier fm in value.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
-                    FactorMultipliers.Add(fm);
-            }
+        public void Load(ConfigNode node)
+        {
+            if (node == null)
+                return;
+            HPChange = node.GetDouble("hpChange");
+            MaxHP = node.GetDouble("maxHP", 1);
+            MaxHPBonus = node.GetDouble("maxHPBonus");
+            ExhaustedStart = node.GetDouble("exhaustedStart", 1);
+            ExhaustedEnd = node.GetDouble("exhaustedEnd", 1);
+            Space = node.GetDouble("space");
+            Recuperation = node.GetDouble("recuperation");
+            MaxRecuperaction = node.GetDouble("maxRecuperation");
+            Decay = node.GetDouble("decay");
+            Shielding = node.GetDouble("shielding");
+            Radioactivity = node.GetDouble("radioactivity");
+            ExposureMultiplier = node.GetDouble("exposure", 1);
+            ShelterExposure = node.GetDouble("shelterExposure", 1);
+            CrewCapacity = node.GetInt("crewCapacity");
+            AccidentChance = node.GetDouble("accidentChance", 1);
+            PanicAttackChance = node.GetDouble("panicAttackChance", 1);
+            SicknessChance = node.GetDouble("sicknessChance", 1);
+            CureChance = node.GetDouble("cureChance", 1);
+            LoseImmunityChance = node.GetDouble("loseImmunityChance", 1);
+            FactorMultipliers.Clear();
+            foreach (FactorMultiplier fm in node.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
+                FactorMultipliers.Add(fm);
         }
 
         public FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
@@ -144,7 +142,7 @@ namespace KerbalHealth
             FactorMultipliers.Add(new FactorMultiplier());
         }
 
-        public HealthEffect(ConfigNode configNode) => ConfigNode = configNode;
+        public HealthEffect(ConfigNode configNode) => Load(configNode);
 
         public HealthEffect(Vessel v) : this() => ProcessParts(v?.Parts, v.GetCrewCount());
 

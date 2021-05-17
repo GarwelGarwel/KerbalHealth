@@ -11,6 +11,8 @@ namespace KerbalHealth
     {
         public enum OperatorType { And, Or };
 
+        public const string ConfigNodeName = "LOGIC";
+
         public static readonly string Padding = "-";
         public OperatorType Operator { get; set; } = OperatorType.And;
         public bool Inverse { get; set; } = false;
@@ -25,47 +27,44 @@ namespace KerbalHealth
 
         public List<Logic> Operands { get; set; } = new List<Logic>();
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
+            string s = node.GetString("operator") ?? node.GetString("logic");
+            switch (s?.ToLowerInvariant())
             {
-                string s = value.GetString("operator") ?? value.GetString("logic");
-                switch (s?.ToLowerInvariant())
-                {
-                    case "and":
-                    case "all":
-                    case null:
-                        Operator = OperatorType.And;
-                        break;
+                case "and":
+                case "all":
+                case null:
+                    Operator = OperatorType.And;
+                    break;
 
-                    case "or":
-                    case "any":
-                        Operator = OperatorType.Or;
-                        break;
+                case "or":
+                case "any":
+                    Operator = OperatorType.Or;
+                    break;
 
-                    default:
-                        Core.Log($"Unrecognized Logic operator '{s}' in config node {value.name}.", LogLevel.Error);
-                        break;
-                }
-                Inverse = value.GetBool("inverse");
-                Situation = value.GetString("situation");
-                InSOI = value.GetString("inSOI");
-                if (InSOI?.ToLower() == "home")
-                    InSOI = FlightGlobals.GetHomeBodyName();
-                KerbalStatus = value.GetString("kerbalStatus");
-                MissionTime = value.GetDouble("missionTime", Double.NaN);
-                Gender = value.GetString("gender");
-                GenderPresent = value.GetString("genderPresent");
-                TraitPresent = value.GetString("traitPresent");
-                ConditionPresent = value.GetString("conditionPresent");
-                Operands = new List<Logic>(value.GetNodes("LOGIC").Select(node => new Logic(node)));
+                default:
+                    Core.Log($"Unrecognized Logic operator '{s}' in config node {node.name}.", LogLevel.Error);
+                    break;
             }
+            Inverse = node.GetBool("inverse");
+            Situation = node.GetString("situation");
+            InSOI = node.GetString("inSOI");
+            if (InSOI?.ToLower() == "home")
+                InSOI = FlightGlobals.GetHomeBodyName();
+            KerbalStatus = node.GetString("kerbalStatus");
+            MissionTime = node.GetDouble("missionTime", Double.NaN);
+            Gender = node.GetString("gender");
+            GenderPresent = node.GetString("genderPresent");
+            TraitPresent = node.GetString("traitPresent");
+            ConditionPresent = node.GetString("conditionPresent");
+            Operands = new List<Logic>(node.GetNodes(ConfigNodeName).Select(n => new Logic(n)));
         }
 
         public Logic()
         { }
 
-        public Logic(ConfigNode node) => ConfigNode = node;
+        public Logic(ConfigNode node) => Load(node);
 
         public bool Test(ProtoCrewMember pcm)
         {

@@ -20,7 +20,7 @@ namespace KerbalHealth
         /// </summary>
         public string Title
         {
-            get => ((title == null) || (title.Length == 0)) ? Name : title;
+            get => (title == null || title.Length == 0) ? Name : title;
             set => title = value;
         }
 
@@ -84,28 +84,25 @@ namespace KerbalHealth
         /// </summary>
         public List<Outcome> Outcomes { get; set; } = new List<Outcome>();
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
-            {
-                Name = value.GetValue("name");
-                Title = value.GetString("title");
-                Description = value.GetString("description", "");
-                Visible = value.GetBool("visible", true);
-                Stackable = value.GetBool("stackable");
-                IncompatibleConditions.AddRange(value.GetValues("incompatibleCondition"));
-                Logic.ConfigNode = value;
-                HPChangePerDay = value.GetDouble("hpChangePerDay");
-                HP = value.GetDouble("hp");
-                RestoreHP = value.GetBool("restoreHP");
-                Incapacitated = value.GetBool("incapacitated");
-                ChancePerDay = value.GetDouble("chancePerDay");
-                ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
-                Outcomes = new List<Outcome>(value.GetNodes("OUTCOME").Select(n => new Outcome(n)));
-            }
+            Name = node.GetValue("name");
+            Title = node.GetString("title");
+            Description = node.GetString("description", "");
+            Visible = node.GetBool("visible", true);
+            Stackable = node.GetBool("stackable");
+            IncompatibleConditions.AddRange(node.GetValues("incompatibleCondition"));
+            Logic.Load(node);
+            HPChangePerDay = node.GetDouble("hpChangePerDay");
+            HP = node.GetDouble("hp");
+            RestoreHP = node.GetBool("restoreHP");
+            Incapacitated = node.GetBool("incapacitated");
+            ChancePerDay = node.GetDouble("chancePerDay");
+            ChanceModifiers = new List<ChanceModifier>(node.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
+            Outcomes = new List<Outcome>(node.GetNodes("OUTCOME").Select(n => new Outcome(n)));
         }
 
-        public HealthCondition(ConfigNode n) => ConfigNode = n;
+        public HealthCondition(ConfigNode n) => Load(n);
 
         public bool IsCompatibleWith(string condition) => !IncompatibleConditions.Contains(condition);
 

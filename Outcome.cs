@@ -28,18 +28,15 @@ namespace KerbalHealth
         /// </summary>
         public List<ChanceModifier> ChanceModifiers { get; set; }
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
-            {
-                Condition = value.GetString("condition", "");
-                RemoveOldCondition = value.GetBool("removeOldCondition", true);
-                ChancePerDay = value.GetDouble("chancePerDay");
-                ChanceModifiers = new List<ChanceModifier>(value.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
-            }
+            Condition = node.GetString("condition", "");
+            RemoveOldCondition = node.GetBool("removeOldCondition", true);
+            ChancePerDay = node.GetDouble("chancePerDay");
+            ChanceModifiers = new List<ChanceModifier>(node.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
         }
 
-        public Outcome(ConfigNode node) => ConfigNode = node;
+        public Outcome(ConfigNode node) => Load(node);
 
         /// <summary>
         /// Returns actual chance per day of this outcome considering all modifiers

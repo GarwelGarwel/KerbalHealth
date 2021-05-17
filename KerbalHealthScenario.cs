@@ -116,7 +116,7 @@ namespace KerbalHealth
             if (version != currentVersion)
             {
                 Core.Log($"Current mod version {currentVersion} is different from v{version} used to save the game. Kerbal Health has been recently updated.", LogLevel.Important);
-                if ((version < new Version("1.1.0")) && (KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor != -3) && (Planetarium.GetUniversalTime() > 0))
+                if (version < new Version("1.1.0") && KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor != -3 && Planetarium.GetUniversalTime() > 0)
                 {
                     Core.Log($"Confinement Factor is {KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor} instead of -3. Automatically fixing.");
                     KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor = -3;
@@ -294,7 +294,7 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             Core.Log($"OnKerbalAdded('{pcm.name}')", LogLevel.Important);
-            if ((pcm.type == ProtoCrewMember.KerbalType.Applicant) || (pcm.type == ProtoCrewMember.KerbalType.Unowned))
+            if (pcm.type == ProtoCrewMember.KerbalType.Applicant || pcm.type == ProtoCrewMember.KerbalType.Unowned)
             {
                 Core.Log($"The kerbal is {pcm.type}. Skipping.", LogLevel.Important);
                 return;
@@ -351,7 +351,7 @@ namespace KerbalHealth
             if (n is KSPAchievements.PointOfInterest poi)
             {
                 Core.Log($"Reached anomaly: {poi.Id} on {poi.body}", LogLevel.Important);
-                if ((Core.rand.NextDouble() < KerbalHealthQuirkSettings.Instance.AnomalyQuirkChance) && (FlightGlobals.ActiveVessel.GetCrewCount() > 0))
+                if (Core.rand.NextDouble() < KerbalHealthQuirkSettings.Instance.AnomalyQuirkChance && FlightGlobals.ActiveVessel.GetCrewCount() > 0)
                 {
                     List<ProtoCrewMember> crew = FlightGlobals.ActiveVessel.GetVesselCrew();
                     ProtoCrewMember pcm = crew[Core.rand.Next(crew.Count)];
@@ -386,7 +386,7 @@ namespace KerbalHealth
                 return;
             }
 
-            if ((monitorWindow == null) || !dirty)
+            if (monitorWindow == null || !dirty)
                 return;
 
             if (gridContent == null)
@@ -412,7 +412,8 @@ namespace KerbalHealth
                     bool healthFrozen = khs.IsFrozen || khs.IsDecontaminating;
                     double change = khs.HPChangeTotal;
                     string formatTag = "", formatUntag = "", s;
-                    if (healthFrozen || (change == 0) || ((khs.BalanceHP - khs.NextConditionHP) * change < 0)) s = "—";
+                    if (healthFrozen || change == 0 || (khs.BalanceHP - khs.NextConditionHP) * change < 0)
+                        s = "—";
                     else
                     {
                         s = Core.ParseUT(khs.ETAToNextCondition, false, 100);
@@ -426,7 +427,7 @@ namespace KerbalHealth
                     gridContent[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
                     gridContent[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
                     gridContent[(i + 1) * colNumMain + 3].SetOptionText($"{formatTag}{100 * khs.Health:F2}% ({khs.HP:F2}){formatUntag}");
-                    gridContent[(i + 1) * colNumMain + 4].SetOptionText(formatTag + ((healthFrozen || (khs.Health >= 1)) ? "—" : (((change > 0) ? "+" : "") + change.ToString("F2"))) + formatUntag);
+                    gridContent[(i + 1) * colNumMain + 4].SetOptionText(formatTag + (healthFrozen || khs.Health >= 1 ? "—" : Core.SignValue(change, "F2")) + formatUntag);
                     gridContent[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
                     gridContent[((i + 1) * colNumMain) + 6].SetOptionText($"{formatTag}{Core.PrefixFormat(khs.Dose, 3)}{(khs.Radiation != 0 ? $" ({Localizer.Format("#KH_HM_perDay", Core.PrefixFormat(khs.Radiation, 3, true))})" : "")}{formatUntag}");
                 }
@@ -447,7 +448,7 @@ namespace KerbalHealth
 
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks.Where(q => q.IsVisible))
-                    s += ((s.Length != 0) ? ", " : "") + q.Title;
+                    s += (s.Length != 0 ? ", " : "") + q.Title;
                 if (s.Length == 0)
                     s = Localizer.Format("#KH_HM_DNone");//None
                 gridContent[7].SetOptionText($"<color=\"white\">{s}</color>");
@@ -644,10 +645,17 @@ namespace KerbalHealth
                 UpdateKerbals(true);
             node.AddValue("version", version.ToString());
             node.AddValue("nextEventTime", nextEventTime);
+            ConfigNode n2;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
-                node.AddNode(khs.ConfigNode);
+            {
+                khs.Save(n2 = new ConfigNode(KerbalHealthStatus.ConfigNodeName));
+                node.AddNode(n2);
+            }
             foreach (RadStorm rs in radStorms.Where(rs => rs.Target != RadStormTargetType.None))
-                node.AddNode(rs.ConfigNode);
+            {
+                rs.Save(n2 = new ConfigNode(RadStorm.ConfigNodeName));
+                node.AddNode(n2);
+            }
         }
 
         public override void OnLoad(ConfigNode node)
@@ -668,11 +676,11 @@ namespace KerbalHealth
             nextEventTime = node.GetDouble("nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
 
             Core.KerbalHealthList.Clear();
-            foreach (ConfigNode n in node.GetNodes("KerbalHealthStatus"))
+            foreach (ConfigNode n in node.GetNodes(KerbalHealthStatus.ConfigNodeName))
                 Core.KerbalHealthList.Add(new KerbalHealthStatus(n));
             Core.Log($"{Core.KerbalHealthList.Count} kerbals loaded.", LogLevel.Important);
 
-            radStorms = new List<RadStorm>(node.GetNodes("RADSTORM").Select(n => new RadStorm(n)));
+            radStorms = new List<RadStorm>(node.GetNodes(RadStorm.ConfigNodeName).Select(n => new RadStorm(n)));
             Core.Log($"{radStorms.Count} radstorms loaded.", LogLevel.Important);
 
             lastUpdated = Planetarium.GetUniversalTime();
@@ -699,7 +707,7 @@ namespace KerbalHealth
 
         void UnregisterAppLauncherButton()
         {
-            if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
+            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
         }
 
@@ -720,7 +728,7 @@ namespace KerbalHealth
             KerbalHealthRadiationSettings.Instance.ApplyConfig(settingsNode);
 
             Core.Log($"Current difficulty preset is {HighLogic.CurrentGame.Parameters.preset}.", LogLevel.Important);
-            if ((HighLogic.CurrentGame.Parameters.preset != GameParameters.Preset.Custom) && (settingsNode.HasNode(HighLogic.CurrentGame.Parameters.preset.ToString())))
+            if (HighLogic.CurrentGame.Parameters.preset != GameParameters.Preset.Custom && settingsNode.HasNode(HighLogic.CurrentGame.Parameters.preset.ToString()))
             {
                 settingsNode = settingsNode.GetNode(HighLogic.CurrentGame.Parameters.preset.ToString());
                 KerbalHealthGeneralSettings.Instance.ApplyConfig(settingsNode);
@@ -1109,7 +1117,7 @@ namespace KerbalHealth
                         KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel,
                         KerbalHealthRadiationSettings.Instance.DecontaminationRNDLevel);
 
-                if ((HighLogic.CurrentGame.Mode == Game.Modes.CAREER) || (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX))
+                if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER || HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)
                     msg += Localizer.Format(
                         "#KH_DeconMsg3",
                         HighLogic.CurrentGame.Mode == Game.Modes.CAREER ? Localizer.Format("#KH_DeconMsg3_CAREERMode", KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost.ToString("N0")) : "",

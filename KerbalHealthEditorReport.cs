@@ -11,7 +11,7 @@ namespace KerbalHealth
     class KerbalHealthEditorReport : MonoBehaviour
     {
         static bool healthModulesEnabled = true;
-        static bool trainingEnabled = true;
+        static bool simulateTrained = true;
 
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
@@ -31,7 +31,7 @@ namespace KerbalHealth
 
         public static bool HealthModulesEnabled => healthModulesEnabled;
 
-        public static bool TrainingEnabled => trainingEnabled;
+        public static bool SimulateTrained => simulateTrained;
 
         public void Start()
         {
@@ -102,9 +102,9 @@ namespace KerbalHealth
             })));
 
             if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
-                checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), state =>
+                checklist.Add(new DialogGUIToggle(simulateTrained, Localizer.Format("#KH_ER_Trained"), state =>
                 {
-                    trainingEnabled = state;
+                    simulateTrained = state;
                     Invalidate();
                 }));
 
@@ -171,7 +171,7 @@ namespace KerbalHealth
             foreach (HealthFactor f in Core.Factors)
                 f.ResetEnabledInEditor();
             healthModulesEnabled = true;
-            trainingEnabled = true;
+            simulateTrained = true;
             Invalidate();
         }
 

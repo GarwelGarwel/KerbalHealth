@@ -2,13 +2,20 @@
 
 namespace KerbalHealth
 {
-    public enum RadStormTargetType { None = 0, Body, Vessel };
+    public enum RadStormTargetType 
+    { 
+        None = 0, 
+        Body, 
+        Vessel 
+    };
 
     /// <summary>
     /// Represents a (potential) solar radiation storm (CME)
     /// </summary>
-    public class RadStorm
+    public class RadStorm : IConfigNode
     {
+        public const string ConfigNodeName = "RADSTORM";
+
         string name;
 
         public RadStormTargetType Target { get; set; }
@@ -64,59 +71,54 @@ namespace KerbalHealth
             }
         }
 
-        public ConfigNode ConfigNode
+        public void Save(ConfigNode node)
         {
-            get
+            if (Target == RadStormTargetType.None)
             {
-                if (Target == RadStormTargetType.None)
-                {
-                    Core.Log("Trying to save RadStormTarget of type None.", LogLevel.Important);
-                    return null;
-                }
-                ConfigNode n = new ConfigNode("RADSTORM");
-                n.AddValue("target", Target.ToString());
-                if (Target == RadStormTargetType.Vessel)
-                    n.AddValue("id", VesselId);
-                else n.AddValue("body", Name);
-                if (Magnitutde > 0)
-                    n.AddValue("magnitude", Magnitutde);
-                if (Time > 0)
-                    n.AddValue("time", Time);
-                return n;
+                Core.Log("Trying to save RadStormTarget of type None.", LogLevel.Important);
+                return;
+            }
+            node.AddValue("target", Target.ToString());
+            if (Target == RadStormTargetType.Vessel)
+                node.AddValue("id", VesselId);
+            else node.AddValue("body", Name);
+            if (Magnitutde > 0)
+                node.AddValue("magnitude", Magnitutde);
+            if (Time > 0)
+                node.AddValue("time", Time);
+        }
+
+        public void Load(ConfigNode node)
+        {
+            if (Enum.TryParse(node.GetValue("target"), true, out RadStormTargetType radStormTargetType))
+                Target = radStormTargetType;
+            else
+            {
+                Core.Log($"No valid 'target' node found in RadStorm ConfigNode:\r\n{node}", LogLevel.Error);
+                Target = RadStormTargetType.None;
+                return;
             }
 
-            set
+            if (Target == RadStormTargetType.Vessel)
             {
-                if (Enum.TryParse(value.GetValue("target"), true, out RadStormTargetType radStormTargetType))
-                    Target = radStormTargetType;
-                else
+                VesselId = node.GetString("id");
+                if (FlightGlobals.FindVessel(new Guid(VesselId)) == null)
                 {
-                    Core.Log($"No valid 'target' value found in RadStorm ConfigNode:\r\n{value}", LogLevel.Error);
+                    Core.Log($"Vessel id {VesselId} from RadStorm ConfigNode not found.", LogLevel.Error);
                     Target = RadStormTargetType.None;
                     return;
                 }
-
-                if (Target == RadStormTargetType.Vessel)
-                {
-                    VesselId = value.GetString("id");
-                    if (FlightGlobals.FindVessel(new Guid(VesselId)) == null)
-                    {
-                        Core.Log($"Vessel id {VesselId} from RadStorm ConfigNode not found.", LogLevel.Error);
-                        Target = RadStormTargetType.None;
-                        return;
-                    }
-                }
-                else Name = value.GetString("body");
-                Magnitutde = value.GetDouble("magnitude");
-                Time = value.GetDouble("time");
             }
+            else Name = node.GetString("body");
+            Magnitutde = node.GetDouble("magnitude");
+            Time = node.GetDouble("time");
         }
 
         public RadStorm(CelestialBody body) => CelestialBody = body;
 
         public RadStorm(Vessel vessel) => Vessel = vessel;
 
-        public RadStorm(ConfigNode node) => ConfigNode = node;
+        public RadStorm(ConfigNode node) => Load(node);
 
         public bool Affects(ProtoCrewMember pcm)
         {
