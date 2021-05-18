@@ -84,33 +84,6 @@ namespace KerbalHealth
             if (Core.IsInEditor)
                 return;
 
-            // This needs to be run even if the mod is disabled, so that its settings can be reset:
-            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);
-
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
-                return;
-            Core.Log("KerbalHealthScenario.Start", LogLevel.Important);
-
-            Core.KerbalHealthList.RegisterKerbals();
-            vesselChanged = true;
-
-            lastUpdated = Planetarium.GetUniversalTime();
-            nextEventTime = lastUpdated + GetNextEventInterval();
-
-            GameEvents.onCrewOnEva.Add(OnKerbalEva);
-            GameEvents.onCrewBoardVessel.Add(onCrewBoardVessel);
-            GameEvents.onCrewKilled.Add(OnCrewKilled);
-            GameEvents.OnCrewmemberHired.Add(OnCrewmemberHired);
-            GameEvents.OnCrewmemberSacked.Add(OnCrewmemberSacked);
-            GameEvents.onKerbalAdded.Add(OnKerbalAdded);
-            GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
-            GameEvents.onKerbalNameChanged.Add(OnKerbalNameChanged);
-            GameEvents.OnProgressComplete.Add(OnProgressComplete);
-            GameEvents.onVesselWasModified.Add(onVesselWasModified);
-
-            SetupDeepFreeze();
-            SetupKerbalism();
-
             // Automatically updating settings from older versions
             Version currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != currentVersion)
@@ -156,6 +129,36 @@ namespace KerbalHealth
                 version = currentVersion;
             }
             else Core.Log($"Kerbal Health v{version}");
+
+            // This needs to be run even if the mod is disabled, so that its settings can be reset:
+            GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);
+
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+                return;
+            Core.Log("KerbalHealthScenario.Start", LogLevel.Important);
+
+            Core.KerbalHealthList.RegisterKerbals();
+            vesselChanged = true;
+
+            lastUpdated = Planetarium.GetUniversalTime();
+            nextEventTime = lastUpdated + GetNextEventInterval();
+
+            GameEvents.onCrewOnEva.Add(OnKerbalEva);
+            GameEvents.onCrewBoardVessel.Add(onCrewBoardVessel);
+            GameEvents.onCrewKilled.Add(OnCrewKilled);
+            GameEvents.OnCrewmemberHired.Add(OnCrewmemberHired);
+            GameEvents.OnCrewmemberSacked.Add(OnCrewmemberSacked);
+            GameEvents.onKerbalAdded.Add(OnKerbalAdded);
+            GameEvents.onKerbalRemoved.Add(OnKerbalRemoved);
+            GameEvents.onKerbalNameChanged.Add(OnKerbalNameChanged);
+            GameEvents.OnProgressComplete.Add(OnProgressComplete);
+            GameEvents.onVesselWasModified.Add(onVesselWasModified);
+
+            SetupDeepFreeze();
+            SetupKerbalism();
+
+            if (CLS.Enabled)
+                Core.Log("ConnectedLivingSpace detected.");
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
                 RegisterAppLauncherButton();
@@ -979,8 +982,8 @@ namespace KerbalHealth
                                 }
                         }
 
-                        foreach (HealthCondition hc in Core.HealthConditions.Values.Where(hc
-                            => hc.ChancePerDay > 0
+                        foreach (HealthCondition hc in Core.HealthConditions.Values.Where(hc =>
+                            hc.ChancePerDay > 0
                             && (hc.Stackable || !khs.HasCondition(hc))
                             && hc.IsCompatibleWith(khs.Conditions)
                             && hc.Logic.Test(pcm)

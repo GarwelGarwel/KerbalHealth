@@ -265,7 +265,7 @@ namespace KerbalHealth
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;
-                HealthEffect.VesselCache.Clear();
+                //HealthEffect.VesselCache.Clear();
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
 
@@ -296,7 +296,8 @@ namespace KerbalHealth
                     i++;
                 }
 
-                HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
+                // TODO: Solve incorrect calculation when there are several CLS spaces in a vessel
+                HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount, null);
                 Core.Log($"Vessel effects: {vesselEffects}");
 
                 spaceLbl.SetOptionText($"<color=\"white\">{vesselEffects.Space:F1}</color>");

@@ -28,6 +28,10 @@ namespace KerbalHealth
         public bool partCrewOnly = false;
 
         [KSPField]
+        // Does the module affect all ConnectedLivingSpace spaces? Otherwise only Shielding and Radiation apply
+        public bool affectsAllCLSSpaces = false;
+
+        [KSPField]
         // Name of factor whose effect is multiplied
         public string multiplyFactor = "All";
 

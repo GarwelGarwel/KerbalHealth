@@ -174,8 +174,8 @@ namespace KerbalHealth
                 // The kerbal is in a vessel => recalculate vesselEffect & partEffect
                 Vessel v = Core.GetVessel(PCM);
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
-                locationEffect = new HealthEffect(v);
-                locationEffect.ProcessPart(PCM.GetCrewPart(), v.GetCrewCount(), true);
+                locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace() : null);
+                locationEffect.ProcessPart(PCM.GetCrewPart(), v.GetCrewCount(), true, true);
             }
         }
 
@@ -184,12 +184,12 @@ namespace KerbalHealth
             if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.Contains(PCM))
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
-            locationEffect = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
+            locationEffect = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount, CLS.Enabled ? PCM.GetCLSSpace() : null);
             Part p = EditorLogic.SortedShipList.Find(part => part.protoModuleCrew.Contains(PCM));
             if (p != null)
             {
                 Core.Log($"{Name} is in part {p.partName}.");
-                locationEffect.ProcessPart(p, ShipConstruction.ShipManifest.CrewCount, true);
+                locationEffect.ProcessPart(p, ShipConstruction.ShipManifest.CrewCount, true, true);
             }
             Core.Log($"Resulting location effect:\n{locationEffect}");
         }
