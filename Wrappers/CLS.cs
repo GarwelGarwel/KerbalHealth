@@ -25,6 +25,16 @@ namespace KerbalHealth
             }
         }
 
-        public static ICLSSpace GetCLSSpace(this ProtoCrewMember pcm) => CLSAddon.Vessel.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal == pcm));
+        public static ICLSSpace GetCLSSpace(this ProtoCrewMember pcm)
+        {
+            if (Core.IsInEditor)
+            {
+                Part p = pcm.GetCrewPart();
+                return CLSAddon.Vessel.Spaces.Find(space => space.Parts.Any(part => part.Part == p));
+            }
+            return CLSAddon.Vessel.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal.name == pcm.name));
+        }
+
+        public static int GetCrewCount(this ICLSSpace clsSpace) => Core.IsInEditor ? clsSpace.Parts.Sum(p => p.Part.protoModuleCrew.Count) : clsSpace.Crew.Count;
     }
 }

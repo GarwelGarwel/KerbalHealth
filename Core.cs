@@ -225,25 +225,20 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Returns number of current crew in a vessel the kerbal is in or in the currently constructed vessel
+        /// Returns number of current crew in a vessel (or CLS space) the kerbal is in or in the currently constructed vessel
         /// </summary>
         /// <param name="pcm"></param>
+        /// <param name="entireVessel">Return crew number across all CLS spaces</param>
         /// <returns></returns>
-        public static int GetCrewCount(ProtoCrewMember pcm)
+        public static int GetCrewCount(ProtoCrewMember pcm, bool entireVessel)
         {
+            if (!entireVessel && CLS.Enabled && pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                return pcm.GetCLSSpace().GetCrewCount();
             if (IsInEditor)
                 return ShipConstruction.ShipManifest.CrewCount;
             Vessel vessel = pcm.GetVessel();
             return vessel != null ? vessel.GetCrewCount() : 1;
         }
-
-        /// <summary>
-        /// Returns number of maximum crew in a vessel the kerbal is in or in the currently constructed vessel
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public static int GetCrewCapacity(ProtoCrewMember pcm) =>
-            IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm.IsLoaded() ? Math.Max(pcm.GetVessel().GetCrewCapacity(), 1) : 1);
 
         /// <summary>
         /// Returns Part where ProtoCrewMember is currently located or null if none

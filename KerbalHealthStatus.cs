@@ -92,6 +92,8 @@ namespace KerbalHealth
                     return Localizer.Format("#KH_NA");
                 if (v.isEVA)
                     return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
+                if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(PCM?.GetCLSSpace()?.Name))
+                    return $"{v.vesselName} - {PCM.GetCLSSpace().Name}";
                 return v.vesselName;
             }
         }
@@ -184,12 +186,14 @@ namespace KerbalHealth
             if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.Contains(PCM))
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
-            locationEffect = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount, CLS.Enabled ? PCM.GetCLSSpace() : null);
+            ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? PCM.GetCLSSpace() : null;
+            int crewCount = Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1);
+            locationEffect = new HealthEffect(EditorLogic.SortedShipList, crewCount, space);
             Part p = EditorLogic.SortedShipList.Find(part => part.protoModuleCrew.Contains(PCM));
             if (p != null)
             {
                 Core.Log($"{Name} is in part {p.partName}.");
-                locationEffect.ProcessPart(p, ShipConstruction.ShipManifest.CrewCount, true, true);
+                locationEffect.ProcessPart(p, crewCount, true, true);
             }
             Core.Log($"Resulting location effect:\n{locationEffect}");
         }
@@ -333,7 +337,7 @@ namespace KerbalHealth
             if (condition.Incapacitated)
                 MakeIncapacitated();
             if (condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", Name, condition.Title) + condition.Description, PCM);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -1045,6 +1049,7 @@ namespace KerbalHealth
 
             HP += HPChangeTotal * interval / KSPUtil.dateTimeFormatter.Day;
 
+            // Check if the kerbal dies
             if (HP <= 0 && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
                 Core.Log($"{Name} dies due to having {HP} health.", LogLevel.Important);
@@ -1053,6 +1058,7 @@ namespace KerbalHealth
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(PCM.GetVessel());
                 Core.ShowMessage(Localizer.Format("#KH_Condition_KerbalDied", Name), true);
+                return;
             }
 
             // If KSC training no longer possible, stop it
@@ -1081,13 +1087,13 @@ namespace KerbalHealth
                 if (HP >= ExhaustionEndHP)
                 {
                     RemoveCondition(Condition_Exhausted);
-                    Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionEnd", Name), PCM);//"<color=\"white\">" +  + "</color> is no longer exhausted."
+                    Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionEnd", Name), PCM);//"<color=white>" +  + "</color> is no longer exhausted."
                 }
             }
             else if (HP < ExhaustionStartHP)
             {
                 AddCondition(Condition_Exhausted);
-                Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionStart", Name), PCM);//"<color=\"white\">" +  + "</color> is exhausted!"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionStart", Name), PCM);//"<color=white>" +  + "</color> is exhausted!"
             }
         }
 

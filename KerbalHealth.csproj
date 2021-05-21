@@ -82,7 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CLS.cs" />
+    <Compile Include="Wrappers\CLS.cs" />
     <Compile Include="FactorMultiplier.cs" />
     <Compile Include="FactorMultiplierList.cs" />
     <Compile Include="KerbalComparer.cs" />

@@ -422,7 +422,7 @@ namespace KerbalHealth
                         s = Core.ParseUT(khs.ETAToNextCondition, false, 100);
                         if (change < 0)
                         {
-                            formatTag = khs.ETAToNextCondition< KSPUtil.dateTimeFormatter.Day ? "<color=\"red\">" : "<color=\"orange\">";
+                            formatTag = khs.ETAToNextCondition< KSPUtil.dateTimeFormatter.Day ? "<color=red>" : "<color=orange>";
                             formatUntag = "</color>";
                         }
                     }
@@ -445,33 +445,33 @@ namespace KerbalHealth
                     Invalidate();
                 }
                 bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
-                gridContent[1].SetOptionText($"<color=\"white\">{selectedKHS.Name}</color>");
-                gridContent[3].SetOptionText($"<color=\"white\">{pcm.experienceLevel} {pcm.trait}</color>");
-                gridContent[5].SetOptionText($"<color=\"white\">{selectedKHS.ConditionString}</color>");
+                gridContent[1].SetOptionText($"<color=white>{selectedKHS.Name}</color>");
+                gridContent[3].SetOptionText($"<color=white>{pcm.experienceLevel} {pcm.trait}</color>");
+                gridContent[5].SetOptionText($"<color=white>{selectedKHS.ConditionString}</color>");
 
                 string s = "";
                 foreach (Quirk q in selectedKHS.Quirks.Where(q => q.IsVisible))
                     s += (s.Length != 0 ? ", " : "") + q.Title;
                 if (s.Length == 0)
                     s = Localizer.Format("#KH_HM_DNone");//None
-                gridContent[7].SetOptionText($"<color=\"white\">{s}</color>");
+                gridContent[7].SetOptionText($"<color=white>{s}</color>");
 
-                gridContent[9].SetOptionText($"<color=\"white\">{selectedKHS.MaxHP:F2}</color>");
-                gridContent[11].SetOptionText($"<color=\"white\">{selectedKHS.HP:F2} ({selectedKHS.Health:P2})</color>");
-                gridContent[13].SetOptionText($"<color=\"white\">{(healthFrozen ? "—" : selectedKHS.HPChangeTotal.ToString("F2"))}</color>");
+                gridContent[9].SetOptionText($"<color=white>{selectedKHS.MaxHP:F2}</color>");
+                gridContent[11].SetOptionText($"<color=white>{selectedKHS.HP:F2} ({selectedKHS.Health:P2})</color>");
+                gridContent[13].SetOptionText($"<color=white>{(healthFrozen ? "—" : selectedKHS.HPChangeTotal.ToString("F2"))}</color>");
 
                 int i = 15;
                 foreach (HealthFactor f in Core.Factors)
                 {
-                    gridContent[i].SetOptionText($"<color=\"white\">{selectedKHS.GetFactorHPChange(f):N2}</color>");
+                    gridContent[i].SetOptionText($"<color=white>{selectedKHS.GetFactorHPChange(f):N2}</color>");
                     i += 2;
                 }
-                gridContent[i].children[0].SetOptionText($"<color=\"white\">{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
-                gridContent[i + 2].SetOptionText($"<color=\"white\">{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
-                gridContent[i + 4].SetOptionText($"<color=\"white\">{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
-                gridContent[i + 6].SetOptionText($"<color=\"white\">{selectedKHS.Radiation:N0}/day</color>");
-                gridContent[i + 8].children[0].SetOptionText($"<color=\"white\">{Core.PrefixFormat(selectedKHS.Dose, 6)}</color>");
-                gridContent[i + 10].SetOptionText($"<color=\"white\">{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
+                gridContent[i].children[0].SetOptionText($"<color=white>{(((selectedKHS.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
+                gridContent[i + 2].SetOptionText($"<color=white>{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
+                gridContent[i + 4].SetOptionText($"<color=white>{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
+                gridContent[i + 6].SetOptionText($"<color=white>{selectedKHS.Radiation:N0}/day</color>");
+                gridContent[i + 8].children[0].SetOptionText($"<color=white>{Core.PrefixFormat(selectedKHS.Dose, 6)}</color>");
+                gridContent[i + 10].SetOptionText($"<color=white>{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
             }
             dirty = false;
         }
@@ -507,13 +507,13 @@ namespace KerbalHealth
                 gridContent = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNumMain)
                 {
                     // Creating column titles
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Name")}</color></b>", true),//Name
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Location")}</color></b>", true),//Location
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Condition")}</color></b>", true),//Condition
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Health")}</color></b>", true),//Health
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Changeperday")}</color></b>", true),//Change/day
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_TimeLeft")}</color></b>", true),//Time Left
-                    new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_HM_Radiation")}</color></b>", true),//Radiation
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_Name")}</color></b>", true),//Name
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_Location")}</color></b>", true),//Location
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_Condition")}</color></b>", true),//Condition
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_Health")}</color></b>", true),//Health
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_Changeperday")}</color></b>", true),//Change/day
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_TimeLeft")}</color></b>", true),//Time Left
+                    new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_HM_Radiation")}</color></b>", true),//Radiation
                     new DialogGUILabel("", true)
                 };
 
@@ -894,7 +894,7 @@ namespace KerbalHealth
                     t.Magnitutde = rst.GetMagnitude();
                     Core.Log($"Radstorm will hit {t.Name} travel distance: {t.DistanceFromSun:F0} m; travel time: {delay:N0} s; magnitude {t.Magnitutde:N0}.");
                     t.Time = Planetarium.GetUniversalTime() + delay;
-                    Core.ShowMessage(Localizer.Format("#KH_RadStorm_Alert", rst.Name, t.Name, KSPUtil.PrintDate(t.Time, true)), true);//A radiation storm of <color=\"yellow\">" + rst.Name + "</color> strength is going to hit <color=\"yellow\">" + t.Name + "</color> on <color=\"yellow\">" + KSPUtil.PrintDate(t.Time, true) + "</color>!
+                    Core.ShowMessage(Localizer.Format("#KH_RadStorm_Alert", rst.Name, t.Name, KSPUtil.PrintDate(t.Time, true)), true);//A radiation storm of <color=yellow>" + rst.Name + "</color> strength is going to hit <color=yellow>" + t.Name + "</color> on <color=yellow>" + KSPUtil.PrintDate(t.Time, true) + "</color>!
                     radStorms.Add(t);
                 }
         }
@@ -1070,7 +1070,7 @@ namespace KerbalHealth
             {
                 msg += Localizer.Format("#KH_TI_FamiliarParts", selectedKHS.Name);
                 foreach (string s in selectedKHS.FamiliarPartTypes)
-                    msg += $"\r\n- <color=\"white\">{PartLoader.getPartInfoByName(s)?.title ?? s}</color>";
+                    msg += $"\r\n- <color=white>{PartLoader.getPartInfoByName(s)?.title ?? s}</color>";
             }
 
             PopupDialog.SpawnPopupDialog(
@@ -1088,7 +1088,7 @@ namespace KerbalHealth
         {
             if (selectedKHS == null)
                 return;
-            string msg = "<color=\"white\">";
+            string msg = "<color=white>";
             Func<bool> condition = () => false;
             Callback ok = null;
 
