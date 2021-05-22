@@ -375,9 +375,9 @@ namespace KerbalHealth
             if (v < 0.5)
                 return "0";
             int n, m = (int)Math.Pow(10, digits);
-            for (n = 0; (v >= m) && (n < prefixes.Length - 1); n++)
+            for (n = 0; v >= m && n < prefixes.Length - 1; n++)
                 v /= 1000;
-            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("F" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
+            return (value < 0 ? "-" : (mandatorySign && value > 0 ? "+" : "")) + v.ToString("N" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
         }
 
         /// <summary>

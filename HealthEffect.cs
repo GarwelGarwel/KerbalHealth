@@ -11,11 +11,6 @@ namespace KerbalHealth
     {
         public const string ConfigNodeName = "HEALTH_EFFECTS";
 
-        /// <summary>
-        /// Cache of processed vessels, refreshed at every update
-        /// </summary>
-        //public static Dictionary<Guid, HealthEffect> VesselCache { get; set; } = new Dictionary<Guid, HealthEffect>();
-
         public double HPChange { get; set; }
 
         public double MaxHP { get; set; } = 1;
@@ -149,34 +144,6 @@ namespace KerbalHealth
         public HealthEffect(List<Part> parts, int crew, ConnectedLivingSpace.ICLSSpace clsSpace) : this() => ProcessParts(parts, crew, clsSpace);
 
         /// <summary>
-        /// Returns vessel health modifiers for the given vessel, either cached or calculated
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        //public static HealthEffect GetVesselModifiers(Vessel v) =>
-        //    VesselCache.ContainsKey(v.id) ? VesselCache[v.id] : (VesselCache[v.id] = new HealthEffect(v));
-
-        /// <summary>
-        /// Returns vessel health modifiers for the vessel with the given kerbal
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        //public static HealthEffect GetVesselModifiers(ProtoCrewMember pcm)
-        //{
-        //    if (Core.IsInEditor)
-        //    {
-        //        if (VesselCache.Count > 0)
-        //        {
-        //            Core.Log("In editor and VesselHealthInfo found in cache. Retrieving.");
-        //            return VesselCache.First().Value;
-        //        }
-        //        Core.Log("In editor and VesselHealthInfo not found in cache. Calculating and adding to cache.");
-        //        return VesselCache[Guid.Empty] = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
-        //    }
-        //    return pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned ? new HealthEffect() : GetVesselModifiers(pcm.GetVessel());
-        //}
-
-        /// <summary>
         /// Returns exposure provided by shielding
         /// </summary>
         /// <param name="shielding">Total shielding</param>
@@ -283,7 +250,7 @@ namespace KerbalHealth
         /// <param name="crewCount">Current crew</param>
         /// <param name="partCrewModules">Whether to analyze modules with partCrewOnly flag or without</param>
         /// <param name="inCLSSpace">Whether the part is located in the same CLS space as the current kerbal (true if CLS integration is not active)</param>
-        public void ProcessPart(Part part, int crewCount, bool partCrewModules, bool inCLSSpace)
+        public void ProcessPart(Part part, int crewCount, bool inCLSSpace)
         {
             if (part == null)
             {
@@ -291,12 +258,11 @@ namespace KerbalHealth
                 return;
             }
 
-            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(m => m.IsModuleActive && m.partCrewOnly == partCrewModules))
+            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(m => m.IsModuleActive))
             {
                 Core.Log($"Processing {mkh.Title} Module in {part.name}.");
                 if (inCLSSpace || mkh.affectsAllCLSSpaces)
                 {
-                    Core.Log($"PartCrewOnly: {mkh.partCrewOnly}; CrewInPart: {partCrewModules}; condition: {(!mkh.partCrewOnly ^ partCrewModules)}");
                     HPChange += mkh.hpChangePerDay;
                     Space += mkh.Space;
                     if (mkh.recuperation != 0)
@@ -327,8 +293,7 @@ namespace KerbalHealth
                     Core.Log($"Radioactive emission of this module is {mkh.radioactivity}.");
             }
 
-            if (!partCrewModules)
-                Shielding += GetResourceShielding(part);
+            Shielding += GetResourceShielding(part);
         }
 
         /// <summary>
@@ -343,7 +308,7 @@ namespace KerbalHealth
 
             foreach (Part p in parts)
             {
-                ProcessPart(p, crewCount, false, clsSpace == null || clsSpace.Parts.Any(clsPart => clsPart.Part == p));
+                ProcessPart(p, crewCount, clsSpace == null || clsSpace.Parts.Any(clsPart => clsPart.Part == p));
                 if (p.CrewCapacity > 0)
                 {
                     Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");

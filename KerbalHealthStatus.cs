@@ -177,7 +177,6 @@ namespace KerbalHealth
                 Vessel v = Core.GetVessel(PCM);
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
                 locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace() : null);
-                locationEffect.ProcessPart(PCM.GetCrewPart(), v.GetCrewCount(), true, true);
             }
         }
 
@@ -187,15 +186,8 @@ namespace KerbalHealth
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
             ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? PCM.GetCLSSpace() : null;
-            int crewCount = Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1);
-            locationEffect = new HealthEffect(EditorLogic.SortedShipList, crewCount, space);
-            Part p = EditorLogic.SortedShipList.Find(part => part.protoModuleCrew.Contains(PCM));
-            if (p != null)
-            {
-                Core.Log($"{Name} is in part {p.partName}.");
-                locationEffect.ProcessPart(p, crewCount, true, true);
-            }
-            Core.Log($"Resulting location effect:\n{locationEffect}");
+            locationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
+            Core.Log($"Location effect:\n{locationEffect}");
         }
 
         void CalculateQuirkEffects()

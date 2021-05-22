@@ -61,10 +61,6 @@ namespace KerbalHealth
         public float resourceConsumptionPerKerbal = 0;
 
         [KSPField]
-        // Does the module affect health of only crew in this part or the entire vessel?
-        public bool partCrewOnly = false;
-
-        [KSPField]
         // Does the module affect all ConnectedLivingSpace spaces? Otherwise only Shielding and Radiation apply
         public bool affectsAllCLSSpaces = false;
 
@@ -122,7 +118,7 @@ namespace KerbalHealth
         {
             get
             {
-                if (!partCrewOnly && !affectsAllCLSSpaces && CLS.Enabled)
+                if (!affectsAllCLSSpaces && CLS.Enabled)
                 {
                     ICLSVessel clsVessel = Core.IsInEditor ? CLS.CLSAddon.Vessel : CLS.CLSAddon.getCLSVessel(vessel);
                     if (clsVessel != null)
@@ -136,17 +132,9 @@ namespace KerbalHealth
                 }
 
                 if (Core.IsInEditor)
-                    return partCrewOnly
-                        ? ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew().Where(pcm => pcm != null).Count()
-                        : ShipConstruction.ShipManifest.CrewCount;
+                    return ShipConstruction.ShipManifest.CrewCount;
 
-                if (vessel == null || part?.protoModuleCrew == null)
-                {
-                    Core.Log($"TotalAffectedCrewCount: vessel: {vessel?.vesselName ?? "NULL"}; part: {part?.partName ?? "NULL"}; protoModuleCrew: {(part?.protoModuleCrew ?? new List<ProtoCrewMember>()).Count()} members.", LogLevel.Error);
-                    return 0;
-                }
-
-                return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
+                return vessel != null ? vessel.GetCrewCount() : 0;
             }
         }
 
@@ -366,8 +354,6 @@ namespace KerbalHealth
             }
             if (crewCap > 0)
                 res += Localizer.Format("#KH_Module_info5", crewCap);//" for up to " +  + " kerbals
-            if (partCrewOnly)
-                res += $"\n<color=yellow>{Localizer.Format("#KH_Module_Info_PartCrewOnly")}</color>";
             if (resourceConsumption != 0)
                 res += Localizer.Format("#KH_Module_info7", ResourceDefinition.abbreviation, resourceConsumption.ToString("F2"));//"\n" +  + ": " +  + "/sec."
             if (resourceConsumptionPerKerbal != 0)

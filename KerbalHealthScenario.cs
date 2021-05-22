@@ -1048,7 +1048,7 @@ namespace KerbalHealth
         {
             if (selectedKHS == null)
                 return;
-            string msg = (selectedKHS.TrainingVessel != null)
+            string msg = selectedKHS.TrainingVessel != null
                ? Localizer.Format(
                    "#KH_TI_KerbalTraining",
                    selectedKHS.Name,
@@ -1140,10 +1140,10 @@ namespace KerbalHealth
                 }
             }
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog(
-                "Decontamination", 
-                msg, 
-                Localizer.Format("#KH_DeconWinTitle"), 
-                HighLogic.UISkin, 
+                "Decontamination",
+                msg,
+                Localizer.Format("#KH_DeconWinTitle"),
+                HighLogic.UISkin,
                 new DialogGUIButton(Localizer.Format("#KH_DeconWinOKbtn"), ok, condition, true),
                 new DialogGUIButton(Localizer.Format("#KH_DeconWinCancelbtn"), null, true)),
                 false,
