@@ -224,6 +224,16 @@ namespace KerbalHealth
             ConfigLoaded = true;
         }
 
+        public static IList<ProtoCrewMember> GetCrew(ProtoCrewMember pcm, bool entireVessel)
+        {
+            if (!entireVessel && CLS.Enabled && pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                return pcm.GetCLSSpace().GetCrew().ToList();
+            if (IsInEditor)
+                return ShipConstruction.ShipManifest.GetAllCrew(false);
+            Vessel vessel = pcm.GetVessel();
+            return vessel != null ? vessel.GetVesselCrew() : new List<ProtoCrewMember>();
+        }
+
         /// <summary>
         /// Returns number of current crew in a vessel (or CLS space) the kerbal is in or in the currently constructed vessel
         /// </summary>

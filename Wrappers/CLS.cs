@@ -1,5 +1,6 @@
 ﻿using ConnectedLivingSpace;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -34,6 +35,9 @@ namespace KerbalHealth
             }
             return CLSAddon.Vessel.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal.name == pcm.name));
         }
+
+        public static IEnumerable<ProtoCrewMember> GetCrew(this ICLSSpace clsSpace) =>
+            Core.IsInEditor ? clsSpace.Parts.SelectMany(p => p.Part.protoModuleCrew) : clsSpace.Crew.Select(kerbal => kerbal.Kerbal);
 
         public static int GetCrewCount(this ICLSSpace clsSpace) => Core.IsInEditor ? clsSpace.Parts.Sum(p => p.Part.protoModuleCrew.Count) : clsSpace.Crew.Count;
     }
