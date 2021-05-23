@@ -34,8 +34,9 @@ namespace KerbalHealth
 
         public void Load(ConfigNode node)
         {
-            if (node.HasValue("modification"))
-                Modification = (OperationType)Enum.Parse(typeof(OperationType), node.GetValue("modification"), true);
+            string modification = null;
+            if (node.TryGetValue("modification", ref modification))
+                Modification = (OperationType)Enum.Parse(typeof(OperationType), modification, true);
             Value = node.GetDouble("value", Modification == OperationType.Add ? 0 : 1);
             UseAttribute = node.GetString("useAttribute");
             Logic.Load(node);

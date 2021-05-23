@@ -164,8 +164,10 @@ namespace KerbalHealth
             {
                 p.GetConnectedResourceTotals(res.Key, ResourceFlowMode.NO_FLOW, out double amount, out double maxAmount);
                 if (amount != 0)
+                {
                     Core.Log($"Part {p.name} contains {amount:N1} / {maxAmount:N0} of shielding resource {res.Key}.");
-                s += res.Value * amount;
+                    s += res.Value * amount;
+                }
             }
             return s;
         }

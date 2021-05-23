@@ -576,7 +576,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public bool IsFamiliarWithPartType(string partName) => FamiliarPartTypes.Contains(partName);
 
-        public double TrainingLevelForPart(uint id) => TrainingLevels.ContainsKey(id) ? TrainingLevels[id] : 0;
+        public double TrainingLevelForPart(uint id) => TrainingLevels.TryGetValue(id, out double res) ? res : 0;
 
         public double GetPartTrainingComplexity(TrainingPart tp) => IsFamiliarWithPartType(tp.Name) ? tp.Complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : tp.Complexity;
 
@@ -762,7 +762,7 @@ namespace KerbalHealth
             Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value)} HP/day.");
         }
 
-        public double GetFactorHPChange(HealthFactor factor) => Factors.ContainsKey(factor) ? Factors[factor] : 0;
+        public double GetFactorHPChange(HealthFactor factor) => Factors.TryGetValue(factor, out double res) ? res : 0;
 
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
@@ -1094,6 +1094,8 @@ namespace KerbalHealth
         #region SAVING, LOADING, INITIALIZING ETC.
 
         public const string ConfigNodeName = "KerbalHealthStatus";
+        private const string ConfigNode_TrainedPart = "TRAINED_PART";
+        private const string ConfigNode_TrainedVessel = "TRAINED_VESSEL";
 
         public void Save(ConfigNode node)
         {
@@ -1103,7 +1105,7 @@ namespace KerbalHealth
             node.AddValue("health", HP);
             foreach (KeyValuePair<HealthFactor, double> f in factorsOriginal.Where(kvp => kvp.Value != 0))
             {
-                n2 = new ConfigNode("FACTOR");
+                n2 = new ConfigNode(HealthFactor.ConfigNodeName);
                 n2.AddValue("name", f.Key.Name);
                 n2.AddValue("change", f.Value);
                 node.AddNode(n2);
@@ -1129,7 +1131,7 @@ namespace KerbalHealth
                 node.AddValue("onEva", true);
             foreach (KeyValuePair<uint, double> t in TrainingLevels)
             {
-                n2 = new ConfigNode("TRAINED_PART");
+                n2 = new ConfigNode(ConfigNode_TrainedPart);
                 n2.AddValue("id", t.Key);
                 n2.AddValue("trainingLevel", t.Value);
                 node.AddNode(n2);
@@ -1138,7 +1140,7 @@ namespace KerbalHealth
                 node.AddValue("familiarPartType", s);
             foreach (KeyValuePair<string, double> kvp in TrainedVessels)
             {
-                n2 = new ConfigNode("TRAINED_VESSEL");
+                n2 = new ConfigNode(ConfigNode_TrainedVessel);
                 n2.AddValue("name", kvp.Key);
                 n2.AddValue("trainingLevel", kvp.Value);
                 node.AddNode(n2);
@@ -1156,14 +1158,13 @@ namespace KerbalHealth
         {
             name = node.GetValue("name");
             hp = node.GetDouble("health", GetDefaultMaxHP(PCM));
-            foreach (ConfigNode factorNode in node.GetNodes("FACTOR"))
+            foreach (ConfigNode factorNode in node.GetNodes(HealthFactor.ConfigNodeName))
                 factorsOriginal[Core.GetHealthFactor(factorNode.GetValue("name"))] = factorNode.GetDouble("change");
             if (node.HasNode(HealthEffect.ConfigNodeName))
                 locationEffect = new HealthEffect(node.GetNode(HealthEffect.ConfigNodeName));
             Dose = node.GetDouble("dose");
             Radiation = node.GetDouble("radiation");
-            Conditions = new List<HealthCondition>(node.GetValues("condition").Select(s => Core.GetHealthCondition(s)));
-            Conditions.AddRange(node.GetNodes("HealthCondition").Select(n => Core.GetHealthCondition(n.GetString("name"))));
+            Conditions = node.GetValues("condition").Select(s => Core.GetHealthCondition(s)).ToList();
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && IsTraining)
                 RemoveCondition(Condition_Training, true);
             foreach (string s in node.GetValues("quirk"))
@@ -1172,20 +1173,20 @@ namespace KerbalHealth
             Trait = node.GetValue("trait");
             IsOnEVA = node.GetBool("onEva");
             TrainingLevels.Clear();
-            foreach (ConfigNode n in node.GetNodes("TRAINED_PART"))
+            foreach (ConfigNode n in node.GetNodes(ConfigNode_TrainedPart))
             {
                 uint id = n.GetUInt("id");
                 if (id != 0)
                     TrainingLevels[id] = n.GetDouble("trainingLevel");
             }
             FamiliarPartTypes.AddAll(node.GetValues("familiarPartType"));
-            foreach (ConfigNode n in node.GetNodes("TRAINED_VESSEL"))
+            foreach (ConfigNode n in node.GetNodes(ConfigNode_TrainedVessel))
             {
                 string name = n.GetString("name");
                 if (name != null)
                     TrainedVessels.Add(name, n.GetDouble("trainingLevel"));
             }
-            TrainingFor = new List<TrainingPart>(node.GetNodes(TrainingPart.ConfigNodeName).Select(n => new TrainingPart(n)));
+            TrainingFor = node.GetNodes(TrainingPart.ConfigNodeName).Select(n => new TrainingPart(n)).ToList();
             TrainingVessel = node.GetString("trainingVessel");
             Core.Log($"{Name} loaded.");
         }

@@ -125,7 +125,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static HealthFactor GetHealthFactor(string id) => Factors.FirstOrDefault(f => f.Name == id);
 
-        public static HealthCondition GetHealthCondition(string s) => HealthConditions.ContainsKey(s) ? HealthConditions[s] : null;
+        public static HealthCondition GetHealthCondition(string s) => HealthConditions.TryGetValue(s, out HealthCondition value) ? value : null;
 
         public static void AddResourceShielding(string name, double shieldingPerTon)
         {
@@ -135,12 +135,12 @@ namespace KerbalHealth
             else Log($"Can't find ResourceDefinition for {name}.");
         }
 
-        public static Quirk GetQuirk(string name) => Quirks.Find(q => string.Compare(name, q.Name, true) == 0);
+        public static Quirk GetQuirk(string name) => Quirks.Find(q => name.Equals(q.Name, StringComparison.OrdinalIgnoreCase));
 
         public static PlanetHealthConfig GetPlanetConfig(string name)
         {
             CelestialBody cb = FlightGlobals.GetBodyByName(name);
-            return cb != null && PlanetConfigs.ContainsKey(cb) ? PlanetConfigs[cb] : null;
+            return cb != null && PlanetConfigs.TryGetValue(cb, out PlanetHealthConfig res) ? res : null;
         }
 
         public static RadStormType GetRandomRadStormType()
@@ -279,11 +279,7 @@ namespace KerbalHealth
         /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
         /// </summary>
-        public static void ClearCache()
-        {
-            kerbalVesselsCache.Clear();
-            //HealthEffect.VesselCache.Clear();
-        }
+        public static void ClearCache() => kerbalVesselsCache.Clear();
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
@@ -295,13 +291,12 @@ namespace KerbalHealth
             if (pcm == null || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && pcm.rosterStatus != Status_Frozen))
                 return null;
 
-            if (kerbalVesselsCache.ContainsKey(pcm.name))
-                return kerbalVesselsCache[pcm.name];
+            if (kerbalVesselsCache.TryGetValue(pcm.name, out Vessel vessel))
+                return vessel;
 
-            Vessel vessel;
-            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
+            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.TryGetValue(pcm.name, out DFWrapper.KerbalInfo kerbal))
             {
-                vessel = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
+                vessel = FlightGlobals.FindVessel(kerbal.vesselID);
                 Log($"{pcm.name} found frozen in {vessel?.vesselName ?? "NULL"}.");
                 kerbalVesselsCache.Add(pcm.name, vessel);
                 return vessel;
@@ -332,10 +327,14 @@ namespace KerbalHealth
         public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
         public static CelestialBody GetPlanet(this CelestialBody body) =>
-            (body == null || body.IsPlanet()) ? body : body.orbit?.referenceBody?.GetPlanet();
+            body == null || body.IsPlanet() ? body : body.orbit?.referenceBody?.GetPlanet();
 
-        public static string GetString(this ConfigNode n, string key, string defaultValue = null) =>
-            n.HasValue(key) ? n.GetValue(key) : defaultValue;
+        public static string GetString(this ConfigNode n, string key, string defaultValue = null)
+        {
+            string res = defaultValue;
+            n.TryGetValue(key, ref res);
+            return res;
+        }
 
         public static double GetDouble(this ConfigNode n, string key, double defaultValue = 0) =>
             double.TryParse(n.GetValue(key), out double res) && !double.IsNaN(res) ? res : defaultValue;

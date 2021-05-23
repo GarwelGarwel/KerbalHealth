@@ -2,6 +2,8 @@
 {
     public abstract class HealthFactor
     {
+        public const string ConfigNodeName = "FACTOR";
+
         bool enabledInEditor = true;
 
         /// <summary>

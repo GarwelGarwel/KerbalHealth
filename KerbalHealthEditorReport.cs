@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KerbalHealth
 {
@@ -74,17 +75,14 @@ namespace KerbalHealth
             }
 
             Core.KerbalHealthList.RegisterKerbals();
-            Core.Log("KerbalHealthEditorReport.Start finished.", LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.Start finished.");
         }
 
         public void DisplayData()
         {
-            Core.Log("KerbalHealthEditorReport.DisplayData");
+            Core.Log("KerbalHealthEditorReport.DisplayData", LogLevel.Important);
             if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.HasAnyCrew())
-            {
-                Core.Log("The ship construction is null.", LogLevel.Important);
                 return;
-            }
 
             gridContent = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
             {
@@ -133,10 +131,10 @@ namespace KerbalHealth
                         new RectOffset(3, 3, 3, 3),
                         new Vector2(90, 30),
                         new Vector2(10, 0),
-                        UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft,
-                        UnityEngine.UI.GridLayoutGroup.Axis.Horizontal,
+                        GridLayoutGroup.Corner.UpperLeft,
+                        GridLayoutGroup.Axis.Horizontal,
                         TextAnchor.MiddleCenter,
-                        UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                        GridLayoutGroup.Constraint.FixedColumnCount,
                         colNum,
                         gridContent.ToArray()),
                     CLS.Enabled
@@ -167,10 +165,10 @@ namespace KerbalHealth
                         new RectOffset(3, 3, 3, 3),
                         new Vector2(130, 30),
                         new Vector2(10, 0),
-                        UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft,
-                        UnityEngine.UI.GridLayoutGroup.Axis.Horizontal,
+                        GridLayoutGroup.Corner.UpperLeft,
+                        GridLayoutGroup.Axis.Horizontal,
                         TextAnchor.MiddleCenter,
-                        UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                        GridLayoutGroup.Constraint.FixedColumnCount,
                         3,
                         checklist.ToArray())),
                 false,
@@ -181,6 +179,7 @@ namespace KerbalHealth
 
         void OnResetButtonSelected()
         {
+            Core.Log("OnResetButtonSelected", LogLevel.Important);
             foreach (HealthFactor f in Core.Factors)
                 f.ResetEnabledInEditor();
             healthModulesEnabled = true;
@@ -190,7 +189,7 @@ namespace KerbalHealth
 
         void OnTrainButtonSelected()
         {
-            Core.Log("OnTrainButtonSelected");
+            Core.Log("OnTrainButtonSelected", LogLevel.Important);
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
@@ -242,7 +241,6 @@ namespace KerbalHealth
 
         void SetCLSSpaceIndex(int i)
         {
-            Core.Log($"SetCLSSpaceIndex({i}), clsSpaceIndex = {clsSpaceIndex}");
             if (CLSSpacesCount != 0)
             {
                 if (CLSSpace != null)
@@ -250,7 +248,6 @@ namespace KerbalHealth
                 clsSpaceIndex = i % CLSSpacesCount;
                 if (clsSpaceIndex < 0)
                     clsSpaceIndex += CLSSpacesCount;
-                Core.Log($"New clsSpaceIndex: {clsSpaceIndex}");
                 CLSSpace.Highlight(true);
             }
             else clsSpaceIndex = 0;
@@ -300,7 +297,6 @@ namespace KerbalHealth
                 int i = 0;
                 KerbalHealthStatus khs = null;
                 ICLSSpace clsSpace = CLSSpace;
-                //HealthEffect.VesselCache.Clear();
                 if (CLS.Enabled)
                 {
                     if (clsSpaceIndex >= CLSSpacesCount)
@@ -312,7 +308,7 @@ namespace KerbalHealth
                         clsSpaceNameLbl.SetOptionText(Localizer.Format("#KH_ER_CLSSpace", clsSpace.Name));
                     }
                     else clsSpaceNameLbl.SetOptionText("");
-                    Core.Log($"Current CLS index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
+                    Core.Log($"CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
                 }
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
