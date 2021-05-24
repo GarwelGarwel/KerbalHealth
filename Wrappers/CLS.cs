@@ -37,8 +37,8 @@ namespace KerbalHealth
         }
 
         public static IEnumerable<ProtoCrewMember> GetCrew(this ICLSSpace clsSpace) =>
-            Core.IsInEditor ? clsSpace.Parts.SelectMany(p => p.Part.protoModuleCrew) : clsSpace.Crew.Select(kerbal => kerbal.Kerbal);
+            Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm.GetCLSSpace() == clsSpace) : clsSpace.Crew.Select(kerbal => kerbal.Kerbal);
 
-        public static int GetCrewCount(this ICLSSpace clsSpace) => Core.IsInEditor ? clsSpace.Parts.Sum(p => p.Part.protoModuleCrew.Count) : clsSpace.Crew.Count;
+        public static int GetCrewCount(this ICLSSpace clsSpace) => Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(false).Count(pcm => pcm.GetCLSSpace() == clsSpace) : clsSpace.Crew.Count;
     }
 }

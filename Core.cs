@@ -242,7 +242,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static int GetCrewCount(ProtoCrewMember pcm, bool entireVessel)
         {
-            if (!entireVessel && CLS.Enabled && pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+            if (!entireVessel && CLS.Enabled)
                 return pcm.GetCLSSpace().GetCrewCount();
             if (IsInEditor)
                 return ShipConstruction.ShipManifest.CrewCount;

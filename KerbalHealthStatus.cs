@@ -1,5 +1,4 @@
-﻿using KerbalHealth.Wrappers;
-using KSP.Localization;
+﻿using KSP.Localization;
 using Smooth.Collections;
 using System;
 using System.Collections.Generic;

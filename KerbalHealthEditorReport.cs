@@ -84,7 +84,7 @@ namespace KerbalHealth
             if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.HasAnyCrew())
                 return;
 
-            gridContent = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
+            gridContent = new List<DialogGUIBase>((ShipConstruction.ShipManifest.CrewCount + 1) * colNum)
             {
                 // Creating column titles
                  new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_Name")}</color></b>", true),//Name
@@ -98,8 +98,7 @@ namespace KerbalHealth
                 gridContent.Add(new DialogGUILabel("", true));
 
             // Preparing factors checklist
-            List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
-            checklist.AddRange(Core.Factors.Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
+            List<DialogGUIToggle> checklist = new List<DialogGUIToggle>(Core.Factors.Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
             {
                 f.SetEnabledInEditor(state);
                 Invalidate();
@@ -141,7 +140,7 @@ namespace KerbalHealth
                     ? new DialogGUIHorizontalLayout(
                         TextAnchor.MiddleCenter,
                         new DialogGUIButton("<", OnPreviousCLSSpaceButtonSelected, () => CLSSpacesCount > 1, false),
-                        clsSpaceNameLbl = new DialogGUILabel("", new UIStyle() { alignment = TextAnchor.MiddleCenter }, true),
+                        clsSpaceNameLbl = new DialogGUILabel("", true),
                         new DialogGUIButton(">", OnNextCLSSpaceButtonSelected, () => CLSSpacesCount > 1, false))
                     : new DialogGUIBase(),
                     new DialogGUIHorizontalLayout(
@@ -308,7 +307,7 @@ namespace KerbalHealth
                         clsSpaceNameLbl.SetOptionText(Localizer.Format("#KH_ER_CLSSpace", clsSpace.Name));
                     }
                     else clsSpaceNameLbl.SetOptionText("");
-                    Core.Log($"CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
+                    Core.Log($"Selected CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
                 }
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
@@ -350,13 +349,14 @@ namespace KerbalHealth
                 }
 
                 HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount, clsSpace);
-                Core.Log($"Vessel effects: {vesselEffects}");
+                Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
                 spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
                 recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
                 shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
                 exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");
-                shelterExposureLbl.SetOptionText($"<color=white>{vesselEffects.ShelterExposure:P1}</color>");
+                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && !(Kerbalism.Found && KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation))
+                    shelterExposureLbl.SetOptionText($"<color=white>{vesselEffects.ShelterExposure:P1}</color>");
 
                 dirty = false;
             }

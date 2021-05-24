@@ -313,26 +313,31 @@ namespace KerbalHealth
                 ProcessPart(p, crewCount, clsSpace == null || clsSpace.Parts.Any(clsPart => clsPart.Part == p));
                 if (p.CrewCapacity > 0)
                 {
-                    Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");
+                    if (Core.IsLogging())
+                        Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");
                     exposures.Add(new PartExposureComparer(p));
                     CrewCapacity += p.CrewCapacity;
                 }
                 exposures.Sort();
             }
 
-            // Calculating shelter exposure
-            double x = 0;
-            int c = 0;
-            for (int i = 0; i < exposures.Count; i++)
+            if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && !(Kerbalism.Found && KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation))
             {
-                Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
-                x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
-                c += exposures[i].Part.CrewCapacity;
-                if (c >= crewCount)
-                    break;
+                // Calculating shelter exposure
+                double x = 0;
+                int c = 0;
+                for (int i = 0; i < exposures.Count; i++)
+                {
+                    Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
+                    x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
+                    c += exposures[i].Part.CrewCapacity;
+                    if (c >= crewCount)
+                        break;
+                }
+                Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {ExposureMultiplier:P1}.");
+                ShelterExposure = Math.Min(x / c, VesselExposure);
             }
-            Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {ExposureMultiplier:P1}.");
-            ShelterExposure = Math.Min(x / c, VesselExposure);
+            else ShelterExposure = VesselExposure;
         }
 
         /// <summary>

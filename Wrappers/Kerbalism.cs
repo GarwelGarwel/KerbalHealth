@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace KerbalHealth.Wrappers
+namespace KerbalHealth
 {
     /// <summary>
     /// This class imports some of Kerbalism's methods. Its author is not affiliated with devs of Kerbalism in any way
