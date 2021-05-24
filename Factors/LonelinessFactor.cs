@@ -14,7 +14,7 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor && !IsEnabledInEditor())
                 return 0;
-            return (Core.GetCrewCount(khs.PCM) <= 1) && !khs.PCM.isBadass ? BaseChangePerDay : 0;
+            return Core.GetCrewCount(khs.PCM, true) == 1 && !khs.PCM.isBadass ? BaseChangePerDay : 0;
         }
     }
 }

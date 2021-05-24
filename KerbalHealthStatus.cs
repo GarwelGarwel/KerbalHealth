@@ -1,5 +1,4 @@
-﻿using KerbalHealth.Wrappers;
-using KSP.Localization;
+﻿using KSP.Localization;
 using Smooth.Collections;
 using System;
 using System.Collections.Generic;
@@ -92,6 +91,8 @@ namespace KerbalHealth
                     return Localizer.Format("#KH_NA");
                 if (v.isEVA)
                     return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
+                if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(PCM?.GetCLSSpace()?.Name))
+                    return $"{v.vesselName} - {PCM.GetCLSSpace().Name}";
                 return v.vesselName;
             }
         }
@@ -174,8 +175,7 @@ namespace KerbalHealth
                 // The kerbal is in a vessel => recalculate vesselEffect & partEffect
                 Vessel v = Core.GetVessel(PCM);
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
-                locationEffect = new HealthEffect(v);
-                locationEffect.ProcessPart(PCM.GetCrewPart(), v.GetCrewCount(), true);
+                locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace() : null);
             }
         }
 
@@ -184,14 +184,9 @@ namespace KerbalHealth
             if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.Contains(PCM))
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
-            locationEffect = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
-            Part p = EditorLogic.SortedShipList.Find(part => part.protoModuleCrew.Contains(PCM));
-            if (p != null)
-            {
-                Core.Log($"{Name} is in part {p.partName}.");
-                locationEffect.ProcessPart(p, ShipConstruction.ShipManifest.CrewCount, true);
-            }
-            Core.Log($"Resulting location effect:\n{locationEffect}");
+            ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? PCM.GetCLSSpace() : null;
+            locationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
+            Core.Log($"Location effect:\n{locationEffect}");
         }
 
         void CalculateQuirkEffects()
@@ -333,7 +328,7 @@ namespace KerbalHealth
             if (condition.Incapacitated)
                 MakeIncapacitated();
             if (condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", Name, condition.Title) + condition.Description, PCM);// "<color=\"white\">" + " has acquired " +  + "</color> condition!\r\n\n"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", Name, condition.Title) + condition.Description, PCM);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -580,7 +575,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public bool IsFamiliarWithPartType(string partName) => FamiliarPartTypes.Contains(partName);
 
-        public double TrainingLevelForPart(uint id) => TrainingLevels.ContainsKey(id) ? TrainingLevels[id] : 0;
+        public double TrainingLevelForPart(uint id) => TrainingLevels.TryGetValue(id, out double res) ? res : 0;
 
         public double GetPartTrainingComplexity(TrainingPart tp) => IsFamiliarWithPartType(tp.Name) ? tp.Complexity * (1 - KerbalHealthFactorsSettings.Instance.FamiliarityBonus) : tp.Complexity;
 
@@ -766,7 +761,7 @@ namespace KerbalHealth
             Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value)} HP/day.");
         }
 
-        public double GetFactorHPChange(HealthFactor factor) => Factors.ContainsKey(factor) ? Factors[factor] : 0;
+        public double GetFactorHPChange(HealthFactor factor) => Factors.TryGetValue(factor, out double res) ? res : 0;
 
         /// <summary>
         /// How many seconds left until HP reaches the given level, at the current HP change rate
@@ -1045,6 +1040,7 @@ namespace KerbalHealth
 
             HP += HPChangeTotal * interval / KSPUtil.dateTimeFormatter.Day;
 
+            // Check if the kerbal dies
             if (HP <= 0 && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
                 Core.Log($"{Name} dies due to having {HP} health.", LogLevel.Important);
@@ -1053,6 +1049,7 @@ namespace KerbalHealth
                 PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(PCM.GetVessel());
                 Core.ShowMessage(Localizer.Format("#KH_Condition_KerbalDied", Name), true);
+                return;
             }
 
             // If KSC training no longer possible, stop it
@@ -1081,13 +1078,13 @@ namespace KerbalHealth
                 if (HP >= ExhaustionEndHP)
                 {
                     RemoveCondition(Condition_Exhausted);
-                    Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionEnd", Name), PCM);//"<color=\"white\">" +  + "</color> is no longer exhausted."
+                    Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionEnd", Name), PCM);//"<color=white>" +  + "</color> is no longer exhausted."
                 }
             }
             else if (HP < ExhaustionStartHP)
             {
                 AddCondition(Condition_Exhausted);
-                Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionStart", Name), PCM);//"<color=\"white\">" +  + "</color> is exhausted!"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionStart", Name), PCM);//"<color=white>" +  + "</color> is exhausted!"
             }
         }
 
@@ -1096,6 +1093,8 @@ namespace KerbalHealth
         #region SAVING, LOADING, INITIALIZING ETC.
 
         public const string ConfigNodeName = "KerbalHealthStatus";
+        private const string ConfigNode_TrainedPart = "TRAINED_PART";
+        private const string ConfigNode_TrainedVessel = "TRAINED_VESSEL";
 
         public void Save(ConfigNode node)
         {
@@ -1105,7 +1104,7 @@ namespace KerbalHealth
             node.AddValue("health", HP);
             foreach (KeyValuePair<HealthFactor, double> f in factorsOriginal.Where(kvp => kvp.Value != 0))
             {
-                n2 = new ConfigNode("FACTOR");
+                n2 = new ConfigNode(HealthFactor.ConfigNodeName);
                 n2.AddValue("name", f.Key.Name);
                 n2.AddValue("change", f.Value);
                 node.AddNode(n2);
@@ -1131,7 +1130,7 @@ namespace KerbalHealth
                 node.AddValue("onEva", true);
             foreach (KeyValuePair<uint, double> t in TrainingLevels)
             {
-                n2 = new ConfigNode("TRAINED_PART");
+                n2 = new ConfigNode(ConfigNode_TrainedPart);
                 n2.AddValue("id", t.Key);
                 n2.AddValue("trainingLevel", t.Value);
                 node.AddNode(n2);
@@ -1140,7 +1139,7 @@ namespace KerbalHealth
                 node.AddValue("familiarPartType", s);
             foreach (KeyValuePair<string, double> kvp in TrainedVessels)
             {
-                n2 = new ConfigNode("TRAINED_VESSEL");
+                n2 = new ConfigNode(ConfigNode_TrainedVessel);
                 n2.AddValue("name", kvp.Key);
                 n2.AddValue("trainingLevel", kvp.Value);
                 node.AddNode(n2);
@@ -1158,14 +1157,13 @@ namespace KerbalHealth
         {
             name = node.GetValue("name");
             hp = node.GetDouble("health", GetDefaultMaxHP(PCM));
-            foreach (ConfigNode factorNode in node.GetNodes("FACTOR"))
+            foreach (ConfigNode factorNode in node.GetNodes(HealthFactor.ConfigNodeName))
                 factorsOriginal[Core.GetHealthFactor(factorNode.GetValue("name"))] = factorNode.GetDouble("change");
             if (node.HasNode(HealthEffect.ConfigNodeName))
                 locationEffect = new HealthEffect(node.GetNode(HealthEffect.ConfigNodeName));
             Dose = node.GetDouble("dose");
             Radiation = node.GetDouble("radiation");
-            Conditions = new List<HealthCondition>(node.GetValues("condition").Select(s => Core.GetHealthCondition(s)));
-            Conditions.AddRange(node.GetNodes("HealthCondition").Select(n => Core.GetHealthCondition(n.GetString("name"))));
+            Conditions = node.GetValues("condition").Select(s => Core.GetHealthCondition(s)).ToList();
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && IsTraining)
                 RemoveCondition(Condition_Training, true);
             foreach (string s in node.GetValues("quirk"))
@@ -1174,20 +1172,20 @@ namespace KerbalHealth
             Trait = node.GetValue("trait");
             IsOnEVA = node.GetBool("onEva");
             TrainingLevels.Clear();
-            foreach (ConfigNode n in node.GetNodes("TRAINED_PART"))
+            foreach (ConfigNode n in node.GetNodes(ConfigNode_TrainedPart))
             {
                 uint id = n.GetUInt("id");
                 if (id != 0)
                     TrainingLevels[id] = n.GetDouble("trainingLevel");
             }
             FamiliarPartTypes.AddAll(node.GetValues("familiarPartType"));
-            foreach (ConfigNode n in node.GetNodes("TRAINED_VESSEL"))
+            foreach (ConfigNode n in node.GetNodes(ConfigNode_TrainedVessel))
             {
                 string name = n.GetString("name");
                 if (name != null)
                     TrainedVessels.Add(name, n.GetDouble("trainingLevel"));
             }
-            TrainingFor = new List<TrainingPart>(node.GetNodes(TrainingPart.ConfigNodeName).Select(n => new TrainingPart(n)));
+            TrainingFor = node.GetNodes(TrainingPart.ConfigNodeName).Select(n => new TrainingPart(n)).ToList();
             TrainingVessel = node.GetString("trainingVessel");
             Core.Log($"{Name} loaded.");
         }

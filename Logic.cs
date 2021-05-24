@@ -9,7 +9,11 @@ namespace KerbalHealth
     /// </summary>
     public class Logic
     {
-        public enum OperatorType { And, Or };
+        public enum OperatorType
+        {
+            And,
+            Or
+        };
 
         public const string ConfigNodeName = "LOGIC";
 
@@ -53,7 +57,7 @@ namespace KerbalHealth
             if (InSOI?.ToLower() == "home")
                 InSOI = FlightGlobals.GetHomeBodyName();
             KerbalStatus = node.GetString("kerbalStatus");
-            MissionTime = node.GetDouble("missionTime", Double.NaN);
+            MissionTime = node.GetDouble("missionTime", double.NaN);
             Gender = node.GetString("gender");
             GenderPresent = node.GetString("genderPresent");
             TraitPresent = node.GetString("traitPresent");
@@ -93,7 +97,7 @@ namespace KerbalHealth
                             break;
 
                         case "ground":
-                            Op(ref res, (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED));
+                            Op(ref res, v.situation == Vessel.Situations.LANDED || v.situation == Vessel.Situations.SPLASHED);
                             break;
 
                         case "flying":
@@ -113,7 +117,7 @@ namespace KerbalHealth
                             break;
 
                         case "in space":
-                            Op(ref res, (v.situation == Vessel.Situations.SUB_ORBITAL) || (v.situation == Vessel.Situations.ORBITING) || (v.situation == Vessel.Situations.ESCAPING));
+                            Op(ref res, v.situation == Vessel.Situations.SUB_ORBITAL || v.situation == Vessel.Situations.ORBITING || v.situation == Vessel.Situations.ESCAPING);
                             break;
                     }
                 }
@@ -168,14 +172,14 @@ namespace KerbalHealth
                         Core.Log($"Unrecognized value for gender in 'genderPresent = {GenderPresent}'. Assuming 'other'.");
                         goto case "other";
                 }
-                Op(ref res, v != null && v.GetVesselCrew().Exists(crewmate => crewmate.gender == g && crewmate != pcm));
+                Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => crewmate.gender == g && crewmate != pcm));
             }
 
             if (TraitPresent != null)
-                Op(ref res, v != null && v.GetVesselCrew().Exists(crewmate => crewmate.trait.ToLower() == TraitPresent.ToLower() && crewmate != pcm));
+                Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => crewmate.trait.Equals(TraitPresent, StringComparison.OrdinalIgnoreCase) && crewmate != pcm));
 
             if (ConditionPresent != null)
-                Op(ref res, v != null && v.GetVesselCrew().Exists(crewmate => Core.KerbalHealthList[crewmate].HasCondition(ConditionPresent) && crewmate != pcm));
+                Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => Core.KerbalHealthList[crewmate].HasCondition(ConditionPresent) && crewmate != pcm));
 
             foreach (Logic l in Operands)
                 Op(ref res, l.Test(pcm));
@@ -199,7 +203,7 @@ namespace KerbalHealth
                 res += $"\n{indent2}Kerbal is in the SOI of {InSOI}";
             if (KerbalStatus != null)
                 res += $"\n{indent2}Kerbal is {KerbalStatus}";
-            if (!Double.IsNaN(MissionTime))
+            if (!double.IsNaN(MissionTime))
                 res += $"\n{indent2}Mission lasts at least {Core.ParseUT(MissionTime, false, 100)}";
             if (Gender != null)
                 res += $"\n{indent2}Kerbal is {Gender}";

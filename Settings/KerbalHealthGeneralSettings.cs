@@ -18,11 +18,13 @@ namespace KerbalHealth
                 case GameParameters.Preset.Easy:
                 case GameParameters.Preset.Normal:
                     DeathEnabled = false;
+                    CLSIntegration = false;
                     break;
 
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
                     DeathEnabled = true;
+                    CLSIntegration = true;
                     break;
             }
         }
@@ -46,6 +48,7 @@ namespace KerbalHealth
             ExhaustionStartHealth = 0.2f;
             ExhaustionEndHealth = 0.25f;
             KerbalismIntegration = true;
+            CLSIntegration = true;
             ResetSettings = false;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
@@ -73,6 +76,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("ExhaustionStartHealth", ref ExhaustionStartHealth);
             settingsNode.TryGetValue("ExhaustionEndHealth", ref ExhaustionEndHealth);
             settingsNode.TryGetValue("KerbalismIntegration", ref KerbalismIntegration);
+            settingsNode.TryGetValue("CLSIntegration", ref CLSIntegration);
         }
 
         public static KerbalHealthGeneralSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>();
@@ -118,6 +122,9 @@ namespace KerbalHealth
 
         [GameParameters.CustomParameterUI("#KH_GS_KerbalismIntegration", toolTip = "#KH_GS_KerbalismIntegration_desc")]//Enforce Kerbalism Integration""If Kerbalism is installed, some of its features (stress, comforts, living space, and radiation damage) will be disabled in favour of Kerbal Health's mechanics
         public bool KerbalismIntegration = true;
+
+        [GameParameters.CustomParameterUI("#KH_GS_CLSIntegration", toolTip = "#KH_GS_CLSIntegration_desc")]
+        public bool CLSIntegration = true;
 
         [GameParameters.CustomParameterUI("#KH_GS_DebugMode", toolTip = "#KH_GS_DebugMode_desc")]//Debug Logging""Controls amount of logging
         public bool DebugMode = false;

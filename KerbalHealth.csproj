@@ -43,6 +43,11 @@
       <HintPath>..\..\..\..\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CLSInterfaces, Version=2.0.0.6, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>GameData\KerbalHealth\CLSInterfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -77,6 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Wrappers\CLS.cs" />
     <Compile Include="FactorMultiplier.cs" />
     <Compile Include="FactorMultiplierList.cs" />
     <Compile Include="KerbalComparer.cs" />
@@ -118,6 +124,7 @@
     <Compile Include="TrainingPart.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="GameData\KerbalHealth\CLSInterfaces.dll" />
     <Content Include="GameData\KerbalHealth\icon.png" />
     <None Include="GameData\KerbalHealth\Localization\en-us.cfg" />
     <None Include="GameData\KerbalHealth\Localization\zh-cn.cfg" />

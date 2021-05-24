@@ -11,11 +11,6 @@ namespace KerbalHealth
     {
         public const string ConfigNodeName = "HEALTH_EFFECTS";
 
-        /// <summary>
-        /// Cache of processed vessels, refreshed at every update
-        /// </summary>
-        public static Dictionary<Guid, HealthEffect> VesselCache { get; set; } = new Dictionary<Guid, HealthEffect>();
-
         public double HPChange { get; set; }
 
         public double MaxHP { get; set; } = 1;
@@ -144,37 +139,9 @@ namespace KerbalHealth
 
         public HealthEffect(ConfigNode configNode) => Load(configNode);
 
-        public HealthEffect(Vessel v) : this() => ProcessParts(v?.Parts, v.GetCrewCount());
+        public HealthEffect(Vessel v, ConnectedLivingSpace.ICLSSpace clsSpace) : this() => ProcessParts(v?.Parts, v.GetCrewCount(), clsSpace);
 
-        public HealthEffect(List<Part> parts, int crew) : this() => ProcessParts(parts, crew);
-
-        /// <summary>
-        /// Returns vessel health modifiers for the given vessel, either cached or calculated
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static HealthEffect GetVesselModifiers(Vessel v) =>
-            VesselCache.ContainsKey(v.id) ? VesselCache[v.id] : (VesselCache[v.id] = new HealthEffect(v));
-
-        /// <summary>
-        /// Returns vessel health modifiers for the vessel with the given kerbal
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public static HealthEffect GetVesselModifiers(ProtoCrewMember pcm)
-        {
-            if (Core.IsInEditor)
-            {
-                if (VesselCache.Count > 0)
-                {
-                    Core.Log("In editor and VesselHealthInfo found in cache. Retrieving.");
-                    return VesselCache.First().Value;
-                }
-                Core.Log("In editor and VesselHealthInfo not found in cache. Calculating and adding to cache.");
-                return VesselCache[Guid.Empty] = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
-            }
-            return pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned ? new HealthEffect() : GetVesselModifiers(pcm.GetVessel());
-        }
+        public HealthEffect(List<Part> parts, int crew, ConnectedLivingSpace.ICLSSpace clsSpace) : this() => ProcessParts(parts, crew, clsSpace);
 
         /// <summary>
         /// Returns exposure provided by shielding
@@ -197,8 +164,10 @@ namespace KerbalHealth
             {
                 p.GetConnectedResourceTotals(res.Key, ResourceFlowMode.NO_FLOW, out double amount, out double maxAmount);
                 if (amount != 0)
+                {
                     Core.Log($"Part {p.name} contains {amount:N1} / {maxAmount:N0} of shielding resource {res.Key}.");
-                s += res.Value * amount;
+                    s += res.Value * amount;
+                }
             }
             return s;
         }
@@ -282,7 +251,8 @@ namespace KerbalHealth
         /// <param name="part">Part to process</param>
         /// <param name="crewCount">Current crew</param>
         /// <param name="partCrewModules">Whether to analyze modules with partCrewOnly flag or without</param>
-        public void ProcessPart(Part part, int crewCount, bool partCrewModules)
+        /// <param name="inCLSSpace">Whether the part is located in the same CLS space as the current kerbal (true if CLS integration is not active)</param>
+        public void ProcessPart(Part part, int crewCount, bool inCLSSpace)
         {
             if (part == null)
             {
@@ -290,29 +260,33 @@ namespace KerbalHealth
                 return;
             }
 
-            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(m => m.IsModuleActive && (m.partCrewOnly == partCrewModules)))
+            foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(m => m.IsModuleActive))
             {
                 Core.Log($"Processing {mkh.Title} Module in {part.name}.");
-                Core.Log($"PartCrewOnly: {mkh.partCrewOnly}; CrewInPart: {partCrewModules}; condition: {(!mkh.partCrewOnly ^ partCrewModules)}");
-                HPChange += mkh.hpChangePerDay;
-                Space += mkh.Space;
-                if (mkh.recuperation != 0)
+                if (inCLSSpace || mkh.affectsAllCLSSpaces)
                 {
-                    Recuperation += mkh.RecuperationPower;
-                    Core.Log($"Module's recuperation power = {mkh.RecuperationPower}");
-                    MaxRecuperaction = Math.Max(MaxRecuperaction, mkh.recuperation);
-                }
-                Decay += mkh.DecayPower;
+                    HPChange += mkh.hpChangePerDay;
+                    Space += mkh.Space;
+                    if (mkh.recuperation != 0)
+                    {
+                        Recuperation += mkh.RecuperationPower;
+                        Core.Log($"Module's recuperation power = {mkh.RecuperationPower}");
+                        MaxRecuperaction = Math.Max(MaxRecuperaction, mkh.recuperation);
+                    }
+                    Decay += mkh.DecayPower;
 
-                // Processing factor multiplier
-                if (mkh.Multiplier != 1)
-                {
-                    Core.Log($"Factor multiplier for {mkh.MultiplyFactor}: {mkh.Multiplier:P1}.");
-                    FactorMultiplier factorMultiplier = GetFactorMultiplier(mkh.multiplyFactor);
-                    if (mkh.crewCap > 0)
-                        factorMultiplier.AddRestrictedMultiplier(mkh.Multiplier, mkh.crewCap, crewCount);
-                    else factorMultiplier.AddFreeMultiplier(mkh.Multiplier);
+                    // Processing factor multiplier
+                    if (mkh.Multiplier != 1)
+                    {
+                        Core.Log($"Factor multiplier for {mkh.MultiplyFactor}: {mkh.Multiplier:P1}.");
+                        FactorMultiplier factorMultiplier = GetFactorMultiplier(mkh.multiplyFactor);
+                        if (mkh.crewCap > 0)
+                            factorMultiplier.AddRestrictedMultiplier(mkh.Multiplier, mkh.crewCap, crewCount);
+                        else factorMultiplier.AddFreeMultiplier(mkh.Multiplier);
+                    }
                 }
+                else Core.Log("The module is not in the kerbal's CLS space.");
+
                 Shielding += mkh.shielding;
                 if (mkh.shielding != 0)
                     Core.Log($"Shielding of this module is {mkh.shielding}.");
@@ -320,43 +294,50 @@ namespace KerbalHealth
                 if (mkh.radioactivity != 0)
                     Core.Log($"Radioactive emission of this module is {mkh.radioactivity}.");
             }
+
+            Shielding += GetResourceShielding(part);
         }
 
         /// <summary>
         /// Processes several parts and also records their RadiationShielding values
         /// </summary>
         /// <param name="parts"></param>
-        public void ProcessParts(List<Part> parts, int crewCount)
+        public void ProcessParts(IEnumerable<Part> parts, int crewCount, ConnectedLivingSpace.ICLSSpace clsSpace)
         {
-            Core.Log($"Processing {parts.Count} parts...");
+            Core.Log($"Processing {parts.Count()} parts for {crewCount} crew in {(clsSpace != null ? clsSpace.Name : "a vessel")}...");
             List<PartExposureComparer> exposures = new List<PartExposureComparer>();
             CrewCapacity = 0;
+
             foreach (Part p in parts)
             {
-                ProcessPart(p, crewCount, false);
-                Shielding += GetResourceShielding(p);
+                ProcessPart(p, crewCount, clsSpace == null || clsSpace.Parts.Any(clsPart => clsPart.Part == p));
                 if (p.CrewCapacity > 0)
                 {
-                    Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");
+                    if (Core.IsLogging())
+                        Core.Log($"Possible shelter part: {p.partName} with exposure {GetPartExtendedExposure(p):P1}.");
                     exposures.Add(new PartExposureComparer(p));
                     CrewCapacity += p.CrewCapacity;
                 }
                 exposures.Sort();
             }
 
-            // Calculating shelter exposure
-            double x = 0;
-            int c = 0;
-            for (int i = 0; i < exposures.Count; i++)
+            if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && !(Kerbalism.Found && KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation))
             {
-                Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
-                x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
-                c += exposures[i].Part.CrewCapacity;
-                if (c >= crewCount)
-                    break;
+                // Calculating shelter exposure
+                double x = 0;
+                int c = 0;
+                for (int i = 0; i < exposures.Count; i++)
+                {
+                    Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
+                    x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
+                    c += exposures[i].Part.CrewCapacity;
+                    if (c >= crewCount)
+                        break;
+                }
+                Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {ExposureMultiplier:P1}.");
+                ShelterExposure = Math.Min(x / c, VesselExposure);
             }
-            Core.Log($"Average exposure in top {exposures.Count} parts is {x / crewCount:P1}; general vessel exposure is {ExposureMultiplier:P1}.");
-            ShelterExposure = Math.Min(x / c, VesselExposure);
+            else ShelterExposure = VesselExposure;
         }
 
         /// <summary>
@@ -403,7 +384,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public HealthEffect Clone()
         {
-            HealthEffect hms = (HealthEffect)this.MemberwiseClone();
+            HealthEffect hms = (HealthEffect)MemberwiseClone();
             hms.FactorMultipliers = new FactorMultiplierList(FactorMultipliers);
             return hms;
         }
