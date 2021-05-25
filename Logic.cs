@@ -9,7 +9,13 @@ namespace KerbalHealth
     /// </summary>
     public class Logic
     {
-        public enum OperatorType { And, Or };
+        public enum OperatorType
+        {
+            And,
+            Or
+        };
+
+        public const string ConfigNodeName = "LOGIC";
 
         public static readonly string Padding = "-";
         public OperatorType Operator { get; set; } = OperatorType.And;
@@ -25,47 +31,44 @@ namespace KerbalHealth
 
         public List<Logic> Operands { get; set; } = new List<Logic>();
 
-        public ConfigNode ConfigNode
+        public void Load(ConfigNode node)
         {
-            set
+            string s = node.GetString("operator") ?? node.GetString("logic");
+            switch (s?.ToLowerInvariant())
             {
-                string s = value.GetString("operator") ?? value.GetString("logic");
-                switch (s?.ToLowerInvariant())
-                {
-                    case "and":
-                    case "all":
-                    case null:
-                        Operator = OperatorType.And;
-                        break;
+                case "and":
+                case "all":
+                case null:
+                    Operator = OperatorType.And;
+                    break;
 
-                    case "or":
-                    case "any":
-                        Operator = OperatorType.Or;
-                        break;
+                case "or":
+                case "any":
+                    Operator = OperatorType.Or;
+                    break;
 
-                    default:
-                        Core.Log($"Unrecognized Logic operator '{s}' in config node {value.name}.", LogLevel.Error);
-                        break;
-                }
-                Inverse = value.GetBool("inverse");
-                Situation = value.GetString("situation");
-                InSOI = value.GetString("inSOI");
-                if (InSOI?.ToLower() == "home")
-                    InSOI = FlightGlobals.GetHomeBodyName();
-                KerbalStatus = value.GetString("kerbalStatus");
-                MissionTime = value.GetDouble("missionTime", Double.NaN);
-                Gender = value.GetString("gender");
-                GenderPresent = value.GetString("genderPresent");
-                TraitPresent = value.GetString("traitPresent");
-                ConditionPresent = value.GetString("conditionPresent");
-                Operands = new List<Logic>(value.GetNodes("LOGIC").Select(node => new Logic(node)));
+                default:
+                    Core.Log($"Unrecognized Logic operator '{s}' in config node {node.name}.", LogLevel.Error);
+                    break;
             }
+            Inverse = node.GetBool("inverse");
+            Situation = node.GetString("situation");
+            InSOI = node.GetString("inSOI");
+            if (InSOI?.ToLower() == "home")
+                InSOI = FlightGlobals.GetHomeBodyName();
+            KerbalStatus = node.GetString("kerbalStatus");
+            MissionTime = node.GetDouble("missionTime", double.NaN);
+            Gender = node.GetString("gender");
+            GenderPresent = node.GetString("genderPresent");
+            TraitPresent = node.GetString("traitPresent");
+            ConditionPresent = node.GetString("conditionPresent");
+            Operands = new List<Logic>(node.GetNodes(ConfigNodeName).Select(n => new Logic(n)));
         }
 
         public Logic()
         { }
 
-        public Logic(ConfigNode node) => ConfigNode = node;
+        public Logic(ConfigNode node) => Load(node);
 
         public bool Test(ProtoCrewMember pcm)
         {
@@ -94,7 +97,7 @@ namespace KerbalHealth
                             break;
 
                         case "ground":
-                            Op(ref res, (v.situation == Vessel.Situations.LANDED) || (v.situation == Vessel.Situations.SPLASHED));
+                            Op(ref res, v.situation == Vessel.Situations.LANDED || v.situation == Vessel.Situations.SPLASHED);
                             break;
 
                         case "flying":
@@ -114,7 +117,7 @@ namespace KerbalHealth
                             break;
 
                         case "in space":
-                            Op(ref res, (v.situation == Vessel.Situations.SUB_ORBITAL) || (v.situation == Vessel.Situations.ORBITING) || (v.situation == Vessel.Situations.ESCAPING));
+                            Op(ref res, v.situation == Vessel.Situations.SUB_ORBITAL || v.situation == Vessel.Situations.ORBITING || v.situation == Vessel.Situations.ESCAPING);
                             break;
                     }
                 }
@@ -169,14 +172,14 @@ namespace KerbalHealth
                         Core.Log($"Unrecognized value for gender in 'genderPresent = {GenderPresent}'. Assuming 'other'.");
                         goto case "other";
                 }
-                Op(ref res, v != null && v.GetVesselCrew().Exists(crewmate => crewmate.gender == g && crewmate != pcm));
+                Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => crewmate.gender == g && crewmate != pcm));
             }
 
             if (TraitPresent != null)
-                Op(ref res, v != null && v.GetVesselCrew().Exists(crewmate => crewmate.trait.ToLower() == TraitPresent.ToLower() && crewmate != pcm));
+                Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => crewmate.trait.Equals(TraitPresent, StringComparison.OrdinalIgnoreCase) && crewmate != pcm));
 
             if (ConditionPresent != null)
-                Op(ref res, v != null && v.GetVesselCrew().Exists(crewmate => Core.KerbalHealthList[crewmate].HasCondition(ConditionPresent) && crewmate != pcm));
+                Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => Core.KerbalHealthList[crewmate].HasCondition(ConditionPresent) && crewmate != pcm));
 
             foreach (Logic l in Operands)
                 Op(ref res, l.Test(pcm));
@@ -200,7 +203,7 @@ namespace KerbalHealth
                 res += $"\n{indent2}Kerbal is in the SOI of {InSOI}";
             if (KerbalStatus != null)
                 res += $"\n{indent2}Kerbal is {KerbalStatus}";
-            if (!Double.IsNaN(MissionTime))
+            if (!double.IsNaN(MissionTime))
                 res += $"\n{indent2}Mission lasts at least {Core.ParseUT(MissionTime, false, 100)}";
             if (Gender != null)
                 res += $"\n{indent2}Kerbal is {Gender}";

@@ -72,7 +72,7 @@ Beware of solar radiation storms! They can blast your kerbals in a planet's SOI 
 
 If you have Kerbalism installed and enabled "Use Kerbalism Radiation" option in the settings, Kerbal Health's radiation calculations will be replaced with those of Kerbalism (but Kerbal Health shielding will still apply). Kerbalism has a more realistic and complex radiation model, but its balance is very different from Kerbal Health's.
 
-It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game.
+It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game. If your astronaut discovers an anomaly, they may also be miraculously decontaminated by unknown forces (but only one kerbal per anomaly).
 
 ## Quirks
 
@@ -101,6 +101,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [B9 Aerospace](https://github.com/blowfishpro/B9-Aerospace)
 - [Blizzy's Toolbar](http://forum.kerbalspaceprogram.com/index.php?/topic/55420-120-toolbar-1713-common-api-for-draggableresizable-buttons-toolbar/)
 - [Bluedog Design Bureau](https://forum.kerbalspaceprogram.com/index.php?/topic/122020-131-bluedog-design-bureau-stockalike-saturn-apollo-and-more-v141-атлас-1jan2018)
+- [Connected Living Space](http://forum.kerbalspaceprogram.com/index.php?showtopic=192130) (integration can be toggled in the settings)
 - [Crew R&R](https://forum.kerbalspaceprogram.com/index.php?/topic/159299-151-161-172-crew-rr-crew-rest-rotation/)
 - [Deadly Reentry Continued](https://forum.kerbalspaceprogram.com/index.php?/topic/50296-122-deadly-reentry-v760-june-9-2017-the-ariel-edition/)
 - [DeepFreeze Continued](http://forum.kerbalspaceprogram.com/index.php?/topic/112328-11-deepfreeze-continued)

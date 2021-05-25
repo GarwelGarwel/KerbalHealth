@@ -1,9 +1,11 @@
-﻿using KSP.Localization;
+﻿using ConnectedLivingSpace;
+using KSP.Localization;
 using KSP.UI.Screens;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace KerbalHealth
 {
@@ -11,7 +13,9 @@ namespace KerbalHealth
     class KerbalHealthEditorReport : MonoBehaviour
     {
         static bool healthModulesEnabled = true;
-        static bool trainingEnabled = true;
+        static bool simulateTrained = true;
+
+        int clsSpaceIndex = 0;
 
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
@@ -24,14 +28,18 @@ namespace KerbalHealth
         // Health Report grid's labels
         List<DialogGUIBase> gridContent;
 
-        DialogGUILabel spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
+        DialogGUILabel clsSpaceNameLbl, spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
 
         // # of columns in Health Report
         int colNum = 4;
 
+        int CLSSpacesCount => CLS.Enabled ? CLS.CLSAddon.Vessel.Spaces.Count : 0;
+
+        ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
+
         public static bool HealthModulesEnabled => healthModulesEnabled;
 
-        public static bool TrainingEnabled => trainingEnabled;
+        public static bool SimulateTrained => simulateTrained;
 
         public void Start()
         {
@@ -47,7 +55,7 @@ namespace KerbalHealth
             {
                 Core.Log("Registering AppLauncher button...");
                 Texture2D icon = new Texture2D(38, 38);
-                icon.LoadImage(System.IO.File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
+                icon.LoadImage(File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
                 appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
             }
 
@@ -67,26 +75,22 @@ namespace KerbalHealth
             }
 
             Core.KerbalHealthList.RegisterKerbals();
-
-            Core.Log("KerbalHealthEditorReport.Start finished.", LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.Start finished.");
         }
 
         public void DisplayData()
         {
-            Core.Log("KerbalHealthEditorReport.DisplayData");
-            if ((ShipConstruction.ShipManifest == null) || !ShipConstruction.ShipManifest.HasAnyCrew())
-            {
-                Core.Log("The ship construction is null.", LogLevel.Important);
+            Core.Log("KerbalHealthEditorReport.DisplayData", LogLevel.Important);
+            if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.HasAnyCrew())
                 return;
-            }
 
-            gridContent = new List<DialogGUIBase>((Core.KerbalHealthList.Count + 1) * colNum)
+            gridContent = new List<DialogGUIBase>((ShipConstruction.ShipManifest.CrewCount + 1) * colNum)
             {
                 // Creating column titles
-                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_Name")}</color></b>", true),//Name
-                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_Trend")}</color></b>", true),//Trend
-                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_MissionTime")}</color></b>", true),//Mission Time
-                 new DialogGUILabel($"<b><color=\"white\">{Localizer.Format("#KH_ER_TrainingTime")}</color></b>", true)//Training Time
+                 new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_Name")}</color></b>", true),//Name
+                 new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_Trend")}</color></b>", true),//Trend
+                 new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_MissionTime")}</color></b>", true),//Mission Time
+                 new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_TrainingTime")}</color></b>", true)//Training Time
             };
 
             // Initializing Health Report's grid with empty labels, to be filled in Update()
@@ -94,17 +98,16 @@ namespace KerbalHealth
                 gridContent.Add(new DialogGUILabel("", true));
 
             // Preparing factors checklist
-            List<DialogGUIToggle> checklist = new List<DialogGUIToggle>();
-            checklist.AddRange(Core.Factors.Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
+            List<DialogGUIToggle> checklist = new List<DialogGUIToggle>(Core.Factors.Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
             {
                 f.SetEnabledInEditor(state);
                 Invalidate();
             })));
 
             if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
-                checklist.Add(new DialogGUIToggle(trainingEnabled, Localizer.Format("#KH_ER_Trained"), state =>
+                checklist.Add(new DialogGUIToggle(simulateTrained, Localizer.Format("#KH_ER_Trained"), state =>
                 {
-                    trainingEnabled = state;
+                    simulateTrained = state;
                     Invalidate();
                 }));
 
@@ -127,23 +130,30 @@ namespace KerbalHealth
                         new RectOffset(3, 3, 3, 3),
                         new Vector2(90, 30),
                         new Vector2(10, 0),
-                        UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft,
-                        UnityEngine.UI.GridLayoutGroup.Axis.Horizontal,
+                        GridLayoutGroup.Corner.UpperLeft,
+                        GridLayoutGroup.Axis.Horizontal,
                         TextAnchor.MiddleCenter,
-                        UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                        GridLayoutGroup.Constraint.FixedColumnCount,
                         colNum,
                         gridContent.ToArray()),
+                    CLS.Enabled
+                    ? new DialogGUIHorizontalLayout(
+                        TextAnchor.MiddleCenter,
+                        new DialogGUIButton("<", OnPreviousCLSSpaceButtonSelected, () => CLSSpacesCount > 1, false),
+                        clsSpaceNameLbl = new DialogGUILabel("", true),
+                        new DialogGUIButton(">", OnNextCLSSpaceButtonSelected, () => CLSSpacesCount > 1, false))
+                    : new DialogGUIBase(),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Space")}</color>", false),//Space:
+                        new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Space")}</color>", false),//Space:
                         spaceLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Recuperation")}</color>", false),//Recuperation:
+                        new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Recuperation")}</color>", false),//Recuperation:
                         recupLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
                     new DialogGUIHorizontalLayout(
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Shielding")}</color>", false),//Shielding:
+                        new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Shielding")}</color>", false),//Shielding:
                         shieldingLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_Exposure")}</color>", false),
+                        new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Exposure")}</color>", false),
                         exposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                        new DialogGUILabel($"<color=\"white\">{Localizer.Format("#KH_ER_ShelterExposure")}</color>", false),
+                        new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_ShelterExposure")}</color>", false),
                         shelterExposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
                     new DialogGUIHorizontalLayout(
                         new DialogGUILabel("", true),
@@ -154,10 +164,10 @@ namespace KerbalHealth
                         new RectOffset(3, 3, 3, 3),
                         new Vector2(130, 30),
                         new Vector2(10, 0),
-                        UnityEngine.UI.GridLayoutGroup.Corner.UpperLeft,
-                        UnityEngine.UI.GridLayoutGroup.Axis.Horizontal,
+                        GridLayoutGroup.Corner.UpperLeft,
+                        GridLayoutGroup.Axis.Horizontal,
                         TextAnchor.MiddleCenter,
-                        UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
+                        GridLayoutGroup.Constraint.FixedColumnCount,
                         3,
                         checklist.ToArray())),
                 false,
@@ -166,18 +176,19 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        public void OnResetButtonSelected()
+        void OnResetButtonSelected()
         {
+            Core.Log("OnResetButtonSelected", LogLevel.Important);
             foreach (HealthFactor f in Core.Factors)
                 f.ResetEnabledInEditor();
             healthModulesEnabled = true;
-            trainingEnabled = true;
+            simulateTrained = true;
             Invalidate();
         }
 
-        public void OnTrainButtonSelected()
+        void OnTrainButtonSelected()
         {
-            Core.Log("OnTrainButtonSelected");
+            Core.Log("OnTrainButtonSelected", LogLevel.Important);
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
@@ -215,10 +226,10 @@ namespace KerbalHealth
                 if (msg.Length != 0)
                     msg += "\r\n\n";
                 if (f.Count == 1)
-                    msg += $"<color=\"red\">{Localizer.Format("#KH_ER_KerbalCantTrain", f[0])}"; //* can't train.
+                    msg += $"<color=red>{Localizer.Format("#KH_ER_KerbalCantTrain", f[0])}"; //* can't train.
                 else
                 {
-                    msg += $"<color=\"red\">{Localizer.Format("#KH_ER_KerbalsCantTrain")}";  //The following kerbals can't train:
+                    msg += $"<color=red>{Localizer.Format("#KH_ER_KerbalsCantTrain")}";  //The following kerbals can't train:
                     foreach (string k in f)
                         msg += $"\r\n- {k}";
                 }
@@ -226,6 +237,25 @@ namespace KerbalHealth
             }
             Core.ShowMessage(msg, false);
         }
+
+        void SetCLSSpaceIndex(int i)
+        {
+            if (CLSSpacesCount != 0)
+            {
+                if (CLSSpace != null)
+                    CLSSpace.Highlight(false);
+                clsSpaceIndex = i % CLSSpacesCount;
+                if (clsSpaceIndex < 0)
+                    clsSpaceIndex += CLSSpacesCount;
+                CLSSpace.Highlight(true);
+            }
+            else clsSpaceIndex = 0;
+            Invalidate();
+        }
+
+        void OnPreviousCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex - 1);
+
+        void OnNextCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex + 1);
 
         public void UndisplayData()
         {
@@ -246,7 +276,7 @@ namespace KerbalHealth
                 return;
             }
 
-            if ((reportWindow != null) && dirty)
+            if (reportWindow != null && dirty)
             {
                 if (gridContent == null)
                 {
@@ -265,7 +295,20 @@ namespace KerbalHealth
                 // Fill the Health Report's grid with kerbals' health data
                 int i = 0;
                 KerbalHealthStatus khs = null;
-                HealthEffect.VesselCache.Clear();
+                ICLSSpace clsSpace = CLSSpace;
+                if (CLS.Enabled)
+                {
+                    if (clsSpaceIndex >= CLSSpacesCount)
+                        SetCLSSpaceIndex(CLSSpacesCount - 1);
+                    if (clsSpace?.Name != null)
+                    {
+                        if (clsSpace.Name.Length == 0)
+                            clsSpace.Name = clsSpace.Parts[0].Part.name;
+                        clsSpaceNameLbl.SetOptionText(Localizer.Format("#KH_ER_CLSSpace", clsSpace.Name));
+                    }
+                    else clsSpaceNameLbl.SetOptionText("");
+                    Core.Log($"Selected CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
+                }
 
                 List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
 
@@ -274,36 +317,46 @@ namespace KerbalHealth
                     khs = Core.KerbalHealthList[pcm]?.Clone();
                     if (khs == null)
                     {
-                        Core.Log($"Could not create a clone of KerbalHealthStatus for {pcm.name}. It is {((Core.KerbalHealthList[pcm] == null) ? "not " : "")}found in KerbalHealthList, which contains {Core.KerbalHealthList.Count} records.", LogLevel.Error);
+                        Core.Log($"Could not create a clone of KerbalHealthStatus for {pcm.name}. It is {(Core.KerbalHealthList[pcm] == null ? "not " : "")}found in KerbalHealthList, which contains {Core.KerbalHealthList.Count} records.", LogLevel.Error);
                         i++;
                         continue;
                     }
 
                     khs.SetDirty();
-                    gridContent[(i + 1) * colNum].SetOptionText(khs.FullName);
+                    string colorTag = "";
+                    if (clsSpace != null && pcm.GetCLSSpace() == clsSpace)
+                    {
+                        Core.Log($"{pcm.name} is in the current {clsSpace.Name} CLS space.");
+                        colorTag = "<color=white>";
+                    }
+                    else colorTag = "<color=yellow>";
+
+                    gridContent[(i + 1) * colNum].SetOptionText($"{colorTag}{khs.FullName}</color>");
                     khs.HP = khs.MaxHP;
-                    // Making this call here, so that GetBalanceHP doesn't have to:
+                    // Making this call here, so that BalanceHP doesn't have to:
                     double changePerDay = khs.HPChangeTotal;
                     double balanceHP = khs.BalanceHP;
                     string s = balanceHP > 0
-                        ? $"-> {balanceHP:F0} HP ({balanceHP / khs.MaxHP * 100:F0}%)"
-                        : Localizer.Format("#KH_ER_HealthPerDay", changePerDay.ToString("F1")); // + " HP/day"
-                    gridContent[(i + 1) * colNum + 1].SetOptionText(s);
-                    s = balanceHP > khs.NextConditionHP                        ? "—"
-                        : ((khs.Recuperation > khs.Decay) ? "> " : "") + Core.ParseUT(khs.ETAToNextCondition, false, 100);
-                    gridContent[(i + 1) * colNum + 2].SetOptionText(s);
-                    gridContent[(i + 1) * colNum + 3].SetOptionText(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"));
+                        ? Localizer.Format("#KH_ER_BalanceHP", balanceHP.ToString("F1"), (balanceHP / khs.MaxHP * 100).ToString("F1"))
+                        : Localizer.Format("#KH_ER_HealthPerDay", changePerDay.ToString("F1"));
+                    gridContent[(i + 1) * colNum + 1].SetOptionText($"{colorTag}{s}</color>");
+                    s = balanceHP > khs.NextConditionHP
+                        ? "—"
+                        : (khs.Recuperation > khs.Decay ? "> " : "") + Core.ParseUT(khs.ETAToNextCondition, false, 100);
+                    gridContent[(i + 1) * colNum + 2].SetOptionText($"{colorTag}{s}</color>");
+                    gridContent[(i + 1) * colNum + 3].SetOptionText($"{colorTag}{(KerbalHealthFactorsSettings.Instance.TrainingEnabled ? Core.ParseUT(TrainingTime(khs, trainingParts), false, 100) : Localizer.Format("#KH_NA"))}</color>");
                     i++;
                 }
 
-                HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount);
-                Core.Log($"Vessel effects: {vesselEffects}");
+                HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount, clsSpace);
+                Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
-                spaceLbl.SetOptionText($"<color=\"white\">{vesselEffects.Space:F1}</color>");
-                recupLbl.SetOptionText($"<color=\"white\">{vesselEffects.EffectiveRecuperation:F1}%</color>");
-                shieldingLbl.SetOptionText($"<color=\"white\">{vesselEffects.Shielding:F1}</color>");
-                exposureLbl.SetOptionText($"<color=\"white\">{vesselEffects.VesselExposure:P1}</color>");
-                shelterExposureLbl.SetOptionText($"<color=\"white\">{vesselEffects.ShelterExposure:P1}</color>");
+                spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
+                recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
+                shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
+                exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");
+                if (KerbalHealthRadiationSettings.Instance.RadiationEnabled && !(Kerbalism.Found && KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation))
+                    shelterExposureLbl.SetOptionText($"<color=white>{vesselEffects.ShelterExposure:P1}</color>");
 
                 dirty = false;
             }
@@ -317,7 +370,7 @@ namespace KerbalHealth
             UndisplayData();
             if (toolbarButton != null)
                 toolbarButton.Destroy();
-            if ((appLauncherButton != null) && (ApplicationLauncher.Instance != null))
+            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
             Core.Log("KerbalHealthEditorReport.OnDisable finished.");
         }

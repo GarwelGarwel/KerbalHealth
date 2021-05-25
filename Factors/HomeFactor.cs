@@ -18,7 +18,7 @@ namespace KerbalHealth
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
             if (khs.PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
-                Core.Log("Home factor is off when kerbal is not assigned.");
+                Core.Log("Home factor is off when the kerbal is not assigned.");
                 return 0;
             }
             Vessel vessel = khs.PCM.GetVessel();
@@ -28,7 +28,7 @@ namespace KerbalHealth
                 Core.Log($"Could not find main body for {khs.Name}.", LogLevel.Error);
                 return 0;
             }
-            if (body.isHomeWorld && (vessel.altitude < body.scienceValues.flyingAltitudeThreshold))
+            if (body.isHomeWorld && vessel.altitude < body.scienceValues.flyingAltitudeThreshold)
             {
                 Core.Log("Home factor is on.");
                 return BaseChangePerDay;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KSP.UI.Screens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,13 +15,22 @@ namespace KerbalHealth
     /// <item><definition>Debug: log all information</definition></item>
     /// </list>
     /// </summary>
-    public enum LogLevel { None = 0, Error, Important, Debug };
+    public enum LogLevel
+    {
+        None = 0,
+        Error,
+        Important,
+        Debug
+    };
 
     /// <summary>
     /// Provides general static methods and fields for KerbalHealth
     /// </summary>
     public static class Core
     {
+        // Used by DeepFreeze
+        public const ProtoCrewMember.RosterStatus﻿ Status_Frozen = (ProtoCrewMember.RosterStatus﻿)9001;
+
         public static bool ConfigLoaded = false;
 
         /// <summary>
@@ -33,7 +43,8 @@ namespace KerbalHealth
         /// </summary>
         internal static System.Random rand = new System.Random();
 
-        static List<HealthFactor> factors = new List<HealthFactor>() {
+        static List<HealthFactor> factors = new List<HealthFactor>()
+        {
             new StressFactor(),
             new ConfinementFactor(),
             new LonelinessFactor(),
@@ -51,7 +62,7 @@ namespace KerbalHealth
 
         static List<double> trainingCaps;
 
-        static string[] prefixes = { "", "K", "M", "G", "T" };
+        static readonly string[] prefixes = { "", "K", "M", "G", "T" };
 
         /// <summary>
         /// List of all tracked kerbals
@@ -114,25 +125,22 @@ namespace KerbalHealth
         /// <returns></returns>
         public static HealthFactor GetHealthFactor(string id) => Factors.FirstOrDefault(f => f.Name == id);
 
-        public static HealthCondition GetHealthCondition(string s) => HealthConditions.ContainsKey(s) ? HealthConditions[s] : null;
+        public static HealthCondition GetHealthCondition(string s) => HealthConditions.TryGetValue(s, out HealthCondition value) ? value : null;
 
         public static void AddResourceShielding(string name, double shieldingPerTon)
         {
             PartResourceDefinition prd = PartResourceLibrary.Instance?.GetDefinition(name);
-            if (prd == null)
-            {
-                Log($"Can't find ResourceDefinition for {name}.");
-                return;
-            }
-            ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
+            if (prd != null)
+                ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
+            else Log($"Can't find ResourceDefinition for {name}.");
         }
 
-        public static Quirk GetQuirk(string name) => Quirks.Find(q => string.Compare(name, q.Name, true) == 0);
+        public static Quirk GetQuirk(string name) => Quirks.Find(q => name.Equals(q.Name, StringComparison.OrdinalIgnoreCase));
 
         public static PlanetHealthConfig GetPlanetConfig(string name)
         {
             CelestialBody cb = FlightGlobals.GetBodyByName(name);
-            return (cb == null) || !PlanetConfigs.ContainsKey(cb) ? null : PlanetConfigs[cb];
+            return cb != null && PlanetConfigs.TryGetValue(cb, out PlanetHealthConfig res) ? res : null;
         }
 
         public static RadStormType GetRandomRadStormType()
@@ -179,7 +187,7 @@ namespace KerbalHealth
                 PlanetHealthConfig bc = GetPlanetConfig(n.GetString("name"));
                 if (bc != null)
                 {
-                    bc.ConfigNode = n;
+                    bc.Load(n);
                     i++;
                 }
             }
@@ -199,11 +207,16 @@ namespace KerbalHealth
             }
             Log($"{i} radstorm types loaded with total weight {radStormTypesTotalWeight}.", LogLevel.Important);
 
-            trainingCaps = new List<double>(3) { 0.6, 0.75, 0.85 };
+            trainingCaps = new List<double>(3)
+            {
+                0.6, 
+                0.75, 
+                0.85 
+            };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
                 int j = n.GetInt("level");
-                if (j == 0)
+                if (j <= 0)
                     continue;
                 trainingCaps[j - 1] = n.GetDouble("cap");
             }
@@ -211,26 +224,31 @@ namespace KerbalHealth
             ConfigLoaded = true;
         }
 
+        public static IList<ProtoCrewMember> GetCrew(ProtoCrewMember pcm, bool entireVessel)
+        {
+            if (!entireVessel && CLS.Enabled && pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                return pcm.GetCLSSpace().GetCrew().ToList();
+            if (IsInEditor)
+                return ShipConstruction.ShipManifest.GetAllCrew(false);
+            Vessel vessel = pcm.GetVessel();
+            return vessel != null ? vessel.GetVesselCrew() : new List<ProtoCrewMember>();
+        }
+
         /// <summary>
-        /// Returns number of current crew in a vessel the kerbal is in or in the currently constructed vessel
+        /// Returns number of current crew in a vessel (or CLS space) the kerbal is in or in the currently constructed vessel
         /// </summary>
         /// <param name="pcm"></param>
+        /// <param name="entireVessel">Return crew number across all CLS spaces</param>
         /// <returns></returns>
-        public static int GetCrewCount(ProtoCrewMember pcm)
+        public static int GetCrewCount(ProtoCrewMember pcm, bool entireVessel)
         {
+            if (!entireVessel && CLS.Enabled)
+                return pcm.GetCLSSpace().GetCrewCount();
             if (IsInEditor)
                 return ShipConstruction.ShipManifest.CrewCount;
             Vessel vessel = pcm.GetVessel();
             return vessel != null ? vessel.GetCrewCount() : 1;
         }
-
-        /// <summary>
-        /// Returns number of maximum crew in a vessel the kerbal is in or in the currently constructed vessel
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public static int GetCrewCapacity(ProtoCrewMember pcm) =>
-            IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(true).Count : (pcm.IsLoaded() ? Math.Max(pcm.GetVessel().GetCrewCapacity(), 1) : 1);
 
         /// <summary>
         /// Returns Part where ProtoCrewMember is currently located or null if none
@@ -256,16 +274,12 @@ namespace KerbalHealth
             pcm != null
             && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
             || pcm.rosterStatus == ProtoCrewMember.RosterStatus.Available
-            || pcm.rosterStatus == (ProtoCrewMember.RosterStatus﻿)9001);  // Used by DeepFreeze
+            || pcm.rosterStatus == Status_Frozen);
 
         /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
         /// </summary>
-        public static void ClearCache()
-        {
-            kerbalVesselsCache.Clear();
-            HealthEffect.VesselCache.Clear();
-        }
+        public static void ClearCache() => kerbalVesselsCache.Clear();
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
@@ -274,35 +288,31 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Vessel GetVessel(this ProtoCrewMember pcm)
         {
-            if (pcm == null || pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (pcm == null || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && pcm.rosterStatus != Status_Frozen))
                 return null;
 
-            if (kerbalVesselsCache.ContainsKey(pcm.name))
-                return kerbalVesselsCache[pcm.name];
+            if (kerbalVesselsCache.TryGetValue(pcm.name, out Vessel vessel))
+                return vessel;
 
-            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.ContainsKey(pcm.name))
+            if (DFWrapper.InstanceExists && DFWrapper.DeepFreezeAPI.FrozenKerbals.TryGetValue(pcm.name, out DFWrapper.KerbalInfo kerbal))
             {
-                Vessel v = FlightGlobals.FindVessel(DFWrapper.DeepFreezeAPI.FrozenKerbals[pcm.name].vesselID);
-                Log($"{pcm.name} found frozen in {v?.vesselName ?? "NULL"}.");
-                kerbalVesselsCache.Add(pcm.name, v);
-                return v;
+                vessel = FlightGlobals.FindVessel(kerbal.vesselID);
+                Log($"{pcm.name} found frozen in {vessel?.vesselName ?? "NULL"}.");
+                kerbalVesselsCache.Add(pcm.name, vessel);
+                return vessel;
             }
 
-            foreach (Vessel v in FlightGlobals.Vessels)
-                if (v.GetVesselCrew().Contains(pcm))
-                {
-                    kerbalVesselsCache.Add(pcm.name, v);
-                    return v;
-                }
-
-            Log($"{pcm.name} is {pcm.rosterStatus} and was not found in any of the {FlightGlobals.Vessels.Count} vessels!", LogLevel.Important);
-            return null;
+            vessel = FlightGlobals.Vessels.Find(v => v.GetVesselCrew().Contains(pcm));
+            if (vessel != null)
+                kerbalVesselsCache.Add(pcm.name, vessel);
+            else Log($"{pcm.name} is {pcm.rosterStatus} and was not found in any of the {FlightGlobals.Vessels.Count} vessels!", LogLevel.Important);
+            return vessel;
         }
 
         public static double GetDistanceToSun(this Vessel v) =>
             v.mainBody == Sun.Instance.sun
             ? v.altitude + Sun.Instance.sun.Radius
-            : ((v.distanceToSun > 0) ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
+            : (v.distanceToSun > 0 ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
 
         /// <summary>
         /// Returns list of IDs of parts that are used in training and stress calculations
@@ -317,10 +327,14 @@ namespace KerbalHealth
         public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
         public static CelestialBody GetPlanet(this CelestialBody body) =>
-            (body == null || body.IsPlanet()) ? body : body.orbit?.referenceBody?.GetPlanet();
+            body == null || body.IsPlanet() ? body : body.orbit?.referenceBody?.GetPlanet();
 
-        public static string GetString(this ConfigNode n, string key, string defaultValue = null) =>
-            n.HasValue(key) ? n.GetValue(key) : defaultValue;
+        public static string GetString(this ConfigNode n, string key, string defaultValue = null)
+        {
+            string res = defaultValue;
+            n.TryGetValue(key, ref res);
+            return res;
+        }
 
         public static double GetDouble(this ConfigNode n, string key, double defaultValue = 0) =>
             double.TryParse(n.GetValue(key), out double res) && !double.IsNaN(res) ? res : defaultValue;
@@ -356,7 +370,7 @@ namespace KerbalHealth
         /// <param name="value">Value to present as a string</param>
         /// <param name="format">String format according to Double.ToString</param>
         /// <returns></returns>
-        public static string SignValue(double value, string format) => ((value > 0) ? "+" : "") + value.ToString(format);
+        public static string SignValue(double value, string format) => (value > 0 ? "+" : "") + value.ToString(format);
 
         /// <summary>
         /// Converts a number into a string with a multiplicative character (K, M, G or T), if applicable
@@ -370,9 +384,9 @@ namespace KerbalHealth
             if (v < 0.5)
                 return "0";
             int n, m = (int)Math.Pow(10, digits);
-            for (n = 0; (v >= m) && (n < prefixes.Length - 1); n++)
+            for (n = 0; v >= m && n < prefixes.Length - 1; n++)
                 v /= 1000;
-            return (value < 0 ? "-" : (mandatorySign ? "+" : "")) + v.ToString("F" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
+            return (value < 0 ? "-" : (mandatorySign && value > 0 ? "+" : "")) + v.ToString("N" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
         }
 
         /// <summary>
@@ -391,7 +405,7 @@ namespace KerbalHealth
         /// <returns></returns>
         public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
-            if (double.IsNaN(time) || (time == 0))
+            if (double.IsNaN(time) || time == 0)
                 return "—";
             if (time > KSPUtil.dateTimeFormatter.Year * 10)
                 return "10y+";
@@ -406,29 +420,29 @@ namespace KerbalHealth
                 res = $"{y} y";
                 show0 = true;
             }
-            if ((t >= KSPUtil.dateTimeFormatter.Day) || (show0 && (t >= 1)))
+            if (t >= KSPUtil.dateTimeFormatter.Day || (show0 && t >= 1))
             {
                 d = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Day);
                 t -= d * KSPUtil.dateTimeFormatter.Day;
                 res = $"{res} {d} d";
                 show0 = true;
             }
-            if ((daysTimeLimit == -1) || (time < KSPUtil.dateTimeFormatter.Day * daysTimeLimit))
+            if (daysTimeLimit == -1 || time < KSPUtil.dateTimeFormatter.Day * daysTimeLimit)
             {
-                if ((t >= 3600) || show0)
+                if (t >= 3600 || show0)
                 {
                     h = (int)Math.Floor(t / 3600);
                     t -= h * 3600;
                     res = $"{res} {h} h";
                     show0 = true;
                 }
-                if ((t >= 60) || show0)
+                if (t >= 60 || show0)
                 {
                     m = (int)Math.Floor(t / 60);
                     t -= m * 60;
                     res = $"{res} {m} m";
                 }
-                if ((time < 60) || (showSeconds && (Math.Floor(t) > 0)))
+                if (time < 60 || (showSeconds && Math.Floor(t) > 0))
                     res = $"{res} {t:F0} s";
             }
             else if (time < KSPUtil.dateTimeFormatter.Day)
@@ -438,19 +452,18 @@ namespace KerbalHealth
 
         public static void ShowMessage(string msg, bool unwarpTime)
         {
-            KSP.UI.Screens.MessageSystem.Instance.AddMessage(new KSP.UI.Screens.MessageSystem.Message(
+            MessageSystem.Instance.AddMessage(new MessageSystem.Message(
                 "Kerbal Health",
                 $"{KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true)}: {msg}",
-                KSP.UI.Screens.MessageSystemButton.MessageButtonColor.RED,
-                KSP.UI.Screens.MessageSystemButton.ButtonIcons.ALERT));
+                MessageSystemButton.MessageButtonColor.RED,
+                MessageSystemButton.ButtonIcons.ALERT));
             if (unwarpTime)
                 TimeWarp.SetRate(0, false, true);
         }
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
         {
-            if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled
-                || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != (ProtoCrewMember.RosterStatus﻿)9001))
+            if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != Status_Frozen))
                 ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
         }
 
@@ -468,7 +481,7 @@ namespace KerbalHealth
         /// <param name="messageLevel"><see cref="LogLevel"/> of the entry</param>
         internal static void Log(string message, LogLevel messageLevel = LogLevel.Debug)
         {
-            if (IsLogging(messageLevel) && (message.Length != 0))
+            if (IsLogging(messageLevel) && message.Length != 0)
             {
                 if (messageLevel == LogLevel.Error)
                     message = $"ERROR: {message}";

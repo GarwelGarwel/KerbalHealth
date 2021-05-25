@@ -2,7 +2,7 @@
 
 namespace KerbalHealth
 {
-    public class FactorMultiplier
+    public class FactorMultiplier : IConfigNode
     {
         internal const string ConfigNodeName = "FACTOR_MULTIPLIER";
 
@@ -29,40 +29,32 @@ namespace KerbalHealth
 
         public bool IsTrivial => BonusSum == 0 && FreeMultiplier == 1;
 
-        public ConfigNode ConfigNode
+        public void Save(ConfigNode node)
         {
-            get
-            {
-                if (IsTrivial)
-                    return null;
+            if (Factor != null)
+                node.AddValue("factor", FactorName);
+            if (BonusSum != 0)
+                node.AddValue("bonusSum", BonusSum);
+            if (FreeMultiplier != 1)
+                node.AddValue("multiplier", FreeMultiplier);
+            if (MinMultiplier < 1)
+                node.AddValue("minMultiplier", MinMultiplier);
+            if (MaxMultiplier > 1)
+                node.AddValue("maxMultiplier", MaxMultiplier);
+        }
 
-                ConfigNode node = new ConfigNode(ConfigNodeName);
-                if (Factor != null)
-                    node.AddValue("factor", FactorName);
-                if (BonusSum != 0)
-                    node.AddValue("bonusSum", BonusSum);
-                if (FreeMultiplier != 1)
-                    node.AddValue("multiplier", FreeMultiplier);
-                if (MinMultiplier < 1)
-                    node.AddValue("minMultiplier", MinMultiplier);
-                if (MaxMultiplier > 1)
-                    node.AddValue("maxMultiplier", MaxMultiplier);
-                return node;
-            }
-
-            set
-            {
-                FactorName = value.GetString("factor");
-                BonusSum = value.GetDouble("bonusSum");
-                FreeMultiplier = value.GetDouble("multiplier", 1);
-                MinMultiplier = value.GetDouble("minMultiplier", 1);
-                MaxMultiplier = value.GetDouble("maxMultiplier", 1);
-            }
+        public void Load(ConfigNode node)
+        {
+            FactorName = node.GetString("factor");
+            BonusSum = node.GetDouble("bonusSum");
+            FreeMultiplier = node.GetDouble("multiplier", 1);
+            MinMultiplier = node.GetDouble("minMultiplier", 1);
+            MaxMultiplier = node.GetDouble("maxMultiplier", 1);
         }
 
         public FactorMultiplier(HealthFactor factor = null) => Factor = factor;
 
-        public FactorMultiplier(ConfigNode configNode) => ConfigNode = configNode;
+        public FactorMultiplier(ConfigNode configNode) => Load(configNode);
 
         /// <summary>
         /// Combines two factor multipliers into one, adding bonus sums and multiplying their multipliers

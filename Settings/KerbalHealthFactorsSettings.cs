@@ -25,6 +25,10 @@ namespace KerbalHealth
                 case GameParameters.Preset.Normal:
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
+                    LonelinessFactor = -2;
+                    MicrogravityFactor = -1;
+                    EVAFactor = -10;
+                    ConnectedFactor = 0.5f;
                     break;
             }
         }

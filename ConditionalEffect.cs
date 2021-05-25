@@ -6,8 +6,8 @@
 
         public ConditionalEffect(ConfigNode node)
         {
-            base.ConfigNode = node;
-            Logic.ConfigNode = node;
+            Load(node);
+            Logic.Load(node);
         }
 
         private ConditionalEffect()

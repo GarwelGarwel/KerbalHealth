@@ -1,7 +1,7 @@
-﻿using KSP.Localization;
+﻿using ConnectedLivingSpace;
+using KSP.Localization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace KerbalHealth
 {
@@ -24,10 +24,6 @@ namespace KerbalHealth
         public float decay = 0;
 
         [KSPField]
-        // Does the module affect health of only crew in this part or the entire vessel?
-        public bool partCrewOnly = false;
-
-        [KSPField]
         // Name of factor whose effect is multiplied
         public string multiplyFactor = "All";
 
@@ -36,7 +32,7 @@ namespace KerbalHealth
         public float multiplier = 1;
 
         [KSPField]
-        // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier)
+        // Max crew this module's multiplier applies to without penalty, 0 for unlimited (a.k.a. free multiplier), -1 for part's crew capacity
         public int crewCap = -1;
 
         [KSPField]
@@ -56,12 +52,16 @@ namespace KerbalHealth
         public string resource = "ElectricCharge";
 
         [KSPField]
-        // Flat EC consumption (units per second)
+        // Flat EC (or other resource) consumption in units per second
         public float resourceConsumption = 0;
 
         [KSPField]
-        // EC consumption per affected kerbal (units per second)
+        // EC (or other resource) consumption per affected kerbal (units per second)
         public float resourceConsumptionPerKerbal = 0;
+
+        [KSPField]
+        // Does the module affect all ConnectedLivingSpace spaces? Otherwise only Shielding and Radiation apply
+        public bool affectsAllCLSSpaces = false;
 
         [KSPField]
         // 0 if no training needed for this part, 1 for standard training complexity
@@ -71,11 +71,11 @@ namespace KerbalHealth
         public uint id = 0;
 
         [KSPField(isPersistant = true)]
-        // If not alwaysActive, this determines if the module is active
+        // If not alwaysActive, this determines whether the module is active
         public bool isActive = true;
 
         [KSPField(isPersistant = true)]
-        // Determines if the module is disabled due to the lack of the resource
+        // Determines whether the module is disabled due to the lack of the resource
         public bool starving = false;
 
         [KSPField(guiName = "", guiActive = true, guiActiveEditor = true, guiUnits = "#KH_Module_ecPersec")] // /sec
@@ -86,7 +86,7 @@ namespace KerbalHealth
         // For modules that have two modes (Living Space or Confinement multiplier), determines if the alternative mode is enabled
         public bool multiplierMode = false;
 
-        [KSPField(isPersistant = true, guiName = "Health Module Config", guiActive = true, guiActiveEditor = true)]
+        [KSPField(isPersistant = true, guiName = "#KH_Module_Config", guiActive = true, guiActiveEditor = true)]
         public string configName = "";
 
         double lastUpdated;
@@ -106,7 +106,7 @@ namespace KerbalHealth
         /// </summary>
         public bool IsSwitchable => space != 0 && multiplyFactor.Equals(ConfinementFactor.Id, StringComparison.OrdinalIgnoreCase);
 
-        public bool IsAlwaysActive => (resourceConsumption == 0) && (resourceConsumptionPerKerbal == 0);
+        public bool IsAlwaysActive => resourceConsumption == 0 && resourceConsumptionPerKerbal == 0;
 
         public bool IsModuleActive => IsAlwaysActive || (isActive && (!Core.IsInEditor || KerbalHealthEditorReport.HealthModulesEnabled) && !starving);
 
@@ -117,23 +117,37 @@ namespace KerbalHealth
         {
             get
             {
-                if (Core.IsInEditor)
-                    return partCrewOnly
-                        ? ShipConstruction.ShipManifest.GetPartCrewManifest(part.craftID).GetPartCrew().Where(pcm => pcm != null).Count()
-                        : ShipConstruction.ShipManifest.CrewCount;
-                if (vessel == null || part?.protoModuleCrew == null)
+                if (!affectsAllCLSSpaces && CLS.Enabled)
                 {
-                    Core.Log($"TotalAffectedCrewCount: vessel: {vessel?.vesselName ?? "NULL"}; part: {part?.partName ?? "NULL"}; protoModuleCrew: {(part?.protoModuleCrew ?? new List<ProtoCrewMember>()).Count()} members.", LogLevel.Error);
-                    return 0;
+                    ICLSVessel clsVessel = Core.IsInEditor ? CLS.CLSAddon.Vessel : CLS.CLSAddon.getCLSVessel(vessel);
+                    if (clsVessel != null)
+                    {
+                        ICLSSpace clsSpace = clsVessel.Parts.Find(p => p.Part == part)?.Space;
+                        if (clsSpace != null)
+                            return clsSpace.GetCrewCount();
+                        else Core.Log($"Could not find CLS space for part {part?.name}.", LogLevel.Error);
+                    }
+                    else Core.Log($"Could not find CLS vessel for part {part?.name} in vessel {vessel?.name ?? "N/A"}.", LogLevel.Error);
                 }
-                return partCrewOnly ? part.protoModuleCrew.Count : vessel.GetCrewCount();
+
+                if (Core.IsInEditor)
+                    return ShipConstruction.ShipManifest.CrewCount;
+
+                return vessel != null ? vessel.GetCrewCount() : 0;
             }
         }
 
         /// <summary>
         /// Returns # of kerbals affected by this module, capped by crewCap
         /// </summary>
-        public int CappedAffectedCrewCount => crewCap > 0 ? Math.Min(TotalAffectedCrewCount, crewCap) : TotalAffectedCrewCount;
+        public int CappedAffectedCrewCount
+        {
+            get
+            {
+                int crewCount = TotalAffectedCrewCount;
+                return crewCap > 0 ? Math.Min(crewCount, crewCap) : crewCount;
+            }
+        }
 
         public float TotalResourceConsumption => resourceConsumption + resourceConsumptionPerKerbal * CappedAffectedCrewCount;
 
@@ -210,7 +224,7 @@ namespace KerbalHealth
         #endregion KERBALISM
 
         public List<PartResourceDefinition> GetConsumedResources() =>
-            (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0)
+            resourceConsumption != 0 || resourceConsumptionPerKerbal != 0
             ? new List<PartResourceDefinition>() { ResourceDefinition }
             : new List<PartResourceDefinition>();
 
@@ -220,7 +234,7 @@ namespace KerbalHealth
             Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
             if (crewCap < 0)
                 crewCap = part.CrewCapacity;
-            if ((complexity != 0) && (id == 0))
+            if (complexity != 0 && id == 0)
                 id = part.persistentId;
             if (IsAlwaysActive)
             {
@@ -228,7 +242,7 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActive = false;
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
-            if (Core.IsInEditor && (resource == "ElectricCharge"))
+            if (Core.IsInEditor && resource == "ElectricCharge")
                 ecPerSec = TotalResourceConsumption;
             Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
             if (!IsSwitchable)
@@ -246,7 +260,7 @@ namespace KerbalHealth
             if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             double time = Planetarium.GetUniversalTime();
-            if (isActive && ((resourceConsumption != 0) || (resourceConsumptionPerKerbal != 0)))
+            if (isActive && (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0))
             {
                 ecPerSec = TotalResourceConsumption;
                 double requiredAmount = ecPerSec * (time - lastUpdated), providedAmount;
@@ -352,7 +366,7 @@ namespace KerbalHealth
             if (string.IsNullOrEmpty(res))
                 return "";
             if (IsSwitchable)
-                res += $"\n\n<color=\"yellow\">{Localizer.Format("#KH_Module_Info_Switchable")}</color>";
+                res += $"\n\n<color=yellow>{Localizer.Format("#KH_Module_Info_Switchable")}</color>";
             return Localizer.Format("#KH_Module_typetitle", GetTitle(false)) + res;//"Module type: " +
         }
 

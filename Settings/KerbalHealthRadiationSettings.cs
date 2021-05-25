@@ -25,6 +25,10 @@ namespace KerbalHealth
                 case GameParameters.Preset.Normal:
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
+                    RadiationEnabled = true;
+                    ShieldingEffect = 1;
+                    RadStormsEnabled = true;
+                    RequireUpgradedFacilityForDecontamination = true;
                     break;
             }
         }
@@ -155,5 +159,8 @@ namespace KerbalHealth
         public int DecontaminationAstronautComplexLevel = 3;
 
         public int DecontaminationRNDLevel = 3;
+
+        [GameParameters.CustomFloatParameterUI("#KH_RS_AnomalyDecontaminationChance", toolTip = "#KH_RS_AnomalyDecontaminationChance_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float AnomalyDecontaminationChance = 1;
     }
 }
