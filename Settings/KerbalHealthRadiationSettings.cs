@@ -159,5 +159,8 @@ namespace KerbalHealth
         public int DecontaminationAstronautComplexLevel = 3;
 
         public int DecontaminationRNDLevel = 3;
+
+        [GameParameters.CustomFloatParameterUI("#KH_RS_AnomalyDecontaminationChance", toolTip = "#KH_RS_AnomalyDecontaminationChance_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        public float AnomalyDecontaminationChance = 1;
     }
 }

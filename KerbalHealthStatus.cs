@@ -92,7 +92,7 @@ namespace KerbalHealth
                 if (v.isEVA)
                     return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
                 if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(PCM?.GetCLSSpace()?.Name))
-                    return $"{v.vesselName} - {PCM.GetCLSSpace().Name}";
+                    return Localizer.Format("#KH_Location_CLS", v.vesselName, PCM.GetCLSSpace().Name);
                 return v.vesselName;
             }
         }

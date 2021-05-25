@@ -342,7 +342,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Checks if an anomaly has just been discovered and awards quirks to a random discoverer
+        /// Checks if an anomaly has just been discovered and awards quirks to a random discoverer + clearing radiation
         /// </summary>
         /// <param name="n"></param>
         public void OnProgressComplete(ProgressNode n)
@@ -350,16 +350,24 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             Core.Log($"OnProgressComplete({n.Id})");
-            if (n is KSPAchievements.PointOfInterest poi)
+            if (n is KSPAchievements.PointOfInterest poi && FlightGlobals.ActiveVessel.GetCrewCount() > 0)
             {
                 Core.Log($"Reached anomaly: {poi.Id} on {poi.body}", LogLevel.Important);
-                if (Core.rand.NextDouble() < KerbalHealthQuirkSettings.Instance.AnomalyQuirkChance && FlightGlobals.ActiveVessel.GetCrewCount() > 0)
+                List<ProtoCrewMember> crew = FlightGlobals.ActiveVessel.GetVesselCrew();
+                if (Core.rand.NextDouble() < KerbalHealthQuirkSettings.Instance.AnomalyQuirkChance)
                 {
-                    List<ProtoCrewMember> crew = FlightGlobals.ActiveVessel.GetVesselCrew();
                     ProtoCrewMember pcm = crew[Core.rand.Next(crew.Count)];
                     Quirk quirk = Core.KerbalHealthList[pcm].AddRandomQuirk();
                     if (quirk != null)
                         Core.Log($"{pcm.name} was awarded {quirk.Title} quirk for discovering an anomaly.", LogLevel.Important);
+                }
+
+                if (Core.rand.NextDouble() < KerbalHealthRadiationSettings.Instance.AnomalyDecontaminationChance)
+                {
+                    ProtoCrewMember pcm = crew[Core.rand.Next(crew.Count)];
+                    Core.Log($"Clearing {pcm.name}'s radiation dose of {Core.KerbalHealthList[pcm].Dose:N0} BED.");
+                    Core.ShowMessage(Localizer.Format("#KH_MSG_AnomalyDecontamination", pcm.nameWithGender, Core.PrefixFormat(Core.KerbalHealthList[pcm].Dose)), pcm);
+                    Core.KerbalHealthList[pcm].Dose = 0;
                 }
             }
         }
