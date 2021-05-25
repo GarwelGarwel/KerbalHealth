@@ -35,7 +35,7 @@ namespace KerbalHealth
 
         int CLSSpacesCount => CLS.Enabled ? CLS.CLSAddon.Vessel.Spaces.Count : 0;
 
-        ConnectedLivingSpace.ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
+        ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
 
         public static bool HealthModulesEnabled => healthModulesEnabled;
 

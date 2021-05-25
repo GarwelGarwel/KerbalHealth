@@ -328,7 +328,7 @@ namespace KerbalHealth
             if (condition.Incapacitated)
                 MakeIncapacitated();
             if (condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", Name, condition.Title) + condition.Description, PCM);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", PCM.nameWithGender, condition.Title) + Localizer.Format(condition.Description, PCM.nameWithGender), PCM);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -1055,7 +1055,7 @@ namespace KerbalHealth
             // If KSC training no longer possible, stop it
             if (IsTraining && !CanTrainAtKSC)
             {
-                Core.ShowMessage(Localizer.Format("#KH_TrainingStopped", name), PCM);
+                Core.ShowMessage(Localizer.Format("#KH_TrainingStopped", PCM.nameWithGender), PCM);
                 RemoveCondition(Condition_Training);
                 if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                     TrainingFor.Clear();
@@ -1069,23 +1069,16 @@ namespace KerbalHealth
             }
 
             // Train
-            if ((TrainingFor.Count > 0 && PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
-                || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
+            if ((TrainingFor.Count > 0 && PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
                 Train(interval);
 
             if (HasCondition(Condition_Exhausted))
             {
                 if (HP >= ExhaustionEndHP)
-                {
                     RemoveCondition(Condition_Exhausted);
-                    Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionEnd", Name), PCM);//"<color=white>" +  + "</color> is no longer exhausted."
-                }
             }
             else if (HP < ExhaustionStartHP)
-            {
                 AddCondition(Condition_Exhausted);
-                Core.ShowMessage(Localizer.Format("#KH_Condition_ExhastionStart", Name), PCM);//"<color=white>" +  + "</color> is exhausted!"
-            }
         }
 
         #endregion HEALTH UPDATE

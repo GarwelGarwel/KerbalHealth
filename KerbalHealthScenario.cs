@@ -1143,7 +1143,7 @@ namespace KerbalHealth
                 if (!selectedKHS.IsReadyForDecontamination)
                 {
                     Core.Log($"{selectedKHS.Name} is {selectedKHS.PCM.rosterStatus}, has {selectedKHS.Health:P2} health and {selectedKHS.Conditions.Count} conditions. Game mode: {HighLogic.CurrentGame.Mode}. Astronaut Complex at level {ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex)}, R&D at level {ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.ResearchAndDevelopment)}.", LogLevel.Important);
-                    msg += Localizer.Format("#KH_DeconMsg5");
+                    msg += Localizer.Format("#KH_DeconMsg5", selectedKHS.PCM.nameWithGender);
                 }
             }
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog(
