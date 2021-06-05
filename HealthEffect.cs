@@ -290,9 +290,10 @@ namespace KerbalHealth
                 Shielding += mkh.shielding;
                 if (mkh.shielding != 0)
                     Core.Log($"Shielding of this module is {mkh.shielding}.");
-                Radioactivity += mkh.radioactivity;
-                if (mkh.radioactivity != 0)
-                    Core.Log($"Radioactive emission of this module is {mkh.radioactivity}.");
+                float radioactivity = mkh.Radioactivity;
+                Radioactivity += radioactivity;
+                if (radioactivity != 0)
+                    Core.Log($"Radioactive emission of this module is {radioactivity}.");
             }
 
             Shielding += GetResourceShielding(part);

@@ -53,13 +53,17 @@ namespace KerbalHealth
             {
                 if (pcmCached != null)
                     return pcmCached;
-                try { return pcmCached = HighLogic.fetch.currentGame.CrewRoster[Name]; }
+                try
+                {
+                    return pcmCached = HighLogic.fetch.currentGame.CrewRoster[Name];
+                }
                 catch (ArgumentOutOfRangeException)
                 {
                     Core.Log($"Could not find ProtoCrewMember for {Name}. KerbalHealth kerbal list contains {Core.KerbalHealthList.Count} records.");
                     return null;
                 }
             }
+
             set
             {
                 Name = value.name;
@@ -173,7 +177,7 @@ namespace KerbalHealth
             else
             {
                 // The kerbal is in a vessel => recalculate vesselEffect & partEffect
-                Vessel v = Core.GetVessel(PCM);
+                Vessel v = PCM.GetVessel();
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
                 locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace() : null);
             }
@@ -448,7 +452,7 @@ namespace KerbalHealth
                 Core.Log($"Available quirk: {q.Name} (weight {w})");
             }
 
-            if (availableQuirks.Count == 0 || weightSum <= 0)
+            if (!availableQuirks.Any() || weightSum <= 0)
             {
                 Core.Log($"No available quirks found for {Name} (level {level}).", LogLevel.Important);
                 return null;
@@ -840,7 +844,7 @@ namespace KerbalHealth
         public bool IsReadyForDecontamination =>
             PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available
             && Health >= 1
-            && Conditions.Count == 0
+            && !Conditions.Any()
             && (HighLogic.CurrentGame.Mode != Game.Modes.CAREER || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost))
             && (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX || ResearchAndDevelopment.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost))
             && (!KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination || ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= Core.GetInternalFacilityLevel(KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel))
@@ -1062,14 +1066,14 @@ namespace KerbalHealth
             }
 
             // Stop training after the kerbal has been recovered
-            if (TrainingFor.Count > 0 && PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsTraining)
+            if (TrainingFor.Any() && PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsTraining)
             {
                 TrainingFor.Clear();
                 TrainingVessel = null;
             }
 
             // Train
-            if ((TrainingFor.Count > 0 && PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
+            if ((TrainingFor.Any() && PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
                 Train(interval);
 
             if (HasCondition(Condition_Exhausted))

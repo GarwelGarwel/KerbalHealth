@@ -22,7 +22,7 @@ namespace KerbalHealth
 
         public string Name
         {
-            get => (Target == RadStormTargetType.Vessel) ? Vessel?.vesselName : name;
+            get => Target == RadStormTargetType.Vessel ? Vessel?.vesselName : name;
             set => name = value;
         }
 
@@ -37,7 +37,7 @@ namespace KerbalHealth
         /// </summary>
         public CelestialBody CelestialBody
         {
-            get => (Target == RadStormTargetType.Body) ? FlightGlobals.GetBodyByName(Name) : null;
+            get => Target == RadStormTargetType.Body ? FlightGlobals.GetBodyByName(Name) : null;
             set
             {
                 Target = RadStormTargetType.Body;

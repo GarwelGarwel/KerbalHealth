@@ -2,6 +2,7 @@
 using KSP.Localization;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -48,6 +49,10 @@ namespace KerbalHealth
         public float radioactivity = 0;
 
         [KSPField]
+        // Radioactivity is produced when this part's ModuleEngines are active and is multiplied by throttle, bananas/day
+        public float engineRadioactivity = 0;
+
+        [KSPField]
         // Determines, which resource is consumed by the module
         public string resource = "ElectricCharge";
 
@@ -90,6 +95,8 @@ namespace KerbalHealth
         public string configName = "";
 
         double lastUpdated;
+
+        List<IEngineStatus> engineModules;
 
         public HealthFactor MultiplyFactor
         {
@@ -154,6 +161,11 @@ namespace KerbalHealth
         public double RecuperationPower => crewCap > 0 ? recuperation * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : recuperation;
 
         public double DecayPower => crewCap > 0 ? decay * Math.Min((double)crewCap / TotalAffectedCrewCount, 1) : decay;
+
+        /// <summary>
+        /// Total current radioactive emission of this module
+        /// </summary>
+        public float Radioactivity => IsModuleActive ? radioactivity + (engineModules != null ? engineRadioactivity * engineModules.Sum(me => me.throttleSetting) : 0) : 0;
 
         public string Title
         {
@@ -250,6 +262,13 @@ namespace KerbalHealth
                 Fields["configName"].guiActive = Fields["configName"].guiActiveEditor = false;
                 Events["OnSwitchConfig"].guiActiveEditor = false;
             }
+            if (engineRadioactivity != 0)
+            {
+                engineModules = part.FindModulesImplementing<IEngineStatus>();
+                if (engineModules != null)
+                    Core.Log($"{part.name} has {engineModules.Count} engine module(s).");
+                else Core.Log($"Could not find an engine module for {part.name} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
+            }
 
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
@@ -306,6 +325,8 @@ namespace KerbalHealth
                 return Localizer.Format("#KH_Module_type11");//"RadShield"
             if (radioactivity > 0)
                 return Localizer.Format("#KH_Module_type12");//"Radiation"
+            if (engineRadioactivity > 0)
+                return Localizer.Format("#KH_Module_type13");
             if (IsSwitchable && !configSelected)
                 return Localizer.Format("#KH_Module_Type_Switchable");
             return Localizer.Format("#KH_Module_title");//"Health Module"
@@ -361,6 +382,8 @@ namespace KerbalHealth
                 res += Localizer.Format("#KH_Module_info9", shielding.ToString("F1"));//"\nShielding rating: " +
             if (radioactivity != 0)
                 res += Localizer.Format("#KH_Module_info10", radioactivity.ToString("N0"));//"\nRadioactive emission: " +  + "/day"
+            if (engineRadioactivity != 0)
+                res += Localizer.Format("#KH_Module_engineRadioactivity", (engineRadioactivity / 1e6).ToString("N1"));
             if (complexity != 0)
                 res += Localizer.Format("#KH_Module_info11", (complexity * 100).ToString("N0"));// "\nTraining complexity: " + (complexity * 100).ToString("N0") + "%"
             if (string.IsNullOrEmpty(res))

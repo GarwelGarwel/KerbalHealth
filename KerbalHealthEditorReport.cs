@@ -211,7 +211,7 @@ namespace KerbalHealth
                 }
 
             string msg = "";
-            if (s.Count > 0)
+            if (s.Any())
                 if (s.Count == 1)
                     msg = Localizer.Format("#KH_ER_KerbalStartedTraining", s[0]); // + " started training.
                 else
@@ -221,7 +221,7 @@ namespace KerbalHealth
                         msg += $"\r\n- {k}";
                 }
 
-            if (f.Count > 0)
+            if (f.Any())
             {
                 if (msg.Length != 0)
                     msg += "\r\n\n";

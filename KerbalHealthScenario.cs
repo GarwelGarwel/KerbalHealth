@@ -1066,14 +1066,14 @@ namespace KerbalHealth
                    Core.ParseUT(selectedKHS.TrainingETA, false, 10))
                : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
 
-            if (selectedKHS.TrainedVessels.Count > 0)
+            if (selectedKHS.TrainedVessels.Any())
             {
                 msg += Localizer.Format("#KH_TI_TrainedVessels", selectedKHS.Name);
                 foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
                     msg += Localizer.Format("#KH_TI_TrainedVessel", kvp.Key, (kvp.Value * 100).ToString("N1"));
             }
 
-            if (selectedKHS.FamiliarPartTypes.Count > 0)
+            if (selectedKHS.FamiliarPartTypes.Any())
             {
                 msg += Localizer.Format("#KH_TI_FamiliarParts", selectedKHS.Name);
                 foreach (string s in selectedKHS.FamiliarPartTypes)
