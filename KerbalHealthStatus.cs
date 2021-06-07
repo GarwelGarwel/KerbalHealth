@@ -112,6 +112,145 @@ namespace KerbalHealth
 
         #endregion BASIC PROPERTIES
 
+        #region HP
+
+        double hp;
+
+        /// <summary>
+        /// Kerbal's health points
+        /// </summary>
+        public double HP
+        {
+            get => hp;
+            set
+            {
+                hp = value < 0 ? 0 : (value > MaxHP ? MaxHP : value);
+                if (!IsWarned && Health < KerbalHealthGeneralSettings.Instance.LowHealthAlert)
+                {
+                    Core.ShowMessage(Localizer.Format("#KH_Condition_LowHealth", Name), ProtoCrewMember);
+                    IsWarned = true;
+                }
+                else if (IsWarned && Health >= KerbalHealthGeneralSettings.Instance.LowHealthAlert)
+                    IsWarned = false;
+            }
+        }
+
+        /// <summary>
+        /// Returns the max number of HP for the kerbal (including the modifier)
+        /// </summary>
+        public double MaxHP => (GetDefaultMaxHP(ProtoCrewMember) + HealthEffects.MaxHPBonus) * HealthEffects.MaxHP * RadiationMaxHPModifier;
+
+        /// <summary>
+        /// Returns kerbal's HP relative to MaxHealth (0 to 1)
+        /// </summary>
+        public double Health => HP / MaxHP;
+
+        /// <summary>
+        /// Returns the max number of HP for the kerbal (not including modifiers)
+        /// </summary>
+        /// <param name="pcm"></param>
+        /// <returns></returns>
+        public static double GetDefaultMaxHP(ProtoCrewMember pcm) => KerbalHealthGeneralSettings.Instance.BaseMaxHP + KerbalHealthGeneralSettings.Instance.HPPerLevel * pcm.experienceLevel;
+
+        #endregion HP
+
+        #region HP CHANGE
+
+        Dictionary<HealthFactor, double> factorsOriginal = new Dictionary<HealthFactor, double>();
+        bool factorsDirty = true;
+
+        /// <summary>
+        /// List of factors' effect on the kerbal before effects of location and quirks
+        /// </summary>
+        public Dictionary<HealthFactor, double> FactorsOriginal
+        {
+            get
+            {
+                if (factorsDirty)
+                    CalculateFactors();
+                return factorsOriginal;
+            }
+            protected set => factorsOriginal = value;
+        }
+
+        public Dictionary<HealthFactor, double> Factors => HealthEffects.FactorMultipliers.ApplyToFactors(FactorsOriginal);
+
+        public double HPChangeFactors => Factors.Sum(kvp => kvp.Value);
+
+        public double Recuperation => HealthEffects.EffectiveRecuperation;
+
+        public double Decay => HealthEffects.Decay;
+
+        public double HPChangeMarginal => (Recuperation / 100) * (MaxHP - HP) - (Decay / 100) * HP;
+
+        public double HPChangeTotal => HPChangeFactors + HPChangeMarginal;
+
+        public void CalculateFactors()
+        {
+            factorsDirty = false;
+            bool isLoaded = ProtoCrewMember.IsLoaded(), inEditor = Core.IsInEditor;
+            if (!inEditor && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            {
+                FactorsOriginal.Clear();
+                if (IsFrozen || IsDecontaminating)
+                    return;
+            }
+
+            // Getting factors' HP change per day for non-constant factors only, unless the kerbal is loaded or the scene is editor
+            foreach (HealthFactor f in Core.Factors.Where(f => isLoaded || inEditor || !f.ConstantForUnloaded))
+            {
+                FactorsOriginal[f] = f.ChangePerDay(this);
+                Core.Log($"{f.Name} factor is {FactorsOriginal[f]:F1} HP/day.");
+            }
+            Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value)} HP/day.");
+        }
+
+        public double GetFactorHPChange(HealthFactor factor) => Factors.TryGetValue(factor, out double res) ? res : 0;
+
+        /// <summary>
+        /// How many seconds left until HP reaches the given level, at the current HP change rate
+        /// </summary>
+        /// <param name="target">Target HP level</param>
+        /// <returns></returns>
+        public double ETAToHP(double target)
+        {
+            if (HPChangeTotal == 0)
+                return double.NaN;
+            double res = (target - HP) / HPChangeTotal;
+            return res >= 0 ? res * KSPUtil.dateTimeFormatter.Day : double.NaN;
+        }
+
+        /// <summary>
+        /// Health Points for the next condition (OK, Exhausted or death)
+        /// </summary>
+        public double NextConditionHP
+        {
+            get
+            {
+                if (HPChangeTotal > 0)
+                    return HasCondition(Condition_Exhausted) ? ExhaustionEndHP : MaxHP;
+                if (HPChangeTotal < 0)
+                    return HasCondition(Condition_Exhausted) ? 0 : ExhaustionStartHP;
+                return double.NaN;
+            }
+        }
+
+        /// <summary>
+        /// Number of seconds until the next condition is reached
+        /// </summary>
+        public double ETAToNextCondition => ETAToHP(NextConditionHP);
+
+        /// <summary>
+        /// Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
+        /// </summary>
+        /// <returns></returns>
+        public double BalanceHP =>
+            Recuperation + Decay == 0
+                ? (HPChangeFactors < 0 ? 0 : MaxHP)
+                : (MaxHP * Recuperation + HPChangeFactors * 100) / (Recuperation + Decay);
+
+        #endregion HP CHANGE
+
         #region EFFECTS
 
         bool effectsDirty = true;
@@ -671,145 +810,6 @@ namespace KerbalHealth
         }
 
         #endregion TRAINING
-
-        #region HP
-
-        double hp;
-
-        /// <summary>
-        /// Kerbal's health points
-        /// </summary>
-        public double HP
-        {
-            get => hp;
-            set
-            {
-                hp = value < 0 ? 0 : (value > MaxHP ? MaxHP : value);
-                if (!IsWarned && Health < KerbalHealthGeneralSettings.Instance.LowHealthAlert)
-                {
-                    Core.ShowMessage(Localizer.Format("#KH_Condition_LowHealth", Name), ProtoCrewMember);
-                    IsWarned = true;
-                }
-                else if (IsWarned && Health >= KerbalHealthGeneralSettings.Instance.LowHealthAlert)
-                    IsWarned = false;
-            }
-        }
-
-        /// <summary>
-        /// Returns the max number of HP for the kerbal (including the modifier)
-        /// </summary>
-        public double MaxHP => (GetDefaultMaxHP(ProtoCrewMember) + HealthEffects.MaxHPBonus) * HealthEffects.MaxHP * RadiationMaxHPModifier;
-
-        /// <summary>
-        /// Returns kerbal's HP relative to MaxHealth (0 to 1)
-        /// </summary>
-        public double Health => HP / MaxHP;
-
-        /// <summary>
-        /// Returns the max number of HP for the kerbal (not including modifiers)
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public static double GetDefaultMaxHP(ProtoCrewMember pcm) => KerbalHealthGeneralSettings.Instance.BaseMaxHP + KerbalHealthGeneralSettings.Instance.HPPerLevel * pcm.experienceLevel;
-
-        #endregion HP
-
-        #region HP CHANGE
-
-        Dictionary<HealthFactor, double> factorsOriginal = new Dictionary<HealthFactor, double>();
-        bool factorsDirty = true;
-
-        /// <summary>
-        /// List of factors' effect on the kerbal before effects of location and quirks
-        /// </summary>
-        public Dictionary<HealthFactor, double> FactorsOriginal
-        {
-            get
-            {
-                if (factorsDirty)
-                    CalculateFactors();
-                return factorsOriginal;
-            }
-            protected set => factorsOriginal = value;
-        }
-
-        public Dictionary<HealthFactor, double> Factors => HealthEffects.FactorMultipliers.ApplyToFactors(FactorsOriginal);
-
-        public double HPChangeFactors => Factors.Sum(kvp => kvp.Value);
-
-        public double Recuperation => HealthEffects.EffectiveRecuperation;
-
-        public double Decay => HealthEffects.Decay;
-
-        public double HPChangeMarginal => (Recuperation / 100) * (MaxHP - HP) - (Decay / 100) * HP;
-
-        public double HPChangeTotal => HPChangeFactors + HPChangeMarginal;
-
-        public void CalculateFactors()
-        {
-            factorsDirty = false;
-            bool isLoaded = ProtoCrewMember.IsLoaded(), inEditor = Core.IsInEditor;
-            if (!inEditor && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
-            {
-                FactorsOriginal.Clear();
-                if (IsFrozen || IsDecontaminating)
-                    return;
-            }
-
-            // Getting factors' HP change per day for non-constant factors only, unless the kerbal is loaded or the scene is editor
-            foreach (HealthFactor f in Core.Factors.Where(f => isLoaded || inEditor || !f.ConstantForUnloaded))
-            {
-                FactorsOriginal[f] = f.ChangePerDay(this);
-                Core.Log($"{f.Name} factor is {FactorsOriginal[f]:F1} HP/day.");
-            }
-            Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value)} HP/day.");
-        }
-
-        public double GetFactorHPChange(HealthFactor factor) => Factors.TryGetValue(factor, out double res) ? res : 0;
-
-        /// <summary>
-        /// How many seconds left until HP reaches the given level, at the current HP change rate
-        /// </summary>
-        /// <param name="target">Target HP level</param>
-        /// <returns></returns>
-        public double ETAToHP(double target)
-        {
-            if (HPChangeTotal == 0)
-                return double.NaN;
-            double res = (target - HP) / HPChangeTotal;
-            return res >= 0 ? res * KSPUtil.dateTimeFormatter.Day : double.NaN;
-        }
-
-        /// <summary>
-        /// Health Points for the next condition (OK, Exhausted or death)
-        /// </summary>
-        public double NextConditionHP
-        {
-            get
-            {
-                if (HPChangeTotal > 0)
-                    return HasCondition(Condition_Exhausted) ? ExhaustionEndHP : MaxHP;
-                if (HPChangeTotal < 0)
-                    return HasCondition(Condition_Exhausted) ? 0 : ExhaustionStartHP;
-                return double.NaN;
-            }
-        }
-
-        /// <summary>
-        /// Number of seconds until the next condition is reached
-        /// </summary>
-        public double ETAToNextCondition => ETAToHP(NextConditionHP);
-
-        /// <summary>
-        /// Returns HP level when marginal HP change balances out "fixed" change. If <= 0, no such level
-        /// </summary>
-        /// <returns></returns>
-        public double BalanceHP =>
-            Recuperation + Decay == 0
-                ? (HPChangeFactors < 0 ? 0 : MaxHP)
-                : (MaxHP * Recuperation + HPChangeFactors * 100) / (Recuperation + Decay);
-
-        #endregion HP CHANGE
 
         #region RADIATION
 

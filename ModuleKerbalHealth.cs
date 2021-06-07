@@ -192,21 +192,21 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return null;
             ModuleKerbalHealth mkh = proto_part_module as ModuleKerbalHealth;
-            if (mkh.isActive && ((mkh.resourceConsumption != 0) || (mkh.resourceConsumptionPerKerbal != 0)))
+            if (mkh.isActive && (mkh.resourceConsumption > 0 || mkh.resourceConsumptionPerKerbal > 0))
             {
                 mkh.part = proto_part;
                 mkh.part.vessel = v;
                 mkh.ecPerSec = mkh.TotalResourceConsumption;
                 double requiredAmount = mkh.ecPerSec * elapsed_s;
-                if (mkh.resource != "ElectricCharge")
-                    mkh.ecPerSec = 0;
                 availableResources.TryGetValue(mkh.resource, out double availableAmount);
-                if (availableAmount <= 0)
+                if (requiredAmount > 0 && availableAmount <= 0)
                 {
-                    Core.Log($"{mkh.Title} Module is starving of {mkh.resource} ({requiredAmount} @ {mkh.ecPerSec} EC/sec needed, {availableAmount} available.");
+                    Core.Log($"{mkh.Title} Module in {proto_part?.name} is starving of {mkh.resource} ({requiredAmount} @ {mkh.ecPerSec} EC/sec needed, {availableAmount} available).");
                     mkh.starving = true;
                 }
                 resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -mkh.ecPerSec));
+                if (mkh.resource != "ElectricCharge")
+                    mkh.ecPerSec = 0;
             }
             else mkh.ecPerSec = 0;
             return mkh.Title.ToLower();
@@ -230,9 +230,7 @@ namespace KerbalHealth
         #endregion KERBALISM
 
         public List<PartResourceDefinition> GetConsumedResources() =>
-            resourceConsumption != 0 || resourceConsumptionPerKerbal != 0
-            ? new List<PartResourceDefinition>() { ResourceDefinition }
-            : new List<PartResourceDefinition>();
+            resourceConsumption != 0 || resourceConsumptionPerKerbal != 0 ? new List<PartResourceDefinition>() { ResourceDefinition } : new List<PartResourceDefinition>();
 
         public override void OnStart(StartState state)
         {
@@ -260,10 +258,9 @@ namespace KerbalHealth
             {
                 engineModules = part.FindModulesImplementing<IEngineStatus>();
                 if (engineModules != null)
-                    Core.Log($"{part.name} has {engineModules.Count} engine module(s).");
-                else Core.Log($"Could not find an engine module for {part.name} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
+                    Core.Log($"{part?.name} has {engineModules.Count} engine module(s).");
+                else Core.Log($"Could not find an engine module for {part?.name} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
             }
-
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
         }
@@ -273,7 +270,7 @@ namespace KerbalHealth
             if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             double time = Planetarium.GetUniversalTime();
-            if (isActive && (resourceConsumption != 0 || resourceConsumptionPerKerbal != 0))
+            if (isActive && (resourceConsumption > 0 || resourceConsumptionPerKerbal > 0))
             {
                 ecPerSec = TotalResourceConsumption;
                 double requiredAmount = ecPerSec * (time - lastUpdated), providedAmount;
@@ -281,7 +278,7 @@ namespace KerbalHealth
                     ecPerSec = 0;
                 starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
                 if (starving)
-                    Core.Log($"{Title} Module is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
+                    Core.Log($"{Title} Module in {part?.name} is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
             }
             else ecPerSec = 0;
             lastUpdated = time;
