@@ -18,7 +18,7 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            return (khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available) ? BaseChangePerDay : 0;
+            return (khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available) ? BaseChangePerDay : 0;
         }
     }
 }

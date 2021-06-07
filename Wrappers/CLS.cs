@@ -26,19 +26,23 @@ namespace KerbalHealth
             }
         }
 
-        public static ICLSSpace GetCLSSpace(this ProtoCrewMember pcm)
+        public static ICLSSpace GetCLSSpace(this ProtoCrewMember pcm, Vessel vessel = null)
         {
             if (Core.IsInEditor)
             {
                 Part p = pcm.GetCrewPart();
                 return CLSAddon.Vessel.Spaces.Find(space => space.Parts.Any(part => part.Part == p));
             }
-            return CLSAddon.Vessel.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal.name == pcm.name));
+            ICLSVessel clsVessel = vessel == null ? CLSAddon.Vessel : CLSAddon.getCLSVessel(vessel);
+            return clsVessel.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal.name == pcm.name));
         }
 
         public static IEnumerable<ProtoCrewMember> GetCrew(this ICLSSpace clsSpace) =>
             Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm.GetCLSSpace() == clsSpace) : clsSpace.Crew.Select(kerbal => kerbal.Kerbal);
 
-        public static int GetCrewCount(this ICLSSpace clsSpace) => Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(false).Count(pcm => pcm.GetCLSSpace() == clsSpace) : clsSpace.Crew.Count;
+        public static int GetCrewCount(this ICLSSpace clsSpace) =>
+            clsSpace == null
+            ? 1
+            : (Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(false).Count(pcm => pcm.GetCLSSpace() == clsSpace) : clsSpace.Crew.Count);
     }
 }

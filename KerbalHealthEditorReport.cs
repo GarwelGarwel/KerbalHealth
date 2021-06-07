@@ -15,31 +15,13 @@ namespace KerbalHealth
         static bool healthModulesEnabled = true;
         static bool simulateTrained = true;
 
-        int clsSpaceIndex = 0;
-
-        ApplicationLauncherButton appLauncherButton;
-        IButton toolbarButton;
-        bool dirty = false;
-        Rect reportPosition = new Rect(0.5f, 0.5f, 420, 50);
-
-        // Health Report window
-        PopupDialog reportWindow;
-
-        // Health Report grid's labels
-        List<DialogGUIBase> gridContent;
-
-        DialogGUILabel clsSpaceNameLbl, spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
-
-        // # of columns in Health Report
-        int colNum = 4;
-
-        int CLSSpacesCount => CLS.Enabled ? CLS.CLSAddon.Vessel.Spaces.Count : 0;
-
-        ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
-
         public static bool HealthModulesEnabled => healthModulesEnabled;
 
         public static bool SimulateTrained => simulateTrained;
+
+        int CLSSpacesCount => CLS.Enabled ? CLS.CLSAddon.Vessel.Spaces.Count : 0;
+
+        #region LIFE CYCLE
 
         public void Start()
         {
@@ -77,6 +59,36 @@ namespace KerbalHealth
             Core.KerbalHealthList.RegisterKerbals();
             Core.Log("KerbalHealthEditorReport.Start finished.");
         }
+
+        public void OnDisable()
+        {
+            Core.Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
+            UndisplayData();
+            if (toolbarButton != null)
+                toolbarButton.Destroy();
+            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
+                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
+            Core.Log("KerbalHealthEditorReport.OnDisable finished.");
+        }
+
+        #endregion LIFE CYCLE
+
+        #region DIALOG WINDOW
+
+        ApplicationLauncherButton appLauncherButton;
+        IButton toolbarButton;
+
+        bool dirty = false;
+
+        PopupDialog reportWindow;
+        List<DialogGUIBase> gridContent;
+        DialogGUILabel clsSpaceNameLbl, spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
+        Rect reportPosition = new Rect(0.5f, 0.5f, 420, 50);
+        int colNum = 4;
+
+        int clsSpaceIndex = 0;
+
+        ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
 
         public void DisplayData()
         {
@@ -176,87 +188,6 @@ namespace KerbalHealth
             Invalidate();
         }
 
-        void OnResetButtonSelected()
-        {
-            Core.Log("OnResetButtonSelected", LogLevel.Important);
-            foreach (HealthFactor f in Core.Factors)
-                f.ResetEnabledInEditor();
-            healthModulesEnabled = true;
-            simulateTrained = true;
-            Invalidate();
-        }
-
-        void OnTrainButtonSelected()
-        {
-            Core.Log("OnTrainButtonSelected", LogLevel.Important);
-            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
-                return;
-
-            List<string> s = new List<string>();
-            List<string> f = new List<string>();
-
-            foreach (KerbalHealthStatus khs in ShipConstruction.ShipManifest.GetAllCrew(false)
-                .Select(pcm => Core.KerbalHealthList[pcm])
-                .Where(khs => khs != null))
-                if (khs.CanTrainAtKSC)
-                {
-                    khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
-                    khs.AddCondition(KerbalHealthStatus.Condition_Training);
-                    s.Add(khs.Name);
-                }
-                else
-                {
-                    Core.Log($"{khs.Name} can't train. They are {khs.PCM.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
-                    f.Add(khs.Name);
-                }
-
-            string msg = "";
-            if (s.Count > 0)
-                if (s.Count == 1)
-                    msg = Localizer.Format("#KH_ER_KerbalStartedTraining", s[0]); // + " started training.
-                else
-                {
-                    msg = Localizer.Format("#KH_ER_KerbalsStartedTraining"); //The following kerbals started training:
-                    foreach (string k in s)
-                        msg += $"\r\n- {k}";
-                }
-
-            if (f.Count > 0)
-            {
-                if (msg.Length != 0)
-                    msg += "\r\n\n";
-                if (f.Count == 1)
-                    msg += $"<color=red>{Localizer.Format("#KH_ER_KerbalCantTrain", f[0])}"; //* can't train.
-                else
-                {
-                    msg += $"<color=red>{Localizer.Format("#KH_ER_KerbalsCantTrain")}";  //The following kerbals can't train:
-                    foreach (string k in f)
-                        msg += $"\r\n- {k}";
-                }
-                msg += "</color>";
-            }
-            Core.ShowMessage(msg, false);
-        }
-
-        void SetCLSSpaceIndex(int i)
-        {
-            if (CLSSpacesCount != 0)
-            {
-                if (CLSSpace != null)
-                    CLSSpace.Highlight(false);
-                clsSpaceIndex = i % CLSSpacesCount;
-                if (clsSpaceIndex < 0)
-                    clsSpaceIndex += CLSSpacesCount;
-                CLSSpace.Highlight(true);
-            }
-            else clsSpaceIndex = 0;
-            Invalidate();
-        }
-
-        void OnPreviousCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex - 1);
-
-        void OnNextCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex + 1);
-
         public void UndisplayData()
         {
             if (reportWindow != null)
@@ -266,6 +197,8 @@ namespace KerbalHealth
                 reportWindow.Dismiss();
             }
         }
+
+        public void Invalidate() => dirty = true;
 
         public void Update()
         {
@@ -310,7 +243,7 @@ namespace KerbalHealth
                     Core.Log($"Selected CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
                 }
 
-                List<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
+                IList<ModuleKerbalHealth> trainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList);
 
                 foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
                 {
@@ -362,20 +295,94 @@ namespace KerbalHealth
             }
         }
 
-        public void Invalidate() => dirty = true;
-
-        public void OnDisable()
+        void SetCLSSpaceIndex(int i)
         {
-            Core.Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
-            UndisplayData();
-            if (toolbarButton != null)
-                toolbarButton.Destroy();
-            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
-                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
-            Core.Log("KerbalHealthEditorReport.OnDisable finished.");
+            if (CLSSpacesCount != 0)
+            {
+                if (CLSSpace != null)
+                    CLSSpace.Highlight(false);
+                clsSpaceIndex = i % CLSSpacesCount;
+                if (clsSpaceIndex < 0)
+                    clsSpaceIndex += CLSSpacesCount;
+                CLSSpace.Highlight(true);
+            }
+            else clsSpaceIndex = 0;
+            Invalidate();
         }
 
-        double TrainingTime(KerbalHealthStatus khs, List<ModuleKerbalHealth> modules) =>
+        #endregion DIALOG WINDOW
+
+        #region EVENT HANDLERS
+
+        void OnResetButtonSelected()
+        {
+            Core.Log("OnResetButtonSelected", LogLevel.Important);
+            foreach (HealthFactor f in Core.Factors)
+                f.ResetEnabledInEditor();
+            healthModulesEnabled = true;
+            simulateTrained = true;
+            Invalidate();
+        }
+
+        void OnTrainButtonSelected()
+        {
+            Core.Log("OnTrainButtonSelected", LogLevel.Important);
+            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
+                return;
+
+            List<string> s = new List<string>();
+            List<string> f = new List<string>();
+
+            foreach (KerbalHealthStatus khs in ShipConstruction.ShipManifest.GetAllCrew(false)
+                .Select(pcm => Core.KerbalHealthList[pcm])
+                .Where(khs => khs != null))
+                if (khs.CanTrainAtKSC)
+                {
+                    khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
+                    khs.AddCondition(KerbalHealthStatus.Condition_Training);
+                    s.Add(khs.Name);
+                }
+                else
+                {
+                    Core.Log($"{khs.Name} can't train. They are {khs.ProtoCrewMember.rosterStatus} and at {khs.Health:P1} health.", LogLevel.Important);
+                    f.Add(khs.Name);
+                }
+
+            string msg = "";
+            if (s.Any())
+                if (s.Count == 1)
+                    msg = Localizer.Format("#KH_ER_KerbalStartedTraining", s[0]); // + " started training.
+                else
+                {
+                    msg = Localizer.Format("#KH_ER_KerbalsStartedTraining"); //The following kerbals started training:
+                    foreach (string k in s)
+                        msg += $"\r\n- {k}";
+                }
+
+            if (f.Any())
+            {
+                if (msg.Length != 0)
+                    msg += "\r\n\n";
+                if (f.Count == 1)
+                    msg += $"<color=red>{Localizer.Format("#KH_ER_KerbalCantTrain", f[0])}"; //* can't train.
+                else
+                {
+                    msg += $"<color=red>{Localizer.Format("#KH_ER_KerbalsCantTrain")}";  //The following kerbals can't train:
+                    foreach (string k in f)
+                        msg += $"\r\n- {k}";
+                }
+                msg += "</color>";
+            }
+            Core.ShowMessage(msg, false);
+        }
+
+        void OnPreviousCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex - 1);
+
+        void OnNextCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex + 1);
+
+        #endregion EVENT HANDLERS
+
+        double TrainingTime(KerbalHealthStatus khs, IEnumerable<ModuleKerbalHealth> modules) =>
             modules.Sum(mkh => (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh))
             / khs.TrainingPerDay
             * KSPUtil.dateTimeFormatter.Day;

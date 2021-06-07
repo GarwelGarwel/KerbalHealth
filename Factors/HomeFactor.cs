@@ -16,12 +16,12 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            if (khs.PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 Core.Log("Home factor is off when the kerbal is not assigned.");
                 return 0;
             }
-            Vessel vessel = khs.PCM.GetVessel();
+            Vessel vessel = khs.ProtoCrewMember.GetVessel();
             CelestialBody body = vessel?.mainBody;
             if (body == null)
             {

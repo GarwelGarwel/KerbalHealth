@@ -14,7 +14,7 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            Vessel vessel = khs.PCM.GetVessel();
+            Vessel vessel = khs.ProtoCrewMember.GetVessel();
             if (vessel == null)
             {
                 Core.Log($"MicrogravityFactor.ChangePerDay: Core.GetVessel(pcm) is null for {khs.Name}! EVA is {khs.IsOnEVA}.", LogLevel.Error);
@@ -25,12 +25,12 @@ namespace KerbalHealth
                 Core.Log($"Microgravity is on due to being in a {vessel.situation} situation.");
                 return BaseChangePerDay;
             }
-            if (khs.PCM.geeForce < 0.1)
+            if (khs.ProtoCrewMember.geeForce < 0.1)
             {
-                Core.Log($"Microgravity is on due to g = {khs.PCM.geeForce:F2}.");
+                Core.Log($"Microgravity is on due to g = {khs.ProtoCrewMember.geeForce:F2}.");
                 return BaseChangePerDay;
             }
-            Core.Log($"Microgravity is off, g = {khs.PCM.geeForce:F2}.");
+            Core.Log($"Microgravity is off, g = {khs.ProtoCrewMember.geeForce:F2}.");
             return 0;
         }
     }

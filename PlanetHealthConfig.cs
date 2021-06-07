@@ -13,7 +13,7 @@
         /// <summary>
         /// Returns a reference to CelestialBody
         /// </summary>
-        public CelestialBody Body => FlightGlobals.GetBodyByName(Name);
+        public CelestialBody CelestialBody => FlightGlobals.GetBodyByName(Name);
 
         /// <summary>
         /// Exponential coefficient of amount of radiation blocked by magnetosphere (default = 1)
@@ -38,7 +38,7 @@
                 Core.Log("Missing 'name' key in body properties definition.", LogLevel.Error);
                 return;
             }
-            if (Body == null)
+            if (CelestialBody == null)
                 Core.Log($"Body '{Name}' not found.", LogLevel.Important);
             Magnetosphere = node.GetDouble("magnetosphere", Magnetosphere);
             AtmosphericAbsorption = node.GetDouble("atmosphericAbsorption", AtmosphericAbsorption);

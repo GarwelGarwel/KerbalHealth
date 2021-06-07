@@ -5,7 +5,9 @@
         public const string ConfigNodeName = "TRAINING_PART";
 
         public uint Id { get; set; }
+
         public string Name { get; set; }
+        
         public double Complexity { get; set; } = 1;
 
         public void Save(ConfigNode node)

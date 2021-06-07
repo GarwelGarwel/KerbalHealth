@@ -160,7 +160,7 @@ namespace KerbalHealth
         public static double GetResourceShielding(Part p)
         {
             double s = 0;
-            foreach (KeyValuePair<int, double> res in Core.ResourceShielding)
+            foreach (KeyValuePair<int, double> res in Core.ShieldingResources)
             {
                 p.GetConnectedResourceTotals(res.Key, ResourceFlowMode.NO_FLOW, out double amount, out double maxAmount);
                 if (amount != 0)
@@ -278,7 +278,7 @@ namespace KerbalHealth
                     // Processing factor multiplier
                     if (mkh.Multiplier != 1)
                     {
-                        Core.Log($"Factor multiplier for {mkh.MultiplyFactor}: {mkh.Multiplier:P1}.");
+                        Core.Log($"Factor multiplier for {mkh.multiplyFactor}: {mkh.Multiplier:P1}.");
                         FactorMultiplier factorMultiplier = GetFactorMultiplier(mkh.multiplyFactor);
                         if (mkh.crewCap > 0)
                             factorMultiplier.AddRestrictedMultiplier(mkh.Multiplier, mkh.crewCap, crewCount);
@@ -290,9 +290,10 @@ namespace KerbalHealth
                 Shielding += mkh.shielding;
                 if (mkh.shielding != 0)
                     Core.Log($"Shielding of this module is {mkh.shielding}.");
-                Radioactivity += mkh.radioactivity;
-                if (mkh.radioactivity != 0)
-                    Core.Log($"Radioactive emission of this module is {mkh.radioactivity}.");
+                float radioactivity = mkh.Radioactivity;
+                Radioactivity += radioactivity;
+                if (radioactivity != 0)
+                    Core.Log($"Radioactive emission of this module is {radioactivity}.");
             }
 
             Shielding += GetResourceShielding(part);

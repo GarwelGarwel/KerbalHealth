@@ -10,17 +10,18 @@ namespace KerbalHealth
     {
         public new KerbalHealthStatus this[string name]
         {
-            get => ContainsKey(name) ? base[name] : null;
+            get => TryGetValue(name, out KerbalHealthStatus res) ? res : null;
             set => base[name] = value;
         }
 
         public KerbalHealthStatus this[ProtoCrewMember pcm]
         {
-            get => ContainsKey(pcm.name) ? base[pcm.name] : null;
+            get => this[pcm.name];
             set => base[pcm.name] = value;
         }
 
-        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
+        public KerbalHealthList()
+            : base(HighLogic.fetch.currentGame.CrewRoster.Count)
         { }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace KerbalHealth
         void RemoveUntrackable()
         {
             List<string> toRemove = new List<string>(Values
-                .Where(khs => !khs.PCM.IsTrackable() && !khs.IsFrozen)
+                .Where(khs => !khs.ProtoCrewMember.IsTrackable() && !khs.IsFrozen)
                 .Select(khs => khs.Name));
             foreach (string name in toRemove)
             {

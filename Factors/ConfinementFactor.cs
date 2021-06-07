@@ -16,6 +16,6 @@ namespace KerbalHealth
         public override double ChangePerDay(KerbalHealthStatus khs)
             => (Core.IsInEditor && !IsEnabledInEditor()) || (!Core.IsInEditor && khs.IsOnEVA)
             ? 0
-            : BaseChangePerDay * Core.GetCrewCount(khs.PCM, false) / Math.Max(khs.HealthEffects.Space, 0.1);
+            : BaseChangePerDay * Core.GetCrewCount(khs.ProtoCrewMember, false) / Math.Max(khs.HealthEffects.Space, 0.1);
     }
 }
