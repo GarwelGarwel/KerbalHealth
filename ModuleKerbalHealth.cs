@@ -352,7 +352,7 @@ namespace KerbalHealth
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
-        public override string GetModuleDisplayName() => GetTitle(false);
+        public override string GetModuleDisplayName() => Localizer.Format("#KH_Module_title");
 
         public override string GetInfo()
         {
