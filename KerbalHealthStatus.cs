@@ -95,8 +95,8 @@ namespace KerbalHealth
                     return Localizer.Format("#KH_NA");
                 if (v.isEVA)
                     return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
-                if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(PCM?.GetCLSSpace()?.Name))
-                    return Localizer.Format("#KH_Location_CLS", v.vesselName, PCM.GetCLSSpace().Name);
+                if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(PCM?.GetCLSSpace(v)?.Name))
+                    return Localizer.Format("#KH_Location_CLS", v.vesselName, PCM.GetCLSSpace(v).Name);
                 return v.vesselName;
             }
         }
@@ -179,7 +179,7 @@ namespace KerbalHealth
                 // The kerbal is in a vessel => recalculate vesselEffect & partEffect
                 Vessel v = PCM.GetVessel();
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
-                locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace() : null);
+                locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace(v) : null);
             }
         }
 

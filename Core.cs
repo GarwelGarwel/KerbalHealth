@@ -226,11 +226,11 @@ namespace KerbalHealth
 
         public static IList<ProtoCrewMember> GetCrew(ProtoCrewMember pcm, bool entireVessel)
         {
+            Vessel vessel = pcm.GetVessel();
             if (!entireVessel && CLS.Enabled && pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
-                return pcm.GetCLSSpace().GetCrew().ToList();
+                return pcm.GetCLSSpace(vessel).GetCrew().ToList();
             if (IsInEditor)
                 return ShipConstruction.ShipManifest.GetAllCrew(false);
-            Vessel vessel = pcm.GetVessel();
             return vessel != null ? vessel.GetVesselCrew() : new List<ProtoCrewMember>();
         }
 
@@ -242,11 +242,11 @@ namespace KerbalHealth
         /// <returns></returns>
         public static int GetCrewCount(ProtoCrewMember pcm, bool entireVessel)
         {
+            Vessel vessel = pcm.GetVessel();
             if (!entireVessel && CLS.Enabled)
-                return pcm.GetCLSSpace().GetCrewCount();
+                return pcm.GetCLSSpace(vessel).GetCrewCount();
             if (IsInEditor)
                 return ShipConstruction.ShipManifest.CrewCount;
-            Vessel vessel = pcm.GetVessel();
             return vessel != null ? vessel.GetCrewCount() : 1;
         }
 
