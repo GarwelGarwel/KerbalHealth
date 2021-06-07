@@ -27,7 +27,7 @@ namespace KerbalHealth
                         ? BaseChangePerDay * (1 - Core.TrainingCap)
                         : BaseChangePerDay;
                 else return 0;
-            return khs.PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? ChangePerDayActual(khs) : 0;
+            return khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? ChangePerDayActual(khs) : 0;
         }
     }
 }

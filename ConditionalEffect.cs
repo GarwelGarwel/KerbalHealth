@@ -13,7 +13,7 @@
         private ConditionalEffect()
         { }
 
-        public bool IsApplicable(KerbalHealthStatus khs) => Logic.Test(khs.PCM);
+        public bool IsApplicable(KerbalHealthStatus khs) => Logic.Test(khs.ProtoCrewMember);
 
         public override string ToString()
         {

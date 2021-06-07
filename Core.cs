@@ -41,7 +41,9 @@ namespace KerbalHealth
         /// <summary>
         /// Mod-wide random number generator
         /// </summary>
-        internal static System.Random rand = new System.Random();
+        internal static System.Random Rand = new System.Random();
+
+        static readonly string[] prefixes = { "", "K", "M", "G", "T" };
 
         static List<HealthFactor> factors = new List<HealthFactor>()
         {
@@ -62,8 +64,6 @@ namespace KerbalHealth
 
         static List<double> trainingCaps;
 
-        static readonly string[] prefixes = { "", "K", "M", "G", "T" };
-
         /// <summary>
         /// List of all tracked kerbals
         /// </summary>
@@ -81,7 +81,7 @@ namespace KerbalHealth
         /// <summary>
         /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
         /// </summary>
-        public static Dictionary<int, double> ResourceShielding { get; set; } = new Dictionary<int, double>();
+        public static Dictionary<int, double> ShieldingResources { get; set; } = new Dictionary<int, double>();
 
         public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
 
@@ -131,7 +131,7 @@ namespace KerbalHealth
         {
             PartResourceDefinition prd = PartResourceLibrary.Instance?.GetDefinition(name);
             if (prd != null)
-                ResourceShielding.Add(prd.id, shieldingPerTon * prd.density);
+                ShieldingResources.Add(prd.id, shieldingPerTon * prd.density);
             else Log($"Can't find ResourceDefinition for {name}.");
         }
 
@@ -145,7 +145,7 @@ namespace KerbalHealth
 
         public static RadStormType GetRandomRadStormType()
         {
-            double d = rand.NextDouble() * radStormTypesTotalWeight;
+            double d = Rand.NextDouble() * radStormTypesTotalWeight;
             foreach (RadStormType rst in RadStormTypes)
             {
                 d -= rst.Weight;
@@ -169,10 +169,10 @@ namespace KerbalHealth
                 HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
             Log($"{HealthConditions.Count} health conditions loaded.", LogLevel.Important);
 
-            ResourceShielding = new Dictionary<int, double>();
+            ShieldingResources = new Dictionary<int, double>();
             foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
                 AddResourceShielding(n.GetValue("name"), n.GetDouble("shielding"));
-            Log($"{ResourceShielding.Count} resource shielding values loaded.", LogLevel.Important);
+            Log($"{ShieldingResources.Count} shielding resource values loaded.", LogLevel.Important);
 
             Quirks = new List<Quirk>(config.GetNodes("HEALTH_QUIRK").Select(n => new Quirk(n)));
             Log($"{Quirks.Count} quirks loaded.", LogLevel.Important);
@@ -209,9 +209,9 @@ namespace KerbalHealth
 
             trainingCaps = new List<double>(3)
             {
-                0.6, 
-                0.75, 
-                0.85 
+                0.6,
+                0.75,
+                0.85
             };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
@@ -362,7 +362,7 @@ namespace KerbalHealth
         /// <param name="stdDev"></param>
         /// <returns></returns>
         public static double GetGaussian(double stdDev = 1, double mean = 0) =>
-            mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - rand.NextDouble()));
+            mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - Rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - Rand.NextDouble()));
 
         /// <summary>
         /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)

@@ -16,8 +16,10 @@ namespace KerbalHealth
         public double MagnitudeDispersion { get; set; }
 
         public double MeanVelocity { get; set; }
-        
+
         public double VelocityDispersion { get; set; }
+
+        public RadStormType(ConfigNode node) => Load(node);
 
         public void Load(ConfigNode node)
         {
@@ -29,18 +31,16 @@ namespace KerbalHealth
             VelocityDispersion = node.GetDouble("velocityDispersion", 0.5);
         }
 
-        public RadStormType(ConfigNode node) => Load(node);
-
         /// <summary>
         /// Returns a random, Gaussian-dispersed magnitude of a radstorm in BED
         /// </summary>
         /// <returns></returns>
-        public double GetMagnitude() => MeanMagnitude * Math.Exp(Core.GetGaussian(0.4)) * KerbalHealthRadiationSettings.Instance.SolarRadiation;
+        public double GetRandomMagnitude() => MeanMagnitude * Math.Exp(Core.GetGaussian(0.4)) * KerbalHealthRadiationSettings.Instance.SolarRadiation;
 
         /// <summary>
         /// Returns a random, Gaussian-dispersed velocity value for a storm, in m/s
         /// </summary>
         /// <returns></returns>
-        public double GetVelocity() => MeanVelocity * Math.Exp(Core.GetGaussian(0.5));
+        public double GetRandomVelocity() => MeanVelocity * Math.Exp(Core.GetGaussian(0.5));
     }
 }

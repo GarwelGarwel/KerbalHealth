@@ -2,11 +2,11 @@
 
 namespace KerbalHealth
 {
-    public enum RadStormTargetType 
-    { 
-        None = 0, 
-        Body, 
-        Vessel 
+    public enum RadStormTargetType
+    {
+        None = 0,
+        Body,
+        Vessel
     };
 
     /// <summary>
@@ -29,7 +29,7 @@ namespace KerbalHealth
         public string VesselId { get; set; }
 
         public double Magnitutde { get; set; }
-        
+
         public double Time { get; set; }
 
         /// <summary>
@@ -70,6 +70,12 @@ namespace KerbalHealth
                 return 0;
             }
         }
+
+        public RadStorm(CelestialBody body) => CelestialBody = body;
+
+        public RadStorm(Vessel vessel) => Vessel = vessel;
+
+        public RadStorm(ConfigNode node) => Load(node);
 
         public void Save(ConfigNode node)
         {
@@ -113,12 +119,6 @@ namespace KerbalHealth
             Magnitutde = node.GetDouble("magnitude");
             Time = node.GetDouble("time");
         }
-
-        public RadStorm(CelestialBody body) => CelestialBody = body;
-
-        public RadStorm(Vessel vessel) => Vessel = vessel;
-
-        public RadStorm(ConfigNode node) => Load(node);
 
         public bool Affects(ProtoCrewMember pcm)
         {

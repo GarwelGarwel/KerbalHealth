@@ -32,7 +32,7 @@ namespace KerbalHealth
         }
 
         public string FullName =>
-            $"{Name}{(KerbalHealthGeneralSettings.Instance.ShowTraitLevel ? $" ({Localizer.Format($"#KH_TraitSymbol_{PCM.trait}")}{PCM.experienceLevel})" : "")}";
+            $"{Name}{(KerbalHealthGeneralSettings.Instance.ShowTraitLevel ? $" ({Localizer.Format($"#KH_TraitSymbol_{ProtoCrewMember.trait}")}{ProtoCrewMember.experienceLevel})" : "")}";
 
         /// <summary>
         /// Returns true if the kerbal is marked as being on EVA
@@ -47,7 +47,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns ProtoCrewMember for the kerbal
         /// </summary>
-        public ProtoCrewMember PCM
+        public ProtoCrewMember ProtoCrewMember
         {
             get
             {
@@ -78,7 +78,7 @@ namespace KerbalHealth
                 if (IsFrozen)
                     return Localizer.Format("#KH_Location_frozen");//"Frozen"
 
-                switch (PCM.rosterStatus)
+                switch (ProtoCrewMember.rosterStatus)
                 {
                     case ProtoCrewMember.RosterStatus.Available:
                         return Localizer.Format("#KH_Location_status1");//"KSC"
@@ -90,13 +90,13 @@ namespace KerbalHealth
                         return Localizer.Format("#KH_Location_status4");//"On Vacation"
                 }
 
-                Vessel v = PCM.GetVessel();
+                Vessel v = ProtoCrewMember.GetVessel();
                 if (v == null)
                     return Localizer.Format("#KH_NA");
                 if (v.isEVA)
                     return Localizer.Format("#KH_Location_status5", v.mainBody.bodyName);//"EVA (" +  + ")"
-                if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(PCM?.GetCLSSpace(v)?.Name))
-                    return Localizer.Format("#KH_Location_CLS", v.vesselName, PCM.GetCLSSpace(v).Name);
+                if (v.loaded && CLS.Enabled && CLS.CLSAddon.getCLSVessel(v).Spaces.Count > 1 && !string.IsNullOrWhiteSpace(ProtoCrewMember?.GetCLSSpace(v)?.Name))
+                    return Localizer.Format("#KH_Location_CLS", v.vesselName, ProtoCrewMember.GetCLSSpace(v).Name);
                 return v.vesselName;
             }
         }
@@ -106,7 +106,7 @@ namespace KerbalHealth
         /// </summary>
         string Trait
         {
-            get => trait ?? PCM.trait;
+            get => trait ?? ProtoCrewMember.trait;
             set => trait = value;
         }
 
@@ -157,14 +157,14 @@ namespace KerbalHealth
         void CalculateLocationEffectInFlight()
         {
             Core.Log($"CalculateLocationEffectInFlight for {Name}");
-            if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 Core.Log($"{Name} is not loaded.");
                 locationEffect = null;
                 return;
             }
 
-            if (!PCM.IsLoaded())
+            if (!ProtoCrewMember.IsLoaded())
                 return;
 
             if (IsOnEVA)
@@ -177,18 +177,18 @@ namespace KerbalHealth
             else
             {
                 // The kerbal is in a vessel => recalculate vesselEffect & partEffect
-                Vessel v = PCM.GetVessel();
+                Vessel v = ProtoCrewMember.GetVessel();
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
-                locationEffect = new HealthEffect(v, CLS.Enabled ? PCM.GetCLSSpace(v) : null);
+                locationEffect = new HealthEffect(v, CLS.Enabled ? ProtoCrewMember.GetCLSSpace(v) : null);
             }
         }
 
         void CalculateLocationEffectInEditor()
         {
-            if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.Contains(PCM))
+            if (ShipConstruction.ShipManifest == null || !ShipConstruction.ShipManifest.Contains(ProtoCrewMember))
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
-            ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? PCM.GetCLSSpace() : null;
+            ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? ProtoCrewMember.GetCLSSpace() : null;
             locationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
             Core.Log($"Location effect:\n{locationEffect}");
         }
@@ -332,7 +332,7 @@ namespace KerbalHealth
             if (condition.Incapacitated)
                 MakeIncapacitated();
             if (condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", PCM.nameWithGender, condition.Title) + Localizer.Format(condition.Description, PCM.nameWithGender), PCM);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", ProtoCrewMember.nameWithGender, condition.Title) + Localizer.Format(condition.Description, ProtoCrewMember.nameWithGender), ProtoCrewMember);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -361,7 +361,7 @@ namespace KerbalHealth
             if (n > 0 && condition.Incapacitated && IsCapable)
                 MakeCapable();
             if (n > 0 && condition.Visible)
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Lost", Name, condition.Title), PCM);
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Lost", Name, condition.Title), ProtoCrewMember);
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
@@ -371,15 +371,15 @@ namespace KerbalHealth
         /// </summary>
         void MakeIncapacitated()
         {
-            if (Trait != null && PCM.type == ProtoCrewMember.KerbalType.Tourist)
+            if (Trait != null && ProtoCrewMember.type == ProtoCrewMember.KerbalType.Tourist)
             {
                 Core.Log($"{Name} is already incapacitated.", LogLevel.Important);
                 return;
             }
             Core.Log($"{Name} ({Trait}) is incapacitated.", LogLevel.Important);
-            Trait = PCM.trait;
-            PCM.type = ProtoCrewMember.KerbalType.Tourist;
-            KerbalRoster.SetExperienceTrait(PCM, KerbalRoster.touristTrait);
+            Trait = ProtoCrewMember.trait;
+            ProtoCrewMember.type = ProtoCrewMember.KerbalType.Tourist;
+            KerbalRoster.SetExperienceTrait(ProtoCrewMember, KerbalRoster.touristTrait);
         }
 
         /// <summary>
@@ -388,13 +388,13 @@ namespace KerbalHealth
         void MakeCapable()
         {
             // Check if the kerbal has already been revived by another mod
-            if (PCM.type != ProtoCrewMember.KerbalType.Tourist)
+            if (ProtoCrewMember.type != ProtoCrewMember.KerbalType.Tourist)
                 return;
             Core.Log($"{Name} is becoming {Trait ?? "something strange"} again.", LogLevel.Important);
             if (Trait != null && Trait != "Tourist")
             {
-                PCM.type = ProtoCrewMember.KerbalType.Crew;
-                KerbalRoster.SetExperienceTrait(PCM, Trait);
+                ProtoCrewMember.type = ProtoCrewMember.KerbalType.Crew;
+                KerbalRoster.SetExperienceTrait(ProtoCrewMember, Trait);
             }
             Trait = null;
         }
@@ -445,7 +445,7 @@ namespace KerbalHealth
             {
                 availableQuirks.Add(q);
                 double w = KerbalHealthQuirkSettings.Instance.StatsAffectQuirkWeights
-                    ? GetQuirkWeight(PCM.courage, q.CourageWeight) * GetQuirkWeight(PCM.stupidity, q.StupidityWeight)
+                    ? GetQuirkWeight(ProtoCrewMember.courage, q.CourageWeight) * GetQuirkWeight(ProtoCrewMember.stupidity, q.StupidityWeight)
                     : 1;
                 weightSum += w;
                 weights.Add(w);
@@ -458,7 +458,7 @@ namespace KerbalHealth
                 return null;
             }
 
-            double r = Core.rand.NextDouble() * weightSum;
+            double r = Core.Rand.NextDouble() * weightSum;
             Core.Log($"Quirk selection roll: {r} out of {weightSum}.");
             for (int i = 0; i < availableQuirks.Count; i++)
             {
@@ -479,29 +479,29 @@ namespace KerbalHealth
             if (q != null)
             {
                 Quirks.Add(q);
-                Core.ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name, q), PCM);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
+                Core.ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name, q), ProtoCrewMember);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
             }
             return q;
         }
 
-        public Quirk AddRandomQuirk() => AddRandomQuirk(PCM.experienceLevel);
+        public Quirk AddRandomQuirk() => AddRandomQuirk(ProtoCrewMember.experienceLevel);
 
         public void CheckForAvailableQuirks()
         {
-            if (KerbalHealthQuirkSettings.Instance.AwardQuirksOnMissions || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available))
+            if (KerbalHealthQuirkSettings.Instance.AwardQuirksOnMissions || (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available))
             {
-                for (int l = QuirkLevel + 1; l <= PCM.experienceLevel; l++)
+                for (int l = QuirkLevel + 1; l <= ProtoCrewMember.experienceLevel; l++)
                 {
                     if (Quirks.Count >= KerbalHealthQuirkSettings.Instance.MaxQuirks)
                         break;
-                    if (Core.rand.NextDouble() < KerbalHealthQuirkSettings.Instance.QuirkChance)
+                    if (Core.Rand.NextDouble() < KerbalHealthQuirkSettings.Instance.QuirkChance)
                     {
                         Core.Log($"A quirk will be added to {Name} (level {l}).");
                         AddRandomQuirk(l);
                     }
                     else Core.Log($"No quirks will be added to {Name} (level {l}).");
                 }
-                QuirkLevel = PCM.experienceLevel;
+                QuirkLevel = ProtoCrewMember.experienceLevel;
             }
         }
 
@@ -541,13 +541,13 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal satisfies all conditions to be trained at KSC
         /// </summary>
-        public bool CanTrainAtKSC => PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available && Health >= 0.9;
+        public bool CanTrainAtKSC => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && Health >= 0.9;
 
         public double TrainingPerDay => Core.TrainingCap /
-                    (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
+                    (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
                     ? KerbalHealthFactorsSettings.Instance.InFlightTrainingTime
                     : KerbalHealthFactorsSettings.Instance.KSCTrainingTime)
-                    / (1 + PCM.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
+                    / (1 + ProtoCrewMember.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
 
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
@@ -620,7 +620,7 @@ namespace KerbalHealth
         {
             Core.Log($"Training of {name} is complete.");
             if (!silent)
-                Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), PCM);
+                Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), ProtoCrewMember);
             RemoveCondition(Condition_Training);
             TrainingFor.Clear();
             TrainingVessel = null;
@@ -687,7 +687,7 @@ namespace KerbalHealth
                 hp = value < 0 ? 0 : (value > MaxHP ? MaxHP : value);
                 if (!IsWarned && Health < KerbalHealthGeneralSettings.Instance.LowHealthAlert)
                 {
-                    Core.ShowMessage(Localizer.Format("#KH_Condition_LowHealth", Name), PCM);
+                    Core.ShowMessage(Localizer.Format("#KH_Condition_LowHealth", Name), ProtoCrewMember);
                     IsWarned = true;
                 }
                 else if (IsWarned && Health >= KerbalHealthGeneralSettings.Instance.LowHealthAlert)
@@ -698,7 +698,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns the max number of HP for the kerbal (including the modifier)
         /// </summary>
-        public double MaxHP => (GetDefaultMaxHP(PCM) + HealthEffects.MaxHPBonus) * HealthEffects.MaxHP * RadiationMaxHPModifier;
+        public double MaxHP => (GetDefaultMaxHP(ProtoCrewMember) + HealthEffects.MaxHPBonus) * HealthEffects.MaxHP * RadiationMaxHPModifier;
 
         /// <summary>
         /// Returns kerbal's HP relative to MaxHealth (0 to 1)
@@ -748,8 +748,8 @@ namespace KerbalHealth
         public void CalculateFactors()
         {
             factorsDirty = false;
-            bool isLoaded = PCM.IsLoaded(), inEditor = Core.IsInEditor;
-            if (!inEditor && PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            bool isLoaded = ProtoCrewMember.IsLoaded(), inEditor = Core.IsInEditor;
+            if (!inEditor && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 FactorsOriginal.Clear();
                 if (IsFrozen || IsDecontaminating)
@@ -842,7 +842,7 @@ namespace KerbalHealth
         /// Returns true if the kerbal can start decontamination now
         /// </summary>
         public bool IsReadyForDecontamination =>
-            PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available
+            ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available
             && Health >= 1
             && !Conditions.Any()
             && (HighLogic.CurrentGame.Mode != Game.Modes.CAREER || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost))
@@ -950,10 +950,10 @@ namespace KerbalHealth
 
         public double GetRadiation()
         {
-            if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsFrozen)
+            if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsFrozen)
                 return IsDecontaminating ? -KerbalHealthRadiationSettings.Instance.DecontaminationRate : 0;
 
-            Vessel v = PCM.GetVessel();
+            Vessel v = ProtoCrewMember.GetVessel();
             if (v == null)
             {
                 Core.Log($"Vessel for {Name} not found!", LogLevel.Error);
@@ -970,7 +970,7 @@ namespace KerbalHealth
             Core.Log($"StartDecontamination for {Name}");
             if (!IsReadyForDecontamination)
             {
-                Core.Log($"{Name} is {PCM.rosterStatus}; HP: {HP}/{MaxHP}; has {Conditions.Count} condition(s)", LogLevel.Error);
+                Core.Log($"{Name} is {ProtoCrewMember.rosterStatus}; HP: {HP}/{MaxHP}; has {Conditions.Count} condition(s)", LogLevel.Error);
                 return;
             }
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
@@ -1012,7 +1012,7 @@ namespace KerbalHealth
         {
             Core.Log($"Updating {Name}'s health.");
 
-            if (PCM == null)
+            if (ProtoCrewMember == null)
             {
                 Core.Log($"{Name} ProtoCrewMember record not found. Aborting health update.", LogLevel.Error);
                 return;
@@ -1020,7 +1020,7 @@ namespace KerbalHealth
 
             SetDirty();
 
-            if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                 IsOnEVA = false;
 
             if (KerbalHealthQuirkSettings.Instance.QuirksEnabled)
@@ -1037,7 +1037,7 @@ namespace KerbalHealth
                         Dose = 0;
                         StopDecontamination();
                     }
-                    if (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                    if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
                         StopDecontamination();
                 }
             }
@@ -1048,10 +1048,10 @@ namespace KerbalHealth
             if (HP <= 0 && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
                 Core.Log($"{Name} dies due to having {HP} health.", LogLevel.Important);
-                if (PCM.seat != null)
-                    PCM.seat.part.RemoveCrewmember(PCM);
-                PCM.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
-                Vessel.CrewWasModified(PCM.GetVessel());
+                if (ProtoCrewMember.seat != null)
+                    ProtoCrewMember.seat.part.RemoveCrewmember(ProtoCrewMember);
+                ProtoCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
+                Vessel.CrewWasModified(ProtoCrewMember.GetVessel());
                 Core.ShowMessage(Localizer.Format("#KH_Condition_KerbalDied", Name), true);
                 return;
             }
@@ -1059,21 +1059,21 @@ namespace KerbalHealth
             // If KSC training no longer possible, stop it
             if (IsTraining && !CanTrainAtKSC)
             {
-                Core.ShowMessage(Localizer.Format("#KH_TrainingStopped", PCM.nameWithGender), PCM);
+                Core.ShowMessage(Localizer.Format("#KH_TrainingStopped", ProtoCrewMember.nameWithGender), ProtoCrewMember);
                 RemoveCondition(Condition_Training);
-                if (PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+                if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                     TrainingFor.Clear();
             }
 
             // Stop training after the kerbal has been recovered
-            if (TrainingFor.Any() && PCM.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsTraining)
+            if (TrainingFor.Any() && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsTraining)
             {
                 TrainingFor.Clear();
                 TrainingVessel = null;
             }
 
             // Train
-            if ((TrainingFor.Any() && PCM.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (PCM.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
+            if ((TrainingFor.Any() && ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
                 Train(interval);
 
             if (HasCondition(Condition_Exhausted))
@@ -1153,7 +1153,7 @@ namespace KerbalHealth
         public void Load(ConfigNode node)
         {
             name = node.GetValue("name");
-            hp = node.GetDouble("health", GetDefaultMaxHP(PCM));
+            hp = node.GetDouble("health", GetDefaultMaxHP(ProtoCrewMember));
             foreach (ConfigNode factorNode in node.GetNodes(HealthFactor.ConfigNodeName))
                 factorsOriginal[Core.GetHealthFactor(factorNode.GetValue("name"))] = factorNode.GetDouble("change");
             if (node.HasNode(HealthEffect.ConfigNodeName))
@@ -1190,7 +1190,7 @@ namespace KerbalHealth
         public KerbalHealthStatus(string name)
         {
             Name = name;
-            HP = GetDefaultMaxHP(PCM);
+            HP = GetDefaultMaxHP(ProtoCrewMember);
             Core.Log($"Created record for {name} with {HP} HP.");
         }
 

@@ -98,12 +98,6 @@ namespace KerbalHealth
 
         List<IEngineStatus> engineModules;
 
-        public HealthFactor MultiplyFactor
-        {
-            get => Core.GetHealthFactor(multiplyFactor);
-            set => multiplyFactor = value.Name;
-        }
-
         public float Multiplier => multiplierMode || !IsSwitchable ? multiplier : 1;
 
         public float Space => multiplierMode ? 0 : space;

@@ -20,7 +20,8 @@ namespace KerbalHealth
             set => base[pcm.name] = value;
         }
 
-        public KerbalHealthList() : base(HighLogic.fetch.currentGame.CrewRoster.Count)
+        public KerbalHealthList()
+            : base(HighLogic.fetch.currentGame.CrewRoster.Count)
         { }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace KerbalHealth
         void RemoveUntrackable()
         {
             List<string> toRemove = new List<string>(Values
-                .Where(khs => !khs.PCM.IsTrackable() && !khs.IsFrozen)
+                .Where(khs => !khs.ProtoCrewMember.IsTrackable() && !khs.IsFrozen)
                 .Select(khs => khs.Name));
             foreach (string name in toRemove)
             {
