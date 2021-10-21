@@ -188,7 +188,7 @@ namespace KerbalHealth
         public void CalculateFactors()
         {
             factorsDirty = false;
-            bool isLoaded = ProtoCrewMember.IsLoaded(), inEditor = Core.IsInEditor;
+            bool unpacked = ProtoCrewMember.IsUnpacked(), inEditor = Core.IsInEditor;
             if (!inEditor && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 FactorsOriginal.Clear();
@@ -197,7 +197,7 @@ namespace KerbalHealth
             }
 
             // Getting factors' HP change per day for non-constant factors only, unless the kerbal is loaded or the scene is editor
-            foreach (HealthFactor f in Core.Factors.Where(f => isLoaded || inEditor || !f.ConstantForUnloaded))
+            foreach (HealthFactor f in Core.Factors.Where(f => unpacked || inEditor || !f.ConstantForUnloaded))
             {
                 FactorsOriginal[f] = f.ChangePerDay(this);
                 Core.Log($"{f.Name} factor is {FactorsOriginal[f]:F1} HP/day.");
@@ -303,7 +303,7 @@ namespace KerbalHealth
                 return;
             }
 
-            if (!ProtoCrewMember.IsLoaded())
+            if (!ProtoCrewMember.IsUnpacked())
                 return;
 
             if (IsOnEVA)
