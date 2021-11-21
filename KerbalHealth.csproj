@@ -124,12 +124,12 @@
     <Compile Include="TrainingPart.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GameData\KerbalHealth\CLSInterfaces.dll" />
     <Content Include="GameData\KerbalHealth\icon.png" />
     <None Include="GameData\KerbalHealth\Localization\en-us.cfg" />
     <None Include="GameData\KerbalHealth\Localization\zh-cn.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHRationalResources.cfg" />
     <None Include="GameData\KerbalHealth\Patches\KHDMOS.cfg" />
+    <Content Include="GameData\KerbalHealth\KH_CLSInterfaces.dll" />
     <Content Include="GameData\KerbalHealth\toolbar.png" />
   </ItemGroup>
   <ItemGroup>
