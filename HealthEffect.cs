@@ -53,50 +53,40 @@ namespace KerbalHealth
 
         public double LoseImmunityChance { get; set; } = 1;
 
+        public FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
+
         public void Save(ConfigNode node)
         {
-            if (HPChange != 0)
-                node.AddValue("hpChange", HPChange);
-            if (MaxHP != 1)
-                node.AddValue("maxHP", MaxHP);
-            if (MaxHPBonus != 0)
-                node.AddValue("maxHPBonus", MaxHPBonus);
-            if (ExhaustedStart != 1)
-                node.AddValue("exhaustedStart", ExhaustedStart);
-            if (ExhaustedEnd != 1)
-                node.AddValue("exhaustedEnd", ExhaustedEnd);
-            if (Space != 0)
-                node.AddValue("space", Space);
-            if (Recuperation != 0)
-                node.AddValue("recuperation", Recuperation);
-            if (MaxRecuperaction != 0)
-                node.AddValue("maxRecuperation", MaxRecuperaction);
-            if (Decay != 0)
-                node.AddValue("decay", Decay);
-            if (Shielding != 0)
-                node.AddValue("shielding", Shielding);
-            if (Radioactivity != 0)
-                node.AddValue("radioactivity", Radioactivity);
-            if (ExposureMultiplier != 1)
-                node.AddValue("exposure", ExposureMultiplier);
-            if (ShelterExposure != 1)
-                node.AddValue("shelterExposure", ShelterExposure);
-            if (CrewCapacity != 0)
-                node.AddValue("crewCapacity", CrewCapacity);
-            if (AccidentChance != 1)
-                node.AddValue("accidentChance", AccidentChance);
-            if (PanicAttackChance != 1)
-                node.AddValue("panicAttackChance", PanicAttackChance);
-            if (SicknessChance != 1)
-                node.AddValue("sicknessChance", SicknessChance);
-            if (CureChance != 1)
-                node.AddValue("cureChance", CureChance);
-            if (LoseImmunityChance != 1)
-                node.AddValue("loseImmunityChance", LoseImmunityChance);
+            void AddValue(double value, string name, double defaultValue)
+            {
+                if (value != defaultValue)
+                    node.AddValue(name, value);
+            }
+
+            AddValue(HPChange, "hpChange", 0);
+            AddValue(MaxHP, "maxHP", 1);
+            AddValue(MaxHPBonus, "maxHPBonus", 0);
+            AddValue(ExhaustedStart, "exhaustedStart", 1);
+            AddValue(ExhaustedEnd, "exhaustedEnd", 1);
+            AddValue(Space, "space", 0);
+            AddValue(Recuperation, "recuperation", 0);
+            AddValue(MaxRecuperaction, "maxRecuperation", 0);
+            AddValue(Decay, "decay", 0);
+            AddValue(Shielding, "shielding", 0);
+            AddValue(Radioactivity, "radioactivity", 0);
+            AddValue(ExposureMultiplier, "exposure", 1);
+            AddValue(ShelterExposure, "shelterExposure", 1);
+            AddValue(CrewCapacity, "crewCapacity", 0);
+            AddValue(AccidentChance, "accidentChance", 1);
+            AddValue(PanicAttackChance, "panicAttackChance", 1);
+            AddValue(SicknessChance, "sicknessChance", 1);
+            AddValue(CureChance, "cureChance", 1);
+            AddValue(LoseImmunityChance, "loseImmunityChance", 1);
             foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
             {
                 ConfigNode n2 = new ConfigNode(FactorMultiplier.ConfigNodeName);
                 fm.Save(n2);
+                node.AddNode(n2);
             }
         }
 
@@ -127,8 +117,6 @@ namespace KerbalHealth
             foreach (FactorMultiplier fm in node.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
                 FactorMultipliers.Add(fm);
         }
-
-        public FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
 
         public HealthEffect()
         {
