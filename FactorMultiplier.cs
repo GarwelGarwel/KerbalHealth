@@ -27,7 +27,11 @@ namespace KerbalHealth
         /// </summary>
         public double Multiplier => UtilMath.Clamp(FreeMultiplier * (1 - BonusSum), MinMultiplier, MaxMultiplier);
 
-        public bool IsTrivial => BonusSum == 0 && FreeMultiplier == 1;
+        public bool IsTrivial =>
+            BonusSum == 0
+            && FreeMultiplier == 1
+            && MinMultiplier >= 1
+            && MaxMultiplier <= 1;
 
         public void Save(ConfigNode node)
         {
@@ -79,14 +83,14 @@ namespace KerbalHealth
         /// <summary>
         /// Adds a free (i.e. not restricted by crew cap) multiplier
         /// </summary>
-        /// <param name="v"></param>
-        public void AddFreeMultiplier(double v)
+        /// <param name="multiplier"></param>
+        public void AddFreeMultiplier(double multiplier)
         {
-            FreeMultiplier *= v;
-            if (v < MinMultiplier)
-                MinMultiplier = v;
-            else if (v > MaxMultiplier)
-                MaxMultiplier = v;
+            FreeMultiplier *= multiplier;
+            if (multiplier < MinMultiplier)
+                MinMultiplier = multiplier;
+            else if (multiplier > MaxMultiplier)
+                MaxMultiplier = multiplier;
         }
 
         public void AddRestrictedMultiplier(double multiplier, int crewCap, int crew)

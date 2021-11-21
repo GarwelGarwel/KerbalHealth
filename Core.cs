@@ -263,7 +263,13 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static bool IsLoaded(this ProtoCrewMember pcm) => pcm.GetVessel()?.loaded ?? false;
+        public static bool IsUnpacked(this ProtoCrewMember pcm) //=> pcm.GetVessel()?.loaded ?? false;
+        {
+            Vessel vessel = pcm.GetVessel();
+            if (vessel == null)
+                return false;
+            return vessel.loaded && !vessel.packed;
+        }
 
         /// <summary>
         /// Returns true if kerbal exists and is either assigned or available

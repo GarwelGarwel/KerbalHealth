@@ -175,7 +175,7 @@ namespace KerbalHealth
 
         public Dictionary<HealthFactor, double> Factors => HealthEffects.FactorMultipliers.ApplyToFactors(FactorsOriginal);
 
-        public double HPChangeFactors => Factors.Sum(kvp => kvp.Value);
+        public double HPChangeFromFactors => Factors.Sum(kvp => kvp.Value);
 
         public double Recuperation => HealthEffects.EffectiveRecuperation;
 
@@ -183,12 +183,12 @@ namespace KerbalHealth
 
         public double HPChangeMarginal => (Recuperation / 100) * (MaxHP - HP) - (Decay / 100) * HP;
 
-        public double HPChangeTotal => HPChangeFactors + HPChangeMarginal;
+        public double HPChangeTotal => HPChangeFromFactors + HPChangeMarginal;
 
-        public void CalculateFactors()
+        void CalculateFactors()
         {
             factorsDirty = false;
-            bool isLoaded = ProtoCrewMember.IsLoaded(), inEditor = Core.IsInEditor;
+            bool unpacked = ProtoCrewMember.IsUnpacked(), inEditor = Core.IsInEditor;
             if (!inEditor && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 FactorsOriginal.Clear();
@@ -197,12 +197,12 @@ namespace KerbalHealth
             }
 
             // Getting factors' HP change per day for non-constant factors only, unless the kerbal is loaded or the scene is editor
-            foreach (HealthFactor f in Core.Factors.Where(f => isLoaded || inEditor || !f.ConstantForUnloaded))
+            foreach (HealthFactor f in Core.Factors.Where(f => unpacked || inEditor || !f.ConstantForUnloaded))
             {
                 FactorsOriginal[f] = f.ChangePerDay(this);
-                Core.Log($"{f.Name} factor is {FactorsOriginal[f]:F1} HP/day.");
+                Core.Log($"{f.Name} factor is {FactorsOriginal[f]:F2} HP/day.");
             }
-            Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value)} HP/day.");
+            Core.Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value):F2} HP/day.");
         }
 
         public double GetFactorHPChange(HealthFactor factor) => Factors.TryGetValue(factor, out double res) ? res : 0;
@@ -214,9 +214,10 @@ namespace KerbalHealth
         /// <returns></returns>
         public double ETAToHP(double target)
         {
-            if (HPChangeTotal == 0)
+            double hpChange = HPChangeTotal;
+            if (hpChange == 0)
                 return double.NaN;
-            double res = (target - HP) / HPChangeTotal;
+            double res = (target - HP) / hpChange;
             return res >= 0 ? res * KSPUtil.dateTimeFormatter.Day : double.NaN;
         }
 
@@ -227,9 +228,10 @@ namespace KerbalHealth
         {
             get
             {
-                if (HPChangeTotal > 0)
+                double hpChange = HPChangeTotal;
+                if (hpChange > 0)
                     return HasCondition(Condition_Exhausted) ? ExhaustionEndHP : MaxHP;
-                if (HPChangeTotal < 0)
+                if (hpChange < 0)
                     return HasCondition(Condition_Exhausted) ? 0 : ExhaustionStartHP;
                 return double.NaN;
             }
@@ -246,8 +248,8 @@ namespace KerbalHealth
         /// <returns></returns>
         public double BalanceHP =>
             Recuperation + Decay == 0
-                ? (HPChangeFactors < 0 ? 0 : MaxHP)
-                : (MaxHP * Recuperation + HPChangeFactors * 100) / (Recuperation + Decay);
+                ? (HPChangeFromFactors < 0 ? 0 : MaxHP)
+                : (MaxHP * Recuperation + HPChangeFromFactors * 100) / (Recuperation + Decay);
 
         #endregion HP CHANGE
 
@@ -298,19 +300,19 @@ namespace KerbalHealth
             Core.Log($"CalculateLocationEffectInFlight for {Name}");
             if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
-                Core.Log($"{Name} is not loaded.");
-                locationEffect = null;
+                Core.Log($"{Name} is not assigned.");
+                LocationEffect = null;
                 return;
             }
 
-            if (!ProtoCrewMember.IsLoaded())
+            if (!ProtoCrewMember.IsUnpacked())
                 return;
 
             if (IsOnEVA)
             {
                 // The kerbal is on EVA => hard-coded vesselEffect
                 Core.Log($"{Name} is on EVA => setting exposure to appropriate value.");
-                locationEffect = new HealthEffect()
+                LocationEffect = new HealthEffect()
                 { ExposureMultiplier = KerbalHealthRadiationSettings.Instance.EVAExposure };
             }
             else
@@ -318,7 +320,7 @@ namespace KerbalHealth
                 // The kerbal is in a vessel => recalculate vesselEffect & partEffect
                 Vessel v = ProtoCrewMember.GetVessel();
                 Core.Log($"{Name} is in {v.vesselName}. It is {(v.loaded ? "" : "NOT ")}loaded.");
-                locationEffect = new HealthEffect(v, CLS.Enabled ? ProtoCrewMember.GetCLSSpace(v) : null);
+                LocationEffect = new HealthEffect(v, CLS.Enabled ? ProtoCrewMember.GetCLSSpace(v) : null);
             }
         }
 
@@ -328,7 +330,7 @@ namespace KerbalHealth
                 return;
             Core.Log($"CalculateLocationEffectInEditor for {Name}");
             ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? ProtoCrewMember.GetCLSSpace() : null;
-            locationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
+            LocationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
             Core.Log($"Location effect:\n{locationEffect}");
         }
 
@@ -1014,7 +1016,7 @@ namespace KerbalHealth
 
             if (ProtoCrewMember == null)
             {
-                Core.Log($"{Name} ProtoCrewMember record not found. Aborting health update.", LogLevel.Error);
+                Core.Log($"{Name} ProtoCrewMember record not found. Cannot update health.", LogLevel.Error);
                 return;
             }
 
@@ -1042,7 +1044,9 @@ namespace KerbalHealth
                 }
             }
 
-            HP += HPChangeTotal * interval / KSPUtil.dateTimeFormatter.Day;
+            double hpChange = HPChangeTotal;
+            HP += hpChange * interval / KSPUtil.dateTimeFormatter.Day;
+            Core.Log($"Total HP change: {hpChange:F2}");
 
             // Check if the kerbal dies
             if (HP <= 0 && KerbalHealthGeneralSettings.Instance.DeathEnabled)
@@ -1073,7 +1077,8 @@ namespace KerbalHealth
             }
 
             // Train
-            if ((TrainingFor.Any() && ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
+            if ((TrainingFor.Any() && ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                || (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTraining))
                 Train(interval);
 
             if (HasCondition(Condition_Exhausted))
@@ -1099,17 +1104,19 @@ namespace KerbalHealth
             ConfigNode n2;
             node.AddValue("name", Name);
             node.AddValue("health", HP);
+            int n = 0;
             foreach (KeyValuePair<HealthFactor, double> f in factorsOriginal.Where(kvp => kvp.Value != 0))
             {
                 n2 = new ConfigNode(HealthFactor.ConfigNodeName);
                 n2.AddValue("name", f.Key.Name);
                 n2.AddValue("change", f.Value);
                 node.AddNode(n2);
+                n++;
             }
-            if (locationEffect != null)
+            Core.Log($"Saved {n} non-zero factors.");
+            if (LocationEffect != null)
             {
-
-                locationEffect.Save(n2 = new ConfigNode(HealthEffect.ConfigNodeName));
+                LocationEffect.Save(n2 = new ConfigNode(HealthEffect.ConfigNodeName));
                 node.AddNode(n2);
             }
             node.AddValue("dose", Dose);
@@ -1157,7 +1164,7 @@ namespace KerbalHealth
             foreach (ConfigNode factorNode in node.GetNodes(HealthFactor.ConfigNodeName))
                 factorsOriginal[Core.GetHealthFactor(factorNode.GetValue("name"))] = factorNode.GetDouble("change");
             if (node.HasNode(HealthEffect.ConfigNodeName))
-                locationEffect = new HealthEffect(node.GetNode(HealthEffect.ConfigNodeName));
+                LocationEffect = new HealthEffect(node.GetNode(HealthEffect.ConfigNodeName));
             Dose = node.GetDouble("dose");
             Radiation = node.GetDouble("radiation");
             Conditions = node.GetValues("condition").Select(s => Core.GetHealthCondition(s)).ToList();
