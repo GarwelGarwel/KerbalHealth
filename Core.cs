@@ -209,9 +209,9 @@ namespace KerbalHealth
 
             trainingCaps = new List<double>(3)
             {
-                0.6,
-                0.75,
-                0.85
+                0.40,
+                0.60,
+                0.75
             };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
