@@ -1,6 +1,7 @@
 ﻿using ConnectedLivingSpace;
 using KSP.Localization;
 using KSP.UI.Screens;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -383,8 +384,8 @@ namespace KerbalHealth
         #endregion EVENT HANDLERS
 
         double TrainingTime(KerbalHealthStatus khs, IEnumerable<ModuleKerbalHealth> modules) =>
-            modules.Sum(mkh => (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh))
+            Math.Max(0, modules.Sum(mkh => (Core.TrainingCap - khs.TrainingLevelForPart(mkh.id)) * khs.GetPartTrainingComplexity(mkh))
             / khs.TrainingPerDay
-            * KSPUtil.dateTimeFormatter.Day;
+            * KSPUtil.dateTimeFormatter.Day);
     }
 }
