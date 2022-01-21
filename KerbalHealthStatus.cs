@@ -59,7 +59,7 @@ namespace KerbalHealth
                 }
                 catch (ArgumentOutOfRangeException)
                 {
-                    Core.Log($"Could not find ProtoCrewMember for {Name}. KerbalHealth kerbal list contains {Core.KerbalHealthList.Count} records.");
+                    Core.Log($"Could not find ProtoCrewMember for {Name}. KerbalHealth kerbal list: {Core.KerbalHealthList}");
                     return null;
                 }
             }

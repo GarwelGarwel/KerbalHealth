@@ -12,22 +12,19 @@ namespace KerbalHealth
 
         public override double BaseChangePerDay => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthFactorsSettings>().StressFactor;
 
-        /// <summary>
-        /// Returns HP change per day due to stress at the current training level for the kerbal
-        /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        double ChangePerDayActual(KerbalHealthStatus khs) => BaseChangePerDay * (1 - khs.TrainingLevel);
-
         public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor)
                 if (IsEnabledInEditor())
-                    return !KerbalHealthFactorsSettings.Instance.TrainingEnabled || KerbalHealthEditorReport.SimulateTrained
+                    return (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || KerbalHealthEditorReport.SimulateTrained
                         ? BaseChangePerDay * (1 - Core.TrainingCap)
-                        : BaseChangePerDay;
+                        : BaseChangePerDay)
+                        / Core.GetColleaguesCount(khs.ProtoCrewMember);
                 else return 0;
-            return khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? ChangePerDayActual(khs) : 0;
+
+            return khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
+                ? BaseChangePerDay * (1 - khs.TrainingLevel) / Core.GetColleaguesCount(khs.ProtoCrewMember)
+                : 0;
         }
     }
 }
