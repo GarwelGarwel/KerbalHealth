@@ -250,7 +250,10 @@ namespace KerbalHealth
             return vessel != null ? vessel.GetCrewCount() : 1;
         }
 
-        public static int GetColleaguesCount(ProtoCrewMember pcm) => Math.Max(GetCrew(pcm, true).Count(pcm2 => pcm.trait == pcm2.trait), 1);
+        public static int GetColleaguesCount(ProtoCrewMember pcm) =>
+            pcm.type != ProtoCrewMember.KerbalType.Tourist
+            ? Math.Max(GetCrew(pcm, true).Count(pcm2 => pcm.trait == pcm2.trait), 1)
+            : (1 + GetCrew(pcm, true).Count(pcm2 => pcm2.type != ProtoCrewMember.KerbalType.Tourist));
 
         /// <summary>
         /// Returns Part where ProtoCrewMember is currently located or null if none
