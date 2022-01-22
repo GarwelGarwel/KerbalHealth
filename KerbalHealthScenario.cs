@@ -1068,24 +1068,10 @@ namespace KerbalHealth
 
             if (selectedKHS.TrainingParts.Any())
             {
-                msg += Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name);  // TODO <- ADD STRING
+                msg += Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name);
                 foreach (TrainingPart tp in selectedKHS.TrainingParts)
                     msg += Localizer.Format("#KH_TI_TrainedPartInfo", PartLoader.getPartInfoByName(tp.Name)?.title ?? tp.Name, tp.Level.ToString("P1"));
             }
-
-            //if (selectedKHS.TrainedVessels.Any())
-            //{
-            //    msg += Localizer.Format("#KH_TI_TrainedVessels", selectedKHS.Name);
-            //    foreach (KeyValuePair<string, double> kvp in selectedKHS.TrainedVessels)
-            //        msg += Localizer.Format("#KH_TI_TrainedVessel", kvp.Key, (kvp.Value * 100).ToString("N1"));
-            //}
-
-            //if (selectedKHS.FamiliarPartTypes.Any())
-            //{
-            //    msg += Localizer.Format("#KH_TI_FamiliarParts", selectedKHS.Name);
-            //    foreach (string s in selectedKHS.FamiliarPartTypes)
-            //        msg += $"\r\n- <color=white>{PartLoader.getPartInfoByName(s)?.title ?? s}</color>";
-            //}
 
             PopupDialog.SpawnPopupDialog(
                 new MultiOptionDialog(

@@ -296,6 +296,11 @@ namespace KerbalHealth
             }
         }
 
+        double TrainingTime(KerbalHealthStatus khs, IEnumerable<ModuleKerbalHealth> modules) =>
+            modules.Sum(mkh => Math.Max(0, (Core.TrainingCap - khs.TrainingLevelForPart(mkh.PartName)) * mkh.complexity))
+            / khs.TrainingPerDay
+            * KSPUtil.dateTimeFormatter.Day;
+
         void SetCLSSpaceIndex(int i)
         {
             if (CLSSpacesCount != 0)
@@ -382,10 +387,5 @@ namespace KerbalHealth
         void OnNextCLSSpaceButtonSelected() => SetCLSSpaceIndex(clsSpaceIndex + 1);
 
         #endregion EVENT HANDLERS
-
-        double TrainingTime(KerbalHealthStatus khs, IEnumerable<ModuleKerbalHealth> modules) =>
-            modules.Sum(mkh => Math.Max(0, (Core.TrainingCap - khs.TrainingLevelForPart(mkh.PartName)) * mkh.complexity))
-            / khs.TrainingPerDay
-            * KSPUtil.dateTimeFormatter.Day;
     }
 }

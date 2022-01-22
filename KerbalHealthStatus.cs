@@ -685,14 +685,25 @@ namespace KerbalHealth
         {
             get
             {
-                if (KerbalHealthFactorsSettings.Instance.TrainingEnabled)
+                if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || (Core.IsInEditor && KerbalHealthEditorReport.SimulateTrained))
+                    return Core.TrainingCap;
+                double totalComplexity, totalTraining;
+                if (Core.IsInEditor)
                 {
-                    double totalTraining = TrainingParts.Sum(tp => tp.Level * tp.Complexity);
-                    double totalComplexity = TrainingParts.Sum(tp => tp.Complexity);
+                    IList<ModuleKerbalHealth> editorTrainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList).Where(mkh => TrainingLevelForPart(mkh.PartName) < Core.TrainingCap).ToList();
+                    if (!editorTrainingParts.Any())
+                        return Core.TrainingCap;
+                    totalComplexity = editorTrainingParts.Sum(mkh => mkh.complexity);
+                    totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName));
+                    return totalTraining / totalComplexity;
+                }
+                else
+                {
+                    totalTraining = TrainingParts.Sum(tp => tp.Level * tp.Complexity);
+                    totalComplexity = TrainingParts.Sum(tp => tp.Complexity);
                     totalTraining = totalComplexity != 0 ? totalTraining / totalComplexity : Core.TrainingCap;
                     return totalTraining;
                 }
-                return Core.TrainingCap;
             }
         }
 
