@@ -3,6 +3,7 @@ using KSP.Localization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace KerbalHealth
 {
@@ -71,9 +72,6 @@ namespace KerbalHealth
         [KSPField]
         // 0 if no training needed for this part, 1 for standard training complexity
         public float complexity = 0;
-
-        //[KSPField(isPersistant = true)]
-        //public uint id = 0;
 
         [KSPField(isPersistant = true)]
         // If not alwaysActive, this determines whether the module is active
@@ -168,7 +166,9 @@ namespace KerbalHealth
         }
 
         public string PartName => part.partInfo.name;
-
+        
+        public string PartTitle => part.partInfo.title;
+        
         PartResourceDefinition ResourceDefinition
         {
             get => PartResourceLibrary.Instance.GetDefinition(resource);
@@ -240,8 +240,6 @@ namespace KerbalHealth
             Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
             if (crewCap < 0)
                 crewCap = part.CrewCapacity;
-            //if (complexity != 0 && id == 0)
-            //    id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;

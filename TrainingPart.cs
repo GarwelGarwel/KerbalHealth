@@ -4,13 +4,13 @@
     {
         public const string ConfigNodeName = "TRAINING_PART";
 
-        //public uint Id { get; set; }
-
         public string Name { get; set; }
         
         public double Complexity { get; set; }
 
         public double Level { get; set; }
+
+        public string Label => PartLoader.getPartInfoByName(Name)?.title ?? Name;
 
         public bool OnCurrentVessel => Complexity > 0;
 
@@ -22,7 +22,6 @@
 
         public TrainingPart(string name, double complexity = 1, double level = 0)
         {
-            //Id = id;
             Complexity = complexity;
             Name = name;
             Level = level;
@@ -32,7 +31,6 @@
 
         public void Save(ConfigNode node)
         {
-            //node.AddValue("id", Id);
             Core.Log($"Saving training part {Name}, complexity = {Complexity}, level = {Level:P2}.");
             node.AddValue("name", Name);
             if (Complexity > 0)
@@ -42,12 +40,6 @@
 
         public void Load(ConfigNode node)
         {
-            //Id = node.GetUInt("id");
-            //if (Id == 0)
-            //{
-            //    Core.Log("Incorrect part id 0 for training part.", LogLevel.Error);
-            //    return;
-            //}
             Core.Log($"Loading training part from ConfigNode: {node}");
             Name = node.GetString("name");
             if (Name == null)

@@ -18,7 +18,7 @@ namespace KerbalHealth
                 return 0;
             if (!Core.IsInEditor && khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
                 return 0;
-            return BaseChangePerDay * (1 - khs.TrainingLevel) / Core.GetColleaguesCount(khs.ProtoCrewMember);
+            return BaseChangePerDay * (1 - khs.GetTrainingLevel(Core.IsInEditor && KerbalHealthEditorReport.SimulateTrained)) / Core.GetColleaguesCount(khs.ProtoCrewMember);
         }
     }
 }

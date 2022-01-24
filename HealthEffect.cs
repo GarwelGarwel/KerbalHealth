@@ -317,7 +317,7 @@ namespace KerbalHealth
                 int c = 0;
                 for (int i = 0; i < exposures.Count; i++)
                 {
-                    Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
+                    Core.Log($"Part {exposures[i].Part.name} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
                     x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
                     c += exposures[i].Part.CrewCapacity;
                     if (c >= crewCount)

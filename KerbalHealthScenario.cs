@@ -48,7 +48,7 @@ namespace KerbalHealth
         PopupDialog monitorWindow;
 
         // Saved position of the Health Monitor window
-        Rect monitorPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
+        Rect windowPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
 
         // Health Monitor grid's labels
         List<DialogGUIBase> gridContent;
@@ -473,7 +473,7 @@ namespace KerbalHealth
                     gridContent[i].SetOptionText($"<color=white>{selectedKHS.GetFactorHPChange(f):N2}</color>");
                     i += 2;
                 }
-                gridContent[i].children[0].SetOptionText($"<color=white>{(((selectedKHS.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.TrainingLevel * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
+                gridContent[i].children[0].SetOptionText($"<color=white>{(((selectedKHS.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.GetTrainingLevel() * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
                 gridContent[i + 2].SetOptionText($"<color=white>{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
                 gridContent[i + 4].SetOptionText($"<color=white>{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
                 gridContent[i + 6].SetOptionText($"<color=white>{selectedKHS.Radiation:N0}/day</color>");
@@ -546,11 +546,11 @@ namespace KerbalHealth
                     UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount,
                     colNumMain,
                     gridContent.ToArray()));
-                monitorPosition.width = gridWidthList + 10;
+                windowPosition.width = gridWidthList + 10;
                 monitorWindow = PopupDialog.SpawnPopupDialog(
                     new Vector2(0.5f, 0.5f),
                     new Vector2(0.5f, 0.5f),
-                    new MultiOptionDialog("Health Monitor", "", Localizer.Format("#KH_HM_windowtitle"), HighLogic.UISkin, monitorPosition, layout), //"Health Monitor"
+                    new MultiOptionDialog("Health Monitor", "", Localizer.Format("#KH_HM_windowtitle"), HighLogic.UISkin, windowPosition, layout), //"Health Monitor"
                     false,
                     HighLogic.UISkin,
                     false);
@@ -596,7 +596,7 @@ namespace KerbalHealth
                     new DialogGUIButton(Localizer.Format("#KH_HM_DDecon"), OnDecontamination, 50, 20, false)));//"Decon"
                 gridContent.Add(new DialogGUILabel(Localizer.Format("#KH_HM_DRadHPLoss")));//"Rad HP Loss:"
                 gridContent.Add(new DialogGUILabel(""));
-                monitorPosition.width = gridWidthDetails + 8;
+                windowPosition.width = gridWidthDetails + 8;
                 monitorWindow = PopupDialog.SpawnPopupDialog(
                     new Vector2(0.5f, 0.5f),
                     new Vector2(0.5f, 0.5f),
@@ -605,7 +605,7 @@ namespace KerbalHealth
                         "",
                         Localizer.Format("#KH_HM_Dwindowtitle"),
                         HighLogic.UISkin,
-                        monitorPosition,
+                        windowPosition,
                         new DialogGUIVerticalLayout(
                             new DialogGUIGridLayout(
                                 new RectOffset(3, 3, 3, 3),
@@ -640,8 +640,7 @@ namespace KerbalHealth
         {
             if (monitorWindow != null)
             {
-                Vector3 v = monitorWindow.RTrf.position;
-                monitorPosition = new Rect(v.x / Screen.width + 0.5f, v.y / Screen.height + 0.5f, gridWidthList + 20, 50);
+                windowPosition.position = new Vector2(monitorWindow.RTrf.anchoredPosition.x / Screen.width + 0.5f, monitorWindow.RTrf.anchoredPosition.y / Screen.height + 0.5f);
                 monitorWindow.Dismiss();
             }
         }
@@ -824,8 +823,8 @@ namespace KerbalHealth
                     Core.Log($"KerbalHealthStatus for {pcm.name} in {v.vesselName} not found!", LogLevel.Error);
                     continue;
                 }
-                Core.Log($"{pcm.name} is trained {khs.TrainingLevel:P1} / {Core.TrainingCap:P1}.");
-                if (khs.TrainingLevel < Core.TrainingCap)
+                Core.Log($"{pcm.name} is trained {khs.GetTrainingLevel():P1} / {Core.TrainingCap:P1}.");
+                if (khs.GetTrainingLevel() < Core.TrainingCap)
                 {
                     msg += (msg.Length == 0 ? "" : ", ") + pcm.name;
                     n++;
@@ -1061,16 +1060,16 @@ namespace KerbalHealth
                    selectedKHS.Name,
                    selectedKHS.TrainingVessel,
                    selectedKHS.TrainingParts.Count,
-                   (selectedKHS.TrainingLevel * 100).ToString("N1"),
+                   (selectedKHS.GetTrainingLevel() * 100).ToString("N1"),
                    (Core.TrainingCap * 100).ToString("N0"),
-                   Core.ParseUT(selectedKHS.TrainingETA, false, 10))
+                   Core.ParseUT(selectedKHS.CurrentTrainingETA, false, 10))
                : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
 
-            if (selectedKHS.TrainingParts.Any())
+            if (selectedKHS.TrainingParts.Any(tp => tp.Level >= 0.001))
             {
                 msg += Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name);
-                foreach (TrainingPart tp in selectedKHS.TrainingParts)
-                    msg += Localizer.Format("#KH_TI_TrainedPartInfo", PartLoader.getPartInfoByName(tp.Name)?.title ?? tp.Name, tp.Level.ToString("P1"));
+                foreach (TrainingPart tp in selectedKHS.TrainingParts.Where(tp => tp.Level >= 0.001))
+                    msg += Localizer.Format("#KH_TI_TrainedPartInfo", tp.Label, tp.Level.ToString("P1"));
             }
 
             PopupDialog.SpawnPopupDialog(

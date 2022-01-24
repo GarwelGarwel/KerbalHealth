@@ -1,5 +1,4 @@
 ﻿using KSP.Localization;
-using Smooth.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -675,35 +674,38 @@ namespace KerbalHealth
                     : KerbalHealthFactorsSettings.Instance.KSCTrainingTime)
                     / (1 + ProtoCrewMember.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
 
+        public double TrainingETAFor(IEnumerable<ModuleKerbalHealth> modules) =>
+           modules.Sum(mkh => Math.Max(0, (Core.TrainingCap - TrainingLevelForPart(mkh.PartName)) * mkh.complexity))
+           / TrainingPerDay
+           * KSPUtil.dateTimeFormatter.Day;
+
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
         /// </summary>
-        public double TrainingETA =>
-            TrainingParts.Sum(tp => (Core.TrainingCap - tp.Level) * tp.Complexity) / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
+        public double CurrentTrainingETA => TrainingParts.Sum(tp => (Core.TrainingCap - tp.Level) * tp.Complexity) / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
 
-        public double TrainingLevel
+        public double GetTrainingLevel(bool simulateTrained = false)
         {
-            get
+            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || simulateTrained)
+                return Core.TrainingCap;
+
+            double totalComplexity, totalTraining;
+            if (Core.IsInEditor)
             {
-                if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || (Core.IsInEditor && KerbalHealthEditorReport.SimulateTrained))
+                IList<ModuleKerbalHealth> editorTrainingParts = Core.GetTrainableParts(EditorLogic.SortedShipList).Where(mkh => TrainingLevelForPart(mkh.PartName) < Core.TrainingCap).ToList();
+                if (!editorTrainingParts.Any())
                     return Core.TrainingCap;
-                double totalComplexity, totalTraining;
-                if (Core.IsInEditor)
-                {
-                    IList<ModuleKerbalHealth> editorTrainingParts = Core.GetTrainingCapableParts(EditorLogic.SortedShipList).Where(mkh => TrainingLevelForPart(mkh.PartName) < Core.TrainingCap).ToList();
-                    if (!editorTrainingParts.Any())
-                        return Core.TrainingCap;
-                    totalComplexity = editorTrainingParts.Sum(mkh => mkh.complexity);
-                    totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName));
-                    return totalTraining / totalComplexity;
-                }
-                else
-                {
-                    totalTraining = TrainingParts.Sum(tp => tp.Level * tp.Complexity);
-                    totalComplexity = TrainingParts.Sum(tp => tp.Complexity);
-                    totalTraining = totalComplexity != 0 ? totalTraining / totalComplexity : Core.TrainingCap;
-                    return totalTraining;
-                }
+                totalComplexity = editorTrainingParts.Sum(mkh => mkh.complexity);
+                totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName));
+                return totalTraining / totalComplexity;
+            }
+
+            else
+            {
+                totalTraining = TrainingParts.Sum(tp => tp.Level * tp.Complexity);
+                totalComplexity = TrainingParts.Sum(tp => tp.Complexity);
+                totalTraining = totalComplexity != 0 ? totalTraining / totalComplexity : Core.TrainingCap;
+                return totalTraining;
             }
         }
 
@@ -731,7 +733,7 @@ namespace KerbalHealth
             }
 
             int count = 0;
-            foreach (ModuleKerbalHealth mkh in Core.GetTrainingCapableParts(parts))
+            foreach (ModuleKerbalHealth mkh in Core.GetTrainableParts(parts))
             {
                 TrainingPart tp = TrainingParts.Find(tp2 => tp2.Name == mkh.PartName);
                 if (tp != null)
@@ -983,11 +985,7 @@ namespace KerbalHealth
 
         #region HEALTH UPDATE
 
-        public void SetDirty()
-        {
-            effectsDirty = true;
-            factorsDirty = true;
-        }
+        public void SetDirty() => effectsDirty = factorsDirty = true;
 
         /// <summary>
         /// Updates kerbal's HP and status

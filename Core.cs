@@ -155,75 +155,6 @@ namespace KerbalHealth
             return null;
         }
 
-        /// <summary>
-        /// Loads necessary mod data from KerbalHealth.cfg and
-        /// </summary>
-        public static void LoadConfig()
-        {
-            Log("Loading config...", LogLevel.Important);
-
-            ConfigNode config = GameDatabase.Instance.GetConfigNodes("KERBALHEALTH_CONFIG")[0];
-
-            HealthConditions = new Dictionary<string, HealthCondition>();
-            foreach (ConfigNode n in config.GetNodes("HEALTH_CONDITION"))
-                HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
-            Log($"{HealthConditions.Count} health conditions loaded.", LogLevel.Important);
-
-            ShieldingResources = new Dictionary<int, double>();
-            foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
-                AddResourceShielding(n.GetValue("name"), n.GetDouble("shielding"));
-            Log($"{ShieldingResources.Count} shielding resource values loaded.", LogLevel.Important);
-
-            Quirks = new List<Quirk>(config.GetNodes("HEALTH_QUIRK").Select(n => new Quirk(n)));
-            Log($"{Quirks.Count} quirks loaded.", LogLevel.Important);
-
-            PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
-            foreach (CelestialBody b in FlightGlobals.Bodies)
-                PlanetConfigs.Add(b, new PlanetHealthConfig(b));
-
-            int i = 0;
-            foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
-            {
-                PlanetHealthConfig bc = GetPlanetConfig(n.GetString("name"));
-                if (bc != null)
-                {
-                    bc.Load(n);
-                    i++;
-                }
-            }
-            Log($"{i} planet configs out of {PlanetConfigs.Count} bodies loaded.", LogLevel.Important);
-
-            SolarCycleDuration = config.GetDouble("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
-            SolarCycleStartingPhase = config.GetDouble("solarCycleStartingPhase");
-            RadStormMinChancePerDay = config.GetDouble("radStormMinChance", 0.00015);
-            RadStormMaxChancePerDay = config.GetDouble("radStormMaxChance", 0.00229);
-
-            RadStormTypes = new List<RadStormType>();
-            i = 0;
-            foreach (ConfigNode n in config.GetNodes("RADSTORM_TYPE"))
-            {
-                RadStormTypes.Add(new RadStormType(n));
-                radStormTypesTotalWeight += RadStormTypes[i++].Weight;
-            }
-            Log($"{i} radstorm types loaded with total weight {radStormTypesTotalWeight}.", LogLevel.Important);
-
-            trainingCaps = new List<double>(3)
-            {
-                0.40,
-                0.60,
-                0.75
-            };
-            foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
-            {
-                int j = n.GetInt("level");
-                if (j <= 0)
-                    continue;
-                trainingCaps[j - 1] = n.GetDouble("cap");
-            }
-
-            ConfigLoaded = true;
-        }
-
         public static IList<ProtoCrewMember> GetCrew(ProtoCrewMember pcm, bool entireVessel)
         {
             Vessel vessel = pcm.GetVessel();
@@ -262,6 +193,8 @@ namespace KerbalHealth
         /// <returns></returns>
         public static Part GetCrewPart(this ProtoCrewMember pcm) =>
             IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
+
+        public static string GetPartTitle(string partName) => PartLoader.getPartInfoByName(partName)?.title ?? partName;
 
         /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
@@ -330,7 +263,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="allParts"></param>
         /// <returns></returns>
-        public static List<ModuleKerbalHealth> GetTrainingCapableParts(List<Part> allParts) =>
+        public static List<ModuleKerbalHealth> GetTrainableParts(List<Part> allParts) =>
             allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
 
         public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
@@ -476,6 +409,75 @@ namespace KerbalHealth
         {
             if (KerbalHealthQuirkSettings.Instance.KSCNotificationsEnabled || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Available && pcm.rosterStatus != Status_Frozen))
                 ShowMessage(msg, pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
+        }
+
+        /// <summary>
+        /// Loads necessary mod data from KerbalHealth.cfg and
+        /// </summary>
+        public static void LoadConfig()
+        {
+            Log("Loading config...", LogLevel.Important);
+
+            ConfigNode config = GameDatabase.Instance.GetConfigNodes("KERBALHEALTH_CONFIG")[0];
+
+            HealthConditions = new Dictionary<string, HealthCondition>();
+            foreach (ConfigNode n in config.GetNodes("HEALTH_CONDITION"))
+                HealthConditions.Add(n.GetValue("name"), new HealthCondition(n));
+            Log($"{HealthConditions.Count} health conditions loaded.", LogLevel.Important);
+
+            ShieldingResources = new Dictionary<int, double>();
+            foreach (ConfigNode n in config.GetNodes("RESOURCE_SHIELDING"))
+                AddResourceShielding(n.GetValue("name"), n.GetDouble("shielding"));
+            Log($"{ShieldingResources.Count} shielding resource values loaded.", LogLevel.Important);
+
+            Quirks = new List<Quirk>(config.GetNodes("HEALTH_QUIRK").Select(n => new Quirk(n)));
+            Log($"{Quirks.Count} quirks loaded.", LogLevel.Important);
+
+            PlanetConfigs = new Dictionary<CelestialBody, PlanetHealthConfig>(FlightGlobals.Bodies.Count);
+            foreach (CelestialBody b in FlightGlobals.Bodies)
+                PlanetConfigs.Add(b, new PlanetHealthConfig(b));
+
+            int i = 0;
+            foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
+            {
+                PlanetHealthConfig bc = GetPlanetConfig(n.GetString("name"));
+                if (bc != null)
+                {
+                    bc.Load(n);
+                    i++;
+                }
+            }
+            Log($"{i} planet configs out of {PlanetConfigs.Count} bodies loaded.", LogLevel.Important);
+
+            SolarCycleDuration = config.GetDouble("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
+            SolarCycleStartingPhase = config.GetDouble("solarCycleStartingPhase");
+            RadStormMinChancePerDay = config.GetDouble("radStormMinChance", 0.00015);
+            RadStormMaxChancePerDay = config.GetDouble("radStormMaxChance", 0.00229);
+
+            RadStormTypes = new List<RadStormType>();
+            i = 0;
+            foreach (ConfigNode n in config.GetNodes("RADSTORM_TYPE"))
+            {
+                RadStormTypes.Add(new RadStormType(n));
+                radStormTypesTotalWeight += RadStormTypes[i++].Weight;
+            }
+            Log($"{i} radstorm types loaded with total weight {radStormTypesTotalWeight}.", LogLevel.Important);
+
+            trainingCaps = new List<double>(3)
+            {
+                0.40,
+                0.60,
+                0.75
+            };
+            foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
+            {
+                int j = n.GetInt("level");
+                if (j <= 0)
+                    continue;
+                trainingCaps[j - 1] = n.GetDouble("cap");
+            }
+
+            ConfigLoaded = true;
         }
 
         /// <summary>
