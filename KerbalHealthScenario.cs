@@ -14,22 +14,14 @@ namespace KerbalHealth
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.SPACECENTER, GameScenes.TRACKSTATION, GameScenes.FLIGHT, GameScenes.EDITOR)]
     public class KerbalHealthScenario : ScenarioModule
     {
-        // Health Monitor dimensions
-        const int colNumMain = 8, colNumDetails = 6;
-
-        const int colWidth = 100;
-        const int colSpacing = 10;
-        const int gridWidthList = colNumMain * (colWidth + colSpacing) - colSpacing;
-        const int gridWidthDetails = colNumDetails * (colWidth + colSpacing) - colSpacing;
+        // Current Kerbal Health version
+        Version version;
 
         // UT at last health update
         static double lastUpdated;
 
         // UT when (or after) next event check occurs
         static double nextEventTime;
-
-        // Current Kerbal Health version
-        Version version;
 
         // List of scheduled radstorms
         List<RadStorm> radStorms = new List<RadStorm>();
@@ -38,20 +30,27 @@ namespace KerbalHealth
         ApplicationLauncherButton appLauncherButton;
         IButton toolbarButton;
 
-        // List of displayed kerbal, sorted according to current settings
-        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
-
-        // Change flags
-        bool dirty = false, crewChanged = false, vesselChanged = false;
+        // Health Monitor dimensions
+        const int colNumMain = 8, colNumDetails = 6;
+        const int colWidth = 100;
+        const int colSpacing = 10;
+        const int gridWidthList = colNumMain * (colWidth + colSpacing) - colSpacing;
+        const int gridWidthDetails = colNumDetails * (colWidth + colSpacing) - colSpacing;
 
         // Health Monitor window
         PopupDialog monitorWindow;
 
         // Saved position of the Health Monitor window
-        Rect windowPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
+        static Rect windowPosition = new Rect(0.5f, 0.5f, gridWidthList, 200);
 
         // Health Monitor grid's labels
         List<DialogGUIBase> gridContent;
+
+        // List of displayed kerbal, sorted according to current settings
+        SortedList<ProtoCrewMember, KerbalHealthStatus> kerbals;
+
+        // Change flags
+        bool dirty = false, crewChanged = false, vesselChanged = false;
 
         // Currently selected kerbal for details view, null if list is shown
         KerbalHealthStatus selectedKHS = null;
@@ -169,12 +168,7 @@ namespace KerbalHealth
                 toolbarButton.Text = "Kerbal Health Monitor";
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
                 toolbarButton.ToolTip = "Kerbal Health";
-                toolbarButton.OnClick += e =>
-                {
-                    if (monitorWindow == null)
-                        DisplayData();
-                    else UndisplayData();
-                };
+                toolbarButton.OnClick += _ => OnAppLauncherClicked();
             }
 
             if (VesselNeedsCheckForUntrainedCrew(FlightGlobals.ActiveVessel))
@@ -187,7 +181,7 @@ namespace KerbalHealth
             if (Core.IsInEditor)
                 return;
 
-            UndisplayData();
+            HideWindow();
 
             GameEvents.OnGameSettingsApplied.Remove(OnGameSettingsApplied);
             GameEvents.onCrewOnEva.Remove(OnKerbalEva);
@@ -344,7 +338,6 @@ namespace KerbalHealth
         /// <summary>
         /// Checks if an anomaly has just been discovered and awards quirks to a random discoverer + clearing radiation
         /// </summary>
-        /// <param name="n"></param>
         public void OnProgressComplete(ProgressNode n)
         {
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
@@ -486,7 +479,7 @@ namespace KerbalHealth
         /// <summary>
         /// Shows Health monitor when the AppLauncher/Blizzy's Toolbar button is clicked
         /// </summary>
-        public void DisplayData()
+        public void ShowWindow()
         {
             Core.Log("KerbalHealthScenario.DisplayData", LogLevel.Important);
             UpdateKerbals(true);
@@ -628,7 +621,7 @@ namespace KerbalHealth
                                 20,
                                 false))),
                     false, HighLogic.UISkin,
-                    false);//"Health Details""Back"
+                    false);
             }
             dirty = true;
         }
@@ -636,7 +629,7 @@ namespace KerbalHealth
         /// <summary>
         /// Hides the Health Monitor window
         /// </summary>
-        public void UndisplayData()
+        public void HideWindow()
         {
             if (monitorWindow != null)
             {
@@ -711,7 +704,7 @@ namespace KerbalHealth
             Core.Log("Registering AppLauncher button...");
             Texture2D icon = new Texture2D(38, 38);
             icon.LoadImage(File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
-            appLauncherButton = ApplicationLauncher.Instance.AddModApplication(DisplayData, UndisplayData, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
+            appLauncherButton = ApplicationLauncher.Instance.AddModApplication(OnAppLauncherClicked, OnAppLauncherClicked, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
         }
 
         void UnregisterAppLauncherButton()
@@ -1046,8 +1039,15 @@ namespace KerbalHealth
 
         void Invalidate()
         {
-            UndisplayData();
-            DisplayData();
+            HideWindow();
+            ShowWindow();
+        }
+
+        void OnAppLauncherClicked()
+        {
+            if (monitorWindow != null)
+                HideWindow();
+            else ShowWindow();
         }
 
         void OnTrainingInfo()
