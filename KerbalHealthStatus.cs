@@ -674,6 +674,14 @@ namespace KerbalHealth
                     : KerbalHealthFactorsSettings.Instance.KSCTrainingTime)
                     / (1 + ProtoCrewMember.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
 
+
+        public TrainingPart GetTrainingPart(string name) => TrainingParts.Find(tp2 => tp2.Name == name);
+        public double TrainingLevelForPart(string name)
+        {
+            TrainingPart tp = GetTrainingPart(name);
+            return tp != null ? tp.Level : 0;
+        }
+
         public double TrainingETAFor(IEnumerable<ModuleKerbalHealth> modules) =>
            modules.Sum(mkh => Math.Max(0, (Core.TrainingCap - TrainingLevelForPart(mkh.PartName)) * mkh.complexity))
            / TrainingPerDay
@@ -709,12 +717,6 @@ namespace KerbalHealth
             }
         }
 
-        public double TrainingLevelForPart(string name)
-        {
-            TrainingPart tp = TrainingParts.Find(tp2 => tp2.Name == name);
-            return tp != null ? tp.Level : 0;
-        }
-
         /// <summary>
         /// Start training the kerbal for a set of parts; also abandons all previous trainings
         /// </summary>
@@ -735,7 +737,7 @@ namespace KerbalHealth
             int count = 0;
             foreach (ModuleKerbalHealth mkh in Core.GetTrainableParts(parts))
             {
-                TrainingPart tp = TrainingParts.Find(tp2 => tp2.Name == mkh.PartName);
+                TrainingPart tp = GetTrainingPart(mkh.PartName);
                 if (tp != null)
                     tp.StartTraining(mkh.complexity);
                 else TrainingParts.Add(new TrainingPart(mkh.PartName, mkh.complexity));
@@ -784,7 +786,7 @@ namespace KerbalHealth
 
             // Step 2: Updating parts' training progress and calculating their base complexity to update vessel's training level
             bool trainingComplete = true;
-            foreach (TrainingPart tp in TrainingParts)
+            foreach (TrainingPart tp in TrainingParts.Where(tp => tp.TrainingNow))
             {
                 tp.Level += trainingProgress;
                 if (tp.TrainingComplete)
@@ -1142,6 +1144,15 @@ namespace KerbalHealth
             Trait = node.GetValue("trait");
             IsOnEVA = node.GetBool("onEva");
             TrainingParts = node.GetNodes(TrainingPart.ConfigNodeName).Select(n => new TrainingPart(n)).ToList();
+            // Loading familiar part types from pre-1.6 versions
+            foreach (string partName in node.GetValuesList("familiarPartType").Where(partName => PartLoader.getPartInfoByName(partName) != null))
+            {
+                Core.Log($"Loading training part {partName} from a pre-1.6 save.");
+                TrainingPart trainingPart = GetTrainingPart(partName);
+                if (trainingPart != null)
+                    trainingPart.Level = Math.Max(trainingPart.Level, Core.TrainingCap);
+                else TrainingParts.Add(new TrainingPart(partName, 0, Core.TrainingCap));
+            }
             TrainingVessel = node.GetString("trainingVessel");
             Core.Log($"{Name} loaded.");
         }

@@ -267,9 +267,6 @@ namespace KerbalHealth
                             break;
 
                         case 3:
-                            //gridContent.Add(new DialogGUILabel($"<b><color=red>{Localizer.Format("#KH_ER_AlreadyTraining")}</color></b>", true));
-                            //break;
-
                         case 4:
                             gridContent.Add(new DialogGUILabel($"<b><color=white>{Core.ParseUT(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
                             break;
@@ -278,7 +275,7 @@ namespace KerbalHealth
                     gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {Core.TrainingCap:P0}</b>", true));
                     for (int j = 0; j < trainableParts.Count; j++)
                     {
-                        TrainingPart tp = kerbal.TrainingParts.Find(tp2 => tp2.Name == trainableParts[j].PartName);
+                        TrainingPart tp = kerbal.GetTrainingPart(trainableParts[j].PartName);
                         if (tp != null)
                             gridContent.Add(new DialogGUILabel(tp.Level.ToString("P1"), true));
                         else gridContent.Add(new DialogGUILabel("", true));

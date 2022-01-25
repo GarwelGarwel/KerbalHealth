@@ -1060,8 +1060,8 @@ namespace KerbalHealth
                    selectedKHS.Name,
                    selectedKHS.TrainingVessel,
                    selectedKHS.TrainingParts.Count,
-                   (selectedKHS.GetTrainingLevel() * 100).ToString("N1"),
-                   (Core.TrainingCap * 100).ToString("N0"),
+                   selectedKHS.GetTrainingLevel().ToString("P1"),
+                   Core.TrainingCap.ToString("P0"),
                    Core.ParseUT(selectedKHS.CurrentTrainingETA, false, 10))
                : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
 
@@ -1074,7 +1074,7 @@ namespace KerbalHealth
 
             PopupDialog.SpawnPopupDialog(
                 new MultiOptionDialog(
-                    "Training Info",
+                    "TrainingInfo",
                     msg,
                     Localizer.Format("#KH_TI_Title"),
                     HighLogic.UISkin,
@@ -1094,14 +1094,12 @@ namespace KerbalHealth
             if (selectedKHS.IsDecontaminating)
             {
                 Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.");
-
                 condition = () => selectedKHS.IsDecontaminating;
                 ok = () =>
                 {
                     selectedKHS.StopDecontamination();
                     Invalidate();
                 };
-
                 msg = Localizer.Format("#KH_DeconMsg1", selectedKHS.ProtoCrewMember.nameWithGender);
             }
             else
@@ -1112,7 +1110,6 @@ namespace KerbalHealth
                     selectedKHS.StartDecontamination();
                     Invalidate();
                 };
-
                 if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination)
                     msg += Localizer.Format(
                         "#KH_DeconMsg2",

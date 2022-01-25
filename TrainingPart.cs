@@ -20,10 +20,10 @@
 
         public TrainingPart(ConfigNode n) => Load(n);
 
-        public TrainingPart(string name, double complexity = 1, double level = 0)
+        public TrainingPart(string name, double complexity, double level = 0)
         {
-            Complexity = complexity;
             Name = name;
+            Complexity = complexity;
             Level = level;
         }
 
