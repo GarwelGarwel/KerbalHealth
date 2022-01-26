@@ -1065,22 +1065,16 @@ namespace KerbalHealth
                    Core.ParseUT(selectedKHS.CurrentTrainingETA, false, 10))
                : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
 
+            List<DialogGUIBase> elements = new List<DialogGUIBase>();
             if (selectedKHS.TrainingParts.Any(tp => tp.Level >= 0.001))
             {
-                msg += Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name);
+                elements.Add(new DialogGUILabel(Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name), true));
                 foreach (TrainingPart tp in selectedKHS.TrainingParts.Where(tp => tp.Level >= 0.001))
-                    msg += Localizer.Format("#KH_TI_TrainedPartInfo", tp.Label, tp.Level.ToString("P1"));
+                    elements.Add(new DialogGUIHorizontalLayout(300, 10, new DialogGUILabel(tp.Label, 250), new DialogGUILabel(tp.Level.ToString("P1"), 50)));
             }
+            elements.Add(new DialogGUIButton(Localizer.Format("#KH_TI_Close"), null, true));
 
-            PopupDialog.SpawnPopupDialog(
-                new MultiOptionDialog(
-                    "TrainingInfo",
-                    msg,
-                    Localizer.Format("#KH_TI_Title"),
-                    HighLogic.UISkin,
-                    new DialogGUIButton(Localizer.Format("#KH_TI_Close"), null, true)),
-                false,
-                HighLogic.UISkin);
+            PopupDialog.SpawnPopupDialog(new MultiOptionDialog("TrainingInfo", msg, Localizer.Format("#KH_TI_Title"), HighLogic.UISkin, elements.ToArray()), false, HighLogic.UISkin);
         }
 
         void OnDecontamination()
@@ -1110,6 +1104,7 @@ namespace KerbalHealth
                     selectedKHS.StartDecontamination();
                     Invalidate();
                 };
+
                 if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER && KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination)
                     msg += Localizer.Format(
                         "#KH_DeconMsg2",

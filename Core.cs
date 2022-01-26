@@ -45,19 +45,6 @@ namespace KerbalHealth
 
         static readonly string[] prefixes = { "", "K", "M", "G", "T" };
 
-        static List<HealthFactor> factors = new List<HealthFactor>()
-        {
-            new StressFactor(),
-            new ConfinementFactor(),
-            new LonelinessFactor(),
-            new MicrogravityFactor(),
-            new EVAFactor(),
-            new ConditionsFactor(),
-            new ConnectedFactor(),
-            new HomeFactor(),
-            new KSCFactor()
-        };
-
         static double radStormTypesTotalWeight = 0;
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
@@ -72,11 +59,18 @@ namespace KerbalHealth
         /// <summary>
         /// List of all factors to be checked
         /// </summary>
-        public static List<HealthFactor> Factors
+        public static List<HealthFactor> Factors { get; set; } = new List<HealthFactor>()
         {
-            get => factors;
-            set => factors = value;
-        }
+            new StressFactor(),
+            new ConfinementFactor(),
+            new LonelinessFactor(),
+            new MicrogravityFactor(),
+            new EVAFactor(),
+            new ConditionsFactor(),
+            new ConnectedFactor(),
+            new HomeFactor(),
+            new KSCFactor()
+        };
 
         /// <summary>
         /// Keeps data about all resources that provide Shielding. Key is resource id, value is amount of shielding provided by 1 unit
@@ -110,8 +104,7 @@ namespace KerbalHealth
         /// <summary>
         /// Max amount of stress reduced by training depending on Astronaut Complex's level
         /// </summary>
-        public static double TrainingCap =>
-            trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
+        public static double TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
 
         /// <summary>
         /// Current <see cref="LogLevel"/>: either Debug or Important
@@ -391,7 +384,7 @@ namespace KerbalHealth
             }
             else if (time < KSPUtil.dateTimeFormatter.Day)
                 res = "0 d";
-            return res.TrimEnd();
+            return res.Trim();
         }
 
         public static void ShowMessage(string msg, bool unwarpTime)
