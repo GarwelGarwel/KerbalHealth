@@ -47,9 +47,9 @@ namespace KerbalHealth
             HomeFactor = 2;
             KSCFactor = 4;
             TrainingEnabled = true;
-            KSCTrainingTime = 40;
-            InFlightTrainingTime = 100;
-            FamiliarityBonus = 0.5f;
+            TrainingTime = 40;
+            //InFlightTrainingTime = 100;
+            //FamiliarityBonus = 0.5f;
             StupidityPenalty = 0;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
@@ -72,9 +72,9 @@ namespace KerbalHealth
             settingsNode.TryGetValue("HomeFactor", ref HomeFactor);
             settingsNode.TryGetValue("KSCFactor", ref KSCFactor);
             settingsNode.TryGetValue("TrainingEnabled", ref TrainingEnabled);
-            settingsNode.TryGetValue("KSCTrainingTime", ref KSCTrainingTime);
-            settingsNode.TryGetValue("InFlightTrainingTime", ref InFlightTrainingTime);
-            settingsNode.TryGetValue("FamiliarityBonus", ref FamiliarityBonus);
+            settingsNode.TryGetValue("TrainingTime", ref TrainingTime);
+            //settingsNode.TryGetValue("InFlightTrainingTime", ref InFlightTrainingTime);
+            //settingsNode.TryGetValue("FamiliarityBonus", ref FamiliarityBonus);
             settingsNode.TryGetValue("StupidityPenalty", ref StupidityPenalty);
         }
 
@@ -107,14 +107,11 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_FS_TrainingEnabled", toolTip = "#KH_FS_TrainingEnabled_desc")]//Training Enabled""Turn on/off the need to train kerbals to reduce stress
         public bool TrainingEnabled = true;
 
-        [GameParameters.CustomIntParameterUI("#KH_FS_KSCTrainingTime", toolTip = "#KH_FS_KSCTrainingTime_desc", minValue = 5, maxValue = 200, stepSize = 5)]//KSC Training Time""Min # of days it takes to train kerbal to max level at KSC
-        public int KSCTrainingTime = 40;
+        [GameParameters.CustomIntParameterUI("#KH_FS_TrainingTime", toolTip = "#KH_FS_TrainingTime_desc", minValue = 5, maxValue = 200, stepSize = 5)]//KSC Training Time""Min # of days it takes to train kerbal to max level at KSC
+        public int TrainingTime = 60;
 
-        [GameParameters.CustomIntParameterUI("#KH_FS_InFlightTrainingTime", toolTip = "#KH_FS_InFlightTrainingTime_desc", minValue = 5, maxValue = 200)] //In-Flight Training Time""Min # of days it takes to train kerbal to max level during a mission
-        public int InFlightTrainingTime = 100;
-
-        [GameParameters.CustomFloatParameterUI("#KH_FS_FamiliarityBonus", toolTip = "KH_FS_FamiliarityBonus_desc", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 1, stepCount = 11)]
-        public float FamiliarityBonus = 0.5f;
+        //[GameParameters.CustomIntParameterUI("#KH_FS_InFlightTrainingTime", toolTip = "#KH_FS_InFlightTrainingTime_desc", minValue = 5, maxValue = 200)] //In-Flight Training Time""Min # of days it takes to train kerbal to max level during a mission
+        //public int InFlightTrainingTime = 100;
 
         [GameParameters.CustomFloatParameterUI("#KH_FS_StupidityPenalty", toolTip = "#KH_FS_StupidityPenalty_desc", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]//Stupidity Penalty""How much longer it takes to train a stupid kerbal compared to a smart one
         public float StupidityPenalty = 0;

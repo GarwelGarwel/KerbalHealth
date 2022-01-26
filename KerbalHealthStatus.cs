@@ -668,14 +668,15 @@ namespace KerbalHealth
         /// </summary>
         public bool CanTrainAtKSC => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && Health >= 0.9;
 
-        public double TrainingPerDay => Core.TrainingCap /
-                    (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
-                    ? KerbalHealthFactorsSettings.Instance.InFlightTrainingTime
-                    : KerbalHealthFactorsSettings.Instance.KSCTrainingTime)
-                    / (1 + ProtoCrewMember.stupidity * KerbalHealthFactorsSettings.Instance.StupidityPenalty);
+        public double TrainingPerDay =>
+            Core.TrainingCap
+            / KerbalHealthFactorsSettings.Instance.TrainingTime
+            * (KerbalHealthFactorsSettings.Instance.StupidityPenalty + 2)
+            / (KerbalHealthFactorsSettings.Instance.StupidityPenalty * ProtoCrewMember.stupidity + 1) / 2;
 
 
         public TrainingPart GetTrainingPart(string name) => TrainingParts.Find(tp2 => tp2.Name == name);
+
         public double TrainingLevelForPart(string name)
         {
             TrainingPart tp = GetTrainingPart(name);
