@@ -51,7 +51,7 @@ namespace KerbalHealth
             SolarRadiation = 2500;
             GalacticRadiation = 12500;
             RadStormsEnabled = true;
-            RadStormFrequency = 1;
+            RadStormFrequence = 1;
             RadStormMagnitude = 1;
             DecontaminationRate = 100000;
             DecontaminationHealthLoss = 0.75f;
@@ -83,7 +83,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("SolarRadiation", ref SolarRadiation);
             settingsNode.TryGetValue("GalacticRadiation", ref GalacticRadiation);
             settingsNode.TryGetValue("RadStormsEnabled", ref RadStormsEnabled);
-            settingsNode.TryGetValue("RadStormFrequency", ref RadStormFrequency);
+            settingsNode.TryGetValue("RadStormFrequency", ref RadStormFrequence);
             settingsNode.TryGetValue("RadStormMagnitude", ref RadStormMagnitude);
             settingsNode.TryGetValue("DecontaminationRate", ref DecontaminationRate);
             settingsNode.TryGetValue("DecontaminationHealthLoss", ref DecontaminationHealthLoss);
@@ -136,7 +136,7 @@ namespace KerbalHealth
         public bool RadStormsEnabled = true;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequence", toolTip = "#KH_RS_RadStormFrequence_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
-        public float RadStormFrequency = 1;
+        public float RadStormFrequence = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormMagnitude", toolTip = "#KH_RS_RadStormMagnitude_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Magnitude""How strong radstorms are, relative to default values
         public float RadStormMagnitude = 1;

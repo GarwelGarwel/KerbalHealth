@@ -40,7 +40,6 @@
 
         public void Load(ConfigNode node)
         {
-            Core.Log($"Loading training part from ConfigNode: {node}");
             Name = node.GetString("name");
             if (Name == null)
             {

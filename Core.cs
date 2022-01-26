@@ -87,14 +87,13 @@ namespace KerbalHealth
 
         public static double SolarCycleStartingPhase { get; set; }
 
-        public static double RadStormMinChancePerDay { get; set; }
+        public static double RadStormMinMBTE { get; set; }
 
-        public static double RadStormMaxChancePerDay { get; set; }
+        public static double RadStormMaxMBTE { get; set; }
 
         public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
 
-        public static double RadStormChance =>
-            RadStormMinChancePerDay + (RadStormMaxChancePerDay - RadStormMinChancePerDay) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+        public static double RadStormMTBE => RadStormMinMBTE + (RadStormMaxMBTE - RadStormMinMBTE) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
 
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
@@ -161,9 +160,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns number of current crew in a vessel (or CLS space) the kerbal is in or in the currently constructed vessel
         /// </summary>
-        /// <param name="pcm"></param>
-        /// <param name="entireVessel">Return crew number across all CLS spaces</param>
-        /// <returns></returns>
         public static int GetCrewCount(ProtoCrewMember pcm, bool entireVessel)
         {
             Vessel vessel = pcm.GetVessel();
@@ -448,8 +444,8 @@ namespace KerbalHealth
 
             SolarCycleDuration = config.GetDouble("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
             SolarCycleStartingPhase = config.GetDouble("solarCycleStartingPhase");
-            RadStormMinChancePerDay = config.GetDouble("radStormMinChance", 0.00015);
-            RadStormMaxChancePerDay = config.GetDouble("radStormMaxChance", 0.00229);
+            RadStormMinMBTE = config.GetDouble("radStormMinMBTE", 426);
+            RadStormMaxMBTE = config.GetDouble("radStormMaxMBTE", 6390);
 
             RadStormTypes = new List<RadStormType>();
             i = 0;

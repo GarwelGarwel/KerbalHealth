@@ -1078,8 +1078,6 @@ namespace KerbalHealth
         #region SAVING, LOADING, INITIALIZING ETC.
 
         public const string ConfigNodeName = "KerbalHealthStatus";
-        private const string ConfigNode_TrainedPart = "TRAINED_PART";
-        private const string ConfigNode_TrainedVessel = "TRAINED_VESSEL";
 
         public void Save(ConfigNode node)
         {

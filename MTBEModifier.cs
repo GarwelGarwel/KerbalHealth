@@ -6,8 +6,10 @@ namespace KerbalHealth
     /// <summary>
     /// Defines how the base chance of a condition or an outcome changes
     /// </summary>
-    public class ChanceModifier
+    public class MTBEModifier
     {
+        public const string ConfigNodeName = "MTBE_MODIFIER";
+
         public enum OperationType
         { 
             Multiply, 
@@ -42,30 +44,24 @@ namespace KerbalHealth
             Logic.Load(node);
         }
 
-        public ChanceModifier(ConfigNode node) => Load(node);
+        public MTBEModifier(ConfigNode node) => Load(node);
 
         /// <summary>
-        /// Applies all modifiers in the list to baseValue chance for pcm and returns resulting chance
+        /// Applies all modifiers in the list to baseValue MTBE for PCM and returns resulting chance
         /// </summary>
-        /// <param name="modifiers"></param>
-        /// <param name="baseValue"></param>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public static double Calculate(List<ChanceModifier> modifiers, double baseValue, ProtoCrewMember pcm)
+        public static double Calculate(List<MTBEModifier> modifiers, double baseValue, ProtoCrewMember pcm)
         {
             double v = baseValue;
-            foreach (ChanceModifier m in modifiers)
+            foreach (MTBEModifier m in modifiers)
                 v = m.Calculate(v, pcm);
-            Core.Log($"Base chance: {baseValue:P1}; modified chance: {v:P1}.");
+            if (v != baseValue)
+                Core.Log($"Base MTBE: {baseValue:F2}. Modified MTBE: {v:F2}.");
             return v;
         }
 
         /// <summary>
-        /// Returns the chance for pcm modified according to this modifier's rules
+        /// Returns the MTBE for PCM modified according to this modifier's rules
         /// </summary>
-        /// <param name="baseValue"></param>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
         public double Calculate(double baseValue, ProtoCrewMember pcm)
         {
             if (!Logic.Test(pcm))
@@ -108,15 +104,15 @@ namespace KerbalHealth
             switch (Modification)
             {
                 case OperationType.Multiply:
-                    res = "Multiply base chance by ";
+                    res = "Multiply base MTBE by ";
                     break;
 
                 case OperationType.Add:
-                    res = "Increase base chance by ";
+                    res = "Increase base MTBE by ";
                     break;
 
                 case OperationType.Power:
-                    res = "Base chance's power of ";
+                    res = "Base MTBE's power of ";
                     break;
             }
             res += $"{Value}\r\nLogic: {Logic}";

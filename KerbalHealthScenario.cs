@@ -853,9 +853,9 @@ namespace KerbalHealth
         /// <returns></returns>
         double GetNextEventInterval() => Core.Rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
-        void SpawnRadStorms()
+        void SpawnRadStorms(double interval)
         {
-            Core.Log("ProcessRadStorms");
+            Core.Log($"SpawnRadStorms({interval:F2})");
             Dictionary<int, RadStorm> targets = new Dictionary<int, RadStorm>
             { { Planetarium.fetch.Home.name.GetHashCode(), new RadStorm(Planetarium.fetch.Home) } };
 
@@ -883,10 +883,10 @@ namespace KerbalHealth
                 }
             }
             Core.Log($"{targets.Count} potential radstorm targets found.");
-            Core.Log($"Current solar cycle phase: {Core.SolarCyclePhase:P2} through. Radstorm chance: {Core.RadStormChance:P2}.");
+            Core.Log($"Current solar cycle phase: {Core.SolarCyclePhase:P2} through. Radstorm MTBE: {Core.RadStormMTBE:N0} days.");
 
             foreach (RadStorm t in targets.Values)
-                if (Core.Rand.NextDouble() < Core.RadStormChance * KerbalHealthRadiationSettings.Instance.RadStormFrequency)
+                if (Core.EventHappens(Core.RadStormMTBE / KerbalHealthRadiationSettings.Instance.RadStormFrequence * KSPUtil.dateTimeFormatter.Day, interval))
                 {
                     RadStormType rst = Core.GetRandomRadStormType();
                     double delay = t.DistanceFromSun / rst.GetRandomVelocity();
@@ -905,10 +905,10 @@ namespace KerbalHealth
         void UpdateKerbals(bool forced)
         {
             double time = Planetarium.GetUniversalTime();
-            double timePassed = time - lastUpdated;
-            if (!forced && (timePassed < KerbalHealthGeneralSettings.Instance.UpdateInterval || timePassed < KerbalHealthGeneralSettings.Instance.MinUpdateInterval * TimeWarp.CurrentRate))
+            double interval = time - lastUpdated;
+            if (!forced && (interval < KerbalHealthGeneralSettings.Instance.UpdateInterval || interval < KerbalHealthGeneralSettings.Instance.MinUpdateInterval * TimeWarp.CurrentRate))
                 return;
-            Core.Log($"UT is {time}. Updating for {timePassed} seconds.");
+            Core.Log($"UT is {time}. Updating for {interval} seconds.");
             Core.ClearCache();
             if (HighLogic.LoadedSceneIsFlight && vesselChanged)
             {
@@ -946,14 +946,14 @@ namespace KerbalHealth
                         radStorms.RemoveAt(i--);
                     }
                 if (Core.GetYear(time) > Core.GetYear(lastUpdated))
-                    Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (1 / Core.RadStormChance / KerbalHealthRadiationSettings.Instance.RadStormFrequency).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
+                    Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (Core.RadStormMTBE / KerbalHealthRadiationSettings.Instance.RadStormFrequence).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
             }
 
-            Core.KerbalHealthList.Update(timePassed);
+            Core.KerbalHealthList.Update(interval);
             lastUpdated = time;
 
             // Processing events. It can take several turns of event processing at high time warp
-            while (time >= nextEventTime)
+            if (time >= nextEventTime)
             {
                 if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
                 {
@@ -967,7 +967,7 @@ namespace KerbalHealth
                         {
                             HealthCondition hc = khs.Conditions[i];
                             foreach (Outcome o in hc.Outcomes)
-                                if (Core.Rand.NextDouble() < o.GetChancePerDay(pcm) * KerbalHealthQuirkSettings.Instance.ConditionsChance)
+                                if (Core.EventHappens(o.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequence * KSPUtil.dateTimeFormatter.Day, interval))
                                 {
                                     Core.Log($"Condition {hc.Name} has outcome: {o}");
                                     if (o.Condition.Length != 0)
@@ -982,11 +982,10 @@ namespace KerbalHealth
                         }
 
                         foreach (HealthCondition hc in Core.HealthConditions.Values.Where(hc =>
-                            hc.ChancePerDay > 0
-                            && (hc.Stackable || !khs.HasCondition(hc))
+                            (hc.Stackable || !khs.HasCondition(hc))
                             && hc.IsCompatibleWith(khs.Conditions)
                             && hc.Logic.Test(pcm)
-                            && Core.Rand.NextDouble() < hc.GetChancePerDay(pcm) * KerbalHealthQuirkSettings.Instance.ConditionsChance))
+                            && Core.EventHappens(hc.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequence * KSPUtil.dateTimeFormatter.Day, interval)))
                         {
                             Core.Log($"{khs.Name} acquires {hc.Name} condition.");
                             khs.AddCondition(hc);
@@ -997,9 +996,9 @@ namespace KerbalHealth
                 if (KerbalHealthRadiationSettings.Instance.RadiationEnabled
                     && KerbalHealthRadiationSettings.Instance.RadStormsEnabled
                     && !KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
-                    SpawnRadStorms();
+                    SpawnRadStorms(interval);
 
-                nextEventTime += GetNextEventInterval();
+                nextEventTime = time + GetNextEventInterval();
                 Core.Log($"Next event processing is scheduled at {KSPUtil.PrintDateCompact(nextEventTime, true)}.", LogLevel.Important);
             }
             dirty = true;
