@@ -7,7 +7,7 @@ namespace KerbalHealth
         public override string Title => Localizer.Format("#KH_QS_title");//"Conditions & Quirks"
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
         public override bool HasPresets => true;
-        public override string Section => "Kerbal Health";
+        public override string Section => "Kerbal Health (1)";
         public override string DisplaySection => Section;
         public override int SectionOrder => 3;
 

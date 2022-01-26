@@ -301,6 +301,10 @@ namespace KerbalHealth
         public static double GetGaussian(double stdDev = 1, double mean = 0) =>
             mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - Rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - Rand.NextDouble()));
 
+        public static double EventChance(double mtbe, double interval) => 1 - Math.Exp(-interval / mtbe);
+
+        public static bool EventHappens(double mtbe, double interval) => mtbe >= 0 && Rand.NextDouble() < EventChance(mtbe, interval);
+
         /// <summary>
         /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)
         /// </summary>

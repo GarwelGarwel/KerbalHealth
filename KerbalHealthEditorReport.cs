@@ -390,7 +390,7 @@ namespace KerbalHealth
                 else color = "<color=yellow>";
 
                 gridContent[(i + 1) * reportsColumnCount].SetOptionText($"{color}{khs.FullName}</color>");
-                khs.HP = khs.MaxHP;
+                //khs.HP = khs.MaxHP;
                 // Making this call here, so that BalanceHP doesn't have to:
                 double changePerDay = khs.HPChangeTotal;
                 double balanceHP = khs.BalanceHP;
@@ -398,7 +398,7 @@ namespace KerbalHealth
                     ? Localizer.Format("#KH_ER_BalanceHP", balanceHP.ToString("F1"), (balanceHP / khs.MaxHP * 100).ToString("F1"))
                     : Localizer.Format("#KH_ER_HealthPerDay", changePerDay.ToString("F1"));
                 gridContent[(i + 1) * reportsColumnCount + 1].SetOptionText($"{color}{s}</color>");
-                s = balanceHP > khs.NextConditionHP
+                s = balanceHP > khs.CriticalHP
                     ? "—"
                     : (khs.Recuperation > khs.Decay ? "> " : "") + Core.ParseUT(khs.ETAToNextCondition, false, 100);
                 gridContent[(i + 1) * reportsColumnCount + 2].SetOptionText($"{color}{s}</color>");

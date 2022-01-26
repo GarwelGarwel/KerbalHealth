@@ -229,9 +229,9 @@ namespace KerbalHealth
             {
                 double hpChange = HPChangeTotal;
                 if (hpChange > 0)
-                    return HasCondition(Condition_Exhausted) ? ExhaustionEndHP : MaxHP;
+                    return HP < CriticalHP ? CriticalHP : MaxHP;
                 if (hpChange < 0)
-                    return HasCondition(Condition_Exhausted) ? 0 : ExhaustionStartHP;
+                    return hp < CriticalHP ? 0 : CriticalHP;
                 return double.NaN;
             }
         }
@@ -402,7 +402,7 @@ namespace KerbalHealth
                     res += hc.Title;
                 }
                 if (res.Length == 0)
-                    res = Localizer.Format("#KH_NoConditions");
+                    res = HP < CriticalHP ? Localizer.Format("#KH_Critical") : Localizer.Format("#KH_NoConditions");
                 return res;
             }
         }
@@ -415,22 +415,12 @@ namespace KerbalHealth
         /// <summary>
         /// Health level (in percentage) for Exhaustion condition to kick in
         /// </summary>
-        public double ExhaustionStart => KerbalHealthGeneralSettings.Instance.ExhaustionStartHealth * HealthEffects.ExhaustedStart;
+        public double CriticalHealth => KerbalHealthGeneralSettings.Instance.CriticalHealth * HealthEffects.CriticalHealth;
 
         /// <summary>
         /// HP for Exhaustion condition to kick in
         /// </summary>
-        public double ExhaustionStartHP => ExhaustionStart * MaxHP;
-
-        /// <summary>
-        /// Health level (in percentage) for Exhaustion condition to end
-        /// </summary>
-        public double ExhaustionEnd => KerbalHealthGeneralSettings.Instance.ExhaustionEndHealth * HealthEffects.ExhaustedEnd;
-
-        /// <summary>
-        /// HP for Exhaustion condition to end
-        /// </summary>
-        public double ExhaustionEndHP => ExhaustionEnd * MaxHP;
+        public double CriticalHP => CriticalHealth * MaxHP;
 
         /// <summary>
         /// Returns the condition with a given name, if present (null otherwise)
@@ -1068,11 +1058,19 @@ namespace KerbalHealth
             // Adding/removing Exhausted condition
             if (HasCondition(Condition_Exhausted))
             {
-                if (HP >= ExhaustionEndHP)
-                    RemoveCondition(Condition_Exhausted);
+                if (HP >= CriticalHP)
+                {
+                    Core.Log($"{Name}'s health is {HP:F2} HP. Exhaustion end MTBE: {CriticalHP / (HP - CriticalHP) * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH:F1} hours.");
+                    if (Core.EventHappens(CriticalHP / (HP - CriticalHP) * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH * 3600, interval))
+                        RemoveCondition(Condition_Exhausted);
+                }
             }
-            else if (HP < ExhaustionStartHP)
-                AddCondition(Condition_Exhausted);
+            else if (HP < CriticalHP)
+            {
+                Core.Log($"{Name}'s health is at {Health:P2}. Exhaustion start MTBE: {HP / CriticalHP * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH:F1} hours.");
+                if (Core.EventHappens(HP / CriticalHP * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH * 3600, interval))
+                    AddCondition(Condition_Exhausted);
+            }
         }
 
         #endregion HEALTH UPDATE

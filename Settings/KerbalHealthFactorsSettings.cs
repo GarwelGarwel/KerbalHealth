@@ -7,7 +7,7 @@ namespace KerbalHealth
         public override string Title => Localizer.Format("#KH_FS_title");//"Health Factors"
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
         public override bool HasPresets => true;
-        public override string Section => "Kerbal Health";
+        public override string Section => "Kerbal Health (1)";
         public override string DisplaySection => Section;
         public override int SectionOrder => 2;
 
@@ -48,8 +48,6 @@ namespace KerbalHealth
             KSCFactor = 4;
             TrainingEnabled = true;
             TrainingTime = 40;
-            //InFlightTrainingTime = 100;
-            //FamiliarityBonus = 0.5f;
             StupidityPenalty = 0;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
@@ -73,8 +71,6 @@ namespace KerbalHealth
             settingsNode.TryGetValue("KSCFactor", ref KSCFactor);
             settingsNode.TryGetValue("TrainingEnabled", ref TrainingEnabled);
             settingsNode.TryGetValue("TrainingTime", ref TrainingTime);
-            //settingsNode.TryGetValue("InFlightTrainingTime", ref InFlightTrainingTime);
-            //settingsNode.TryGetValue("FamiliarityBonus", ref FamiliarityBonus);
             settingsNode.TryGetValue("StupidityPenalty", ref StupidityPenalty);
         }
 
@@ -109,9 +105,6 @@ namespace KerbalHealth
 
         [GameParameters.CustomIntParameterUI("#KH_FS_TrainingTime", toolTip = "#KH_FS_TrainingTime_desc", minValue = 5, maxValue = 200, stepSize = 5)]//KSC Training Time""Min # of days it takes to train kerbal to max level at KSC
         public int TrainingTime = 60;
-
-        //[GameParameters.CustomIntParameterUI("#KH_FS_InFlightTrainingTime", toolTip = "#KH_FS_InFlightTrainingTime_desc", minValue = 5, maxValue = 200)] //In-Flight Training Time""Min # of days it takes to train kerbal to max level during a mission
-        //public int InFlightTrainingTime = 100;
 
         [GameParameters.CustomFloatParameterUI("#KH_FS_StupidityPenalty", toolTip = "#KH_FS_StupidityPenalty_desc", displayFormat = "N2", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]//Stupidity Penalty""How much longer it takes to train a stupid kerbal compared to a smart one
         public float StupidityPenalty = 0;

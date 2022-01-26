@@ -17,9 +17,7 @@ namespace KerbalHealth
 
         public double MaxHPBonus { get; set; } = 0;
 
-        public double ExhaustedStart { get; set; } = 1;
-
-        public double ExhaustedEnd { get; set; } = 1;
+        public double CriticalHealth { get; set; } = 1;
 
         public double Space { get; set; }
 
@@ -66,8 +64,7 @@ namespace KerbalHealth
             AddValue(HPChange, "hpChange", 0);
             AddValue(MaxHP, "maxHP", 1);
             AddValue(MaxHPBonus, "maxHPBonus", 0);
-            AddValue(ExhaustedStart, "exhaustedStart", 1);
-            AddValue(ExhaustedEnd, "exhaustedEnd", 1);
+            AddValue(CriticalHealth, "criticalHealth", 1);
             AddValue(Space, "space", 0);
             AddValue(Recuperation, "recuperation", 0);
             AddValue(MaxRecuperaction, "maxRecuperation", 0);
@@ -97,8 +94,7 @@ namespace KerbalHealth
             HPChange = node.GetDouble("hpChange");
             MaxHP = node.GetDouble("maxHP", 1);
             MaxHPBonus = node.GetDouble("maxHPBonus");
-            ExhaustedStart = node.GetDouble("exhaustedStart", 1);
-            ExhaustedEnd = node.GetDouble("exhaustedEnd", 1);
+            CriticalHealth = node.GetDouble("criticalHealth", 1);
             Space = node.GetDouble("space");
             Recuperation = node.GetDouble("recuperation");
             MaxRecuperaction = node.GetDouble("maxRecuperation");
@@ -213,8 +209,7 @@ namespace KerbalHealth
             HPChange += effect.HPChange;
             MaxHP *= effect.MaxHP;
             MaxHPBonus += effect.MaxHPBonus;
-            ExhaustedStart *= effect.ExhaustedStart;
-            ExhaustedEnd *= effect.ExhaustedEnd;
+            CriticalHealth *= effect.CriticalHealth;
             Space += effect.Space;
             Recuperation += effect.Recuperation;
             MaxRecuperaction = Math.Max(MaxRecuperaction, effect.MaxRecuperaction);
@@ -342,10 +337,8 @@ namespace KerbalHealth
                 res += $"\nMax HP: x{MaxHP}";
             if (MaxHPBonus != 0)
                 res += $"\nMax HP bonus: {MaxHPBonus}";
-            if (ExhaustedStart != 1)
-                res += $"\nExhaustion start: x{ExhaustedStart}";
-            if (ExhaustedEnd != 1)
-                res += $"\nExhaustion end: x{ExhaustedEnd}";
+            if (CriticalHealth != 1)
+                res += $"\nCritical health: x{CriticalHealth}";
             if (Space != 0)
                 res += $"\nSpace: {Space:F1}";
             if (Recuperation != 0)
