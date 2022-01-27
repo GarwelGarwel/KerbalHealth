@@ -654,16 +654,18 @@ namespace KerbalHealth
         public string TrainingVessel { get; set; }
 
         /// <summary>
-        /// Returns true if the kerbal satisfies all conditions to be trained at KSC
+        /// Returns true if the kerbal satisfies all requirements to be trained at KSC (90% health and no conditions)
         /// </summary>
-        public bool CanTrainAtKSC => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && Health >= 0.9;
+        public bool CanTrainAtKSC =>
+            ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available
+            && Health >= 0.9
+            && !Conditions.Any(condition => condition.Visible && condition.Name != Condition_Training);
 
         public double TrainingPerDay =>
             Core.TrainingCap
             / KerbalHealthFactorsSettings.Instance.TrainingTime
             * (KerbalHealthFactorsSettings.Instance.StupidityPenalty + 2)
             / (KerbalHealthFactorsSettings.Instance.StupidityPenalty * ProtoCrewMember.stupidity + 1) / 2;
-
 
         public TrainingPart GetTrainingPart(string name) => TrainingParts.Find(tp2 => tp2.Name == name);
 
