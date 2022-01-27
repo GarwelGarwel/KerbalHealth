@@ -67,7 +67,7 @@ namespace KerbalHealth
             new MicrogravityFactor(),
             new EVAFactor(),
             new ConditionsFactor(),
-            new ConnectedFactor(),
+            new IsolationFactor(),
             new HomeFactor(),
             new KSCFactor()
         };
@@ -178,8 +178,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns Part where ProtoCrewMember is currently located or null if none
         /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
         public static Part GetCrewPart(this ProtoCrewMember pcm) =>
             IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
 
@@ -188,8 +186,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
         /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
         public static bool IsUnpacked(this ProtoCrewMember pcm) //=> pcm.GetVessel()?.loaded ?? false;
         {
             Vessel vessel = pcm.GetVessel();
@@ -201,8 +197,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if kerbal exists and is either assigned or available
         /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
         public static bool IsTrackable(this ProtoCrewMember pcm) =>
             pcm != null
             && (pcm.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
@@ -217,8 +211,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
         /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
         public static Vessel GetVessel(this ProtoCrewMember pcm)
         {
             if (pcm == null || (pcm.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && pcm.rosterStatus != Status_Frozen))
@@ -250,8 +242,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns list of IDs of parts that are used in training and stress calculations
         /// </summary>
-        /// <param name="allParts"></param>
-        /// <returns></returns>
         public static List<ModuleKerbalHealth> GetTrainableParts(List<Part> allParts) =>
             allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
 
@@ -284,8 +274,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns x*x
         /// </summary>
-        /// <param name="x"></param>
-        /// <returns></returns>
         public static double Sqr(double x) => x * x;
 
         /// <summary>
@@ -293,7 +281,6 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="mean"></param>
         /// <param name="stdDev"></param>
-        /// <returns></returns>
         public static double GetGaussian(double stdDev = 1, double mean = 0) =>
             mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - Rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - Rand.NextDouble()));
 
@@ -329,8 +316,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns a zero-based year in the given timestamp (add 1 for a KSP date year)
         /// </summary>
-        /// <param name="time"></param>
-        /// <returns></returns>
         public static int GetYear(double time) => (int)Math.Floor(time / KSPUtil.dateTimeFormatter.Year);
 
         /// <summary>
@@ -339,7 +324,6 @@ namespace KerbalHealth
         /// <param name="time">Time in seconds</param>
         /// <param name="showSeconds">If false, seconds will be displayed only if time is less than 1 minute; otherwise always</param>
         /// <param name="daysTimeLimit">If time is longer than this number of days, time value will be skipped; -1 to alwys show time</param>
-        /// <returns></returns>
         public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
             if (double.IsNaN(time) || time == 0)
@@ -405,7 +389,7 @@ namespace KerbalHealth
         }
 
         /// <summary>
-        /// Loads necessary mod data from KerbalHealth.cfg and
+        /// Loads necessary mod data from KerbalHealth.cfg
         /// </summary>
         public static void LoadConfig()
         {

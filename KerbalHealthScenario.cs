@@ -662,15 +662,15 @@ namespace KerbalHealth
 
         public override void OnLoad(ConfigNode node)
         {
-            if (!Core.ConfigLoaded)
-                Core.LoadConfig();
-
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
 
             Core.Log("KerbalHealthScenario.OnLoad", LogLevel.Important);
 
             // If loading scenario for the first time, try to load settings from config
+            if (!Core.ConfigLoaded)
+                Core.LoadConfig();
+
             if (!node.HasValue("nextEventTime") && LoadSettingsFromConfig())
                 ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
 
@@ -967,7 +967,7 @@ namespace KerbalHealth
                         {
                             HealthCondition hc = khs.Conditions[i];
                             foreach (Outcome o in hc.Outcomes)
-                                if (Core.EventHappens(o.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequence * KSPUtil.dateTimeFormatter.Day, interval))
+                                if (Core.EventHappens(o.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval))
                                 {
                                     Core.Log($"Condition {hc.Name} has outcome: {o}");
                                     if (o.Condition.Length != 0)
@@ -985,7 +985,7 @@ namespace KerbalHealth
                             (hc.Stackable || !khs.HasCondition(hc))
                             && hc.IsCompatibleWith(khs.Conditions)
                             && hc.Logic.Test(pcm)
-                            && Core.EventHappens(hc.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequence * KSPUtil.dateTimeFormatter.Day, interval)))
+                            && Core.EventHappens(hc.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval)))
                         {
                             Core.Log($"{khs.Name} acquires {hc.Name} condition.");
                             khs.AddCondition(hc);

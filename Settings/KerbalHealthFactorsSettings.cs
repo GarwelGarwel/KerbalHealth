@@ -19,16 +19,16 @@ namespace KerbalHealth
                     LonelinessFactor = 0;
                     MicrogravityFactor = 0;
                     EVAFactor = 0;
-                    ConnectedFactor = 0;
+                    IsolationFactor = 0;
                     break;
 
                 case GameParameters.Preset.Normal:
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
-                    LonelinessFactor = -2;
+                    LonelinessFactor = -1;
                     MicrogravityFactor = -1;
                     EVAFactor = -10;
-                    ConnectedFactor = 0.5f;
+                    IsolationFactor = -0.5f;
                     break;
             }
         }
@@ -39,16 +39,16 @@ namespace KerbalHealth
         internal void Reset()
         {
             StressFactor = -2;
-            ConfinementBaseFactor = -3;
-            LonelinessFactor = -2;
+            ConfinementBaseFactor = -2;
+            LonelinessFactor = -1;
             MicrogravityFactor = -1;
             EVAFactor = -10;
-            ConnectedFactor = 0.5f;
+            IsolationFactor = -0.5f;
             HomeFactor = 2;
-            KSCFactor = 4;
+            KSCFactor = 3;
             TrainingEnabled = true;
-            TrainingTime = 40;
-            StupidityPenalty = 0;
+            TrainingTime = 60;
+            StupidityPenalty = 1;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
 
@@ -66,7 +66,7 @@ namespace KerbalHealth
             settingsNode.TryGetValue("LonelinessFactor", ref LonelinessFactor);
             settingsNode.TryGetValue("EVAFactor", ref EVAFactor);
             settingsNode.TryGetValue("MicrogravityFactor", ref MicrogravityFactor);
-            settingsNode.TryGetValue("ConnectedFactor", ref ConnectedFactor);
+            settingsNode.TryGetValue("IsolationFactor", ref IsolationFactor);
             settingsNode.TryGetValue("HomeFactor", ref HomeFactor);
             settingsNode.TryGetValue("KSCFactor", ref KSCFactor);
             settingsNode.TryGetValue("TrainingEnabled", ref TrainingEnabled);
@@ -80,10 +80,10 @@ namespace KerbalHealth
         public float StressFactor = -2;
 
         [GameParameters.CustomFloatParameterUI("#KH_Factor_Confinement", toolTip = "#KH_FS_Confinement_desc", minValue = -10, maxValue = 0, stepCount = 41)]//Confinement""HP change per day in a vessel with 1 living space per kerbal
-        public float ConfinementBaseFactor = -3;
+        public float ConfinementBaseFactor = -2;
 
-        [GameParameters.CustomFloatParameterUI("#KH_Factor_Loneliness", toolTip = "#KH_FS_Loneliness_desc", minValue = -20, maxValue = 0, stepCount = 41)]//Loneliness""HP change per day when the kerbal has no crewmates
-        public float LonelinessFactor = -2;
+        [GameParameters.CustomFloatParameterUI("#KH_Factor_Loneliness", toolTip = "#KH_FS_Loneliness_desc", minValue = -10, maxValue = 0, stepCount = 41)]//Loneliness""HP change per day when the kerbal has no crewmates
+        public float LonelinessFactor = -1;
 
         [GameParameters.CustomFloatParameterUI("#KH_Factor_Microgravity", toolTip = "#KH_FS_Microgravity_desc", minValue = -20, maxValue = 0, displayFormat = "F1", stepCount = 41)]//Microgravity""HP change per day when in orbital/suborbital flight or g-force < 0.1
         public float MicrogravityFactor = -1;
@@ -91,14 +91,14 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_Factor_EVA", toolTip = "#KH_FS_EVA_desc", minValue = -50, maxValue = 0, stepCount = 26)]//EVA""HP change per day when on EVA
         public float EVAFactor = -10;
 
-        [GameParameters.CustomFloatParameterUI("#KH_Factor_Connected", toolTip = "#KH_FS_Connected_desc", minValue = 0, maxValue = 20, displayFormat = "F1", stepCount = 41)]//Connected""HP change per day when connected to Kerbin
-        public float ConnectedFactor = 0.5f;
+        [GameParameters.CustomFloatParameterUI("#KH_Factor_Isolation", toolTip = "#KH_Factor_Isolation_desc", minValue = -10, maxValue = 0, displayFormat = "F1", stepCount = 21)]
+        public float IsolationFactor = -0.5f;
 
         [GameParameters.CustomFloatParameterUI("#KH_Factor_Home", toolTip = "#KH_FS_Home_desc", minValue = 0, maxValue = 20, stepCount = 41)]//Home""HP change per day when in Kerbin atmosphere
         public float HomeFactor = 2;
 
         [GameParameters.CustomFloatParameterUI("#KH_Factor_KSC", toolTip = "#KH_FS_KSC_desc", minValue = 0, maxValue = 20, stepCount = 41)]//At KSC""HP change per day when the kerbal is at KSC (available)
-        public float KSCFactor = 4;
+        public float KSCFactor = 3;
 
         [GameParameters.CustomParameterUI("#KH_FS_TrainingEnabled", toolTip = "#KH_FS_TrainingEnabled_desc")]//Training Enabled""Turn on/off the need to train kerbals to reduce stress
         public bool TrainingEnabled = true;

@@ -17,20 +17,20 @@ namespace KerbalHealth
             {
                 case GameParameters.Preset.Easy:
                     ConditionsEnabled = false;
-                    EventFrequence = 0.5f;
+                    EventFrequency = 0.5f;
                     ConditionsEffect = 0.5f;
                     break;
 
                 case GameParameters.Preset.Normal:
                     ConditionsEnabled = true;
-                    EventFrequence = 0.5f;
+                    EventFrequency = 0.5f;
                     ConditionsEffect = 0.5f;
                     break;
 
                 case GameParameters.Preset.Moderate:
                 case GameParameters.Preset.Hard:
                     ConditionsEnabled = true;
-                    EventFrequence = 1;
+                    EventFrequency = 1;
                     ConditionsEffect = 1;
                     break;
             }
@@ -43,7 +43,7 @@ namespace KerbalHealth
         {
             ConditionsEnabled = true;
             KSCNotificationsEnabled = false;
-            EventFrequence = 1;
+            EventFrequency = 1;
             ConditionsEffect = 1;
             QuirksEnabled = true;
             MaxQuirks = 2;
@@ -65,7 +65,7 @@ namespace KerbalHealth
             Core.Log($"Applying KerbalHealthQuirkSettings settings: {settingsNode}");
             settingsNode.TryGetValue("ConditionsEnabled", ref ConditionsEnabled);
             settingsNode.TryGetValue("KSCNotificationsEnabled", ref KSCNotificationsEnabled);
-            settingsNode.TryGetValue("EventFrequence", ref EventFrequence);
+            settingsNode.TryGetValue("EventFrequency", ref EventFrequency);
             settingsNode.TryGetValue("ConditionsEffect", ref ConditionsEffect);
             settingsNode.TryGetValue("QuirksEnabled", ref QuirksEnabled);
             settingsNode.TryGetValue("MaxQuirks", ref MaxQuirks);
@@ -83,8 +83,8 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_QS_KSCNotificationsEnabled", toolTip = "#KH_QS_KSCNotificationsEnabled_desc")]//Notify of Events in KSC""If checked, notifications will be given of health condition-related events with kerbals not on mission
         public bool KSCNotificationsEnabled = false;
 
-        [GameParameters.CustomFloatParameterUI("#KH_QS_EventFrequence", toolTip = "#KH_QS_EventFrequence_desc", minValue = 0.5f, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 26)]
-        public float EventFrequence = 1;
+        [GameParameters.CustomFloatParameterUI("#KH_QS_EventFrequency", toolTip = "#KH_QS_EventFrequency_desc", minValue = 0.5f, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 26)]
+        public float EventFrequency = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_QS_ConditionsEffect", toolTip = "#KH_QS_ConditionsEffect_desc", minValue = 0, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 31)]//Conditions Health Effect""Relative effect of conditions on health (the lower the easier)
         public float ConditionsEffect = 1;

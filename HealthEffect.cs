@@ -41,16 +41,6 @@ namespace KerbalHealth
 
         public int CrewCapacity { get; set; }
 
-        public double AccidentChance { get; set; } = 1;
-
-        public double PanicAttackChance { get; set; } = 1;
-
-        public double SicknessChance { get; set; } = 1;
-
-        public double CureChance { get; set; } = 1;
-
-        public double LoseImmunityChance { get; set; } = 1;
-
         public FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
 
         public void Save(ConfigNode node)
@@ -74,11 +64,6 @@ namespace KerbalHealth
             AddValue(ExposureMultiplier, "exposure", 1);
             AddValue(ShelterExposure, "shelterExposure", 1);
             AddValue(CrewCapacity, "crewCapacity", 0);
-            AddValue(AccidentChance, "accidentChance", 1);
-            AddValue(PanicAttackChance, "panicAttackChance", 1);
-            AddValue(SicknessChance, "sicknessChance", 1);
-            AddValue(CureChance, "cureChance", 1);
-            AddValue(LoseImmunityChance, "loseImmunityChance", 1);
             foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
             {
                 ConfigNode n2 = new ConfigNode(FactorMultiplier.ConfigNodeName);
@@ -104,11 +89,6 @@ namespace KerbalHealth
             ExposureMultiplier = node.GetDouble("exposure", 1);
             ShelterExposure = node.GetDouble("shelterExposure", 1);
             CrewCapacity = node.GetInt("crewCapacity");
-            AccidentChance = node.GetDouble("accidentChance", 1);
-            PanicAttackChance = node.GetDouble("panicAttackChance", 1);
-            SicknessChance = node.GetDouble("sicknessChance", 1);
-            CureChance = node.GetDouble("cureChance", 1);
-            LoseImmunityChance = node.GetDouble("loseImmunityChance", 1);
             FactorMultipliers.Clear();
             foreach (FactorMultiplier fm in node.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
                 FactorMultipliers.Add(fm);
@@ -219,11 +199,7 @@ namespace KerbalHealth
             ExposureMultiplier *= effect.ExposureMultiplier;
             ShelterExposure = Math.Min(ShelterExposure, effect.ShelterExposure);
             CrewCapacity += effect.CrewCapacity;
-            AccidentChance *= effect.AccidentChance;
-            PanicAttackChance *= effect.PanicAttackChance;
-            SicknessChance *= effect.SicknessChance;
-            CureChance *= effect.CureChance;
-            LoseImmunityChance *= effect.LoseImmunityChance;
+
             FactorMultipliers.CombineWith(effect.FactorMultipliers);
             return this;
         }
