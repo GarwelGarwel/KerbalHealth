@@ -646,20 +646,19 @@ namespace KerbalHealth
         /// </summary>
         public List<TrainingPart> TrainingParts { get; set; } = new List<TrainingPart>();
 
-        public bool IsTrainingAtKSC => HasCondition(Condition_Training);
-
         /// <summary>
         /// Name of the vessel the kerbal is currently training for (information only)
         /// </summary>
         public string TrainingVessel { get; set; }
 
+        public bool IsTrainingAtKSC => HasCondition(Condition_Training);
+
+        public bool CanTrain => !Conditions.Any(condition => condition.Visible && condition.Name != Condition_Training);
+
         /// <summary>
         /// Returns true if the kerbal satisfies all requirements to be trained at KSC (90% health and no conditions)
         /// </summary>
-        public bool CanTrainAtKSC =>
-            ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available
-            && Health >= 0.9
-            && !Conditions.Any(condition => condition.Visible && condition.Name != Condition_Training);
+        public bool CanTrainAtKSC => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && CanTrain;
 
         public double TrainingPerDay =>
             Core.TrainingCap
@@ -740,15 +739,15 @@ namespace KerbalHealth
 
             TrainingVessel = vesselName;
             if (count == 0)
-                FinishTraining(true);
+                StopTraining(null);
             else Core.Log($"Training {name} for {vesselName} ({count} parts).");
         }
 
-        public void FinishTraining(bool silent = false)
+        public void StopTraining(string messageTag)
         {
-            Core.Log($"Training of {name} is complete.");
-            if (!silent)
-                Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), ProtoCrewMember);
+            Core.Log($"Finishing training of {name}.");
+            if (messageTag != null)
+                Core.ShowMessage(Localizer.Format(messageTag, ProtoCrewMember.nameWithGender, TrainingVessel), ProtoCrewMember);
             foreach (TrainingPart tp in TrainingParts)
                 tp.Complexity = 0;
             RemoveCondition(Condition_Training);
@@ -770,7 +769,7 @@ namespace KerbalHealth
             if (totalComplexity <= 0)
             {
                 Core.Log("No parts need training.", LogLevel.Important);
-                FinishTraining();
+                StopTraining("#KH_TrainingComplete");
                 return;
             }
             double trainingProgress = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / totalComplexity;  // Training progress is inverse proportional to total complexity of parts
@@ -787,7 +786,7 @@ namespace KerbalHealth
                 Core.Log($"Training level for part {tp.Name} is {tp.Level:P2} with complexity {tp.Complexity}.");
             }
             if (trainingComplete)
-                FinishTraining();
+                StopTraining("KH_TrainingComplete");
         }
 
         #endregion TRAINING
@@ -1035,26 +1034,20 @@ namespace KerbalHealth
                 return;
             }
 
-            // If KSC training no longer possible, stop it
-            if (IsTrainingAtKSC && !CanTrainAtKSC)
-            {
-                Core.ShowMessage(Localizer.Format("#KH_TrainingStopped", ProtoCrewMember.nameWithGender), ProtoCrewMember);
-                RemoveCondition(Condition_Training);
-                if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
-                    FinishTraining(true);
-            }
-
             if (TrainingParts.Any(tp => tp.TrainingNow))
-            {
+                // If KSC training no longer possible, stop it
+                if (IsTrainingAtKSC && !CanTrain)
+                {
+                    Core.Log($"{name} is no longer able to train at KSC (condition: {ConditionString})");
+                    StopTraining("#KH_TrainingStopped");
+                }
                 // Train
-                if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
+                else if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned
                     || (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && IsTrainingAtKSC))
                     Train(interval);
-
                 // Stop training after the kerbal has been recovered
-                if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsTrainingAtKSC)
-                    FinishTraining(true);
-            }
+                else if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsTrainingAtKSC)
+                    StopTraining(null);
 
             // Adding/removing Exhausted condition
             if (HasCondition(Condition_Exhausted))

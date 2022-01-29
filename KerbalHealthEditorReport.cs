@@ -124,7 +124,7 @@ namespace KerbalHealth
                     gridContent.Add(new DialogGUILabel("", true));
 
                 // Preparing factors checklist
-                List<DialogGUIToggle> checklist = new List<DialogGUIToggle>(Core.Factors.Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
+                List<DialogGUIToggle> checklist = new List<DialogGUIToggle>(Core.Factors.Where(f => f.ShownInEditor).Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
                 {
                     f.SetEnabledInEditor(state);
                     Invalidate();
@@ -254,7 +254,7 @@ namespace KerbalHealth
                 {
                     if (kerbal.GetTrainingLevel() >= Core.TrainingCap)
                         kerbalTrainingStatus = 1;
-                    else if (!kerbal.CanTrainAtKSC)
+                    else if (!kerbal.CanTrain)
                         kerbalTrainingStatus = 2;
                     else if (kerbal.IsTrainingAtKSC)
                         kerbalTrainingStatus = 3;

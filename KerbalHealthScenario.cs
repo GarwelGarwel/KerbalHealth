@@ -792,7 +792,6 @@ namespace KerbalHealth
         /// <summary>
         /// Checks the given vessel and displays an alert if any of the crew isn't fully trained
         /// </summary>
-        /// <param name="v"></param>
         void CheckUntrainedCrewWarning(Vessel v)
         {
             if (v == null)
@@ -843,6 +842,8 @@ namespace KerbalHealth
                 KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
                 if (khs == null)
                     Core.KerbalHealthList.Add(khs = new KerbalHealthStatus(pcm.name));
+                if (khs.IsTrainingAtKSC)
+                    khs.StopTraining("#KH_TrainingStopped");
                 khs.StartTraining(v.Parts, v.vesselName);
             }
         }
@@ -850,7 +851,6 @@ namespace KerbalHealth
         /// <summary>
         /// Next event update is scheduled after a random period of time, between 0 and 2 days
         /// </summary>
-        /// <returns></returns>
         double GetNextEventInterval() => Core.Rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
         void SpawnRadStorms(double interval)
@@ -915,8 +915,8 @@ namespace KerbalHealth
                 Core.Log("Vessel has changed or just loaded. Ordering kerbals to train for it in-flight, and checking if anyone's on EVA.");
                 foreach (Vessel v in FlightGlobals.VesselsLoaded)
                 {
-                    TrainVessel(v);
                     CheckEVA(v);
+                    TrainVessel(v);
                 }
                 vesselChanged = false;
             }
@@ -1079,6 +1079,8 @@ namespace KerbalHealth
                     elements.Add(new DialogGUIHorizontalLayout(300, 10, new DialogGUILabel($"{tag}{tp.Label}{untag}", 250), new DialogGUILabel($"{tag}{tp.Level:P1}{untag}", 50)));
                 }
             }
+            if (selectedKHS.IsTrainingAtKSC)
+                elements.Add(new DialogGUIButton(Localizer.Format("#KH_TI_StopTraining"), () => selectedKHS.StopTraining(null), true));
             elements.Add(new DialogGUIButton(Localizer.Format("#KH_TI_Close"), null, true));
 
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog("TrainingInfo", msg, Localizer.Format("#KH_TI_Title"), HighLogic.UISkin, elements.ToArray()), false, HighLogic.UISkin);

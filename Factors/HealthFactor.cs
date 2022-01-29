@@ -21,6 +21,8 @@
         /// </summary>
         virtual public bool ConstantForUnloaded => true;
 
+        virtual public bool ShownInEditor => true;
+
         /// <summary>
         /// Returns factor's HP change per day as set in the Settings (use KerbalHealthFactorsSettings.[factorName])
         /// </summary>
@@ -31,7 +33,7 @@
         /// <summary>
         /// Is the factor considered when calculating estimated HP change in Health Report
         /// </summary>
-        public bool IsEnabledInEditor() => enabledInEditor;
+        public bool IsEnabledInEditor() => enabledInEditor && ShownInEditor;
 
         public void SetEnabledInEditor(bool state) => enabledInEditor = state;
 

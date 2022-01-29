@@ -10,15 +10,13 @@ namespace KerbalHealth
 
         public override bool ConstantForUnloaded => false;
 
+        public override bool ShownInEditor => false;
+
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
         public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.KSCFactor;
-        
-        public override double ChangePerDay(KerbalHealthStatus khs)
-        {
-            if (Core.IsInEditor)
-                return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            return (khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available) ? BaseChangePerDay : 0;
-        }
+
+        public override double ChangePerDay(KerbalHealthStatus khs) =>
+            khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && !khs.IsTrainingAtKSC ? BaseChangePerDay : 0;
     }
 }
