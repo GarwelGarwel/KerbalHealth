@@ -85,47 +85,7 @@ namespace KerbalHealth
             // Automatically updating settings from older versions
             Version currentVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             if (version != currentVersion)
-            {
-                Core.Log($"Current mod version {currentVersion} is different from v{version} used to save the game. Kerbal Health has been recently updated.", LogLevel.Important);
-                if (version < new Version("1.1.0") && KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor != -3 && Planetarium.GetUniversalTime() > 0)
-                {
-                    Core.Log($"Confinement Factor is {KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor} instead of -3. Automatically fixing.");
-                    KerbalHealthFactorsSettings.Instance.ConfinementBaseFactor = -3;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg110", currentVersion.ToString(3)), true);//"Kerbal Health has been updated to v" +  + ". Confinement factor value has been reset to -3. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
-                }
-
-                if (version < new Version("1.2.1.2"))
-                {
-                    Core.Log($"Pre-1.3 radiation settings: {KerbalHealthRadiationSettings.Instance.InSpaceHighCoefficient:P0} / {KerbalHealthRadiationSettings.Instance.InSpaceLowCoefficient:P0} / {KerbalHealthRadiationSettings.Instance.StratoCoefficient:P0} / {KerbalHealthRadiationSettings.Instance.TroposphereCoefficient:P0} / {KerbalHealthRadiationSettings.Instance.GalacticRadiation:F0} / {KerbalHealthRadiationSettings.Instance.SolarRadiation:F0}");
-                    KerbalHealthRadiationSettings.Instance.RadiationEffect = 0.1f;
-                    KerbalHealthRadiationSettings.Instance.InSpaceLowCoefficient = 0.2f;
-                    KerbalHealthRadiationSettings.Instance.StratoCoefficient = 0.2f;
-                    KerbalHealthRadiationSettings.Instance.TroposphereCoefficient = 0.01f;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg130", currentVersion.ToString()), true);//"Kerbal Health has been updated to v" + + ". Radiation settings have been reset. It is recommended that you load each crewed vessel briefly to update Kerbal Health cache."
-                }
-
-                if (version < new Version("1.3.8.1"))
-                {
-                    Core.Log($"Pre-1.3.9 Stress factor: {KerbalHealthFactorsSettings.Instance.StressFactor}");
-                    KerbalHealthFactorsSettings.Instance.StressFactor = -2;
-                    KerbalHealthRadiationSettings.Instance.SolarRadiation = 2500;
-                    KerbalHealthRadiationSettings.Instance.GalacticRadiation = 12500;
-                    KerbalHealthRadiationSettings.Instance.InSpaceHighCoefficient = 0.4f;
-                    KerbalHealthFactorsSettings.Instance.TrainingEnabled = false;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg139", currentVersion.ToString(3)), true);
-                }
-
-                if (version < new Version("1.4.6.101"))
-                {
-                    Core.Log($"Pre-1.5 Loneliness factor: {KerbalHealthFactorsSettings.Instance.LonelinessFactor}");
-                    if (KerbalHealthFactorsSettings.Instance.LonelinessFactor == -1)
-                        KerbalHealthFactorsSettings.Instance.LonelinessFactor = -2;
-                    KerbalHealthGeneralSettings.Instance.UpdateInterval = 10;
-                    Core.ShowMessage(Localizer.Format("#KH_Versionmsg150", currentVersion.ToString(3)), true);
-                }
-
                 version = currentVersion;
-            }
             else Core.Log($"Kerbal Health v{version}");
 
             // This needs to be run even if the mod is disabled, so that its settings can be reset:

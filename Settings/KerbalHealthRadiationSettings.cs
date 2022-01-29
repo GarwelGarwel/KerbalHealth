@@ -108,7 +108,7 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_RS_KerbalismRadiationRatio", toolTip = "#KH_RS_KerbalismRadiationRatio_desc", minValue = 0.01f, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 101)]//Kerbalism Radiation Ratio""Multiplier for translating Kerbalism's radiation units into Kerbal Health radiation units
         public float KerbalismRadiationRatio = 0.25f;
 
-        [GameParameters.CustomFloatParameterUI("#KH_RS_ShieldingEffect", toolTip = "#KH_RS_ShieldingEffect_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//Shielding Multiplier""Efficiency of radiation shielding provided by parts and resources
+        [GameParameters.CustomFloatParameterUI("#KH_RS_ShieldingEffect", toolTip = "#KH_RS_ShieldingEffect_desc", minValue = 0, maxValue = 2, displayFormat = "N1", asPercentage = true, stepCount = 41)]//Shielding Multiplier""Efficiency of radiation shielding provided by parts and resources
         public float ShieldingEffect = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_InSpaceHighCoefficient", toolTip = "#KH_RS_InSpaceHighCoefficient_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//In Space High Coefficient""How much cosmic radiation reaches vessels in high planetary orbit or on moons

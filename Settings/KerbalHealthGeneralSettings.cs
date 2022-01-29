@@ -46,7 +46,6 @@ namespace KerbalHealth
             LowHealthAlert = 0.3f;
             DeathEnabled = true;
             CriticalHealth = 0.2f;
-            //ExhaustionEndHealth = 0.25f;
             ExhaustionMaxMTTH = 6;
             KerbalismIntegration = true;
             CLSIntegration = true;
@@ -75,7 +74,6 @@ namespace KerbalHealth
             settingsNode.TryGetValue("LowHealthAlert", ref LowHealthAlert);
             settingsNode.TryGetValue("DeathEnabled", ref DeathEnabled);
             settingsNode.TryGetValue("CriticalHealth", ref CriticalHealth);
-            //settingsNode.TryGetValue("ExhaustionEndHealth", ref ExhaustionEndHealth);
             settingsNode.TryGetValue("ExhaustionMaxMTTH", ref ExhaustionMaxMTTH);
             settingsNode.TryGetValue("KerbalismIntegration", ref KerbalismIntegration);
             settingsNode.TryGetValue("CLSIntegration", ref CLSIntegration);
@@ -118,9 +116,6 @@ namespace KerbalHealth
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_CriticalHealth", toolTip = "#KH_GS_CriticalHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion Start Health""Health level when kerbals turn Exhausted (become Tourists)
         public float CriticalHealth = 0.2f;
-
-        //[GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionEndHealth", toolTip = "#KH_GS_ExhaustionEndHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion End Health""Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)
-        //public float ExhaustionEndHealth = 0.25f;
 
         [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionMaxMTTH", toolTip = "#KH_GS_ExhaustionMaxMTTH_desc", minValue = 0, maxValue = 120, stepCount = 61)]
         public int ExhaustionMaxMTTH = 6;

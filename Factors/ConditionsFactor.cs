@@ -20,7 +20,7 @@ namespace KerbalHealth
 
         public override double ChangePerDay(KerbalHealthStatus khs)
         {
-            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
+            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled || Core.IsInEditor)
                 return 0;
             double res = khs.Conditions.Sum(hc => hc.HPChangePerDay) * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
             Core.Log($"Conditions HP change per day: {res}");

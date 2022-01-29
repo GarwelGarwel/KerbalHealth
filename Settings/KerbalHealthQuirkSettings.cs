@@ -83,10 +83,10 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_QS_KSCNotificationsEnabled", toolTip = "#KH_QS_KSCNotificationsEnabled_desc")]//Notify of Events in KSC""If checked, notifications will be given of health condition-related events with kerbals not on mission
         public bool KSCNotificationsEnabled = false;
 
-        [GameParameters.CustomFloatParameterUI("#KH_QS_EventFrequency", toolTip = "#KH_QS_EventFrequency_desc", minValue = 0.5f, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 26)]
+        [GameParameters.CustomFloatParameterUI("#KH_QS_EventFrequency", toolTip = "#KH_QS_EventFrequency_desc", minValue = 0.5f, maxValue = 3, displayFormat = "N1", asPercentage = true, stepCount = 26)]
         public float EventFrequency = 1;
 
-        [GameParameters.CustomFloatParameterUI("#KH_QS_ConditionsEffect", toolTip = "#KH_QS_ConditionsEffect_desc", minValue = 0, maxValue = 3, displayFormat = "N2", asPercentage = true, stepCount = 31)]//Conditions Health Effect""Relative effect of conditions on health (the lower the easier)
+        [GameParameters.CustomFloatParameterUI("#KH_QS_ConditionsEffect", toolTip = "#KH_QS_ConditionsEffect_desc", minValue = 0, maxValue = 3, displayFormat = "N1", asPercentage = true, stepCount = 31)]//Conditions Health Effect""Relative effect of conditions on health (the lower the easier)
         public float ConditionsEffect = 1;
 
         [GameParameters.CustomParameterUI("#KH_QS_QuirksEnabled", toolTip = "#KH_QS_QuirksEnabled_desc")]//Quirks Enabled""Quirks can be awarded to kerbals and affect their health stats

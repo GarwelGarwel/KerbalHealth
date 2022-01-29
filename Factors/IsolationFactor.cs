@@ -4,11 +4,13 @@ namespace KerbalHealth
 {
     public class IsolationFactor : HealthFactor
     {
+        public const float BaseChangePerDay_Default = -0.5f;
+
         public override string Name => "Isolation";
 
         public override string Title => Localizer.Format("#KH_Factor_Isolation");
 
-        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.IsolationFactor;
+        public override double BaseChangePerDay => BaseChangePerDay_Default * KerbalHealthFactorsSettings.Instance.IsolationEffect;
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
