@@ -750,8 +750,7 @@ namespace KerbalHealth
             if (!silent)
                 Core.ShowMessage(Localizer.Format("#KH_TrainingComplete", name, TrainingVessel), ProtoCrewMember);
             foreach (TrainingPart tp in TrainingParts)
-                if (tp.Complexity > 0)
-                    tp.Complexity = 0;
+                tp.Complexity = 0;
             RemoveCondition(Condition_Training);
             TrainingVessel = null;
         }
@@ -767,7 +766,7 @@ namespace KerbalHealth
             Core.Log($"{name} is training for {TrainingParts.Count} parts.");
 
             // Step 1: Calculating training complexity of all not yet trained-for parts
-            double totalComplexity = TrainingParts.Where(tp => !tp.TrainingComplete).Sum(tp => tp.Complexity);
+            double totalComplexity = TrainingParts.Where(tp => tp.TrainingNow).Sum(tp => tp.Complexity);
             if (totalComplexity <= 0)
             {
                 Core.Log("No parts need training.", LogLevel.Important);
@@ -781,7 +780,7 @@ namespace KerbalHealth
             bool trainingComplete = true;
             foreach (TrainingPart tp in TrainingParts.Where(tp => tp.TrainingNow))
             {
-                tp.Level += trainingProgress;
+                tp.Level += trainingProgress * tp.Complexity;
                 if (tp.TrainingComplete)
                     tp.Level = Core.TrainingCap;
                 else trainingComplete = false;
