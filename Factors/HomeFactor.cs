@@ -18,9 +18,9 @@ namespace KerbalHealth
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            if (khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || khs.IsDecontaminating)
             {
-                Core.Log("Home factor is off when the kerbal is not assigned.");
+                Core.Log("Home factor is off when the kerbal is not assigned or is decontaminating.");
                 return 0;
             }
             Vessel vessel = khs.ProtoCrewMember.GetVessel();

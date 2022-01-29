@@ -372,7 +372,7 @@ namespace KerbalHealth
                 for (int i = 0; i < LineCount; i++)
                 {
                     KerbalHealthStatus khs = kerbals.Values[FirstLine + i];
-                    bool healthFrozen = khs.IsFrozen || khs.IsDecontaminating;
+                    bool healthFrozen = khs.IsFrozen;
                     double change = khs.HPChangeTotal;
                     string formatTag = "", formatUntag = "", s;
                     if (healthFrozen || change == 0 || (khs.BalanceHP - khs.NextConditionHP) * change < 0)
@@ -404,7 +404,7 @@ namespace KerbalHealth
                     selectedKHS = null;
                     Invalidate();
                 }
-                bool healthFrozen = selectedKHS.IsFrozen || selectedKHS.IsDecontaminating;
+                bool healthFrozen = selectedKHS.IsFrozen;
                 gridContent[1].SetOptionText($"<color=white>{selectedKHS.Name}</color>");
                 gridContent[3].SetOptionText($"<color=white>{pcm.experienceLevel} {pcm.trait}</color>");
                 gridContent[5].SetOptionText($"<color=white>{selectedKHS.ConditionString}</color>");
@@ -846,7 +846,7 @@ namespace KerbalHealth
             Core.Log($"Current solar cycle phase: {Core.SolarCyclePhase:P2} through. Radstorm MTBE: {Core.RadStormMTBE:N0} days.");
 
             foreach (RadStorm t in targets.Values)
-                if (Core.EventHappens(Core.RadStormMTBE / KerbalHealthRadiationSettings.Instance.RadStormFrequence * KSPUtil.dateTimeFormatter.Day, interval))
+                if (Core.EventHappens(Core.RadStormMTBE / KerbalHealthRadiationSettings.Instance.RadStormFrequency * KSPUtil.dateTimeFormatter.Day, interval))
                 {
                     RadStormType rst = Core.GetRandomRadStormType();
                     double delay = t.DistanceFromSun / rst.GetRandomVelocity();
@@ -906,7 +906,7 @@ namespace KerbalHealth
                         radStorms.RemoveAt(i--);
                     }
                 if (Core.GetYear(time) > Core.GetYear(lastUpdated))
-                    Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (Core.RadStormMTBE / KerbalHealthRadiationSettings.Instance.RadStormFrequence).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
+                    Core.ShowMessage(Localizer.Format("#KH_RadStorm_AnnualReport", (Core.SolarCyclePhase * 100).ToString("N1"), Math.Floor(time / Core.SolarCycleDuration + 1).ToString("N0"), (Core.RadStormMTBE / KerbalHealthRadiationSettings.Instance.RadStormFrequency).ToString("N0")), false); //You are " +  + " through solar cycle " +  + ". Current mean time between radiation storms is " +  + " days.
             }
 
             Core.KerbalHealthList.Update(interval);
@@ -921,7 +921,7 @@ namespace KerbalHealth
                     foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                     {
                         ProtoCrewMember pcm = khs.ProtoCrewMember;
-                        if (khs.IsFrozen || khs.IsDecontaminating || !pcm.IsTrackable())
+                        if (khs.IsFrozen || !pcm.IsTrackable())
                             continue;
                         for (int i = 0; i < khs.Conditions.Count; i++)
                         {
@@ -1089,9 +1089,10 @@ namespace KerbalHealth
                 msg += Localizer.Format(
                     "#KH_DeconMsg4",
                     selectedKHS.ProtoCrewMember.nameWithGender,
-                    (KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss * 100).ToString("N0"),
+                    KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss.ToString("P0"),
                     KerbalHealthRadiationSettings.Instance.DecontaminationRate.ToString("N0"),
-                    Core.ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2));
+                    Core.ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2),
+                    KerbalHealthRadiationSettings.Instance.DecontaminationMinHealth.ToString("P0"));
 
                 if (!selectedKHS.IsReadyForDecontamination)
                 {

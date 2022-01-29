@@ -191,7 +191,7 @@ namespace KerbalHealth
             if (!inEditor && ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
             {
                 FactorsOriginal.Clear();
-                if (IsFrozen || IsDecontaminating)
+                if (IsFrozen)
                     return;
             }
 
@@ -822,9 +822,9 @@ namespace KerbalHealth
         /// Returns true if the kerbal can start decontamination now
         /// </summary>
         public bool IsReadyForDecontamination =>
-            ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available
-            && Health >= 1
-            && !Conditions.Any()
+            (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available || !KerbalHealthRadiationSettings.Instance.DecontaminationOnlyAtKSC)
+            && Health >= Math.Max(KerbalHealthRadiationSettings.Instance.DecontaminationMinHealth, KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss)
+            && !Conditions.Any(hc => hc.Visible)
             && (HighLogic.CurrentGame.Mode != Game.Modes.CAREER || Funding.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationFundsCost))
             && (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX || ResearchAndDevelopment.CanAfford(KerbalHealthRadiationSettings.Instance.DecontaminationScienceCost))
             && (!KerbalHealthRadiationSettings.Instance.RequireUpgradedFacilityForDecontamination || ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) >= Core.GetInternalFacilityLevel(KerbalHealthRadiationSettings.Instance.DecontaminationAstronautComplexLevel))
@@ -930,19 +930,20 @@ namespace KerbalHealth
 
         public double GetRadiation()
         {
+            double bedPerDay = IsDecontaminating ? -KerbalHealthRadiationSettings.Instance.DecontaminationRate : 0;
             if (ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned && !IsFrozen)
-                return IsDecontaminating ? -KerbalHealthRadiationSettings.Instance.DecontaminationRate : 0;
+                return bedPerDay;
 
             Vessel v = ProtoCrewMember.GetVessel();
             if (v == null)
             {
                 Core.Log($"Vessel for {Name} not found!", LogLevel.Error);
-                return 0;
+                return bedPerDay;
             }
 
-            double bedPerDay = GetVesselRadiation(v);
-            Core.Log($"{Name}'s vessel receives {bedPerDay:N1} BED/day @ {Exposure:P1} exposure for a radiation level of {Radiation:N1} BED/day. Total accumulated dose is {Dose:N} BEDs.");
-            return Exposure * bedPerDay;
+            bedPerDay += Exposure * GetVesselRadiation(v);
+            Core.Log($"{Name}'s vessel receives {bedPerDay:N1} BED/day @ {Exposure:P1} exposure. Total accumulated dose is {Dose:N} BEDs.");
+            return bedPerDay;
         }
 
         public void StartDecontamination()
@@ -1013,7 +1014,7 @@ namespace KerbalHealth
                         Dose = 0;
                         StopDecontamination();
                     }
-                    if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned)
+                    if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && KerbalHealthRadiationSettings.Instance.DecontaminationOnlyAtKSC)
                         StopDecontamination();
                 }
             }

@@ -19,6 +19,6 @@ namespace KerbalHealth
         public override double BaseChangePerDay => BaseChangePerDay_Default * KerbalHealthFactorsSettings.Instance.KSCEffect;
 
         public override double ChangePerDay(KerbalHealthStatus khs) =>
-            khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && !Core.IsInEditor && !khs.IsTrainingAtKSC ? BaseChangePerDay : 0;
+            khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && !Core.IsInEditor && !khs.IsTrainingAtKSC && !khs.IsDecontaminating ? BaseChangePerDay : 0;
     }
 }
