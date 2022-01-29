@@ -1058,7 +1058,7 @@ namespace KerbalHealth
                    "#KH_TI_KerbalTraining",
                    selectedKHS.Name,
                    selectedKHS.TrainingVessel,
-                   selectedKHS.TrainingParts.Count,
+                   selectedKHS.TrainingParts.Count(tp => tp.TrainingNow),
                    selectedKHS.GetTrainingLevel().ToString("P1"),
                    Core.TrainingCap.ToString("P0"),
                    Core.ParseUT(selectedKHS.CurrentTrainingETA, false, 10))
@@ -1069,7 +1069,15 @@ namespace KerbalHealth
             {
                 elements.Add(new DialogGUILabel(Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name), true));
                 foreach (TrainingPart tp in selectedKHS.TrainingParts.Where(tp => tp.Level >= 0.001))
-                    elements.Add(new DialogGUIHorizontalLayout(300, 10, new DialogGUILabel(tp.Label, 250), new DialogGUILabel(tp.Level.ToString("P1"), 50)));
+                {
+                    string tag = "", untag = "";
+                    if (tp.TrainingNow)
+                    {
+                        tag = "<b>";
+                        untag = "</b>";
+                    }
+                    elements.Add(new DialogGUIHorizontalLayout(300, 10, new DialogGUILabel($"{tag}{tp.Label}{untag}", 250), new DialogGUILabel($"{tag}{tp.Level:P1}{untag}", 50)));
+                }
             }
             elements.Add(new DialogGUIButton(Localizer.Format("#KH_TI_Close"), null, true));
 

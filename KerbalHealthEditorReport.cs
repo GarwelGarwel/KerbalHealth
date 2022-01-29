@@ -86,7 +86,7 @@ namespace KerbalHealth
         WindowMode windowMode = WindowMode.HealthReport;
         static Vector2 windowPosition = new Vector2(0.5f, 0.5f);
         List <DialogGUIBase> gridContent;
-        DialogGUILabel clsSpaceNameLbl, spaceLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
+        DialogGUILabel clsSpaceNameLbl, spaceLbl, complexityLbl, recupLbl, shieldingLbl, exposureLbl, shelterExposureLbl;
         int clsSpaceIndex = 0;
 
         ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
@@ -169,18 +169,33 @@ namespace KerbalHealth
                             clsSpaceNameLbl = new DialogGUILabel("", true),
                             new DialogGUIButton(">", OnNextCLSSpaceButtonSelected, () => CLSSpacesCount > 1, false))
                         : new DialogGUIBase(),
-                        new DialogGUIHorizontalLayout(
-                            new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Space")}</color>", false),
-                            spaceLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                            new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Recuperation")}</color>", false),
-                            recupLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
-                        new DialogGUIHorizontalLayout(
-                            new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Shielding")}</color>", false),
-                            shieldingLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                            new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Exposure")}</color>", false),
-                            exposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true),
-                            new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_ShelterExposure")}</color>", false),
-                            shelterExposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
+                        new DialogGUIGridLayout(
+                            new RectOffset(3, 3, 3, 3),
+                            new Vector2(110, 30),
+                            new Vector2(10, 0),
+                            GridLayoutGroup.Corner.UpperLeft,
+                            GridLayoutGroup.Axis.Horizontal,
+                            TextAnchor.MiddleCenter,
+                            GridLayoutGroup.Constraint.FixedColumnCount,
+                            3,
+                            new DialogGUIHorizontalLayout(
+                                new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Space")}</color>", false),
+                                spaceLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
+                            new DialogGUIHorizontalLayout(
+                                new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Complexity")}</color>", false),
+                                complexityLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
+                            new DialogGUIHorizontalLayout(
+                                new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Recuperation")}</color>", false),
+                                recupLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
+                            new DialogGUIHorizontalLayout(
+                                new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Shielding")}</color>", false),
+                                shieldingLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
+                            new DialogGUIHorizontalLayout(
+                                new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_Exposure")}</color>", false),
+                                exposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true)),
+                            new DialogGUIHorizontalLayout(
+                                new DialogGUILabel($"<color=white>{Localizer.Format("#KH_ER_ShelterExposure")}</color>", false),
+                                shelterExposureLbl = new DialogGUILabel(Localizer.Format("#KH_NA"), true))),
                         new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter, new DialogGUILabel(Localizer.Format("#KH_ER_Factors"))),
                         new DialogGUIGridLayout(
                             new RectOffset(3, 3, 3, 3),
@@ -409,6 +424,7 @@ namespace KerbalHealth
             Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
             spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
+            complexityLbl.SetOptionText($"<color=white>{trainingParts.Sum(mkh => mkh.complexity):P0}</color>");
             recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
             shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
             exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");
