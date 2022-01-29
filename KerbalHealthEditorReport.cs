@@ -91,8 +91,6 @@ namespace KerbalHealth
 
         ICLSSpace CLSSpace => CLSSpacesCount > clsSpaceIndex ? CLS.CLSAddon.Vessel.Spaces[clsSpaceIndex] : null;
 
-        bool HasTrainableParts => Core.GetTrainableParts(EditorLogic.SortedShipList).Any();
-
         public void ShowWindow()
         {
             Core.Log("KerbalHealthEditorReport.DisplayData", LogLevel.Important);
@@ -210,7 +208,7 @@ namespace KerbalHealth
                         new DialogGUIHorizontalLayout(
                             true,
                             false,
-                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && HasTrainableParts, true),
+                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && Core.HasTrainableParts(EditorLogic.SortedShipList), true),
                             new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnResetButtonSelected, false))),
                     false,
                     HighLogic.UISkin,
@@ -223,7 +221,7 @@ namespace KerbalHealth
             {
                 dirty = false;
                 IList<ModuleKerbalHealth> trainableParts = new List<ModuleKerbalHealth>();
-                foreach (ModuleKerbalHealth tp in Core.GetTrainableParts(EditorLogic.SortedShipList))
+                foreach (ModuleKerbalHealth tp in Core.GetTrainablePartTypes(EditorLogic.SortedShipList))
                     if (!trainableParts.Any(tp2 => tp2.PartName == tp.PartName))
                         trainableParts.Add(tp);
                 List<KerbalHealthStatus> kerbals = Core.KerbalHealthList.Values
@@ -383,8 +381,6 @@ namespace KerbalHealth
                 Core.Log($"Selected CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
             }
 
-            IList<ModuleKerbalHealth> trainingParts = Core.GetTrainableParts(EditorLogic.SortedShipList);
-
             foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
             {
                 khs = Core.KerbalHealthList[pcm]?.Clone();
@@ -424,7 +420,7 @@ namespace KerbalHealth
             Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
             spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
-            complexityLbl.SetOptionText($"<color=white>{trainingParts.Sum(mkh => mkh.complexity):P0}</color>");
+            complexityLbl.SetOptionText($"<color=white>{Core.GetTrainablePartTypes(EditorLogic.SortedShipList).Sum(mkh => mkh.complexity):P0}</color>");
             recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
             shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
             exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");

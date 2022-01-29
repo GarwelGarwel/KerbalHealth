@@ -376,7 +376,9 @@ namespace KerbalHealth
                     double change = khs.HPChangeTotal;
                     string formatTag = "", formatUntag = "", s;
                     if (healthFrozen || change == 0 || (khs.BalanceHP - khs.NextConditionHP) * change < 0)
-                        s = "—";
+                        if (khs.IsTrainingAtKSC)
+                            s = Core.ParseUT(khs.CurrentTrainingETA, false, 10);
+                        else s = "—";
                     else
                     {
                         s = Core.ParseUT(khs.ETAToNextCondition, false, 100);

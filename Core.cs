@@ -240,10 +240,24 @@ namespace KerbalHealth
             : (v.distanceToSun > 0 ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
 
         /// <summary>
-        /// Returns list of IDs of parts that are used in training and stress calculations
+        /// Returns a list of part modules that are used in stress calculations
         /// </summary>
         public static List<ModuleKerbalHealth> GetTrainableParts(List<Part> allParts) =>
             allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
+
+        /// <summary>
+        /// Returns a list of *distinct* part modules that are used in training
+        /// </summary>
+        public static List<ModuleKerbalHealth> GetTrainablePartTypes(List<Part> allParts)
+        {
+            List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
+            foreach (ModuleKerbalHealth mkh in GetTrainableParts(allParts))
+                if (!res.Any(mkh2 => mkh.PartName == mkh2.PartName))
+                    res.Add(mkh);
+            return res;
+        }
+
+        public static bool HasTrainableParts(IEnumerable<Part> allParts) => allParts.Any(part => part.FindModulesImplementing<ModuleKerbalHealth>().Any(mkh => mkh.complexity != 0));
 
         public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
 

@@ -16,9 +16,7 @@ namespace KerbalHealth
 
         public override double ChangePerDay(KerbalHealthStatus khs)
         {
-            if (Core.IsInEditor && !IsEnabledInEditor())
-                return 0;
-            if (!Core.IsInEditor && khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if ((Core.IsInEditor && !IsEnabledInEditor()) || (!Core.IsInEditor && khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned))
                 return 0;
             return BaseChangePerDay * (1 - khs.GetTrainingLevel(Core.IsInEditor && KerbalHealthEditorReport.SimulateTrained)) / Core.GetColleaguesCount(khs.ProtoCrewMember);
         }

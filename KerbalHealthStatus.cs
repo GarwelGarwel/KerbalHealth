@@ -727,7 +727,7 @@ namespace KerbalHealth
             }
 
             int count = 0;
-            foreach (ModuleKerbalHealth mkh in Core.GetTrainableParts(parts))
+            foreach (ModuleKerbalHealth mkh in Core.GetTrainablePartTypes(parts))
             {
                 TrainingPart tp = GetTrainingPart(mkh.PartName);
                 if (tp != null)
