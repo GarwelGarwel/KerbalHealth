@@ -225,7 +225,7 @@ namespace KerbalHealth
 
         public void OnCrewKilled(EventReport er)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || er == null)
                 return;
             Core.Log($"OnCrewKilled(<'{er.msg}', {er.sender}, {er.other}>)", LogLevel.Important);
             Core.KerbalHealthList.Remove(er.sender);
@@ -247,7 +247,7 @@ namespace KerbalHealth
 
         public void OnKerbalAdded(ProtoCrewMember pcm)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalAdded('{pcm.name}')", LogLevel.Important);
             if (pcm.type == ProtoCrewMember.KerbalType.Applicant || pcm.type == ProtoCrewMember.KerbalType.Unowned)
@@ -255,13 +255,13 @@ namespace KerbalHealth
                 Core.Log($"The kerbal is {pcm.type}. Skipping.", LogLevel.Important);
                 return;
             }
-            Core.KerbalHealthList.Add(pcm.name);
+            Core.KerbalHealthList.Add(pcm);
             dirty = crewChanged = true;
         }
 
         public void OnKerbalRemoved(ProtoCrewMember pcm)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalRemoved('{pcm.name}')", LogLevel.Important);
             Core.KerbalHealthList.Remove(pcm.name);
@@ -270,7 +270,7 @@ namespace KerbalHealth
 
         public void OnKerbalNameChanged(ProtoCrewMember pcm, string name1, string name2)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalNameChanged('{pcm.name}', '{name1}', '{name2}')", LogLevel.Important);
             Core.KerbalHealthList.Rename(name1, name2);
@@ -279,7 +279,7 @@ namespace KerbalHealth
 
         public void OnKerbalFrozen(Part part, ProtoCrewMember pcm)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalFrozen('{part.name}', '{pcm.name}')", LogLevel.Important);
             Core.KerbalHealthList[pcm].IsFrozen = true;
@@ -288,7 +288,7 @@ namespace KerbalHealth
 
         public void OnKerbalThaw(Part part, ProtoCrewMember pcm)
         {
-            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalThaw('{part.name}', '{pcm.name}')", LogLevel.Important);
             Core.KerbalHealthList[pcm].IsFrozen = false;
@@ -803,7 +803,7 @@ namespace KerbalHealth
             {
                 KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
                 if (khs == null)
-                    Core.KerbalHealthList.Add(khs = new KerbalHealthStatus(pcm.name));
+                    Core.KerbalHealthList.Add(khs = new KerbalHealthStatus(pcm));
                 if (khs.IsTrainingAtKSC)
                     khs.StopTraining("#KH_TrainingStopped");
                 khs.StartTraining(v.Parts, v.vesselName);

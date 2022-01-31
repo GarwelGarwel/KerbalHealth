@@ -29,18 +29,22 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="name">Kerbal's name</param>
         /// <param name="health">Kerbal's current HP, maximum if skipped</param>
-        public void Add(string name)
+        public void Add(ProtoCrewMember pcm)
         {
-            if (ContainsKey(name))
+            if (pcm == null)
+            {
+                Core.Log($"Trying to register a KerbalHealthStatus for a null ProtoCrewMember!", LogLevel.Error);
                 return;
-            Core.Log($"Registering {name}.", LogLevel.Important);
-            Add(name, new KerbalHealthStatus(name));
+            }
+            if (ContainsKey(pcm.name))
+                return;
+            Core.Log($"Registering {pcm.name}.", LogLevel.Important);
+            Add(pcm.name, new KerbalHealthStatus(pcm));
         }
 
         /// <summary>
         /// Adds a kerbal to the list, unless already exists
         /// </summary>
-        /// <param name="khs"></param>
         public void Add(KerbalHealthStatus khs)
         {
             if (!ContainsKey(khs.Name))
@@ -50,8 +54,6 @@ namespace KerbalHealth
         /// <summary>
         /// Changes name of a registered kerbal and renames the entry
         /// </summary>
-        /// <param name="name1"></param>
-        /// <param name="name2"></param>
         public void Rename(string name1, string name2)
         {
             Core.Log($"KerbalHealthList.Rename('{name1}', '{name2}')");
@@ -78,7 +80,7 @@ namespace KerbalHealth
             list.AddRange(kerbalRoster.Tourist);
             Core.Log($"{list.Count} total trackable kerbals.", LogLevel.Important);
             foreach (ProtoCrewMember pcm in list.Where(pcm => pcm.IsTrackable()))
-                Add(pcm.name);
+                Add(pcm);
             Core.Log($"KerbalHealthList updated: {Count} kerbals found.", LogLevel.Important);
         }
 

@@ -123,7 +123,7 @@ namespace KerbalHealth
             get => hp;
             set
             {
-                hp = value < 0 ? 0 : (value > MaxHP ? MaxHP : value);
+                hp = value < 0 ? 0 : Math.Min(value, MaxHP);
                 if (!IsWarned && Health < KerbalHealthGeneralSettings.Instance.LowHealthAlert)
                 {
                     Core.ShowMessage(Localizer.Format("#KH_Condition_LowHealth", Name), ProtoCrewMember);
@@ -1149,11 +1149,16 @@ namespace KerbalHealth
             Core.Log($"{Name} loaded.");
         }
 
-        public KerbalHealthStatus(string name)
+        public KerbalHealthStatus(ProtoCrewMember pcm)
         {
-            Name = name;
-            HP = GetDefaultMaxHP(ProtoCrewMember);
-            Core.Log($"Created record for {name} with {HP} HP.");
+            if (pcm == null)
+            {
+                Core.Log($"Trying to create KerbalHealthStatus for a null ProtoCrewMember!", LogLevel.Error);
+                return;
+            }
+            Name = pcm.name;
+            HP = GetDefaultMaxHP(pcm);
+            Core.Log($"Created KerbalHealthStatus record for {pcm.name} with {HP} HP.");
         }
 
         public KerbalHealthStatus(ConfigNode node) => Load(node);
