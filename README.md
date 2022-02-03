@@ -58,7 +58,7 @@ Certain parts (such as the Cupola) provide Recuperation bonuses. If a kerbal rec
 
 As you see, this mechanics may allow some kerbals to stay relatively healthy indefinitely. It may look cheaty, but the point is that: (1) there should be a way to design long-term missions without spamming crew space, (2) it requires a lot of heavy parts and therefore still difficult, (3) the balanced health level is usually far from 100% and may fall lower if circumstances change (e.g., new crew arrives and fills the station), (4) these bonuses require a lot of EC, (5) radiation still keeps mounting (see below).
 
-Recuperation is not stacked and has crew cap. It means that one Cupola provides 1% Recup for 2 kerbals, 2 Cupolas give 1% for 4 kerbals (not 2%!), etc. If you have more kerbals than the crew cap, Recuperation will be split among them evenly (e.g. 4 kerbals with 1 Cupola will get 0.5% Recup).
+Recuperation is not stacked and has crew cap. It means that one Cupola provides 2% Recup for 1 kerbal, 2 Cupolas give 2% for 2 kerbals (not 4%!), etc. If you have more kerbals than the crew cap, Recuperation will be split among them evenly (e.g. 2 kerbals with 1 Cupola will get 1% Recup).
 
 Decay is the opposite to Recuperation: for every percentage point of Decay, your kerbal will lose 1% of their remaining health per day. Fortunately, it is very rare.
 
