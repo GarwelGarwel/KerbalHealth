@@ -73,9 +73,6 @@ namespace KerbalHealth
         public float complexity = 0;
 
         [KSPField(isPersistant = true)]
-        public uint id = 0;
-
-        [KSPField(isPersistant = true)]
         // If not alwaysActive, this determines whether the module is active
         public bool isActive = true;
 
@@ -167,6 +164,10 @@ namespace KerbalHealth
             set => title = value;
         }
 
+        public string PartName => part?.partInfo?.name;
+        
+        public string PartTitle => part?.partInfo?.title;
+        
         PartResourceDefinition ResourceDefinition
         {
             get => PartResourceLibrary.Instance.GetDefinition(resource);
@@ -235,11 +236,9 @@ namespace KerbalHealth
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {part.partName}");
+            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {PartName}");
             if (crewCap < 0)
                 crewCap = part.CrewCapacity;
-            if (complexity != 0 && id == 0)
-                id = part.persistentId;
             if (IsAlwaysActive)
             {
                 isActive = true;
@@ -258,8 +257,8 @@ namespace KerbalHealth
             {
                 engineModules = part.FindModulesImplementing<IEngineStatus>();
                 if (engineModules != null)
-                    Core.Log($"{part?.name} has {engineModules.Count} engine module(s).");
-                else Core.Log($"Could not find an engine module for {part?.name} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
+                    Core.Log($"{PartName} has {engineModules.Count} engine module(s).");
+                else Core.Log($"Could not find an engine module for {PartName} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
             }
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
@@ -278,7 +277,7 @@ namespace KerbalHealth
                     ecPerSec = 0;
                 starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
                 if (starving)
-                    Core.Log($"{Title} Module in {part?.name} is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
+                    Core.Log($"{Title} Module in {PartName} is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
             }
             else ecPerSec = 0;
             lastUpdated = time;

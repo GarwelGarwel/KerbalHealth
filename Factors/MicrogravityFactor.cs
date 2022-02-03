@@ -4,11 +4,13 @@ namespace KerbalHealth
 {
     class MicrogravityFactor : HealthFactor
     {
+        public const float BaseChangePerDay_Default = -1;
+
         public override string Name => "Microgravity";
 
         public override string Title => Localizer.Format("#KH_Factor_Microgravity");//Microgravity
 
-        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.MicrogravityFactor;
+        public override double BaseChangePerDay => BaseChangePerDay_Default * KerbalHealthFactorsSettings.Instance.MicrogravityEffect;
 
         public override double ChangePerDay(KerbalHealthStatus khs)
         {
@@ -17,7 +19,7 @@ namespace KerbalHealth
             Vessel vessel = khs.ProtoCrewMember.GetVessel();
             if (vessel == null)
             {
-                Core.Log($"MicrogravityFactor.ChangePerDay: Core.GetVessel(pcm) is null for {khs.Name}! EVA is {khs.IsOnEVA}.", LogLevel.Error);
+                Core.Log($"MicrogravityEffect.ChangePerDay: Core.GetVessel(pcm) is null for {khs.Name}! EVA is {khs.IsOnEVA}.", LogLevel.Error);
                 return 0;
             }
             if ((vessel.situation & (Vessel.Situations.ORBITING | Vessel.Situations.SUB_ORBITAL | Vessel.Situations.ESCAPING)) != 0)

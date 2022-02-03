@@ -4,21 +4,23 @@ namespace KerbalHealth
 {
     class HomeFactor : HealthFactor
     {
+        public const float BaseChangePerDay_Default = 2;
+
         public override string Name => "Home";
 
         public override string Title => Localizer.Format("#KH_Factor_Home");//Home
 
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
-        public override double BaseChangePerDay => KerbalHealthFactorsSettings.Instance.HomeFactor;
+        public override double BaseChangePerDay => BaseChangePerDay_Default * KerbalHealthFactorsSettings.Instance.HomeEffect;
 
         public override double ChangePerDay(KerbalHealthStatus khs)
         {
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
-            if (khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned)
+            if (khs.ProtoCrewMember.rosterStatus != ProtoCrewMember.RosterStatus.Assigned || khs.IsDecontaminating)
             {
-                Core.Log("Home factor is off when the kerbal is not assigned.");
+                Core.Log("Home factor is off when the kerbal is not assigned or is decontaminating.");
                 return 0;
             }
             Vessel vessel = khs.ProtoCrewMember.GetVessel();

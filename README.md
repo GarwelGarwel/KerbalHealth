@@ -7,8 +7,8 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - Kerbals have Health Points (HP) that gradually reduce during missions and restored at KSC.
 - Maximum HP is determined by kerbal's level (+10 HP per level).
 - HP change based on several factors such as available living space, presence of crewmates, gravity, and specific ship parts.
-- If a kerbal's health goes under 20%, he/she is exhausted and becomes a Tourist. They will go back to work when health grows back to 25%.
-- If a kerbal's health falls to 0, he/she dies!
+- If a kerbal's health goes below 20%, he/she may become exhausted (technically, turn into a Tourist). They will eventually get back to work after health goes above 20% again.
+- If a kerbal's health falls to 0, they will die!
 - Kerbals are affected by radiation, which permanently reduces their maximum health. It can come from the Sun, including CMEs, radioactive parts, galactic cosmic rays and even killing planets (OPM only).
 - You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation within their magnetic fields and atmospheres.
 - Kerbals may fall sick, have health accidents, panic attacks and other contingences.
@@ -20,37 +20,41 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 ## Health factors
 
 The following factors may affect kerbal's health:
-- **Stress** (kerbal is on a mission): -2 x (1 - *Training Level*) HP/day (max Training Level depends on your Astronaut Complex level; if training is enabled, you should first assign your crew to training in the Editor)
-- **Confinement** (scaled effect): -3 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts, depending on their size, capacity, function etc.)
-- **Loneliness** (only 1 kerbal in the vessel): -2 HP/day
+- **Stress** (kerbal is on a mission): -2 x (1 - *Training Level*) x *Number of Colleagues* HP/day (see details below)
+- **Confinement**: -2 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts depending on their size, capacity, function etc.)
+- **Loneliness** (only one kerbal in the vessel): -1 HP/day
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
+- **Isolation** (no working CommNet connection to home): -0.5 HP/day
 - **EVA**: -10 HP/day
-- **Connected** (having a working CommNet connection to home): +0.5 HP/day
 - **Home** (in Kerbin's low atmosphere): +2 HP/day
-- **KSC** (kerbal is recuperating at KSC, i.e. available): +4 HP/day
+- **KSC** (kerbal is recuperating at KSC, i.e. available): +3 HP/day
 
-These values, like most others in the mod, are adjustable in Difficulty Settings. They also depend on quirks of a particular kerbal. You can check current values for a specific crew member in Health Monitor.
+You can adjust all factors' effects in the Difficulty Settings. Quirks of a kerbal may also affect their health factors. You can check current values for a specific crew member in the Health Monitor.
 
-Certain parts (such as Hitchhiker and crew cabins) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights. It often requires EC though. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions. All these features can be changed using ModuleManager patches.
+Certain parts (such as Hitchhiker and crew cabins) can additionally reduce the effect of a health factor (Confinement in this case) allowing for much longer and healthier flights, at a cost of Electric Charge. Hab rings in some mods can help overcome Microgravity issues for long-term stations and interplanetary missions while cupolas alleviate Loneliness.
 
 ## Stress and Training
 
-One of the drains on kerbals' health is Stress. If you have training disabled (recommended for new players), Stress is reducced based on your Astronaut Complex facility level:
-- Level 1: 60% reduction (i.e. -0.8 HP/day)
-- Level 2: 75% reduction (i.e. -0.5 HP/day)
-- Level 3: 85% reduction (i.e. -0.3 HP/day)
+One of the drains on kerbals' health is Stress. You reduce stress by training your kerbals for the parts in the vessel (mostly the crewable ones). To start training, load the vessel in the Editor, open the Health Report and click "Training Info" button. From there, you can select which kerbals to train. Training takes time, which is determined by the number of part types to train for, their complexity (e.g. command pods are more complex than airlocks) and kerbals' stupidity. Note that you can't train kerbals who have health conditions (e.g. sick). When a kerbal has trained for a certain part type, they won't have to train for it again. Kerbals don't recover their health while they are training at the KSC.
 
-If you have training enabled, you should first train your kerbals for missions. In the Editor, assign crew to the ship you are going to launch, open the Health Report and click Train button. All kerbals in the list will start training, if they are at least 90% healthy. You can check the time required for training and the effects of training in the Health Report. Then save the vessel and exit the Editor (don't launch it yet!).
+Kerbals also automatically train for parts in their vessel as they fly thereby gradually reducing their stress. But it is not recommended to send untrained astronauts for long missions, because they may lose too much health while they get used to the unfamiliar ship.
 
-Wait for the kerbals to finish their training. Training time depends on the number of trainable parts (as of now, it is those with crew capacity) and whether the kerbal has previously been trained for this part type. After the crew has been trained, load the vessel and launch it.
+Training level is capped based on your Astronaut Complex facility level:
+- Level 1: 40% reduction (i.e. -1.2 HP/day)
+- Level 2: 60% reduction (i.e. -0.8 HP/day)
+- Level 3: 75% reduction (i.e. -0.5 HP/day)
 
-Untrained kerbals will slowly get used to a vessel they are in, but it will take more time than in KSC (and they will suffer from higher Stress all that time).
+If you disable Training in the Settings, kerbals are assumed to be fully trained for all parts.
+
+Another way to reduce Stress is by having more than one kerbal of a certain profession on a vessel. Then they are assumed working in shifts or helping each other, and their Stress level is reduced accordingly. For instance, a Pilot that loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is another Pilot on the ship.
+
+Tourists don't benefit from having more "colleagues" on a vessel. Instead, they get peace of mind from knowing that there is professional crew to look after them. Their Stress is reduced by the number of non-Tourist crew members on the vessel increased by 1. For example, a Tourist that normally loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is one crew member, ~0.27 if there are two crew members etc.
 
 ## Health Recuperation and Health Decay
 
 Certain parts (such as the Cupola) provide Recuperation bonuses. If a kerbal receives, say, a 1% recuperation bonus, he/she will recover 1% of their lacking health (i.e. of the difference between their current HP and the maximum HP) every day. This change works in parallel with the normal health factors above.
 
-*Example: A 5-star kerbal (maximum HP = 150) currently has 70 Health Points and is in a vessel that gives him 2% recuperation. The vessel has 10 units of living space and he has connection and he has a crewmate. Therefore he recovers (150 - 70) x 2% = 1.6 HP per day and loses also (0.5 + 3 x 2 / 10 + 1 - 0.5) = 1.6 HP per day. It means that the marginal change balances out the "normal" change and his health will stay around 70 HP (47%) until the situation changes.*
+*Example: A 5-star kerbal (maximum HP = 150) currently has 55 Health Points and is in a vessel that gives him 2% recuperation. The vessel has 10 units of living space, he has connection and he has a crewmate. Therefore he recovers (150 - 55) x 2% = 1.9 HP per day and loses also (0.5 + 2 x 2 / 10 + 1) = 1.9 HP per day. It means that the marginal change balances out the "normal" change and his health will stay around 55 HP (37%) until the situation changes.*
 
 As you see, this mechanics may allow some kerbals to stay relatively healthy indefinitely. It may look cheaty, but the point is that: (1) there should be a way to design long-term missions without spamming crew space, (2) it requires a lot of heavy parts and therefore still difficult, (3) the balanced health level is usually far from 100% and may fall lower if circumstances change (e.g., new crew arrives and fills the station), (4) these bonuses require a lot of EC, (5) radiation still keeps mounting (see below).
 
@@ -72,7 +76,7 @@ Beware of solar radiation storms! They can blast your kerbals in a planet's SOI 
 
 If you have Kerbalism installed and enabled "Use Kerbalism Radiation" option in the settings, Kerbal Health's radiation calculations will be replaced with those of Kerbalism (but Kerbal Health shielding will still apply). Kerbalism has a more realistic and complex radiation model, but its balance is very different from Kerbal Health's.
 
-It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 75% of their health and will need to rest afterwards. As always, each value can be adjusted in-game. If your astronaut discovers an anomaly, they may also be miraculously decontaminated by unknown forces (but only one kerbal per anomaly).
+It is possible to cure radiation by decontaminating a kerbal, but it is hard. To start decontamination, the kerbal has to be at KSC at full health and with no health conditions. You also need fully upgraded R&D Facility and Astronaut Complex. Every decontamination costs 100,000 funds (in Career mode) and 1,000 science points (in Career and Science mods). It cures 100,000 banana doses per Kerbin day and stops if you send the kerbal on a mission. The kerbal undergoing decontamination temporarily loses 70% of their health and will need to rest afterwards. As always, each value can be adjusted in-game. If your astronaut discovers an anomaly, they may also be miraculously decontaminated by unknown forces (but only one kerbal per anomaly).
 
 ## Quirks
 
@@ -80,7 +84,7 @@ Whenever a kerbal levels up, there is a 25% chance that he or she will acquire a
 
 ## Conditions and Random Events
 
-Kerbals' organisms, like ours own, are not always predictable. Sometimes, not very often, you may see unexpected events that can impact your whole mission. Kerbals acquire (or lose) certain conditions as a result of these events. Having parts with a Sick Bay (such as the stock Science Lab) helps alleviate the symptoms.
+Kerbals' organisms, like our own, are not always predictable. Sometimes, not very often, you may see unexpected events that can impact your whole mission. Kerbals acquire (or lose) certain conditions as a result of these events. Having parts with a Sick Bay (such as the stock Science Lab) helps alleviate the symptoms.
 
 - **Sickness**: A kerbal can become sick and start losing health quickly. His/her crewmates may catch the disease too, including during the incubation period. This condition usually heals itself after some time, but it can also lead to a pneumonia, a really dangerous condition. Having Scientists or Medics aboard helps.
 - **Injuries**: A kerbal can immediately lose some health in an accident. Stupid kerbals are naturally predisposed to this condition. It may cause sepsis, which is mortally dangerous. Bring your kerbal home immediately or pray Kraken it will heal on its own.

@@ -55,9 +55,12 @@ namespace KerbalHealth
             RadStormMagnitude = 1;
             DecontaminationRate = 100000;
             DecontaminationHealthLoss = 0.75f;
+            DecontaminationMinHealth = 1;
             DecontaminationFundsCost = 100000;
             DecontaminationScienceCost = 1000;
             RequireUpgradedFacilityForDecontamination = true;
+            DecontaminationOnlyAtKSC = true;
+            AnomalyDecontaminationChance = 1;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
 
@@ -92,6 +95,8 @@ namespace KerbalHealth
             settingsNode.TryGetValue("RequireUpgradedFacilityForDecontamination", ref RequireUpgradedFacilityForDecontamination);
             settingsNode.TryGetValue("DecontaminationAstronautComplexLevel", ref DecontaminationAstronautComplexLevel);
             settingsNode.TryGetValue("DecontaminationRNDLevel", ref DecontaminationRNDLevel);
+            settingsNode.TryGetValue("DecontaminationOnlyAtKSC", ref DecontaminationOnlyAtKSC);
+            settingsNode.TryGetValue("AnomalyDecontaminationChance", ref AnomalyDecontaminationChance);
         }
 
         public static KerbalHealthRadiationSettings Instance => HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthRadiationSettings>();
@@ -108,7 +113,7 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_RS_KerbalismRadiationRatio", toolTip = "#KH_RS_KerbalismRadiationRatio_desc", minValue = 0.01f, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 101)]//Kerbalism Radiation Ratio""Multiplier for translating Kerbalism's radiation units into Kerbal Health radiation units
         public float KerbalismRadiationRatio = 0.25f;
 
-        [GameParameters.CustomFloatParameterUI("#KH_RS_ShieldingEffect", toolTip = "#KH_RS_ShieldingEffect_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//Shielding Multiplier""Efficiency of radiation shielding provided by parts and resources
+        [GameParameters.CustomFloatParameterUI("#KH_RS_ShieldingEffect", toolTip = "#KH_RS_ShieldingEffect_desc", minValue = 0, maxValue = 2, displayFormat = "N1", asPercentage = true, stepCount = 41)]//Shielding Multiplier""Efficiency of radiation shielding provided by parts and resources
         public float ShieldingEffect = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_InSpaceHighCoefficient", toolTip = "#KH_RS_InSpaceHighCoefficient_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//In Space High Coefficient""How much cosmic radiation reaches vessels in high planetary orbit or on moons
@@ -135,7 +140,7 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_RS_RadStormsEnabled", toolTip = "#KH_RS_RadStormsEnabled_desc")]//Radiation Storms""Enable solar radiation storms (CMEs). Must have radiation enabled to work
         public bool RadStormsEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequence", toolTip = "#KH_RS_RadStormFrequence_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
+        [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormFrequency", toolTip = "#KH_RS_RadStormFrequency_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Frequency""How often radiation storms happen, relative to default values
         public float RadStormFrequency = 1;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_RadStormMagnitude", toolTip = "#KH_RS_RadStormMagnitude_desc", minValue = 0, maxValue = 2, displayFormat = "N2", asPercentage = true, stepCount = 41)]//RadStorm Magnitude""How strong radstorms are, relative to default values
@@ -144,8 +149,11 @@ namespace KerbalHealth
         [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationRate", toolTip = "#KH_RS_DecontaminationRate_desc", minValue = 1000, maxValue = 1000000, displayFormat = "N0", logBase = 10)]//Decontamination Rate per Day""How much radiation is lost per day during decontamination
         public float DecontaminationRate = 100000;
 
-        [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationHealthLoss", toolTip = "#KH_RS_DecontaminationHealthLoss_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true)]//Decontamination Health Loss""How much health is lost while the kerbal is decontaminating
-        public float DecontaminationHealthLoss = 0.75f;
+        [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationMinHealth", toolTip = "#KH_RS_DecontaminationMinHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N1", asPercentage = true)]
+        public float DecontaminationMinHealth = 1;
+
+        [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationHealthLoss", toolTip = "#KH_RS_DecontaminationHealthLoss_desc", minValue = 0, maxValue = 1, displayFormat = "N1", asPercentage = true)]//Decontamination Health Loss""How much health is lost while the kerbal is decontaminating
+        public float DecontaminationHealthLoss = 0.7f;
 
         [GameParameters.CustomFloatParameterUI("#KH_RS_DecontaminationFundsCost", toolTip = "#KH_RS_DecontaminationFundsCost_desc", minValue = 0, maxValue = 1000000, displayFormat = "N0")]//Decontamination Funds Cost""How much Funds each decontamination procedure costs (Career only)
         public float DecontaminationFundsCost = 100000;
@@ -160,7 +168,10 @@ namespace KerbalHealth
 
         public int DecontaminationRNDLevel = 3;
 
-        [GameParameters.CustomFloatParameterUI("#KH_RS_AnomalyDecontaminationChance", toolTip = "#KH_RS_AnomalyDecontaminationChance_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]
+        [GameParameters.CustomParameterUI("#KH_RS_DecontaminationOnlyAtKSC", toolTip = "#KH_RS_DecontaminationOnlyAtKSC_desc")]
+        public bool DecontaminationOnlyAtKSC = true;
+
+        [GameParameters.CustomFloatParameterUI("#KH_RS_AnomalyDecontaminationChance", toolTip = "#KH_RS_AnomalyDecontaminationChance_desc", minValue = 0, maxValue = 1, displayFormat = "N1", asPercentage = true, stepCount = 21)]
         public float AnomalyDecontaminationChance = 1;
     }
 }

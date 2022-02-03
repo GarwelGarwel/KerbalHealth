@@ -72,11 +72,11 @@ namespace KerbalHealth
 
         public bool Test(ProtoCrewMember pcm)
         {
-            bool res = true;
+            bool? res = null;
             if (pcm == null)
             {
                 Core.Log("ProtoCrewMember argument in Logic.Test is null!", LogLevel.Error);
-                return res;
+                return false;
             }
             Vessel v = pcm.GetVessel();
             if (Situation != null)
@@ -184,7 +184,7 @@ namespace KerbalHealth
             foreach (Logic l in Operands)
                 Op(ref res, l.Test(pcm));
 
-            return res ^ Inverse;
+            return (res ?? true) ^ Inverse;
         }
 
         public string Description(int level)
@@ -223,8 +223,10 @@ namespace KerbalHealth
 
         public override string ToString() => Description(0);
 
-        bool Op(ref bool operand1, bool operand2)
+        bool Op(ref bool? operand1, bool operand2)
         {
+            if (operand1 == null)
+                return operand2;
             switch (Operator)
             {
                 case OperatorType.And:
@@ -235,7 +237,7 @@ namespace KerbalHealth
                     operand1 |= operand2;
                     break;
             }
-            return operand1;
+            return (bool)operand1;
         }
     }
 }

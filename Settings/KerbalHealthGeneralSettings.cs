@@ -7,7 +7,7 @@ namespace KerbalHealth
         public override string Title => Localizer.Format("#KH_GS_title");//"General Settings"
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
         public override bool HasPresets => true;
-        public override string Section => "Kerbal Health";
+        public override string Section => "Kerbal Health (1)";
         public override string DisplaySection => Section;
         public override int SectionOrder => 1;
 
@@ -45,8 +45,8 @@ namespace KerbalHealth
             HPPerLevel = 10;
             LowHealthAlert = 0.3f;
             DeathEnabled = true;
-            ExhaustionStartHealth = 0.2f;
-            ExhaustionEndHealth = 0.25f;
+            CriticalHealth = 0.2f;
+            ExhaustionMaxMTTH = 6;
             KerbalismIntegration = true;
             CLSIntegration = true;
             ResetSettings = false;
@@ -73,8 +73,8 @@ namespace KerbalHealth
             settingsNode.TryGetValue("HPPerLevel", ref HPPerLevel);
             settingsNode.TryGetValue("LowHealthAlert", ref LowHealthAlert);
             settingsNode.TryGetValue("DeathEnabled", ref DeathEnabled);
-            settingsNode.TryGetValue("ExhaustionStartHealth", ref ExhaustionStartHealth);
-            settingsNode.TryGetValue("ExhaustionEndHealth", ref ExhaustionEndHealth);
+            settingsNode.TryGetValue("CriticalHealth", ref CriticalHealth);
+            settingsNode.TryGetValue("ExhaustionMaxMTTH", ref ExhaustionMaxMTTH);
             settingsNode.TryGetValue("KerbalismIntegration", ref KerbalismIntegration);
             settingsNode.TryGetValue("CLSIntegration", ref CLSIntegration);
         }
@@ -114,11 +114,11 @@ namespace KerbalHealth
         [GameParameters.CustomParameterUI("#KH_GS_DeathEnabled", toolTip = "#KH_GS_DeathEnabled_desc")]//Death Enabled""Allow kerbals to die of poor health
         public bool DeathEnabled = true;
 
-        [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionStartHealth", toolTip = "#KH_GS_ExhaustionStartHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion Start Health""Health level when kerbals turn Exhausted (become Tourists)
-        public float ExhaustionStartHealth = 0.2f;
+        [GameParameters.CustomFloatParameterUI("#KH_GS_CriticalHealth", toolTip = "#KH_GS_CriticalHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion Start Health""Health level when kerbals turn Exhausted (become Tourists)
+        public float CriticalHealth = 0.2f;
 
-        [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionEndHealth", toolTip = "#KH_GS_ExhaustionEndHealth_desc", minValue = 0, maxValue = 1, displayFormat = "N2", asPercentage = true, stepCount = 21)]//Exhaustion End Health""Health level when kerbals leave Exhausted state (must be greater than or equal to Exhaustion start)
-        public float ExhaustionEndHealth = 0.25f;
+        [GameParameters.CustomFloatParameterUI("#KH_GS_ExhaustionMaxMTTH", toolTip = "#KH_GS_ExhaustionMaxMTTH_desc", minValue = 0, maxValue = 120, stepCount = 61)]
+        public int ExhaustionMaxMTTH = 6;
 
         [GameParameters.CustomParameterUI("#KH_GS_KerbalismIntegration", toolTip = "#KH_GS_KerbalismIntegration_desc")]//Enforce Kerbalism Integration""If Kerbalism is installed, some of its features (stress, comforts, living space, and radiation damage) will be disabled in favour of Kerbal Health's mechanics
         public bool KerbalismIntegration = true;

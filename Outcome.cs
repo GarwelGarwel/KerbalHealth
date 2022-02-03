@@ -19,21 +19,21 @@ namespace KerbalHealth
         public bool RemoveOldCondition { get; set; } = true;
 
         /// <summary>
-        /// Chance this outcome is chosen every day
+        /// Mean time of the outcome happening, days
         /// </summary>
-        public double ChancePerDay { get; set; } = 0;
+        public double MTBE { get; set; } = -1;
 
         /// <summary>
-        /// List of all chance modifiers for this outcome
+        /// List of all MTBE modifiers for this outcome
         /// </summary>
-        public List<ChanceModifier> ChanceModifiers { get; set; }
+        public List<MTBEModifier> MTBEModifiers { get; set; }
 
         public void Load(ConfigNode node)
         {
             Condition = node.GetString("condition", "");
             RemoveOldCondition = node.GetBool("removeOldCondition", true);
-            ChancePerDay = node.GetDouble("chancePerDay");
-            ChanceModifiers = new List<ChanceModifier>(node.GetNodes("CHANCE_MODIFIER").Select(n => new ChanceModifier(n)));
+            MTBE = node.GetDouble("mtbe", -1);
+            MTBEModifiers = new List<MTBEModifier>(node.GetNodes(MTBEModifier.ConfigNodeName).Select(n => new MTBEModifier(n)));
         }
 
         public Outcome(ConfigNode node) => Load(node);
@@ -41,11 +41,9 @@ namespace KerbalHealth
         /// <summary>
         /// Returns actual chance per day of this outcome considering all modifiers
         /// </summary>
-        /// <param name="pcm"></param>
-        /// <returns></returns>
-        public double GetChancePerDay(ProtoCrewMember pcm) => ChanceModifier.Calculate(ChanceModifiers, ChancePerDay, pcm);
+        public double GetMTBE(ProtoCrewMember pcm) => MTBEModifier.Calculate(MTBEModifiers, MTBE, pcm);
 
         public override string ToString() =>
-            $"{(RemoveOldCondition ? (Condition.Length == 0 ? "Remove current" : $"Change to {Condition}") : $"Add {Condition}")} condition with a chance of {ChancePerDay} with {ChanceModifiers.Count} chance modifiers";
+            $"{(RemoveOldCondition ? (Condition.Length == 0 ? "Remove current" : $"Change to {Condition}") : $"Add {Condition}")} condition with MTBE of {MTBE} days with {MTBEModifiers.Count} MTBE modifiers";
     }
 }

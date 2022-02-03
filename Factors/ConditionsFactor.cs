@@ -1,4 +1,5 @@
 ﻿using KSP.Localization;
+using System.Linq;
 
 namespace KerbalHealth
 {
@@ -13,17 +14,17 @@ namespace KerbalHealth
 
         public override bool ConstantForUnloaded => false;
 
+        public override bool ShownInEditor => false;
+
         public override void ResetEnabledInEditor() => SetEnabledInEditor(false);
 
         public override double ChangePerDay(KerbalHealthStatus khs)
         {
-            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
+            if (!KerbalHealthQuirkSettings.Instance.ConditionsEnabled || Core.IsInEditor)
                 return 0;
-            double res = 0;
-            foreach (HealthCondition hc in khs.Conditions)
-                res += hc.HPChangePerDay * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
+            double res = khs.Conditions.Sum(hc => hc.HPChangePerDay) * KerbalHealthQuirkSettings.Instance.ConditionsEffect;
             Core.Log($"Conditions HP change per day: {res}");
-            return Core.IsInEditor ? (IsEnabledInEditor() ? res : 0) : res;
+            return res;
         }
     }
 }

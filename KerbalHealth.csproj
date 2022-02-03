@@ -89,11 +89,11 @@
     <Compile Include="RadStorm.cs" />
     <Compile Include="RadStormType.cs" />
     <Compile Include="Factors\StressFactor.cs" />
-    <Compile Include="ChanceModifier.cs" />
+    <Compile Include="MTBEModifier.cs" />
     <Compile Include="ModuleHealthEnvironmentSensor.cs" />
     <Compile Include="Outcome.cs" />
     <Compile Include="PlanetHealthConfig.cs" />
-    <Compile Include="Factors\ConnectedFactor.cs" />
+    <Compile Include="Factors\IsolationFactor.cs" />
     <Compile Include="Core.cs" />
     <Compile Include="Wrappers\DFWrapper.cs" />
     <Compile Include="HealthCondition.cs" />

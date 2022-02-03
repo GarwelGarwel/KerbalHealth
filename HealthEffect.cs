@@ -17,9 +17,7 @@ namespace KerbalHealth
 
         public double MaxHPBonus { get; set; } = 0;
 
-        public double ExhaustedStart { get; set; } = 1;
-
-        public double ExhaustedEnd { get; set; } = 1;
+        public double CriticalHealth { get; set; } = 1;
 
         public double Space { get; set; }
 
@@ -43,16 +41,6 @@ namespace KerbalHealth
 
         public int CrewCapacity { get; set; }
 
-        public double AccidentChance { get; set; } = 1;
-
-        public double PanicAttackChance { get; set; } = 1;
-
-        public double SicknessChance { get; set; } = 1;
-
-        public double CureChance { get; set; } = 1;
-
-        public double LoseImmunityChance { get; set; } = 1;
-
         public FactorMultiplierList FactorMultipliers { get; set; } = new FactorMultiplierList();
 
         public void Save(ConfigNode node)
@@ -66,8 +54,7 @@ namespace KerbalHealth
             AddValue(HPChange, "hpChange", 0);
             AddValue(MaxHP, "maxHP", 1);
             AddValue(MaxHPBonus, "maxHPBonus", 0);
-            AddValue(ExhaustedStart, "exhaustedStart", 1);
-            AddValue(ExhaustedEnd, "exhaustedEnd", 1);
+            AddValue(CriticalHealth, "criticalHealth", 1);
             AddValue(Space, "space", 0);
             AddValue(Recuperation, "recuperation", 0);
             AddValue(MaxRecuperaction, "maxRecuperation", 0);
@@ -77,11 +64,6 @@ namespace KerbalHealth
             AddValue(ExposureMultiplier, "exposure", 1);
             AddValue(ShelterExposure, "shelterExposure", 1);
             AddValue(CrewCapacity, "crewCapacity", 0);
-            AddValue(AccidentChance, "accidentChance", 1);
-            AddValue(PanicAttackChance, "panicAttackChance", 1);
-            AddValue(SicknessChance, "sicknessChance", 1);
-            AddValue(CureChance, "cureChance", 1);
-            AddValue(LoseImmunityChance, "loseImmunityChance", 1);
             foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
             {
                 ConfigNode n2 = new ConfigNode(FactorMultiplier.ConfigNodeName);
@@ -97,8 +79,7 @@ namespace KerbalHealth
             HPChange = node.GetDouble("hpChange");
             MaxHP = node.GetDouble("maxHP", 1);
             MaxHPBonus = node.GetDouble("maxHPBonus");
-            ExhaustedStart = node.GetDouble("exhaustedStart", 1);
-            ExhaustedEnd = node.GetDouble("exhaustedEnd", 1);
+            CriticalHealth = node.GetDouble("criticalHealth", 1);
             Space = node.GetDouble("space");
             Recuperation = node.GetDouble("recuperation");
             MaxRecuperaction = node.GetDouble("maxRecuperation");
@@ -108,11 +89,6 @@ namespace KerbalHealth
             ExposureMultiplier = node.GetDouble("exposure", 1);
             ShelterExposure = node.GetDouble("shelterExposure", 1);
             CrewCapacity = node.GetInt("crewCapacity");
-            AccidentChance = node.GetDouble("accidentChance", 1);
-            PanicAttackChance = node.GetDouble("panicAttackChance", 1);
-            SicknessChance = node.GetDouble("sicknessChance", 1);
-            CureChance = node.GetDouble("cureChance", 1);
-            LoseImmunityChance = node.GetDouble("loseImmunityChance", 1);
             FactorMultipliers.Clear();
             foreach (FactorMultiplier fm in node.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
                 FactorMultipliers.Add(fm);
@@ -213,8 +189,7 @@ namespace KerbalHealth
             HPChange += effect.HPChange;
             MaxHP *= effect.MaxHP;
             MaxHPBonus += effect.MaxHPBonus;
-            ExhaustedStart *= effect.ExhaustedStart;
-            ExhaustedEnd *= effect.ExhaustedEnd;
+            CriticalHealth *= effect.CriticalHealth;
             Space += effect.Space;
             Recuperation += effect.Recuperation;
             MaxRecuperaction = Math.Max(MaxRecuperaction, effect.MaxRecuperaction);
@@ -224,11 +199,7 @@ namespace KerbalHealth
             ExposureMultiplier *= effect.ExposureMultiplier;
             ShelterExposure = Math.Min(ShelterExposure, effect.ShelterExposure);
             CrewCapacity += effect.CrewCapacity;
-            AccidentChance *= effect.AccidentChance;
-            PanicAttackChance *= effect.PanicAttackChance;
-            SicknessChance *= effect.SicknessChance;
-            CureChance *= effect.CureChance;
-            LoseImmunityChance *= effect.LoseImmunityChance;
+
             FactorMultipliers.CombineWith(effect.FactorMultipliers);
             return this;
         }
@@ -317,7 +288,7 @@ namespace KerbalHealth
                 int c = 0;
                 for (int i = 0; i < exposures.Count; i++)
                 {
-                    Core.Log($"Part {exposures[i].Part.partName} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
+                    Core.Log($"Part {exposures[i].Part.name} with exposure {exposures[i].Exposure:P1} and crew cap {exposures[i].Part.CrewCapacity}.");
                     x += exposures[i].Exposure * Math.Min(exposures[i].Part.CrewCapacity, crewCount - c);
                     c += exposures[i].Part.CrewCapacity;
                     if (c >= crewCount)
@@ -342,10 +313,8 @@ namespace KerbalHealth
                 res += $"\nMax HP: x{MaxHP}";
             if (MaxHPBonus != 0)
                 res += $"\nMax HP bonus: {MaxHPBonus}";
-            if (ExhaustedStart != 1)
-                res += $"\nExhaustion start: x{ExhaustedStart}";
-            if (ExhaustedEnd != 1)
-                res += $"\nExhaustion end: x{ExhaustedEnd}";
+            if (CriticalHealth != 1)
+                res += $"\nCritical health: x{CriticalHealth}";
             if (Space != 0)
                 res += $"\nSpace: {Space:F1}";
             if (Recuperation != 0)
