@@ -20,6 +20,10 @@ namespace KerbalHealth
 
         public static bool SimulateTrained { get; private set; } = true;
 
+#if DEBUG
+        IterationTimer timer = new IterationTimer("HEALTH REPORT");
+#endif
+
         #region LIFE CYCLE
 
         public void Start()
@@ -363,6 +367,10 @@ namespace KerbalHealth
                 return;
             }
 
+#if DEBUG
+            timer.Start();
+#endif
+
             // Fill the Health Report's grid with kerbals' health data
             int i = 0;
             KerbalHealthStatus khs = null;
@@ -428,6 +436,10 @@ namespace KerbalHealth
                 shelterExposureLbl.SetOptionText($"<color=white>{vesselEffects.ShelterExposure:P1}</color>");
 
             dirty = false;
+
+#if DEBUG
+            timer.Stop();
+#endif
         }
 
         void SetCLSSpaceIndex(int i)

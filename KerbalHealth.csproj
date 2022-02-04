@@ -82,6 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IterationTimer.cs" />
     <Compile Include="Wrappers\CLS.cs" />
     <Compile Include="FactorMultiplier.cs" />
     <Compile Include="FactorMultiplierList.cs" />

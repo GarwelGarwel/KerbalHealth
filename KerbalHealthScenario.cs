@@ -67,6 +67,11 @@ namespace KerbalHealth
         // Comparer object for sorting kerbals in the Health Monitor
         KerbalComparer kerbalComparer = new KerbalComparer(KerbalHealthGeneralSettings.Instance.SortByLocation);
 
+#if DEBUG
+        IterationTimer mainloopTimer = new IterationTimer("MAIN LOOP");
+        IterationTimer updateTimer = new IterationTimer("GUI UPDATE");
+#endif
+
         int LinesPerPage => KerbalHealthGeneralSettings.Instance.LinesPerPage;
 
         bool ShowPages => Core.KerbalHealthList.Count > LinesPerPage;
@@ -87,6 +92,10 @@ namespace KerbalHealth
             if (version != currentVersion)
                 version = currentVersion;
             else Core.Log($"Kerbal Health v{version}");
+
+#if DEBUG
+            Core.Log("Debug mode", LogLevel.Important);
+#endif
 
             // This needs to be run even if the mod is disabled, so that its settings can be reset:
             GameEvents.OnGameSettingsApplied.Add(OnGameSettingsApplied);
@@ -201,7 +210,6 @@ namespace KerbalHealth
         /// <summary>
         /// Marks the kerbal as being on EVA to apply EVA-only effects
         /// </summary>
-        /// <param name="action"></param>
         public void OnKerbalEva(GameEvents.FromToAction<Part, Part> action)
         {
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
@@ -359,7 +367,12 @@ namespace KerbalHealth
                 return;
             }
 
-            if (selectedKHS == null)  // Showing list of all kerbals
+#if DEBUG
+            updateTimer.Start();
+#endif
+
+            // Showing list of all kerbals
+            if (selectedKHS == null)
             {
                 if (crewChanged)
                 {
@@ -398,7 +411,8 @@ namespace KerbalHealth
                 }
             }
 
-            else  // Showing details for one particular kerbal
+            // Showing details for one particular kerbal
+            else
             {
                 ProtoCrewMember pcm = selectedKHS.ProtoCrewMember;
                 if (pcm == null)
@@ -436,6 +450,10 @@ namespace KerbalHealth
                 gridContent[i + 10].SetOptionText($"<color=white>{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
             }
             dirty = false;
+
+#if DEBUG
+            updateTimer.Stop();
+#endif
         }
 
         /// <summary>
@@ -712,7 +730,7 @@ namespace KerbalHealth
                 DFWrapper.InitDFWrapper();
                 if (DFWrapper.InstanceExists)
                     Core.Log("DFWrapper initialized.", LogLevel.Important);
-                else Core.Log("DeepFreeze not found.", LogLevel.Important);
+                else Core.Log("DeepFreeze not found.");
             }
 
             if (DFWrapper.InstanceExists)
@@ -733,7 +751,7 @@ namespace KerbalHealth
         {
             if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.KerbalismIntegration && Kerbalism.Found && !Kerbalism.IsSetup)
             {
-                Core.Log("Disabling some Kerbalism features for better integration with Kerbal Health.", LogLevel.Important);
+                Core.Log("Initializing Kerbalism integration...", LogLevel.Important);
                 Kerbalism.SetRuleProperty("radiation", "degeneration", KerbalHealthRadiationSettings.Instance.RadiationEnabled ? 0 : 1);
                 Kerbalism.SetRuleProperty("stress", "degeneration", 0);
                 Kerbalism.FeatureComfort = false;
@@ -870,6 +888,11 @@ namespace KerbalHealth
             double interval = time - lastUpdated;
             if (!forced && (interval < KerbalHealthGeneralSettings.Instance.UpdateInterval || interval < KerbalHealthGeneralSettings.Instance.MinUpdateInterval * TimeWarp.CurrentRate))
                 return;
+
+#if DEBUG
+            mainloopTimer.Start();
+#endif
+
             Core.Log($"UT is {time}. Updating for {interval} seconds.");
             Core.ClearCache();
             if (HighLogic.LoadedSceneIsFlight && vesselChanged)
@@ -964,6 +987,10 @@ namespace KerbalHealth
                 Core.Log($"Next event processing is scheduled at {KSPUtil.PrintDateCompact(nextEventTime, true)}.", LogLevel.Important);
             }
             dirty = true;
+
+#if DEBUG
+            mainloopTimer.Stop();
+#endif
         }
 
         void FirstPage()
@@ -1015,6 +1042,9 @@ namespace KerbalHealth
         {
             if (selectedKHS == null)
                 return;
+
+            Core.Log($"OnTrainingInfo for {selectedKHS.Name}", LogLevel.Important);
+
             string msg = selectedKHS.TrainingVessel != null
                ? Localizer.Format(
                    "#KH_TI_KerbalTraining",
@@ -1058,7 +1088,7 @@ namespace KerbalHealth
 
             if (selectedKHS.IsDecontaminating)
             {
-                Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.");
+                Core.Log($"User ordered to stop decontamination of {selectedKHS.Name}.", LogLevel.Important);
                 condition = () => selectedKHS.IsDecontaminating;
                 ok = () =>
                 {
@@ -1102,6 +1132,7 @@ namespace KerbalHealth
                     msg += Localizer.Format("#KH_DeconMsg5", selectedKHS.ProtoCrewMember.nameWithGender);
                 }
             }
+
             PopupDialog.SpawnPopupDialog(new MultiOptionDialog(
                 "Decontamination",
                 msg,
