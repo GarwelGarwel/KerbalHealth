@@ -1122,7 +1122,11 @@ namespace KerbalHealth
             name = node.GetValue("name");
             hp = node.GetDouble("health", GetDefaultMaxHP(ProtoCrewMember));
             foreach (ConfigNode factorNode in node.GetNodes(HealthFactor.ConfigNodeName))
-                factorsOriginal[Core.GetHealthFactor(factorNode.GetValue("name"))] = factorNode.GetDouble("change");
+            {
+                HealthFactor healthFactor = Core.GetHealthFactor(factorNode.GetValue("name"));
+                if (healthFactor != null)
+                    factorsOriginal[healthFactor] = factorNode.GetDouble("change");
+            }
             if (node.HasNode(HealthEffect.ConfigNodeName))
                 LocationEffect = new HealthEffect(node.GetNode(HealthEffect.ConfigNodeName));
             Dose = node.GetDouble("dose");
