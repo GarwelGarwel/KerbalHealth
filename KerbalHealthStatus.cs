@@ -696,7 +696,7 @@ namespace KerbalHealth
                 if (!editorTrainingParts.Any())
                     return Core.TrainingCap;
                 totalComplexity = editorTrainingParts.Sum(mkh => mkh.complexity);
-                totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName));
+                totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName) * mkh.complexity);
                 return totalTraining / totalComplexity;
             }
 
