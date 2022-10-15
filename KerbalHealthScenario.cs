@@ -67,9 +67,12 @@ namespace KerbalHealth
         // Comparer object for sorting kerbals in the Health Monitor
         KerbalComparer kerbalComparer = new KerbalComparer(KerbalHealthGeneralSettings.Instance.SortByLocation);
 
+        // Profiling timers
 #if DEBUG
         IterationTimer mainloopTimer = new IterationTimer("MAIN LOOP");
-        IterationTimer updateTimer = new IterationTimer("GUI UPDATE");
+        IterationTimer updateTimer = new IterationTimer("GUI UPDATE", 25);
+        static IterationTimer saveTimer = new IterationTimer("SAVE");
+        static IterationTimer loadTimer = new IterationTimer("LOAD");
 #endif
 
         int LinesPerPage => KerbalHealthGeneralSettings.Instance.LinesPerPage;
@@ -290,7 +293,7 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalFrozen('{part.name}', '{pcm.name}')", LogLevel.Important);
-            Core.KerbalHealthList[pcm].IsFrozen = true;
+            Core.KerbalHealthList[pcm].AddCondition(KerbalHealthStatus.Condition_Frozen);
             dirty = true;
         }
 
@@ -299,7 +302,7 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled || pcm == null)
                 return;
             Core.Log($"OnKerbalThaw('{part.name}', '{pcm.name}')", LogLevel.Important);
-            Core.KerbalHealthList[pcm].IsFrozen = false;
+            Core.KerbalHealthList[pcm].RemoveCondition(KerbalHealthStatus.Condition_Frozen);
             dirty = true;
         }
 
@@ -623,6 +626,11 @@ namespace KerbalHealth
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             Core.Log("KerbalHealthScenario.OnSave", LogLevel.Important);
+
+#if DEBUG
+            saveTimer.Start();
+#endif
+
             if (!Core.IsInEditor)
                 UpdateKerbals(true);
             node.AddValue("version", version.ToString());
@@ -638,6 +646,10 @@ namespace KerbalHealth
                 rs.Save(n2 = new ConfigNode(RadStorm.ConfigNodeName));
                 node.AddNode(n2);
             }
+
+#if DEBUG
+            saveTimer.Stop();
+#endif
         }
 
         public override void OnLoad(ConfigNode node)
@@ -646,6 +658,10 @@ namespace KerbalHealth
                 return;
 
             Core.Log("KerbalHealthScenario.OnLoad", LogLevel.Important);
+
+#if DEBUG
+            loadTimer.Start();
+#endif
 
             // If loading scenario for the first time, try to load settings from config
             if (!Core.ConfigLoaded)
@@ -666,6 +682,10 @@ namespace KerbalHealth
             Core.Log($"{radStorms.Count} radstorms loaded.", LogLevel.Important);
 
             lastUpdated = Planetarium.GetUniversalTime();
+
+#if DEBUG
+            loadTimer.Stop();
+#endif
         }
 
         void CheckEVA(Vessel v)
