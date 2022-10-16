@@ -374,6 +374,8 @@ namespace KerbalHealth
         /// </summary>
         public List<HealthCondition> Conditions { get; set; } = new List<HealthCondition>();
 
+        public IEnumerable<HealthCondition> VisibleConditions => Conditions.Where(condition => condition.Visible);
+
         /// <summary>
         /// Whether the kerbal is frozen by DeepFreeze mod (has 'Frozen' condition)
         /// </summary>
@@ -387,7 +389,7 @@ namespace KerbalHealth
             get
             {
                 string res = "";
-                foreach (HealthCondition hc in Conditions.Where(hc => hc.Visible))
+                foreach (HealthCondition hc in VisibleConditions)
                 {
                     if (res.Length != 0)
                         res += ", ";
@@ -1023,12 +1025,14 @@ namespace KerbalHealth
             // Check if the kerbal dies
             if (HP <= 0 && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
-                Core.Log($"{Name} dies due to having {HP} health.", LogLevel.Important);
+                Core.Log($"{Name} dies due to having {HP} health. Their condition was: {ConditionString}", LogLevel.Important);
+                Core.ShowMessage(
+                    VisibleConditions.Any() ? Localizer.Format("#KH_Condition_KerbalDied_Conditions", ProtoCrewMember.nameWithGender, ConditionString) : Localizer.Format("#KH_Condition_KerbalDied_NoConditions", ProtoCrewMember.nameWithGender),
+                    true);
                 if (ProtoCrewMember.seat != null)
                     ProtoCrewMember.seat.part.RemoveCrewmember(ProtoCrewMember);
                 ProtoCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(ProtoCrewMember.GetVessel());
-                Core.ShowMessage(Localizer.Format("#KH_Condition_KerbalDied", Name), true);
                 return;
             }
 

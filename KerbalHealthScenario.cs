@@ -971,13 +971,14 @@ namespace KerbalHealth
                         for (int i = 0; i < khs.Conditions.Count; i++)
                         {
                             HealthCondition hc = khs.Conditions[i];
-                            foreach (Outcome o in hc.Outcomes)
-                                if (Core.EventHappens(o.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval))
+                            Core.Log($"Processing {khs.Name}'s {hc.Name} condition.");
+                            for (int j = 0; j < hc.Outcomes.Count; j++)
+                                if (Core.EventHappens(hc.Outcomes[j].GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval))
                                 {
-                                    Core.Log($"Condition {hc.Name} has outcome: {o}");
-                                    if (o.Condition.Length != 0)
-                                        khs.AddCondition(o.Condition);
-                                    if (o.RemoveOldCondition)
+                                    Core.Log($"Condition {hc.Name} has outcome: {hc.Outcomes[j]}");
+                                    if (hc.Outcomes[j].Condition.Length != 0)
+                                        khs.AddCondition(hc.Outcomes[j].Condition);
+                                    if (hc.Outcomes[j].RemoveOldCondition)
                                     {
                                         khs.RemoveCondition(hc);
                                         i--;
