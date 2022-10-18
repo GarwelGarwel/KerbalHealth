@@ -45,11 +45,11 @@ namespace KerbalHealth
 
         static readonly string[] prefixes = { "", "K", "M", "G", "T" };
 
-        static double radStormTypesTotalWeight = 0;
+        static float radStormTypesTotalWeight = 0;
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
-        static List<double> trainingCaps;
+        static List<float> trainingCaps;
 
         /// <summary>
         /// List of all tracked kerbals
@@ -242,13 +242,13 @@ namespace KerbalHealth
         /// <summary>
         /// Returns a list of part modules that are used in stress calculations
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainableParts(List<Part> allParts) =>
+        public static List<ModuleKerbalHealth> GetTrainableParts(IList<Part> allParts) =>
             allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
 
         /// <summary>
         /// Returns a list of *distinct* part modules that are used in training
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainablePartTypes(List<Part> allParts)
+        public static List<ModuleKerbalHealth> GetTrainablePartTypes(IList<Part> allParts)
         {
             List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
             foreach (ModuleKerbalHealth mkh in GetTrainableParts(allParts))
@@ -273,6 +273,9 @@ namespace KerbalHealth
             return res;
         }
 
+        public static float GetFloat(this ConfigNode n, string key, float defaultValue = 0) =>
+           float.TryParse(n.GetValue(key), out float res) && !float.IsNaN(res) ? res : defaultValue;
+
         public static double GetDouble(this ConfigNode n, string key, double defaultValue = 0) =>
             double.TryParse(n.GetValue(key), out double res) && !double.IsNaN(res) ? res : defaultValue;
 
@@ -293,8 +296,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns a Gaussian-distributed random value
         /// </summary>
-        /// <param name="mean"></param>
-        /// <param name="stdDev"></param>
         public static double GetGaussian(double stdDev = 1, double mean = 0) =>
             mean + stdDev * Math.Sqrt(-2 * Math.Log(1 - Rand.NextDouble())) * Math.Sin(2 * Math.PI * (1 - Rand.NextDouble()));
 
@@ -454,18 +455,18 @@ namespace KerbalHealth
             }
             Log($"{i} radstorm types loaded with total weight {radStormTypesTotalWeight}.", LogLevel.Important);
 
-            trainingCaps = new List<double>(3)
+            trainingCaps = new List<float>(3)
             {
-                0.40,
-                0.60,
-                0.75
+                0.40f,
+                0.60f,
+                0.75f
             };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {
                 int j = n.GetInt("level");
                 if (j <= 0)
                     continue;
-                trainingCaps[j - 1] = n.GetDouble("cap");
+                trainingCaps[j - 1] = n.GetFloat("cap");
             }
 
             ConfigLoaded = true;
