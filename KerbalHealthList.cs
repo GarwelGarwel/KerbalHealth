@@ -24,6 +24,8 @@ namespace KerbalHealth
             : base(HighLogic.fetch.currentGame.CrewRoster.Count)
         { }
 
+        public List<KerbalHealthStatus> List => Values.ToList();
+
         /// <summary>
         /// Adds a kerbal to the list, unless already exists
         /// </summary>

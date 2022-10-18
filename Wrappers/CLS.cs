@@ -19,15 +19,20 @@ namespace KerbalHealth
         {
             get
             {
-                Type clsAddonType = AssemblyLoader.loadedAssemblies.SelectMany(a => a.assembly.GetExportedTypes()).SingleOrDefault(t => t.FullName == "ConnectedLivingSpace.CLSAddon");
-                if (clsAddonType != null)
-                    clsAddon = (ICLSAddon)clsAddonType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static).GetValue(null, null);
+                if (clsAddon == null)
+                {
+                    Type clsAddonType = AssemblyLoader.loadedAssemblies.SelectMany(a => a.assembly.GetExportedTypes()).SingleOrDefault(t => t.FullName == "ConnectedLivingSpace.CLSAddon");
+                    if (clsAddonType != null)
+                        clsAddon = (ICLSAddon)clsAddonType.GetProperty("Instance", BindingFlags.Public | BindingFlags.Static).GetValue(null, null);
+                }
                 return clsAddon;
             }
         }
 
         public static ICLSSpace GetCLSSpace(this ProtoCrewMember pcm, Vessel vessel = null)
         {
+            if (!Installed)
+                return null;
             if (Core.IsInEditor)
             {
                 Part p = pcm.GetCrewPart();
