@@ -24,11 +24,11 @@ namespace KerbalHealth
             : base(HighLogic.fetch.currentGame.CrewRoster.Count)
         { }
 
+        public List<KerbalHealthStatus> List => Values.ToList();
+
         /// <summary>
         /// Adds a kerbal to the list, unless already exists
         /// </summary>
-        /// <param name="name">Kerbal's name</param>
-        /// <param name="health">Kerbal's current HP, maximum if skipped</param>
         public void Add(ProtoCrewMember pcm)
         {
             if (pcm == null)
@@ -94,7 +94,6 @@ namespace KerbalHealth
         /// <summary>
         /// Returns the list of names
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             string s = "";

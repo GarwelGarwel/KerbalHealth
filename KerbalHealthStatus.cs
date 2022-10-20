@@ -149,7 +149,8 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="pcm"></param>
         /// <returns></returns>
-        public static double GetDefaultMaxHP(ProtoCrewMember pcm) => KerbalHealthGeneralSettings.Instance.BaseMaxHP + KerbalHealthGeneralSettings.Instance.HPPerLevel * pcm.experienceLevel;
+        public static double GetDefaultMaxHP(ProtoCrewMember pcm) =>
+            KerbalHealthGeneralSettings.Instance.BaseMaxHP + KerbalHealthGeneralSettings.Instance.HPPerLevel * pcm.experienceLevel;
 
         #endregion HP
 
@@ -373,19 +374,12 @@ namespace KerbalHealth
         /// </summary>
         public List<HealthCondition> Conditions { get; set; } = new List<HealthCondition>();
 
+        public IEnumerable<HealthCondition> VisibleConditions => Conditions.Where(condition => condition.Visible);
+
         /// <summary>
         /// Whether the kerbal is frozen by DeepFreeze mod (has 'Frozen' condition)
         /// </summary>
-        public bool IsFrozen
-        {
-            get => HasCondition(Condition_Frozen);
-            set
-            {
-                if (value)
-                    AddCondition(Condition_Frozen);
-                else RemoveCondition(Condition_Frozen);
-            }
-        }
+        public bool IsFrozen { get; private set; }
 
         /// <summary>
         /// Returns a comma-separated list of visible conditions or "OK" if there are no visible conditions
@@ -395,7 +389,7 @@ namespace KerbalHealth
             get
             {
                 string res = "";
-                foreach (HealthCondition hc in Conditions.Where(hc => hc.Visible))
+                foreach (HealthCondition hc in VisibleConditions)
                 {
                     if (res.Length != 0)
                         res += ", ";
@@ -425,23 +419,17 @@ namespace KerbalHealth
         /// <summary>
         /// Returns the condition with a given name, if present (null otherwise)
         /// </summary>
-        /// <param name="condition"></param>
-        /// <returns></returns>
         public HealthCondition GetCondition(string condition) => Conditions.Find(hc => hc.Name == condition);
 
         /// <summary>
         /// Returns true if a given condition exists for the kerbal
         /// </summary>
-        /// <param name="condition"></param>
-        /// <returns></returns>
         public bool HasCondition(string condition) => Conditions.Exists(hc => hc.Name == condition);
 
         /// <summary>
         /// Returns true if a given condition exists for the kerbal
         /// </summary>
-        /// <param name="hc"></param>
-        /// <returns></returns>
-        public bool HasCondition(HealthCondition hc) => Conditions.Contains(hc);
+        public bool HasCondition(HealthCondition condition) => Conditions.Contains(condition);
 
         /// <summary>
         /// Adds a new health condition
@@ -463,6 +451,7 @@ namespace KerbalHealth
                 MakeIncapacitated();
             if (condition.Visible)
                 Core.ShowMessage(Localizer.Format("#KH_Condition_Acquired", ProtoCrewMember.nameWithGender, condition.Title) + Localizer.Format(condition.Description, ProtoCrewMember.nameWithGender), ProtoCrewMember);// "<color=white>" + " has acquired " +  + "</color> condition!\r\n\n"
+            RecalculateConditions();
         }
 
         public void AddCondition(string condition) => AddCondition(Core.GetHealthCondition(condition));
@@ -492,9 +481,17 @@ namespace KerbalHealth
                 MakeCapable();
             if (n > 0 && condition.Visible)
                 Core.ShowMessage(Localizer.Format("#KH_Condition_Lost", Name, condition.Title), ProtoCrewMember);
+            RecalculateConditions();
         }
 
         public void RemoveCondition(string condition, bool removeAll = false) => RemoveCondition(Core.GetHealthCondition(condition), removeAll);
+
+        void RecalculateConditions()
+        {
+            IsTrainingAtKSC = HasCondition(Condition_Training);
+            IsDecontaminating = HasCondition(Condition_Decontaminating);
+            IsFrozen = HasCondition(Condition_Frozen);
+        }
 
         /// <summary>
         /// Turn a kerbal into a Tourist
@@ -651,7 +648,10 @@ namespace KerbalHealth
         /// </summary>
         public string TrainingVessel { get; set; }
 
-        public bool IsTrainingAtKSC => HasCondition(Condition_Training);
+        /// <summary>
+        /// Whether the kerbal is currently training at KSC (i.e. has Training condition)
+        /// </summary>
+        public bool IsTrainingAtKSC { get; private set; }
 
         public bool CanTrain => !Conditions.Any(condition => condition.Visible && condition.Name != Condition_Training);
 
@@ -682,7 +682,8 @@ namespace KerbalHealth
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
         /// </summary>
-        public double CurrentTrainingETA => TrainingParts.Sum(tp => (Core.TrainingCap - tp.Level) * tp.Complexity) / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
+        public double CurrentTrainingETA =>
+            TrainingParts.Sum(tp => (Core.TrainingCap - tp.Level) * tp.Complexity) / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
 
         public double GetTrainingLevel(bool simulateTrained = false)
         {
@@ -692,11 +693,13 @@ namespace KerbalHealth
             double totalComplexity, totalTraining;
             if (Core.IsInEditor)
             {
-                IList<ModuleKerbalHealth> editorTrainingParts = Core.GetTrainableParts(EditorLogic.SortedShipList).Where(mkh => TrainingLevelForPart(mkh.PartName) < Core.TrainingCap).ToList();
+                IList<ModuleKerbalHealth> editorTrainingParts = Core.GetTrainableParts(EditorLogic.SortedShipList)
+                    .Where(mkh => TrainingLevelForPart(mkh.PartName) < Core.TrainingCap)
+                    .ToList();
                 if (!editorTrainingParts.Any())
                     return Core.TrainingCap;
                 totalComplexity = editorTrainingParts.Sum(mkh => mkh.complexity);
-                totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName));
+                totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName) * mkh.complexity);
                 return totalTraining / totalComplexity;
             }
 
@@ -712,9 +715,7 @@ namespace KerbalHealth
         /// <summary>
         /// Start training the kerbal for a set of parts; also abandons all previous trainings
         /// </summary>
-        /// <param name="parts"></param>
-        /// <param name="vesselName"></param>
-        public void StartTraining(List<Part> parts, string vesselName)
+        public void StartTraining(IList<Part> parts, string vesselName)
         {
             Core.Log($"KerbalHealthStatus.StartTraining({parts.Count} parts, '{vesselName}') for {name}");
             foreach (TrainingPart tp in TrainingParts)
@@ -769,7 +770,7 @@ namespace KerbalHealth
             if (totalComplexity <= 0)
             {
                 Core.Log("No parts need training.", LogLevel.Important);
-                StopTraining("#KH_TrainingComplete");
+                StopTraining(Localizer.Format("#KH_TrainingComplete"));
                 return;
             }
             double trainingProgress = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / totalComplexity;  // Training progress is inverse proportional to total complexity of parts
@@ -833,7 +834,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal is currently decontaminating (i.e. has 'Decontaminating' condition)
         /// </summary>
-        public bool IsDecontaminating => HasCondition(Condition_Decontaminating);
+        public bool IsDecontaminating { get; private set; }
 
         /// <summary>
         /// Proportion of solar radiation that reaches a vessel at a given distance from the Sun (before applying magnetosphere, atmosphere and exposure effects)
@@ -1008,15 +1009,13 @@ namespace KerbalHealth
                 Radiation = GetRadiation();
                 AddDose(Radiation * interval / KSPUtil.dateTimeFormatter.Day);
                 if (IsDecontaminating)
-                {
                     if (Dose <= 0)
                     {
                         Dose = 0;
                         StopDecontamination();
                     }
-                    if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && KerbalHealthRadiationSettings.Instance.DecontaminationOnlyAtKSC)
+                    else if (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned && KerbalHealthRadiationSettings.Instance.DecontaminationOnlyAtKSC)
                         StopDecontamination();
-                }
             }
 
             double hpChange = HPChangeTotal;
@@ -1026,12 +1025,14 @@ namespace KerbalHealth
             // Check if the kerbal dies
             if (HP <= 0 && KerbalHealthGeneralSettings.Instance.DeathEnabled)
             {
-                Core.Log($"{Name} dies due to having {HP} health.", LogLevel.Important);
+                Core.Log($"{Name} dies due to having {HP} health. Their condition was: {ConditionString}", LogLevel.Important);
+                Core.ShowMessage(
+                    VisibleConditions.Any() ? Localizer.Format("#KH_Condition_KerbalDied_Conditions", ProtoCrewMember.nameWithGender, ConditionString) : Localizer.Format("#KH_Condition_KerbalDied_NoConditions", ProtoCrewMember.nameWithGender),
+                    true);
                 if (ProtoCrewMember.seat != null)
                     ProtoCrewMember.seat.part.RemoveCrewmember(ProtoCrewMember);
                 ProtoCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(ProtoCrewMember.GetVessel());
-                Core.ShowMessage(Localizer.Format("#KH_Condition_KerbalDied", Name), true);
                 return;
             }
 
@@ -1132,6 +1133,7 @@ namespace KerbalHealth
             Dose = node.GetDouble("dose");
             Radiation = node.GetDouble("radiation");
             Conditions = node.GetValues("condition").Select(s => Core.GetHealthCondition(s)).ToList();
+            RecalculateConditions();
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && IsTrainingAtKSC)
                 RemoveCondition(Condition_Training, true);
             foreach (string s in node.GetValues("quirk"))

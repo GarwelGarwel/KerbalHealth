@@ -6,29 +6,29 @@ namespace KerbalHealth
     {
         public string Name { get; set; }
 
-        public double Weight { get; set; }
+        public float Weight { get; set; }
 
         /// <summary>
         /// Mean magnitude, measured in day-doses of solar radiation (defined in the settings, default = 2500 BED)
         /// </summary>
-        public double MeanMagnitude { get; set; }
+        public float MeanMagnitude { get; set; }
 
-        public double MagnitudeDispersion { get; set; }
+        public float MagnitudeDispersion { get; set; }
 
-        public double MeanVelocity { get; set; }
+        public float MeanVelocity { get; set; }
 
-        public double VelocityDispersion { get; set; }
+        public float VelocityDispersion { get; set; }
 
         public RadStormType(ConfigNode node) => Load(node);
 
         public void Load(ConfigNode node)
         {
             Name = node.GetString("name", "");
-            Weight = node.GetDouble("weight");
-            MeanMagnitude = node.GetDouble("magnitude");
-            MagnitudeDispersion = node.GetDouble("magnitudeDispersion", 0.4);
-            MeanVelocity = node.GetDouble("velocity", 500000);
-            VelocityDispersion = node.GetDouble("velocityDispersion", 0.5);
+            Weight = node.GetFloat("weight");
+            MeanMagnitude = node.GetFloat("magnitude");
+            MagnitudeDispersion = node.GetFloat("magnitudeDispersion", 0.4f);
+            MeanVelocity = node.GetFloat("velocity", 500000);
+            VelocityDispersion = node.GetFloat("velocityDispersion", 0.5f);
         }
 
         /// <summary>
