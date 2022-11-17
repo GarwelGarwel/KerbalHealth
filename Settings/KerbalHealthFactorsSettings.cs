@@ -5,10 +5,15 @@ namespace KerbalHealth
     class KerbalHealthFactorsSettings : GameParameters.CustomParameterNode
     {
         public override string Title => Localizer.Format("#KH_FS_title");//"Health Factors"
+
         public override GameParameters.GameMode GameMode => GameParameters.GameMode.ANY;
+
         public override bool HasPresets => true;
+
         public override string Section => "Kerbal Health (1)";
+
         public override string DisplaySection => Section;
+
         public override int SectionOrder => 2;
 
         public override void SetDifficultyPreset(GameParameters.Preset preset)

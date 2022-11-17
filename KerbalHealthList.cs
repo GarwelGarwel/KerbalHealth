@@ -84,7 +84,7 @@ namespace KerbalHealth
             Core.Log($"KerbalHealthList updated: {Count} kerbals found.", LogLevel.Important);
         }
 
-        public void Update(double interval)
+        public void Update(float interval)
         {
             RemoveUntrackable();
             foreach (KerbalHealthStatus khs in Values)

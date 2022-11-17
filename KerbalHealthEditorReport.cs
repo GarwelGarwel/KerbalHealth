@@ -224,19 +224,17 @@ namespace KerbalHealth
             else
             {
                 dirty = false;
-                IList<ModuleKerbalHealth> trainableParts = new List<ModuleKerbalHealth>();
-                foreach (ModuleKerbalHealth tp in Core.GetTrainablePartTypes(EditorLogic.SortedShipList))
-                    if (!trainableParts.Any(tp2 => tp2.PartName == tp.PartName))
-                        trainableParts.Add(tp);
-                List<KerbalHealthStatus> kerbals = Core.KerbalHealthList.Values
-                    .Where(khs => khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
-                    .ToList();
+                IList<ModuleKerbalHealth> trainableParts = Core.GetTrainableModules(EditorLogic.SortedShipList, true);
                 if (trainableParts.Count == 0)
                 {
                     Core.Log($"No trainable parts found.", LogLevel.Important);
                     SwitchToReportMode();
                     return;
                 }
+
+                List<KerbalHealthStatus> kerbals = Core.KerbalHealthList.Values
+                    .Where(khs => khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                    .ToList();
 
                 // Creating column titles
                 trainingColumnCount = trainableParts.Count + 3;
@@ -254,7 +252,7 @@ namespace KerbalHealth
                 int kerbalTrainingStatus = 0;
                 foreach (KerbalHealthStatus kerbal in kerbals)
                 {
-                    if (kerbal.GetTrainingLevel() >= Core.TrainingCap)
+                    if (!kerbal.AnyModulesTrainableAtKSC(trainableParts))
                         kerbalTrainingStatus = 1;
                     else if (!kerbal.CanTrain)
                         kerbalTrainingStatus = 2;
@@ -428,7 +426,7 @@ namespace KerbalHealth
             Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
             spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
-            complexityLbl.SetOptionText($"<color=white>{Core.GetTrainablePartTypes(EditorLogic.SortedShipList).Sum(mkh => mkh.complexity):P0}</color>");
+            complexityLbl.SetOptionText($"<color=white>{Core.GetTrainableModules(EditorLogic.SortedShipList, true).Sum(mkh => mkh.complexity):P0}</color>");
             recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
             shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
             exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");

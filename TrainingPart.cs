@@ -6,28 +6,26 @@
 
         public string Name { get; set; }
         
-        public double Complexity { get; set; }
+        public float Complexity { get; set; }
 
-        public double Level { get; set; }
+        public float Level { get; set; }
 
         public string Label => PartLoader.getPartInfoByName(Name)?.title ?? Name;
 
-        public bool OnCurrentVessel => Complexity > 0;
-
-        public bool TrainingComplete => Level >= Core.TrainingCap;
+        public bool KSCTrainingComplete => Level >= Core.TrainingCap;
 
         public bool TrainingNow => Complexity > 0 && Level < Core.TrainingCap;
 
         public TrainingPart(ConfigNode n) => Load(n);
 
-        public TrainingPart(string name, double complexity, double level = 0)
+        public TrainingPart(string name, float complexity, float level = 0)
         {
             Name = name;
             Complexity = complexity;
             Level = level;
         }
 
-        public void StartTraining(double complexity) => Complexity = complexity;
+        public void StartTraining(float  complexity) => Complexity = complexity;
 
         public void Save(ConfigNode node)
         {
@@ -46,8 +44,8 @@
                 Core.Log("Training part name not found.", LogLevel.Error);
                 return;
             }
-            Complexity = node.GetDouble("complexity");
-            Level = node.GetDouble("level");
+            Complexity = node.GetFloat("complexity");
+            Level = node.GetFloat("level");
         }
     }
 }

@@ -655,61 +655,61 @@ namespace KerbalHealth
 
         public bool CanTrain => !Conditions.Any(condition => condition.Visible && condition.Name != Condition_Training);
 
-        /// <summary>
-        /// Returns true if the kerbal satisfies all requirements to be trained at KSC (90% health and no conditions)
-        /// </summary>
-        public bool CanTrainAtKSC => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available && CanTrain;
-
-        public double TrainingPerDay =>
-            Core.TrainingCap
-            / KerbalHealthFactorsSettings.Instance.TrainingTime
-            * (KerbalHealthFactorsSettings.Instance.StupidityPenalty + 2)
+        public float StupidityTrainingSpeedFactor =>
+            (KerbalHealthFactorsSettings.Instance.StupidityPenalty + 2)
             / (KerbalHealthFactorsSettings.Instance.StupidityPenalty * ProtoCrewMember.stupidity + 1) / 2;
+
+        public float KSCTrainingPerSecond =>
+            Core.TrainingCap / KerbalHealthFactorsSettings.Instance.TrainingTime * StupidityTrainingSpeedFactor / KSPUtil.dateTimeFormatter.Day;
 
         public TrainingPart GetTrainingPart(string name) => TrainingParts.Find(tp2 => tp2.Name == name);
 
-        public double TrainingLevelForPart(string name)
+        public float TrainingLevelForPart(ModuleKerbalHealth mkh)
         {
-            TrainingPart tp = GetTrainingPart(name);
+            TrainingPart tp = GetTrainingPart(mkh.PartName);
             return tp != null ? tp.Level : 0;
         }
 
-        public double TrainingETAFor(IEnumerable<ModuleKerbalHealth> modules) =>
-           modules.Sum(mkh => Math.Max(0, (Core.TrainingCap - TrainingLevelForPart(mkh.PartName)) * mkh.complexity))
-           / TrainingPerDay
-           * KSPUtil.dateTimeFormatter.Day;
+        /// <summary>
+        /// Time in seconds until KSC training for all given modules is complete
+        /// </summary>
+        public float TrainingETAFor(IEnumerable<ModuleKerbalHealth> modules) =>
+           modules.Sum(mkh => (float)Math.Max(0, (Core.TrainingCap - TrainingLevelForPart(mkh)) * mkh.complexity)) / KSCTrainingPerSecond;
 
         /// <summary>
         /// Estimated time (in seconds) until training for all parts is complete
         /// </summary>
-        public double CurrentTrainingETA =>
-            TrainingParts.Sum(tp => (Core.TrainingCap - tp.Level) * tp.Complexity) / TrainingPerDay * KSPUtil.dateTimeFormatter.Day;
+        public float CurrentTrainingETA =>
+            TrainingParts.Sum(tp => (float)Math.Max(0, Core.TrainingCap - tp.Level) * tp.Complexity) / KSCTrainingPerSecond;
 
-        public double GetTrainingLevel(bool simulateTrained = false)
+        /// <summary>
+        /// Returns true if the list of modules contains any that need training at KSC
+        /// </summary>
+        public bool AnyModulesTrainableAtKSC(IList<ModuleKerbalHealth> modules) => modules.Any(mkh => TrainingLevelForPart(mkh) < Core.TrainingCap);
+
+        /// <summary>
+        /// Returns weighted training level of the kerbal (for the current vessel, for the currently trained parts or the vessel in the editor)
+        /// </summary>
+        public float GetTrainingLevel(bool simulateTrained = false)
         {
-            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled || simulateTrained)
+            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return Core.TrainingCap;
 
-            double totalComplexity, totalTraining;
+            float totalTraining = 0, totalComplexity = 0;
             if (Core.IsInEditor)
-            {
-                IList<ModuleKerbalHealth> editorTrainingParts = Core.GetTrainableParts(EditorLogic.SortedShipList)
-                    .Where(mkh => TrainingLevelForPart(mkh.PartName) < Core.TrainingCap)
-                    .ToList();
-                if (!editorTrainingParts.Any())
-                    return Core.TrainingCap;
-                totalComplexity = editorTrainingParts.Sum(mkh => mkh.complexity);
-                totalTraining = editorTrainingParts.Sum(mkh => TrainingLevelForPart(mkh.PartName) * mkh.complexity);
-                return totalTraining / totalComplexity;
-            }
+                foreach (ModuleKerbalHealth mkh in Core.GetTrainableModules(EditorLogic.SortedShipList, false))
+                {
+                    totalTraining += (simulateTrained ? Math.Max(Core.TrainingCap, TrainingLevelForPart(mkh)) : TrainingLevelForPart(mkh)) * mkh.complexity;
+                    totalComplexity += mkh.complexity;
+                }
 
             else
             {
                 totalTraining = TrainingParts.Sum(tp => tp.Level * tp.Complexity);
                 totalComplexity = TrainingParts.Sum(tp => tp.Complexity);
-                totalTraining = totalComplexity != 0 ? totalTraining / totalComplexity : Core.TrainingCap;
-                return totalTraining;
             }
+
+            return totalComplexity != 0 ? totalTraining / totalComplexity : Core.TrainingCap;
         }
 
         /// <summary>
@@ -717,7 +717,7 @@ namespace KerbalHealth
         /// </summary>
         public void StartTraining(IList<Part> parts, string vesselName)
         {
-            Core.Log($"KerbalHealthStatus.StartTraining({parts.Count} parts, '{vesselName}') for {name}");
+            Core.Log($"KerbalHealthStatus.StartTraining({parts.Count} modules, '{vesselName}') for {name}");
             foreach (TrainingPart tp in TrainingParts)
                 tp.Complexity = 0;
 
@@ -728,7 +728,7 @@ namespace KerbalHealth
             }
 
             int count = 0;
-            foreach (ModuleKerbalHealth mkh in Core.GetTrainablePartTypes(parts))
+            foreach (ModuleKerbalHealth mkh in Core.GetTrainableModules(parts, true))
             {
                 TrainingPart tp = GetTrainingPart(mkh.PartName);
                 if (tp != null)
@@ -741,7 +741,7 @@ namespace KerbalHealth
             TrainingVessel = vesselName;
             if (count == 0)
                 StopTraining(null);
-            else Core.Log($"Training {name} for {vesselName} ({count} parts).");
+            else Core.Log($"Training {name} for {vesselName} ({count} modules).");
         }
 
         public void StopTraining(string messageTag)
@@ -755,7 +755,7 @@ namespace KerbalHealth
             TrainingVessel = null;
         }
 
-        void Train(double interval)
+        void Train(float interval)
         {
             Core.Log($"KerbalHealthStatus.Train({interval} s) for {name}");
             if (IsOnEVA)
@@ -763,17 +763,17 @@ namespace KerbalHealth
                 Core.Log($"{name} is on EVA. No training.");
                 return;
             }
-            Core.Log($"{name} is training for {TrainingParts.Count} parts.");
+            Core.Log($"{name} is training for {TrainingParts.Count} modules.");
 
             // Step 1: Calculating training complexity of all not yet trained-for parts
-            double totalComplexity = TrainingParts.Where(tp => tp.TrainingNow).Sum(tp => tp.Complexity);
+            float totalComplexity = TrainingParts.Where(tp => tp.TrainingNow).Sum(tp => tp.Complexity);
             if (totalComplexity <= 0)
             {
-                Core.Log("No parts need training.", LogLevel.Important);
-                StopTraining(Localizer.Format("#KH_TrainingComplete"));
+                Core.Log("No modules need training.", LogLevel.Important);
+                StopTraining("#KH_TrainingComplete");
                 return;
             }
-            double trainingProgress = interval * TrainingPerDay / KSPUtil.dateTimeFormatter.Day / totalComplexity;  // Training progress is inverse proportional to total complexity of parts
+            float trainingProgress = interval * KSCTrainingPerSecond / totalComplexity;  // Training progress is inverse proportional to total complexity of parts
             Core.Log($"Training progress: {trainingProgress:P3}/update. Training cap: {Core.TrainingCap:P0}.");
 
             // Step 2: Updating parts' training progress and calculating their base complexity to update vessel's training level
@@ -781,7 +781,7 @@ namespace KerbalHealth
             foreach (TrainingPart tp in TrainingParts.Where(tp => tp.TrainingNow))
             {
                 tp.Level += trainingProgress * tp.Complexity;
-                if (tp.TrainingComplete)
+                if (tp.KSCTrainingComplete)
                     tp.Level = Core.TrainingCap;
                 else trainingComplete = false;
                 Core.Log($"Training level for part {tp.Name} is {tp.Level:P2} with complexity {tp.Complexity}.");
@@ -986,7 +986,7 @@ namespace KerbalHealth
         /// Updates kerbal's HP and status
         /// </summary>
         /// <param name="interval">Number of seconds since the last update</param>
-        public void Update(double interval)
+        public void Update(float interval)
         {
             Core.Log($"Updating {Name}'s health.");
 

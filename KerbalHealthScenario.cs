@@ -905,7 +905,7 @@ namespace KerbalHealth
         void UpdateKerbals(bool forced)
         {
             double time = Planetarium.GetUniversalTime();
-            double interval = time - lastUpdated;
+            float interval = (float)(time - lastUpdated);
             if (!forced && (interval < KerbalHealthGeneralSettings.Instance.UpdateInterval || interval < KerbalHealthGeneralSettings.Instance.MinUpdateInterval * TimeWarp.CurrentRate))
                 return;
 

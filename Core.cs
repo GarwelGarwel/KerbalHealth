@@ -38,18 +38,9 @@ namespace KerbalHealth
         /// </summary>
         public static Dictionary<string, HealthCondition> HealthConditions;
 
-        /// <summary>
-        /// Mod-wide random number generator
-        /// </summary>
-        internal static System.Random Rand = new System.Random();
-
         static readonly string[] prefixes = { "", "K", "M", "G", "T" };
 
-        static float radStormTypesTotalWeight = 0;
-
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
-
-        static List<float> trainingCaps;
 
         /// <summary>
         /// List of all tracked kerbals
@@ -77,38 +68,17 @@ namespace KerbalHealth
         /// </summary>
         public static Dictionary<int, double> ShieldingResources { get; set; } = new Dictionary<int, double>();
 
+        /// <summary>
+        /// List of all possible quirks
+        /// </summary>
         public static List<Quirk> Quirks { get; set; } = new List<Quirk>();
 
         public static Dictionary<CelestialBody, PlanetHealthConfig> PlanetConfigs { get; set; }
-
-        public static List<RadStormType> RadStormTypes { get; set; }
-
-        public static double SolarCycleDuration { get; set; }
-
-        public static double SolarCycleStartingPhase { get; set; }
-
-        public static double RadStormMinMBTE { get; set; }
-
-        public static double RadStormMaxMBTE { get; set; }
-
-        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
-
-        public static double RadStormMTBE => RadStormMinMBTE + (RadStormMaxMBTE - RadStormMinMBTE) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
 
         /// <summary>
         /// True if the current scene is Editor (VAB or SPH)
         /// </summary>
         public static bool IsInEditor => HighLogic.LoadedSceneIsEditor;
-
-        /// <summary>
-        /// Max amount of stress reduced by training depending on Astronaut Complex's level
-        /// </summary>
-        public static double TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
-
-        /// <summary>
-        /// Current <see cref="LogLevel"/>: either Debug or Important
-        /// </summary>
-        public static LogLevel Level => KerbalHealthGeneralSettings.Instance.DebugMode ? LogLevel.Debug : LogLevel.Important;
 
         /// <summary>
         /// Returns factor with a given id
@@ -135,6 +105,24 @@ namespace KerbalHealth
             return cb != null && PlanetConfigs.TryGetValue(cb, out PlanetHealthConfig res) ? res : null;
         }
 
+        #region RAD STORMS
+
+        static float radStormTypesTotalWeight = 0;
+
+        public static List<RadStormType> RadStormTypes { get; set; }
+
+        public static double SolarCycleDuration { get; set; }
+
+        public static double SolarCycleStartingPhase { get; set; }
+
+        public static double RadStormMinMBTE { get; set; }
+
+        public static double RadStormMaxMBTE { get; set; }
+
+        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
+
+        public static double RadStormMTBE => RadStormMinMBTE + (RadStormMaxMBTE - RadStormMinMBTE) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+
         public static RadStormType GetRandomRadStormType()
         {
             double d = Rand.NextDouble() * radStormTypesTotalWeight;
@@ -146,6 +134,10 @@ namespace KerbalHealth
             }
             return null;
         }
+
+        #endregion
+
+        #region CREW UTILITIES
 
         public static IList<ProtoCrewMember> GetCrew(ProtoCrewMember pcm, bool entireVessel)
         {
@@ -181,6 +173,8 @@ namespace KerbalHealth
         public static Part GetCrewPart(this ProtoCrewMember pcm) =>
             IsInEditor ? KSPUtil.GetPartByCraftID(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.GetPartForCrew(pcm).PartID) : pcm?.seat?.part;
 
+        #endregion
+
         public static string GetPartTitle(string partName) => PartLoader.getPartInfoByName(partName)?.title ?? partName;
 
         /// <summary>
@@ -189,9 +183,7 @@ namespace KerbalHealth
         public static bool IsUnpacked(this ProtoCrewMember pcm) //=> pcm.GetVessel()?.loaded ?? false;
         {
             Vessel vessel = pcm.GetVessel();
-            if (vessel == null)
-                return false;
-            return vessel.loaded && !vessel.packed;
+            return vessel != null && vessel.loaded && !vessel.packed;
         }
 
         /// <summary>
@@ -234,37 +226,50 @@ namespace KerbalHealth
             return vessel;
         }
 
+        public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
+
+        public static CelestialBody GetPlanet(this CelestialBody body) => body == null || body.IsPlanet() ? body : body.orbit?.referenceBody?.GetPlanet();
+
         public static double GetDistanceToSun(this Vessel v) =>
             v.mainBody == Sun.Instance.sun
             ? v.altitude + Sun.Instance.sun.Radius
             : (v.distanceToSun > 0 ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
 
-        /// <summary>
-        /// Returns a list of part modules that are used in stress calculations
-        /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainableParts(IList<Part> allParts) =>
-            allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
+        #region TRAINING
+
+        static List<float> trainingCaps;
 
         /// <summary>
-        /// Returns a list of *distinct* part modules that are used in training
+        /// Max amount of stress reduced by training depending on Astronaut Complex's level
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainablePartTypes(IList<Part> allParts)
+        public static float TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
+
+        public static float InFlightTrainingCap = 1;
+
+        /// <summary>
+        /// Returns a list of part modules that are used in training & stress calculations
+        /// </summary>
+        public static List<ModuleKerbalHealth> GetTrainableModules(IList<Part> allParts, bool uniqueOnly)
         {
-            List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
-            foreach (ModuleKerbalHealth mkh in GetTrainableParts(allParts))
-                if (!res.Any(mkh2 => mkh.PartName == mkh2.PartName))
-                    res.Add(mkh);
+            List<ModuleKerbalHealth> res = allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
+            if (uniqueOnly)
+                for (int i = res.Count - 1; i >= 0; i--)
+                    for (int j = 0; j < i; j++)
+                        if (res[i].PartName == res[j].PartName)
+                        {
+                            res.RemoveAt(i);
+                            break;
+                        }
             return res;
         }
 
         public static bool HasTrainableParts(IEnumerable<Part> allParts) => allParts.Any(part => part.FindModulesImplementing<ModuleKerbalHealth>().Any(mkh => mkh.complexity != 0));
 
+        #endregion
+
         public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
 
-        public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
-
-        public static CelestialBody GetPlanet(this CelestialBody body) =>
-            body == null || body.IsPlanet() ? body : body.orbit?.referenceBody?.GetPlanet();
+        #region CONFIG NODE UTILITIES
 
         public static string GetString(this ConfigNode n, string key, string defaultValue = null)
         {
@@ -288,6 +293,15 @@ namespace KerbalHealth
         public static bool GetBool(this ConfigNode n, string key, bool defaultValue = false) =>
             bool.TryParse(n.GetValue(key), out bool res) ? res : defaultValue;
 
+        #endregion
+
+        #region MATH & RNG UTILITIES
+
+        /// <summary>
+        /// Mod-wide random number generator
+        /// </summary>
+        internal static System.Random Rand = new System.Random();
+
         /// <summary>
         /// Returns x*x
         /// </summary>
@@ -302,6 +316,8 @@ namespace KerbalHealth
         public static double EventChance(double mtbe, double interval) => 1 - Math.Exp(-interval / mtbe);
 
         public static bool EventHappens(double mtbe, double interval) => mtbe >= 0 && Rand.NextDouble() < EventChance(mtbe, interval);
+
+        #endregion
 
         /// <summary>
         /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)
@@ -431,15 +447,8 @@ namespace KerbalHealth
 
             int i = 0;
             foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
-            {
-                PlanetHealthConfig bc = GetPlanetConfig(n.GetString("name"));
-                if (bc != null)
-                {
-                    bc.Load(n);
-                    i++;
-                }
-            }
-            Log($"{i} planet configs out of {PlanetConfigs.Count} bodies loaded.", LogLevel.Important);
+                GetPlanetConfig(n.GetString("name"))?.Load(n);
+            //Log($"{i} planet configs out of {PlanetConfigs.Count} bodies loaded.", LogLevel.Important);
 
             SolarCycleDuration = config.GetDouble("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
             SolarCycleStartingPhase = config.GetDouble("solarCycleStartingPhase");
@@ -472,6 +481,13 @@ namespace KerbalHealth
             ConfigLoaded = true;
         }
 
+        #region LOG
+
+        /// <summary>
+        /// Current <see cref="LogLevel"/>: either Debug or Important
+        /// </summary>
+        public static LogLevel Level => KerbalHealthGeneralSettings.Instance.DebugMode ? LogLevel.Debug : LogLevel.Important;
+
         /// <summary>
         /// Returns true if current logging allows logging of messages at messageLevel
         /// </summary>
@@ -493,5 +509,7 @@ namespace KerbalHealth
                 Debug.Log($"[KerbalHealth] {message}");
             }
         }
+
+        #endregion
     }
 }
