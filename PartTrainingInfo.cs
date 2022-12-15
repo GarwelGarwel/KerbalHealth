@@ -1,6 +1,6 @@
 ﻿namespace KerbalHealth
 {
-    public class TrainingPart : IConfigNode
+    public class PartTrainingInfo : IConfigNode
     {
         public const string ConfigNodeName = "TRAINING_PART";
 
@@ -16,16 +16,18 @@
 
         public bool TrainingNow => Complexity > 0 && Level < Core.TrainingCap;
 
-        public TrainingPart(ConfigNode n) => Load(n);
+        public PartTrainingInfo(ConfigNode n) => Load(n);
 
-        public TrainingPart(string name, float complexity, float level = 0)
+        public PartTrainingInfo(string name, float complexity, float level = 0)
         {
             Name = name;
             Complexity = complexity;
             Level = level;
         }
 
-        public void StartTraining(float  complexity) => Complexity = complexity;
+        public void StartTraining(float complexity) => Complexity += complexity;
+
+        public void StopTraining() => Complexity = 0;
 
         public void Save(ConfigNode node)
         {

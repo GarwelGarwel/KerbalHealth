@@ -445,7 +445,7 @@ namespace KerbalHealth
                     gridContent[i].SetOptionText($"<color=white>{selectedKHS.GetFactorHPChange(f):N2}</color>");
                     i += 2;
                 }
-                gridContent[i].children[0].SetOptionText($"<color=white>{(((selectedKHS.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned) || (selectedKHS.TrainingVessel != null)) ? $"{selectedKHS.GetTrainingLevel() * 100:N0}%/{Core.TrainingCap * 100:N0}%" : Localizer.Format("#KH_NA"))}</color>");
+                gridContent[i].children[0].SetOptionText($"<color=white>{((selectedKHS.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned || selectedKHS.TrainingVessel != null) ? $"{selectedKHS.GetTrainingLevel() * 100:N0}%{(selectedKHS.IsTrainingAtKSC ? $"/{Core.TrainingCap * 100:N0}%" : "")}" : Localizer.Format("#KH_NA"))}</color>");
                 gridContent[i + 2].SetOptionText($"<color=white>{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
                 gridContent[i + 4].SetOptionText($"<color=white>{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
                 gridContent[i + 6].SetOptionText($"<color=white>{selectedKHS.Radiation:N0}/day</color>");
@@ -842,8 +842,8 @@ namespace KerbalHealth
                 KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
                 if (khs == null)
                     Core.KerbalHealthList.Add(khs = new KerbalHealthStatus(pcm));
-                if (khs.IsTrainingAtKSC)
-                    khs.StopTraining("#KH_TrainingStopped");
+                //if (khs.IsTrainingAtKSC)
+                //khs.StopTraining(khs.IsTrainingAtKSC ? "#KH_TrainingStopped" : null);
                 khs.StartTraining(v.Parts, v.vesselName);
             }
         }
@@ -1071,17 +1071,17 @@ namespace KerbalHealth
                    "#KH_TI_KerbalTraining",
                    selectedKHS.Name,
                    selectedKHS.TrainingVessel,
-                   selectedKHS.TrainingParts.Count(tp => tp.TrainingNow),
+                   selectedKHS.TrainedParts.Count(tp => tp.TrainingNow),
                    selectedKHS.GetTrainingLevel().ToString("P1"),
                    Core.TrainingCap.ToString("P0"),
                    Core.ParseUT(selectedKHS.CurrentTrainingETA, false, 10))
                : Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
 
             List<DialogGUIBase> elements = new List<DialogGUIBase>();
-            if (selectedKHS.TrainingParts.Any(tp => tp.Level >= 0.001))
+            if (selectedKHS.TrainedParts.Any(tp => tp.Level >= 0.001))
             {
                 elements.Add(new DialogGUILabel(Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name), true));
-                foreach (TrainingPart tp in selectedKHS.TrainingParts.Where(tp => tp.Level >= 0.001))
+                foreach (PartTrainingInfo tp in selectedKHS.TrainedParts.Where(tp => tp.Level >= 0.001f))
                 {
                     string tag = "", untag = "";
                     if (tp.TrainingNow)

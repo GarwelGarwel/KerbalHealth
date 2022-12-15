@@ -235,6 +235,25 @@ namespace KerbalHealth
             ? v.altitude + Sun.Instance.sun.Radius
             : (v.distanceToSun > 0 ? v.distanceToSun : v.mainBody.GetPlanet().orbit.altitude + Sun.Instance.sun.Radius);
 
+        public static float GetScienceMultiplier(this Vessel vessel, bool ignoreLandedOnHomebody = true)
+        {
+            CelestialBody body = vessel?.mainBody;
+            if (body == null)
+            {
+                Log($"Could not get science multiplier for {vessel?.vesselName}.", LogLevel.Error);
+                return 0;
+            }
+            if (ignoreLandedOnHomebody && body.isHomeWorld && vessel.LandedOrSplashed)
+                return 0;
+            if (vessel.Landed)
+                return body.scienceValues.LandedDataValue;
+            if (vessel.Splashed)
+                return body.scienceValues.SplashedDataValue;
+            if ((vessel.situation & Vessel.Situations.FLYING) != 0)
+                return vessel.altitude < body.scienceValues.flyingAltitudeThreshold ? body.scienceValues.FlyingLowDataValue : body.scienceValues.FlyingHighDataValue;
+            return vessel.altitude < body.scienceValues.InSpaceHighDataValue ? body.scienceValues.InSpaceLowDataValue : body.scienceValues.InSpaceHighDataValue;
+        }
+
         #region TRAINING
 
         static List<float> trainingCaps;
@@ -244,12 +263,12 @@ namespace KerbalHealth
         /// </summary>
         public static float TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
 
-        public static float InFlightTrainingCap = 1;
+        public const float InFlightTrainingCap = 1;
 
         /// <summary>
         /// Returns a list of part modules that are used in training & stress calculations
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainableModules(IList<Part> allParts, bool uniqueOnly)
+        public static List<ModuleKerbalHealth> GetTrainableModules(this IList<Part> allParts, bool uniqueOnly)
         {
             List<ModuleKerbalHealth> res = allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
             if (uniqueOnly)
