@@ -655,6 +655,8 @@ namespace KerbalHealth
         /// </summary>
         public bool IsTrainingAtKSC { get; private set; }
 
+        public float LastRealTrainingPerDay { get; private set; }
+
         public bool ConditionsPreventKSCTraining => Conditions.Any(condition => condition.Visible && condition.Name != Condition_Training);
 
         public float StupidityTrainingSpeedFactor =>
@@ -665,7 +667,7 @@ namespace KerbalHealth
 
         public float KSCTrainingPerSecond => KSCTrainingPerDay / KSPUtil.dateTimeFormatter.Day;
 
-        const float ScienceMultiplierEffect = 1;
+        const float ScienceMultiplierEffect = 2;
 
         public float InFlightTrainingPerDay
         {
@@ -677,7 +679,7 @@ namespace KerbalHealth
             }
         }
 
-        public float TrainingPerDay => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? InFlightTrainingPerDay : KSCTrainingPerSecond;
+        public float TrainingPerDay => ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned ? InFlightTrainingPerDay : KSCTrainingPerDay;
 
         public float TrainingPerSecond => TrainingPerDay / KSPUtil.dateTimeFormatter.Day;
 
@@ -723,7 +725,7 @@ namespace KerbalHealth
 
             else
             {
-                totalTraining = TrainedParts.Sum(tp => tp.Level * tp.Complexity);
+                totalTraining = TrainedParts.Sum(tp => tp.Complexity * tp.Level);
                 totalComplexity = TrainedParts.Sum(tp => tp.Complexity);
             }
 
@@ -774,6 +776,7 @@ namespace KerbalHealth
                 trainingInfo.StopTraining();
             RemoveCondition(Condition_Training);
             TrainingVessel = null;
+            LastRealTrainingPerDay = 0;
         }
 
         void Train(float interval)
@@ -799,10 +802,14 @@ namespace KerbalHealth
             float trainingProgress = interval * TrainingPerSecond / totalComplexity;
             Log($"Overall training progress: {TrainingPerDay:P2} per unit of complexity per day, {trainingProgress:P3}/update.");
             if (trainingProgress <= 0)
+            {
+                LastRealTrainingPerDay = 0;
                 return;
+            }
 
             // Step 2: Updating parts' training progress and calculating their base complexity to update vessel's training level
             bool trainingComplete = true;
+            float trainingLevel = GetTrainingLevel();
             foreach (PartTrainingInfo tp in untrainedParts)
             {
                 float partTrainingProgress = trainingProgress;
@@ -818,6 +825,7 @@ namespace KerbalHealth
                 }
                 else trainingComplete = false;
             }
+            LastRealTrainingPerDay = (GetTrainingLevel() - trainingLevel) * KSPUtil.dateTimeFormatter.Day / interval;
             if (trainingComplete)
                 StopTraining("#KH_TrainingComplete");
         }
