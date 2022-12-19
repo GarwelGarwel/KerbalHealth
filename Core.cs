@@ -85,7 +85,7 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="id">Factor id</param>
         /// <returns></returns>
-        public static HealthFactor GetHealthFactor(string id) => Factors.FirstOrDefault(f => f.Name == id);
+        public static HealthFactor GetHealthFactor(string id) => Factors.Find(f => f.Name == id);
 
         public static HealthCondition GetHealthCondition(string s) => HealthConditions.TryGetValue(s, out HealthCondition value) ? value : null;
 
@@ -104,6 +104,8 @@ namespace KerbalHealth
             CelestialBody cb = FlightGlobals.GetBodyByName(name);
             return cb != null && PlanetConfigs.TryGetValue(cb, out PlanetHealthConfig res) ? res : null;
         }
+
+        public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
 
         #region RAD STORMS
 
@@ -180,7 +182,7 @@ namespace KerbalHealth
         /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
         /// </summary>
-        public static bool IsUnpacked(this ProtoCrewMember pcm) //=> pcm.GetVessel()?.loaded ?? false;
+        public static bool IsUnpacked(this ProtoCrewMember pcm)
         {
             Vessel vessel = pcm.GetVessel();
             return vessel != null && vessel.loaded && !vessel.packed;
@@ -286,8 +288,6 @@ namespace KerbalHealth
 
         #endregion
 
-        public static float GetInternalFacilityLevel(int displayFacilityLevel) => (float)(displayFacilityLevel - 1) / 2;
-
         #region CONFIG NODE UTILITIES
 
         public static string GetString(this ConfigNode n, string key, string defaultValue = null)
@@ -334,7 +334,7 @@ namespace KerbalHealth
 
         public static double EventChance(double mtbe, double interval) => 1 - Math.Exp(-interval / mtbe);
 
-        public static bool EventHappens(double mtbe, double interval) => mtbe >= 0 && Rand.NextDouble() < EventChance(mtbe, interval);
+        public static bool EventHappens(double mtbe, double interval) => (mtbe > 0 && Rand.NextDouble() < EventChance(mtbe, interval)) || mtbe == 0;
 
         #endregion
 

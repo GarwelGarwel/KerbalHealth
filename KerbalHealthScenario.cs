@@ -20,9 +20,6 @@ namespace KerbalHealth
         // UT at last health update
         static double lastUpdated;
 
-        // UT when (or after) next event check occurs
-        static double nextEventTime;
-
         // List of scheduled radstorms
         List<RadStorm> radStorms = new List<RadStorm>();
 
@@ -111,7 +108,6 @@ namespace KerbalHealth
             vesselChanged = true;
 
             lastUpdated = Planetarium.GetUniversalTime();
-            nextEventTime = lastUpdated + GetNextEventInterval();
 
             GameEvents.onCrewOnEva.Add(OnKerbalEva);
             GameEvents.onCrewBoardVessel.Add(onCrewBoardVessel);
@@ -634,7 +630,6 @@ namespace KerbalHealth
             if (!Core.IsInEditor)
                 UpdateKerbals(true);
             node.AddValue("version", version.ToString());
-            node.AddValue("nextEventTime", nextEventTime);
             ConfigNode n2;
             foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
             {
@@ -671,7 +666,6 @@ namespace KerbalHealth
                 ScreenMessages.PostScreenMessage(Localizer.Format("#KH_MSG_CustomSettingsLoaded"), 5);
 
             version = new Version(node.GetString("version", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()));
-            nextEventTime = node.GetDouble("nextEventTime", Planetarium.GetUniversalTime() + GetNextEventInterval());
 
             Core.KerbalHealthList.Clear();
             foreach (ConfigNode n in node.GetNodes(KerbalHealthStatus.ConfigNodeName))
@@ -958,44 +952,44 @@ namespace KerbalHealth
             lastUpdated = time;
 
             // Processing events. It can take several turns of event processing at high time warp
-            if (time >= nextEventTime)
+            if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
             {
-                if (KerbalHealthQuirkSettings.Instance.ConditionsEnabled)
+                Core.Log("Processing conditions...");
+                foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
                 {
-                    Core.Log("Processing conditions...");
-                    foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values)
+                    ProtoCrewMember pcm = khs.ProtoCrewMember;
+                    if (khs.IsFrozen || !pcm.IsTrackable())
+                        continue;
+                    for (int i = khs.Conditions.Count - 1; i >= 0; i--)
                     {
-                        ProtoCrewMember pcm = khs.ProtoCrewMember;
-                        if (khs.IsFrozen || !pcm.IsTrackable())
-                            continue;
-                        for (int i = 0; i < khs.Conditions.Count; i++)
+                        HealthCondition hc = khs.Conditions[i];
+                        Core.Log($"Processing {khs.Name}'s {hc.Name} condition.");
+                        for (int j = 0; j < hc.Outcomes.Count; j++)
                         {
-                            HealthCondition hc = khs.Conditions[i];
-                            Core.Log($"Processing {khs.Name}'s {hc.Name} condition.");
-                            for (int j = 0; j < hc.Outcomes.Count; j++)
-                                if (Core.EventHappens(hc.Outcomes[j].GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval))
+                            float mtbe = (float)hc.Outcomes[j].GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency;
+                            Core.Log($"MTBE of outcome #{j}: {mtbe:N1} days.");
+                            if (Core.EventHappens(mtbe * KSPUtil.dateTimeFormatter.Day, interval))
+                            {
+                                Core.Log($"Condition {hc.Name} has outcome: {hc.Outcomes[j]}.");
+                                if (hc.Outcomes[j].Condition.Length != 0)
+                                    khs.AddCondition(hc.Outcomes[j].Condition);
+                                if (hc.Outcomes[j].RemoveOldCondition)
                                 {
-                                    Core.Log($"Condition {hc.Name} has outcome: {hc.Outcomes[j]}");
-                                    if (hc.Outcomes[j].Condition.Length != 0)
-                                        khs.AddCondition(hc.Outcomes[j].Condition);
-                                    if (hc.Outcomes[j].RemoveOldCondition)
-                                    {
-                                        khs.RemoveCondition(hc);
-                                        i--;
-                                        break;
-                                    }
+                                    khs.RemoveCondition(hc);
+                                    break;
                                 }
+                            }
                         }
+                    }
 
-                        foreach (HealthCondition hc in Core.HealthConditions.Values.Where(hc =>
-                            (hc.Stackable || !khs.HasCondition(hc))
-                            && hc.IsCompatibleWith(khs.Conditions)
-                            && hc.Logic.Test(pcm)
-                            && Core.EventHappens(hc.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval)))
-                        {
-                            Core.Log($"{khs.Name} acquires {hc.Name} condition.");
-                            khs.AddCondition(hc);
-                        }
+                    foreach (HealthCondition hc in Core.HealthConditions.Values.Where(hc =>
+                        (hc.Stackable || !khs.HasCondition(hc))
+                        && hc.IsCompatibleWith(khs.Conditions)
+                        && hc.Logic.Test(pcm)
+                        && Core.EventHappens(hc.GetMTBE(pcm) / KerbalHealthQuirkSettings.Instance.EventFrequency * KSPUtil.dateTimeFormatter.Day, interval)))
+                    {
+                        Core.Log($"{khs.Name} acquires {hc.Name} condition.");
+                        khs.AddCondition(hc);
                     }
                 }
 
@@ -1003,9 +997,6 @@ namespace KerbalHealth
                     && KerbalHealthRadiationSettings.Instance.RadStormsEnabled
                     && !KerbalHealthRadiationSettings.Instance.UseKerbalismRadiation)
                     SpawnRadStorms(interval);
-
-                nextEventTime = time + GetNextEventInterval();
-                Core.Log($"Next event processing is scheduled at {KSPUtil.PrintDateCompact(nextEventTime, true)}.", LogLevel.Important);
             }
             dirty = true;
 

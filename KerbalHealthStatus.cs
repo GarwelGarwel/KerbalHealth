@@ -1152,13 +1152,13 @@ namespace KerbalHealth
                 node.AddValue("trait", Trait);
             if (IsOnEVA)
                 node.AddValue("onEva", true);
+            if (TrainingVessel != null)
+                node.AddValue("trainingVessel", TrainingVessel);
             foreach (PartTrainingInfo tp in TrainedParts)
             {
                 tp.Save(n2 = new ConfigNode(PartTrainingInfo.ConfigNodeName));
                 node.AddNode(n2);
             }
-            if (TrainingVessel != null)
-                node.AddValue("trainingVessel", TrainingVessel);
         }
 
         public void Load(ConfigNode node)
@@ -1184,7 +1184,10 @@ namespace KerbalHealth
             QuirkLevel = node.GetInt("quirkLevel");
             Trait = node.GetValue("trait");
             IsOnEVA = node.GetBool("onEva");
+            TrainingVessel = node.GetString("trainingVessel");
             TrainedParts = node.GetNodes(PartTrainingInfo.ConfigNodeName).Select(n => new PartTrainingInfo(n)).ToList();
+            if (TrainingVessel != null && !TrainedParts.Any(tp => tp.TrainingNow))
+                TrainingVessel = null;
             // Loading familiar part types from pre-1.6 versions
             foreach (string partName in node.GetValuesList("familiarPartType").Where(partName => PartLoader.getPartInfoByName(partName) != null))
             {
@@ -1194,7 +1197,6 @@ namespace KerbalHealth
                     trainingPart.Level = Math.Max(trainingPart.Level, Core.TrainingCap);
                 else TrainedParts.Add(new PartTrainingInfo(partName, 0, Core.TrainingCap));
             }
-            TrainingVessel = node.GetString("trainingVessel");
             Core.Log($"{Name} loaded.");
         }
 
