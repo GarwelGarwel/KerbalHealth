@@ -14,7 +14,7 @@
 
         public bool KSCTrainingComplete => Level >= Core.TrainingCap;
 
-        public bool TrainingNow => Complexity > 0 && Level < Core.TrainingCap;
+        public bool TrainingNow => Complexity > 0;// && Level < Core.TrainingCap;
 
         public PartTrainingInfo(ConfigNode n) => Load(n);
 
