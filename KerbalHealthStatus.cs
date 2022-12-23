@@ -675,7 +675,6 @@ namespace KerbalHealth
             {
                 float scienceMultiplier = ProtoCrewMember.GetVessel().GetScienceMultiplier();
                 return StupidityTrainingSpeedFactor * (1 - ScienceMultiplierEffect / (scienceMultiplier + ScienceMultiplierEffect)) / KerbalHealthFactorsSettings.Instance.TrainingTime;
-                //return StupidityTrainingSpeedFactor * (1 - 1 / (1 + scienceMultiplier)) / KerbalHealthFactorsSettings.Instance.TrainingTime * scienceMultiplier;
             }
         }
 
@@ -743,10 +742,7 @@ namespace KerbalHealth
             StopTraining(IsTrainingAtKSC && !IsInEditor ? "#KH_TrainingStopped" : null);
 
             if (IsOnEVA)
-            {
-                TrainingVessel = null;
                 return;
-            }
 
             // Setting complexity of all currently trainable parts
             int count = 0;
@@ -754,7 +750,9 @@ namespace KerbalHealth
             {
                 PartTrainingInfo trainingInfo = GetTrainingPart(mkh.PartName);
                 if (trainingInfo != null)
-                    trainingInfo.StartTraining(mkh.complexity);
+                    if (IsTrainingAtKSC && trainingInfo.KSCTrainingComplete)
+                        continue;
+                    else trainingInfo.StartTraining(mkh.complexity);
                 else TrainedParts.Add(new PartTrainingInfo(mkh.PartName, mkh.complexity));
                 Log($"Now training for {mkh.PartName} (complexity: {mkh.complexity}).");
                 count++;
@@ -800,7 +798,7 @@ namespace KerbalHealth
                 return;
             }
             float trainingProgress = interval * TrainingPerSecond / totalComplexity;
-            Log($"Overall training progress: {TrainingPerDay:P2} per unit of complexity per day, {trainingProgress:P3}/update.");
+            Log($"Overall training progress: {TrainingPerDay:P2} per unit of complexity per day.");
             if (trainingProgress <= 0)
             {
                 LastRealTrainingPerDay = 0;
@@ -809,12 +807,15 @@ namespace KerbalHealth
 
             // Step 2: Updating parts' training progress and calculating their base complexity to update vessel's training level
             bool trainingComplete = true;
-            float trainingLevel = GetTrainingLevel();
+            float totalTrainingIncrease = 0;
             foreach (PartTrainingInfo tp in untrainedParts)
             {
                 float partTrainingProgress = trainingProgress;
                 if (inflight)
+                {
                     partTrainingProgress *= InFlightTrainingCap - tp.Level;
+                    totalTrainingIncrease += tp.Complexity * (InFlightTrainingCap - tp.Level);
+                }
                 tp.Level += partTrainingProgress;
                 Log($"Training level for part {tp.Name} with complexity {tp.Complexity} increases by {partTrainingProgress * KSPUtil.dateTimeFormatter.Day / interval:P2} per day and is currently {tp.Level:P3}.");
                 if (!inflight && tp.KSCTrainingComplete)
@@ -825,7 +826,8 @@ namespace KerbalHealth
                 }
                 else trainingComplete = false;
             }
-            LastRealTrainingPerDay = (GetTrainingLevel() - trainingLevel) * KSPUtil.dateTimeFormatter.Day / interval;
+
+            LastRealTrainingPerDay = inflight ? totalTrainingIncrease / totalComplexity * TrainingPerDay : TrainingPerDay;
             if (trainingComplete)
                 StopTraining("#KH_TrainingComplete");
         }
@@ -1079,11 +1081,11 @@ namespace KerbalHealth
             }
 
             // Training
-            if (TrainedParts.Any(tp => tp.TrainingNow))
+            if (TrainingVessel != null)
                 // If KSC training no longer possible, stop it
                 if (IsTrainingAtKSC && ConditionsPreventKSCTraining)
                 {
-                    Log($"{name} is no longer able to train at KSC (condition: {ConditionString})");
+                    Log($"{name} is no longer able to train at KSC (condition: {ConditionString}).");
                     StopTraining("#KH_TrainingStopped");
                 }
                 // Train
@@ -1186,8 +1188,8 @@ namespace KerbalHealth
             IsOnEVA = node.GetBool("onEva");
             TrainingVessel = node.GetString("trainingVessel");
             TrainedParts = node.GetNodes(PartTrainingInfo.ConfigNodeName).Select(n => new PartTrainingInfo(n)).ToList();
-            if (TrainingVessel != null && !TrainedParts.Any(tp => tp.TrainingNow))
-                TrainingVessel = null;
+            //if (TrainingVessel != null && !TrainedParts.Any(tp => tp.TrainingNow))
+            //    TrainingVessel = null;
             // Loading familiar part types from pre-1.6 versions
             foreach (string partName in node.GetValuesList("familiarPartType").Where(partName => PartLoader.getPartInfoByName(partName) != null))
             {
