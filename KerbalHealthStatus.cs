@@ -741,9 +741,6 @@ namespace KerbalHealth
             // Clearing complexity of all trained parts to prepare for updating the list
             StopTraining(IsTrainingAtKSC && !IsInEditor ? "#KH_TrainingStopped" : null);
 
-            if (IsOnEVA)
-                return;
-
             // Setting complexity of all currently trainable parts
             int count = 0;
             foreach (ModuleKerbalHealth mkh in parts.GetTrainableModules(true))
@@ -780,11 +777,6 @@ namespace KerbalHealth
         void Train(float interval)
         {
             Log($"KerbalHealthStatus.Train({interval} s) for {name}");
-            if (IsOnEVA)
-            {
-                Log($"{name} is on EVA. No training.");
-                return;
-            }
             bool inflight = ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned;
 
             // Step 1: Calculating training complexity of all yet untrained parts
@@ -814,7 +806,7 @@ namespace KerbalHealth
                 if (inflight)
                 {
                     partTrainingProgress *= InFlightTrainingCap - tp.Level;
-                    totalTrainingIncrease += tp.Complexity * (InFlightTrainingCap - tp.Level);
+                    totalTrainingIncrease += InFlightTrainingCap - tp.Level;
                 }
                 tp.Level += partTrainingProgress;
                 Log($"Training level for part {tp.Name} with complexity {tp.Complexity} increases by {partTrainingProgress * KSPUtil.dateTimeFormatter.Day / interval:P2} per day and is currently {tp.Level:P3}.");
@@ -827,7 +819,7 @@ namespace KerbalHealth
                 else trainingComplete = false;
             }
 
-            LastRealTrainingPerDay = inflight ? totalTrainingIncrease / totalComplexity * TrainingPerDay : TrainingPerDay;
+            LastRealTrainingPerDay = inflight ? totalTrainingIncrease * TrainingPerDay / totalComplexity : TrainingPerDay / totalComplexity;
             if (trainingComplete)
                 StopTraining("#KH_TrainingComplete");
         }

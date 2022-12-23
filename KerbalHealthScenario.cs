@@ -836,16 +836,9 @@ namespace KerbalHealth
                 KerbalHealthStatus khs = Core.KerbalHealthList[pcm];
                 if (khs == null)
                     Core.KerbalHealthList.Add(khs = new KerbalHealthStatus(pcm));
-                //if (khs.IsTrainingAtKSC)
-                //khs.StopTraining(khs.IsTrainingAtKSC ? "#KH_TrainingStopped" : null);
-                khs.StartTraining(v.Parts, v.vesselName);
+                khs.StartTraining(v.Parts, khs.IsOnEVA ? Localizer.Format("#KH_Spacesuit") : v.vesselName);
             }
         }
-
-        /// <summary>
-        /// Next event update is scheduled after a random period of time, between 0 and 2 days
-        /// </summary>
-        double GetNextEventInterval() => Core.Rand.NextDouble() * KSPUtil.dateTimeFormatter.Day * 2;
 
         void SpawnRadStorms(double interval)
         {
@@ -1078,10 +1071,10 @@ namespace KerbalHealth
             else msg = Localizer.Format("#KH_TI_KerbalNotTraining", selectedKHS.Name);
 
             List<DialogGUIBase> elements = new List<DialogGUIBase>();
-            if (selectedKHS.TrainedParts.Any(tp => tp.Level >= 0.001f))
+            if (selectedKHS.TrainingVessel != null || selectedKHS.TrainedParts.Any(tp => tp.Level >= 0.001f))
             {
                 elements.Add(new DialogGUILabel(Localizer.Format("#KH_TI_TrainedParts", selectedKHS.Name), true));
-                foreach (PartTrainingInfo tp in selectedKHS.TrainedParts.Where(tp => tp.Level >= 0.001f))
+                foreach (PartTrainingInfo tp in selectedKHS.TrainedParts.Where(tp => tp.Level >= 0.001f || tp.TrainingNow))
                 {
                     string tag = "", untag = "";
                     if (tp.TrainingNow)
