@@ -53,7 +53,7 @@ namespace KerbalHealth
             KSCEffect = 1;
             TrainingEnabled = true;
             TrainingTime = 60;
-            StupidityPenalty = 1;
+            StupidityPenalty = 0.5f;
             SetDifficultyPreset(HighLogic.CurrentGame.Parameters.preset);
         }
 
@@ -112,6 +112,6 @@ namespace KerbalHealth
         public int TrainingTime = 60;
 
         [GameParameters.CustomFloatParameterUI("#KH_FS_StupidityPenalty", toolTip = "#KH_FS_StupidityPenalty_desc", displayFormat = "N1", asPercentage = true, minValue = 0, maxValue = 2, stepCount = 21)]//Stupidity Penalty""How much longer it takes to train a stupid kerbal compared to a smart one
-        public float StupidityPenalty = 0;
+        public float StupidityPenalty = 0.5f;
     }
 }
