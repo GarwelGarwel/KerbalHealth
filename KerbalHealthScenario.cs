@@ -681,7 +681,7 @@ namespace KerbalHealth
                 return;
             Core.Log($"CheckEVA('{v.vesselName}')");
             if (v.isEVA)
-                Core.Log($"{v.vesselName} is EVA.");
+                Core.Log($"{v.vesselName} is on EVA.");
             foreach (KerbalHealthStatus khs in v.GetVesselCrew().Select(pcm => Core.KerbalHealthList[pcm]).Where(khs => khs != null))
                 khs.IsOnEVA = v.isEVA;
         }
