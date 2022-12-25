@@ -55,13 +55,13 @@ namespace KerbalHealth
         {
             new StressFactor(),
             new ConfinementFactor(),
-            new LonelinessFactor(),
             new MicrogravityFactor(),
-            new EVAFactor(),
-            new ConditionsFactor(),
+            new LonelinessFactor(),
             new IsolationFactor(),
+            new EVAFactor(),
             new HomeFactor(),
-            new KSCFactor()
+            new KSCFactor(),
+            new ConditionsFactor()
         };
 
         /// <summary>
@@ -270,23 +270,22 @@ namespace KerbalHealth
         public const float InFlightTrainingCap = 1;
 
         /// <summary>
-        /// Returns a list of part modules that are used in training & stress calculations
+        /// Returns a list of unique part modules that are used in training & stress calculations
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainableModules(this IList<Part> allParts, bool uniqueOnly)
+        public static List<ModuleKerbalHealth> GetTrainableModules(this IEnumerable<Part> allParts)
         {
-            List<ModuleKerbalHealth> res = allParts.SelectMany(part => part.FindModulesImplementing<ModuleKerbalHealth>()).Where(mkh => mkh.complexity != 0).ToList();
-            if (uniqueOnly)
-                for (int i = res.Count - 1; i >= 0; i--)
-                    for (int j = 0; j < i; j++)
-                        if (res[i].PartName == res[j].PartName)
-                        {
-                            res.RemoveAt(i);
-                            break;
-                        }
+            List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
+            foreach (Part part in allParts)
+                foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(mkh => mkh.complexity != 0))
+                {
+                    if (!res.Any(mkh2 => mkh2.PartName == mkh.PartName))
+                        res.Add(mkh);
+                    break;
+                }
             return res;
         }
 
-        public static bool HasTrainableParts(IEnumerable<Part> allParts) => allParts.Any(part => part.FindModulesImplementing<ModuleKerbalHealth>().Any(mkh => mkh.complexity != 0));
+        public static bool AnyTrainableParts(IEnumerable<Part> allParts) => allParts.Any(part => part.FindModulesImplementing<ModuleKerbalHealth>().Any(mkh => mkh.complexity != 0));
 
         #endregion
 
@@ -340,12 +339,13 @@ namespace KerbalHealth
 
         #endregion
 
+        #region NUMBERS AND STRINGS
+
         /// <summary>
         /// Returns a string of a value with a mandatory sign (+ or -, unless v = 0)
         /// </summary>
         /// <param name="value">Value to present as a string</param>
         /// <param name="format">String format according to Double.ToString</param>
-        /// <returns></returns>
         public static string SignValue(double value, string format) => (value > 0 ? "+" : "") + value.ToString(format);
 
         /// <summary>
@@ -353,7 +353,6 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="value">The value to convert</param>
         /// <param name="digits">Number of digits to allow before the prefix (must be 3 or more)</param>
-        /// <returns></returns>
         public static string PrefixFormat(double value, int digits = 3, bool mandatorySign = false)
         {
             double v = Math.Abs(value);
@@ -422,6 +421,8 @@ namespace KerbalHealth
                 res = "0 d";
             return res.Trim();
         }
+
+        #endregion
 
         public static void ShowMessage(string msg, bool unwarpTime)
         {

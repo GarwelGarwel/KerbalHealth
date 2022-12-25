@@ -202,9 +202,11 @@ namespace KerbalHealth
             foreach (HealthFactor f in Core.Factors.Where(f => unpacked || inEditor || !f.ConstantForUnloaded))
             {
                 FactorsOriginal[f] = f.ChangePerDay(this);
-                Log($"{f.Name} factor is {FactorsOriginal[f]:F2} HP/day.");
+                if (IsLogging())
+                    Log($"{f.Name} factor is {FactorsOriginal[f]:F2} HP/day.");
             }
-            Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value):F2} HP/day.");
+            if (IsLogging())
+                Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value):F2} HP/day.");
         }
 
         public double GetFactorHPChange(HealthFactor factor) => Factors.TryGetValue(factor, out double res) ? res : 0;
@@ -333,7 +335,8 @@ namespace KerbalHealth
             Log($"CalculateLocationEffectInEditor for {Name}");
             ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? ProtoCrewMember.GetCLSSpace() : null;
             LocationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
-            Log($"Location effect:\n{locationEffect}");
+            if (IsLogging())
+                Log($"Location effect:\n{locationEffect}");
         }
 
         void CalculateQuirkEffects()
@@ -342,9 +345,12 @@ namespace KerbalHealth
             quirksEffect = new HealthEffect();
             foreach (HealthEffect effect in Quirks.SelectMany(q => q.GetApplicableEffects(this)))
             {
-                Log($"Applying quirk effect: {effect}");
                 quirksEffect.CombineWith(effect);
-                Log($"Quirks effect:\n{quirksEffect}");
+                if (IsLogging())
+                {
+                    Log($"Applied quirk effect: {effect}");
+                    Log($"Quirks effect:\n{quirksEffect}");
+                }
             }
         }
 
@@ -578,7 +584,7 @@ namespace KerbalHealth
                     : 1;
                 weightSum += w;
                 weights.Add(w);
-                Log($"Available quirk: {q.Name} (weight {w})");
+                Log($"Available quirk: {q.Name} (weight {w}).");
             }
 
             if (!availableQuirks.Any() || weightSum <= 0)
@@ -713,17 +719,17 @@ namespace KerbalHealth
         {
             float totalTraining = 0, totalComplexity = 0;
             if (IsInEditor)
-                foreach (ModuleKerbalHealth mkh in EditorLogic.SortedShipList.GetTrainableModules(false))
+                foreach (ModuleKerbalHealth mkh in EditorLogic.SortedShipList.GetTrainableModules())
                 {
                     totalTraining += (simulateTrained ? Math.Max(KSCTrainingCap, TrainingLevelForModulePart(mkh)) : TrainingLevelForModulePart(mkh)) * mkh.complexity;
                     totalComplexity += mkh.complexity;
                 }
 
-            else
-            {
-                totalTraining = TrainedParts.Sum(tp => tp.Complexity * tp.Level);
-                totalComplexity = TrainedParts.Sum(tp => tp.Complexity);
-            }
+            else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.Complexity > 0))
+                {
+                    totalTraining += tp.Complexity * tp.Level;
+                    totalComplexity += tp.Complexity;
+                }
 
             return totalComplexity != 0 ? totalTraining / totalComplexity : KSCTrainingCap;
         }
@@ -740,7 +746,7 @@ namespace KerbalHealth
 
             // Setting complexity of all currently trainable parts
             int count = 0;
-            foreach (ModuleKerbalHealth mkh in parts.GetTrainableModules(true))
+            foreach (ModuleKerbalHealth mkh in parts.GetTrainableModules())
             {
                 PartTrainingInfo trainingInfo = GetTrainingPart(mkh.PartName);
                 if (trainingInfo != null)
@@ -787,7 +793,8 @@ namespace KerbalHealth
                 return;
             }
             float trainingProgress = interval * TrainingPerSecond / totalComplexity;
-            Log($"Overall training progress: {TrainingPerDay:P2} per unit of complexity per day.");
+            if (IsLogging())
+                Log($"Overall training progress: {TrainingPerDay:P2} per unit of complexity per day.");
             if (trainingProgress <= 0)
             {
                 LastRealTrainingPerDay = 0;
@@ -1089,14 +1096,16 @@ namespace KerbalHealth
             {
                 if (HP >= CriticalHP)
                 {
-                    Log($"{Name}'s health is {HP:F2} HP. Exhaustion end MTBE: {CriticalHP / (HP - CriticalHP) * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH:F1} hours.");
+                    if (IsLogging())
+                        Log($"{Name}'s health is {HP:F2} HP. Exhaustion end MTBE: {CriticalHP / (HP - CriticalHP) * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH:F1} hours.");
                     if (EventHappens(CriticalHP / (HP - CriticalHP) * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH * 3600, interval))
                         RemoveCondition(Condition_Exhausted);
                 }
             }
             else if (HP < CriticalHP)
             {
-                Log($"{Name}'s health is at {Health:P2}. Exhaustion start MTBE: {HP / CriticalHP * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH:F1} hours.");
+                if (IsLogging())
+                    Log($"{Name}'s health is at {Health:P2}. Exhaustion start MTBE: {HP / CriticalHP * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH:F1} hours.");
                 if (EventHappens(HP / CriticalHP * KerbalHealthGeneralSettings.Instance.ExhaustionMaxMTTH * 3600, interval))
                     AddCondition(Condition_Exhausted);
             }
@@ -1197,7 +1206,8 @@ namespace KerbalHealth
             }
             Name = pcm.name;
             HP = GetDefaultMaxHP(pcm);
-            Log($"Created KerbalHealthStatus record for {pcm.name} with {HP} HP.");
+            if (IsLogging())
+                Log($"Created KerbalHealthStatus record for {pcm.name} with {HP} HP.");
         }
 
         public KerbalHealthStatus(ConfigNode node) => Load(node);

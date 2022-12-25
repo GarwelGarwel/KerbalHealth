@@ -212,7 +212,7 @@ namespace KerbalHealth
                         new DialogGUIHorizontalLayout(
                             true,
                             false,
-                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && Core.HasTrainableParts(EditorLogic.SortedShipList), true),
+                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && Core.AnyTrainableParts(EditorLogic.SortedShipList), true),
                             new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnResetButtonSelected, false))),
                     false,
                     HighLogic.UISkin,
@@ -224,7 +224,7 @@ namespace KerbalHealth
             else
             {
                 dirty = false;
-                IList<ModuleKerbalHealth> trainableParts = Core.GetTrainableModules(EditorLogic.SortedShipList, true);
+                IList<ModuleKerbalHealth> trainableParts = EditorLogic.SortedShipList.GetTrainableModules();
                 if (trainableParts.Count == 0)
                 {
                     Core.Log($"No trainable parts found.", LogLevel.Important);
@@ -426,7 +426,7 @@ namespace KerbalHealth
             Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
             spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
-            complexityLbl.SetOptionText($"<color=white>{Core.GetTrainableModules(EditorLogic.SortedShipList, true).Sum(mkh => mkh.complexity):P0}</color>");
+            complexityLbl.SetOptionText($"<color=white>{EditorLogic.SortedShipList.GetTrainableModules().Sum(mkh => mkh.complexity):P0}</color>");
             recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
             shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
             exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");
