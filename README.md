@@ -9,9 +9,9 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 - HP change based on several factors such as available living space, presence of crewmates, gravity, and specific ship parts.
 - If a kerbal's health goes below 20%, he/she may become exhausted (technically, turn into a Tourist). They will eventually get back to work after health goes above 20% again.
 - If a kerbal's health falls to 0, they will die!
-- Kerbals are affected by radiation, which permanently reduces their maximum health. It can come from the Sun, including CMEs, radioactive parts, galactic cosmic rays and even killing planets (OPM only).
-- You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation within their magnetic fields and atmospheres.
-- Kerbals may fall sick, have health accidents, panic attacks and other contingences.
+- Train astronauts at KSC to prepare them for space travel and reduce their stress. They will also gradually learn to use their equipment during missions.
+- Kerbals are affected by radiation, which permanently reduces their maximum health. It can come from the Sun, including CMEs, radioactive parts, galactic cosmic rays etc. You can protect from radiation by using shielding and choosing safer mission profiles. Planets and moons can reduce radiation within their magnetic fields and atmospheres.
+- Kerbals may fall sick, have health accidents, panic attacks and other contingencies.
 - When kerbals level up, they can acquire quirks that affect their health reactions, to the better or to the worse.
 - All necessary data is shown in the Health Monitor (at KSC and in flight) and Health Report (in the editor).
 - Compatibility patches support a range of parts mods (see below).
@@ -21,11 +21,11 @@ This mod introduces many aspects of astronauts' health management to KSP. It mak
 
 The following factors may affect kerbal's health:
 - **Stress** (kerbal is on a mission): -2 x (1 - *Training Level*) x *Number of Colleagues* HP/day (see details below)
-- **Confinement**: -2 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts depending on their size, capacity, function etc.)
-- **Loneliness** (only one kerbal in the vessel): -1 HP/day
+- **Confinement**: -2 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts based on their size, capacity, function etc.)
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
+- **Loneliness** (only one kerbal in the vessel): -1 HP/day
 - **Isolation** (no working CommNet connection to home): -0.5 HP/day
-- **EVA**: -10 HP/day
+- **EVA**: -8 HP/day
 - **Home** (in Kerbin's low atmosphere): +2 HP/day
 - **KSC** (kerbal is recuperating at KSC, i.e. available): +3 HP/day
 
@@ -35,20 +35,30 @@ Certain parts (such as Hitchhiker and crew cabins) can additionally reduce the e
 
 ## Stress and Training
 
-One of the drains on kerbals' health is Stress. You reduce stress by training your kerbals for the parts in the vessel (mostly the crewable ones). To start training, load the vessel in the Editor, open the Health Report and click "Training Info" button. From there, you can select which kerbals to train. Training takes time, which is determined by the number of part types to train for, their complexity (e.g. command pods are more complex than airlocks) and kerbals' stupidity. Note that you can't train kerbals who have health conditions (e.g. sick). When a kerbal has trained for a certain part type, they won't have to train for it again. Kerbals don't recover their health while they are training at the KSC.
+One of the drains on kerbals' health is Stress. Stress may be reduced in two ways (combinable): training and having colleagues on board.
 
-Kerbals also automatically train for parts in their vessel as they fly thereby gradually reducing their stress. But it is not recommended to send untrained astronauts for long missions, because they may lose too much health while they get used to the unfamiliar ship.
+Training level for a part can range between 0% and 100%, and the vessel training level is its parts' weighted average with weights being their Complexity.
 
-Training level is capped based on your Astronaut Complex facility level:
-- Level 1: 40% reduction (i.e. -1.2 HP/day)
-- Level 2: 60% reduction (i.e. -0.8 HP/day)
-- Level 3: 75% reduction (i.e. -0.5 HP/day)
+Kerbals can be trained to specific part types, e.g. Mk 1 Pod or the Science Lab. Only parts that are marked to have Complexity (which is measured in %) need to be trained for; these are mostly crewable parts. The more different part types are on the vessel, the longer training will take. Stupider kerbals will also train slower than smarter ones (depending on your difficulty settings).
 
-If you disable Training in the Settings, kerbals are assumed to be fully trained for all parts.
+Training can take two forms:
 
-Another way to reduce Stress is by having more than one kerbal of a certain profession on a vessel. Then they are assumed working in shifts or helping each other, and their Stress level is reduced accordingly. For instance, a Pilot that loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is another Pilot on the ship.
+- In-flight training takes place automatically whenever the kerbal is on a mission and *not* landed on the home planet (i.e. Kerbin). They will gradually get used to the parts on their vessel and therefore slowly reduce the Stress they take from spaceflight. More challenging situations provide significantly more training speed, based on their science multiplier. However, this process gives diminishing returns. For instance, an astronaut with 0% training may increase their training level by 1% per day, but when they reach 50% training, they will only get 0.5% per day, and so on. So you can never really reach 100% training, but the experience using a part a kerbal has, the less Stress they will take.
 
-Tourists don't benefit from having more "colleagues" on a vessel. Instead, they get peace of mind from knowing that there is professional crew to look after them. Their Stress is reduced by the number of non-Tourist crew members on the vessel increased by 1. For example, a Tourist that normally loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is one crew member, ~0.27 if there are two crew members etc.
+- Training at KSC has the obvious benefit of preparing the kerbal for their mission without exposing them to its dangers. It is recommended that you train your kerbals at KSC before sending them to where no kerbal has gone before. The drawback is that KSC training has a cap, which depends on your Astronaut Complex level. You can't increase their training level beyond that without actually going to space. The kerbals also have to be healty (i.e. have no health conditions) to train, and they won't recover their health while they are training at the KSC.
+
+KSC training level caps based on your Astronaut Complex facility level:
+- Level 1: 30% reduction (i.e. -1.4 HP/day)
+- Level 2: 50% reduction (i.e. -1 HP/day)
+- Level 3: 60% reduction (i.e. -0.8 HP/day)
+
+To start KSC training, load the vessel in the Editor, open the Health Report and click "Training Info" button. From there, you can select which kerbals to train.
+
+If you disable KSC training in the Settings, kerbals are always assumed to be fully KSC-trained for all parts. In-flight training still takes place as usual.
+
+The other way to reduce Stress is to have more than one kerbal of a certain profession on a vessel. Then they are assumed to be working in shifts or helping each other, and their Stress level is reduced accordingly. For instance, a Pilot that loses 0.8 HP/day to Stress when alone will lose 0.4 HP/day if there is another Pilot on the ship.
+
+Tourists don't benefit from having more "colleagues" on a vessel. Instead, they get peace of mind from knowing that there is professional crew to look after them. Their Stress is reduced by the number of non-Tourist crew members on the vessel plus 1. For example, a Tourist that normally loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is one crew member, ~0.27 if there are two crew members etc.
 
 ## Health Recuperation and Health Decay
 
@@ -153,7 +163,7 @@ If you would like to include special support for your (or your favorite) mod, le
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - Custom solar systems with multiple stars can work in strange ways with radiation mechanics. Disable radiation in the settings if you have problems.
 - It is recommended to disable habitation mechanics of USI-LS (and other similar mods) as these largely have the same goal as Kerbal Health.
-- RemoteTech's connection state is not supported for the purpose of the Connected Factor status. This issue will be resolved once RemoteTech 2.0 is released. Meanwhile, you may disable both Connected and Assigned factors to keep balance.
+- RemoteTech's connection state is not supported for the purpose of the Connected Factor status. You may simply disable or reduce Connected factor.
 
 ## Copyright and License
 
