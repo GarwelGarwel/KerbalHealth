@@ -287,7 +287,7 @@ namespace KerbalHealth
                             break;
                     }
 
-                    gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {Core.TrainingCap:P0}</b>", true));
+                    gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {Core.KSCTrainingCap:P0}</b>", true));
                     for (int j = 0; j < trainableParts.Count; j++)
                     {
                         PartTrainingInfo tp = kerbal.GetTrainingPart(trainableParts[j].PartName);

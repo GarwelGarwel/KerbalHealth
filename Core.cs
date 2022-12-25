@@ -1,4 +1,5 @@
-﻿using KSP.UI.Screens;
+﻿using KSP.Localization;
+using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,17 +114,17 @@ namespace KerbalHealth
 
         public static List<RadStormType> RadStormTypes { get; set; }
 
-        public static double SolarCycleDuration { get; set; }
+        public static float SolarCycleDuration { get; set; }
 
-        public static double SolarCycleStartingPhase { get; set; }
+        public static float SolarCycleStartingPhase { get; set; }
 
-        public static double RadStormMinMBTE { get; set; }
+        public static float RadStormMinMBTE { get; set; }
 
-        public static double RadStormMaxMBTE { get; set; }
+        public static float RadStormMaxMBTE { get; set; }
 
-        public static double SolarCyclePhase => (SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
+        public static float SolarCyclePhase => (int)(SolarCycleStartingPhase + Planetarium.GetUniversalTime() / SolarCycleDuration) % 1;
 
-        public static double RadStormMTBE => RadStormMinMBTE + (RadStormMaxMBTE - RadStormMinMBTE) * (Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
+        public static float RadStormMTBE => RadStormMinMBTE + (RadStormMaxMBTE - RadStormMinMBTE) * (float)(Math.Sin(2 * Math.PI * (SolarCyclePhase + 0.75)) + 1) / 2;
 
         public static RadStormType GetRandomRadStormType()
         {
@@ -177,7 +178,8 @@ namespace KerbalHealth
 
         #endregion
 
-        public static string GetPartTitle(string partName) => PartLoader.getPartInfoByName(partName)?.title ?? partName;
+        public static string GetPartTitle(string partName) =>
+            partName.StartsWith("kerbalEVA") ? Localizer.Format("#KH_SpacesuitPart", partName) : (PartLoader.getPartInfoByName(partName)?.title ?? partName);
 
         /// <summary>
         /// Returns true if the kerbal is in a loaded vessel
@@ -263,7 +265,7 @@ namespace KerbalHealth
         /// <summary>
         /// Max amount of stress reduced by training depending on Astronaut Complex's level
         /// </summary>
-        public static float TrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
+        public static float KSCTrainingCap => trainingCaps[(int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.AstronautComplex) * 2)];
 
         public const float InFlightTrainingCap = 1;
 
@@ -467,12 +469,11 @@ namespace KerbalHealth
             int i = 0;
             foreach (ConfigNode n in config.GetNodes("PLANET_HEALTH_CONFIG"))
                 GetPlanetConfig(n.GetString("name"))?.Load(n);
-            //Log($"{i} planet configs out of {PlanetConfigs.Count} bodies loaded.", LogLevel.Important);
 
-            SolarCycleDuration = config.GetDouble("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
-            SolarCycleStartingPhase = config.GetDouble("solarCycleStartingPhase");
-            RadStormMinMBTE = config.GetDouble("radStormMinMBTE", 426);
-            RadStormMaxMBTE = config.GetDouble("radStormMaxMBTE", 6390);
+            SolarCycleDuration = config.GetFloat("solarCycleDuration", 11) * KSPUtil.dateTimeFormatter.Year;
+            SolarCycleStartingPhase = config.GetFloat("solarCycleStartingPhase");
+            RadStormMinMBTE = config.GetFloat("radStormMinMBTE", 426);
+            RadStormMaxMBTE = config.GetFloat("radStormMaxMBTE", 6390);
 
             RadStormTypes = new List<RadStormType>();
             i = 0;
@@ -485,9 +486,9 @@ namespace KerbalHealth
 
             trainingCaps = new List<float>(3)
             {
-                0.40f,
-                0.60f,
-                0.75f
+                0.30f,
+                0.50f,
+                0.60f
             };
             foreach (ConfigNode n in config.GetNodes("TRAINING_CAPS"))
             {

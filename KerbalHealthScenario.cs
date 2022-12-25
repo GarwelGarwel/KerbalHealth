@@ -163,17 +163,11 @@ namespace KerbalHealth
             GameEvents.OnProgressComplete.Remove(OnProgressComplete);
             GameEvents.onVesselWasModified.Remove(onVesselWasModified);
 
-            EventData<Part, ProtoCrewMember> dfEvent;
-            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen");
-            if (dfEvent != null)
-                dfEvent.Remove(OnKerbalFrozen);
-            dfEvent = GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw");
-            if (dfEvent != null)
-                dfEvent.Remove(OnKerbalThaw);
+            GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalFrozen")?.Remove(OnKerbalFrozen);
+            GameEvents.FindEvent<EventData<Part, ProtoCrewMember>>("onKerbalThaw")?.Remove(OnKerbalThaw);
 
             UnregisterAppLauncherButton();
-            if (toolbarButton != null)
-                toolbarButton.Destroy();
+            toolbarButton?.Destroy();
         }
 
         /// <summary>
@@ -351,8 +345,7 @@ namespace KerbalHealth
         {
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
             {
-                if (monitorWindow != null)
-                    monitorWindow.Dismiss();
+                monitorWindow?.Dismiss();
                 return;
             }
 
@@ -441,7 +434,7 @@ namespace KerbalHealth
                     gridContent[i].SetOptionText($"<color=white>{selectedKHS.GetFactorHPChange(f):N2}</color>");
                     i += 2;
                 }
-                gridContent[i].children[0].SetOptionText($"<color=white>{(selectedKHS.TrainingVessel != null ? $"{selectedKHS.GetTrainingLevel():P0}{(selectedKHS.IsTrainingAtKSC ? $"/{Core.TrainingCap:P0}" : "")}" : Localizer.Format("#KH_NA"))}</color>");
+                gridContent[i].children[0].SetOptionText($"<color=white>{(selectedKHS.TrainingVessel != null ? $"{selectedKHS.GetTrainingLevel():P0}{(selectedKHS.IsTrainingAtKSC ? $"/{Core.KSCTrainingCap:P0}" : "")}" : Localizer.Format("#KH_NA"))}</color>");
                 gridContent[i + 2].SetOptionText($"<color=white>{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
                 gridContent[i + 4].SetOptionText($"<color=white>{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
                 gridContent[i + 6].SetOptionText($"<color=white>{selectedKHS.Radiation:N0}/day</color>");
@@ -703,8 +696,8 @@ namespace KerbalHealth
 
         void UnregisterAppLauncherButton()
         {
-            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
-                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
+            if (appLauncherButton != null)
+                ApplicationLauncher.Instance?.RemoveModApplication(appLauncherButton);
         }
 
         bool LoadSettingsFromConfig()
@@ -809,8 +802,8 @@ namespace KerbalHealth
                     Core.Log($"KerbalHealthStatus for {pcm.name} in {v.vesselName} not found!", LogLevel.Error);
                     continue;
                 }
-                Core.Log($"{pcm.name} is trained {khs.GetTrainingLevel():P1} / {Core.TrainingCap:P1}.");
-                if (khs.GetTrainingLevel() < Core.TrainingCap)
+                Core.Log($"{pcm.name} is trained {khs.GetTrainingLevel():P1} / {Core.KSCTrainingCap:P1}.");
+                if (khs.GetTrainingLevel() < Core.KSCTrainingCap)
                 {
                     msg += (msg.Length == 0 ? "" : ", ") + pcm.name;
                     n++;
@@ -840,7 +833,7 @@ namespace KerbalHealth
             }
         }
 
-        void SpawnRadStorms(double interval)
+        void SpawnRadStorms(float interval)
         {
             Core.Log($"SpawnRadStorms({interval:F2})");
             Dictionary<int, RadStorm> targets = new Dictionary<int, RadStorm>
@@ -1057,7 +1050,7 @@ namespace KerbalHealth
                    selectedKHS.TrainingVessel,
                    selectedKHS.TrainedParts.Count(tp => tp.TrainingNow),
                    selectedKHS.GetTrainingLevel().ToString("P2"),
-                   Core.TrainingCap.ToString("P0"),
+                   Core.KSCTrainingCap.ToString("P0"),
                    selectedKHS.LastRealTrainingPerDay.ToString("P2"),
                    Core.ParseUT(selectedKHS.CurrentTrainingETA, false, 10));
             else if (selectedKHS.TrainingVessel != null)
@@ -1082,7 +1075,7 @@ namespace KerbalHealth
                         tag = "<b>";
                         untag = "</b>";
                     }
-                    elements.Add(new DialogGUIHorizontalLayout(300, 10, new DialogGUILabel($"{tag}{tp.Label}{untag}", 250), new DialogGUILabel($"{tag}{tp.Level:P2}{untag}", 50)));
+                    elements.Add(new DialogGUIHorizontalLayout(300, 10, new DialogGUILabel($"{tag}{tp.Title}{untag}", 250), new DialogGUILabel($"{tag}{tp.Level:P2}{untag}", 50)));
                 }
             }
             if (selectedKHS.IsTrainingAtKSC)

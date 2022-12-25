@@ -1,4 +1,6 @@
-﻿namespace KerbalHealth
+﻿using System;
+
+namespace KerbalHealth
 {
     public class PartTrainingInfo : IConfigNode
     {
@@ -10,11 +12,11 @@
 
         public float Level { get; set; }
 
-        public string Label => PartLoader.getPartInfoByName(Name)?.title ?? Name;
+        public string Title => Core.GetPartTitle(Name);
 
-        public bool KSCTrainingComplete => Level >= Core.TrainingCap;
+        public bool KSCTrainingComplete => Level >= Core.KSCTrainingCap;
 
-        public bool TrainingNow => Complexity > 0;// && Level < Core.TrainingCap;
+        public bool TrainingNow => Complexity > 0;
 
         public PartTrainingInfo(ConfigNode n) => Load(n);
 
@@ -43,11 +45,13 @@
             Name = node.GetString("name");
             if (Name == null)
             {
-                Core.Log("Training part name not found.", LogLevel.Error);
+                Core.Log($"Training part name not found in node:\n{node}", LogLevel.Error);
                 return;
             }
             Complexity = node.GetFloat("complexity");
             Level = node.GetFloat("level");
+            if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
+                Level = Math.Max(Level, Core.KSCTrainingCap);
         }
     }
 }
