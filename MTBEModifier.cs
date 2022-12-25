@@ -54,8 +54,6 @@ namespace KerbalHealth
             double v = baseValue;
             foreach (MTBEModifier m in modifiers)
                 v = m.Calculate(v, pcm);
-            if (v != baseValue)
-                Core.Log($"Base MTBE: {baseValue:F2}. Modified MTBE: {v:F2}.");
             return v;
         }
 

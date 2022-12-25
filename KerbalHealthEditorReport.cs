@@ -212,7 +212,7 @@ namespace KerbalHealth
                         new DialogGUIHorizontalLayout(
                             true,
                             false,
-                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && Core.HasTrainableParts(EditorLogic.SortedShipList), true),
+                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && Core.AnyTrainableParts(EditorLogic.SortedShipList), true),
                             new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnResetButtonSelected, false))),
                     false,
                     HighLogic.UISkin,
@@ -224,19 +224,17 @@ namespace KerbalHealth
             else
             {
                 dirty = false;
-                IList<ModuleKerbalHealth> trainableParts = new List<ModuleKerbalHealth>();
-                foreach (ModuleKerbalHealth tp in Core.GetTrainablePartTypes(EditorLogic.SortedShipList))
-                    if (!trainableParts.Any(tp2 => tp2.PartName == tp.PartName))
-                        trainableParts.Add(tp);
-                List<KerbalHealthStatus> kerbals = Core.KerbalHealthList.Values
-                    .Where(khs => khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
-                    .ToList();
+                IList<ModuleKerbalHealth> trainableParts = EditorLogic.SortedShipList.GetTrainableModules();
                 if (trainableParts.Count == 0)
                 {
                     Core.Log($"No trainable parts found.", LogLevel.Important);
                     SwitchToReportMode();
                     return;
                 }
+
+                List<KerbalHealthStatus> kerbals = Core.KerbalHealthList.Values
+                    .Where(khs => khs.ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available)
+                    .ToList();
 
                 // Creating column titles
                 trainingColumnCount = trainableParts.Count + 3;
@@ -254,9 +252,9 @@ namespace KerbalHealth
                 int kerbalTrainingStatus = 0;
                 foreach (KerbalHealthStatus kerbal in kerbals)
                 {
-                    if (kerbal.GetTrainingLevel() >= Core.TrainingCap)
+                    if (!kerbal.AnyModuleTrainableAtKSC(trainableParts))
                         kerbalTrainingStatus = 1;
-                    else if (!kerbal.CanTrain)
+                    else if (kerbal.ConditionsPreventKSCTraining)
                         kerbalTrainingStatus = 2;
                     else if (kerbal.IsTrainingAtKSC)
                         kerbalTrainingStatus = 3;
@@ -289,10 +287,10 @@ namespace KerbalHealth
                             break;
                     }
 
-                    gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {Core.TrainingCap:P0}</b>", true));
+                    gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {Core.KSCTrainingCap:P0}</b>", true));
                     for (int j = 0; j < trainableParts.Count; j++)
                     {
-                        TrainingPart tp = kerbal.GetTrainingPart(trainableParts[j].PartName);
+                        PartTrainingInfo tp = kerbal.GetTrainingPart(trainableParts[j].PartName);
                         if (tp != null)
                             gridContent.Add(new DialogGUILabel(tp.Level.ToString("P1"), true));
                         else gridContent.Add(new DialogGUILabel("", true));
@@ -428,7 +426,7 @@ namespace KerbalHealth
             Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
             spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
-            complexityLbl.SetOptionText($"<color=white>{Core.GetTrainablePartTypes(EditorLogic.SortedShipList).Sum(mkh => mkh.complexity):P0}</color>");
+            complexityLbl.SetOptionText($"<color=white>{EditorLogic.SortedShipList.GetTrainableModules().Sum(mkh => mkh.complexity):P0}</color>");
             recupLbl.SetOptionText($"<color=white>{vesselEffects.EffectiveRecuperation:P1}</color>");
             shieldingLbl.SetOptionText($"<color=white>{vesselEffects.Shielding:F1}</color>");
             exposureLbl.SetOptionText($"<color=white>{vesselEffects.VesselExposure:P1}</color>");
@@ -498,9 +496,6 @@ namespace KerbalHealth
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
-            foreach (KeyValuePair<string, bool> kvp in kerbalsToTrain)
-                Core.Log($"{kvp.Key}: {kvp.Value}");
-
             int count = 0;
             foreach (string kerbal in kerbalsToTrain.Where(kvp => kvp.Value).Select(kvp => kvp.Key))
             {
@@ -511,8 +506,9 @@ namespace KerbalHealth
                     Core.Log($"{kerbal} is marked for training but not present in KerbalHealthList!", LogLevel.Error);
                     continue;
                 }
-                khs.AddCondition(KerbalHealthStatus.Condition_Training);
+                //khs.StopTraining(null);
                 khs.StartTraining(EditorLogic.SortedShipList, EditorLogic.fetch.ship.shipName);
+                khs.AddCondition(KerbalHealthStatus.Condition_Training);
                 count++;
             }
 
