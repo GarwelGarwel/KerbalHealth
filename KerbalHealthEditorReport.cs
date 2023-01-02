@@ -85,7 +85,6 @@ namespace KerbalHealth
         }
 
         const int reportsColumnCount = 3;
-        int trainingColumnCount = 4;
         PopupDialog window;
         WindowMode windowMode = WindowMode.HealthReport;
         static Vector2 windowPosition = new Vector2(0.5f, 0.5f);
@@ -237,15 +236,23 @@ namespace KerbalHealth
                     .ToList();
 
                 // Creating column titles
-                trainingColumnCount = trainableParts.Count + 3;
-                gridContent = new List<DialogGUIBase>((kerbals.Count + 1) * trainingColumnCount)
+                gridContent = new List<DialogGUIBase>()
                 {
                     new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_Name")}</color></b>", true),
                     new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_TrainingTime")}</color></b>", true),
                     new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_TotalTraining")}</color></b>", true)
                 };
                 for (int i = 0; i < trainableParts.Count; i++)
-                    gridContent.Add(new DialogGUILabel($"<b><color=white>{Core.GetPartTitle(trainableParts[i].PartName)}{(trainableParts[i].complexity != 1 ? $" ({trainableParts[i].complexity:P0})" : "")}</color></b>", true));
+                {
+                    int count = 1;
+                    for (int j = trainableParts.Count - 1; j > i; j--)
+                        if (trainableParts[i].PartName == trainableParts[j].PartName)
+                        {
+                            count++;
+                            trainableParts.RemoveAt(j);
+                        }
+                    gridContent.Add(new DialogGUILabel($"<b><color=white>{Core.GetPartTitle(trainableParts[i].PartName)}{(trainableParts[i].complexity != 1 ? $" ({trainableParts[i].complexity:P0})" : "")}{(count > 1 ? $" x{count}" : "")}</color></b>", true));
+                }
 
                 // Filling out the rows
                 kerbalsToTrain.Clear();
@@ -305,7 +312,7 @@ namespace KerbalHealth
                         "",
                         Localizer.Format("#KH_ER_TrainingInfo_Title"),
                         HighLogic.UISkin,
-                        new Rect(windowPosition.x, windowPosition.y, trainingColumnCount * 120 + 20, 10),
+                        new Rect(windowPosition.x, windowPosition.y, trainableParts.Count * 120 + 380, 10),
                         new DialogGUIGridLayout(
                             new RectOffset(5, 5, 5, 5),
                             new Vector2(110, 30),
@@ -314,7 +321,7 @@ namespace KerbalHealth
                             GridLayoutGroup.Axis.Horizontal,
                             TextAnchor.MiddleCenter,
                             GridLayoutGroup.Constraint.FixedColumnCount,
-                            trainingColumnCount,
+                            3 + trainableParts.Count,
                             gridContent.ToArray()),
                         new DialogGUIHorizontalLayout(
                             true,

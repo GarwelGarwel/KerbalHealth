@@ -718,6 +718,7 @@ namespace KerbalHealth
         public float GetTrainingLevel(bool simulateTrained = false)
         {
             float totalTraining = 0, totalComplexity = 0;
+
             if (IsInEditor)
                 foreach (ModuleKerbalHealth mkh in EditorLogic.SortedShipList.GetTrainableModules())
                 {
@@ -725,10 +726,10 @@ namespace KerbalHealth
                     totalComplexity += mkh.complexity;
                 }
 
-            else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.Complexity > 0))
+            else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.TrainingNow))
                 {
-                    totalTraining += tp.Complexity * tp.Level;
-                    totalComplexity += tp.Complexity;
+                    totalTraining += tp.Complexity * tp.Count * tp.Level;
+                    totalComplexity += tp.Complexity * tp.Count;
                 }
 
             return totalComplexity != 0 ? totalTraining / totalComplexity : KSCTrainingCap;
@@ -753,7 +754,7 @@ namespace KerbalHealth
                     if (IsTrainingAtKSC && trainingInfo.KSCTrainingComplete)
                         continue;
                     else trainingInfo.StartTraining(mkh.complexity);
-                else TrainedParts.Add(new PartTrainingInfo(mkh.PartName, mkh.complexity, KerbalHealthFactorsSettings.Instance.TrainingEnabled ? 0 : KSCTrainingCap));
+                else TrainedParts.Add(new PartTrainingInfo(mkh.PartName, mkh.complexity, 1, KerbalHealthFactorsSettings.Instance.TrainingEnabled ? 0 : KSCTrainingCap));
                 Log($"Now training for {mkh.PartName} (complexity: {mkh.complexity}).");
                 count++;
             }
@@ -761,7 +762,7 @@ namespace KerbalHealth
             if (count > 0)
             {
                 TrainingVessel = vesselName;
-                Log($"Training {name} for {vesselName} ({count} untrained modules).");
+                Log($"Training {name} for {vesselName} ({count} untrained parts).");
             }
         }
 
@@ -823,7 +824,7 @@ namespace KerbalHealth
                 else trainingComplete = false;
             }
 
-            LastRealTrainingPerDay = inflight ? totalTrainingIncrease * TrainingPerDay / totalComplexity : TrainingPerDay / totalComplexity;
+            LastRealTrainingPerDay = inflight ? TrainingPerDay * totalTrainingIncrease / untrainedParts.Count / totalComplexity : TrainingPerDay / totalComplexity;
             if (trainingComplete)
                 StopTraining("#KH_TrainingComplete");
         }
@@ -1190,7 +1191,7 @@ namespace KerbalHealth
                 PartTrainingInfo trainingPart = GetTrainingPart(partName);
                 if (trainingPart != null)
                     trainingPart.Level = Math.Max(trainingPart.Level, KSCTrainingCap);
-                else TrainedParts.Add(new PartTrainingInfo(partName, 0, KSCTrainingCap));
+                else TrainedParts.Add(new PartTrainingInfo(partName, 0, 0, KSCTrainingCap));
             }
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && IsTrainingAtKSC)
                 StopTraining(null);
