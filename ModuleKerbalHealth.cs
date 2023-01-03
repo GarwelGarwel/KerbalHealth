@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using static KerbalHealth.Core;
+
 namespace KerbalHealth
 {
     public class ModuleKerbalHealth : PartModule, IResourceConsumer
@@ -106,7 +108,7 @@ namespace KerbalHealth
 
         public bool IsAlwaysActive => resourceConsumption == 0 && resourceConsumptionPerKerbal == 0;
 
-        public bool IsModuleActive => IsAlwaysActive || (isActive && (!Core.IsInEditor || KerbalHealthEditorReport.HealthModulesEnabled) && !starving);
+        public bool IsModuleActive => IsAlwaysActive || (isActive && (!IsInEditor || KerbalHealthEditorReport.HealthModulesEnabled) && !starving);
 
         /// <summary>
         /// Returns total # of kerbals affected by this module
@@ -117,18 +119,18 @@ namespace KerbalHealth
             {
                 if (!affectsAllCLSSpaces && CLS.Enabled)
                 {
-                    ICLSVessel clsVessel = Core.IsInEditor ? CLS.CLSAddon.Vessel : CLS.CLSAddon.getCLSVessel(vessel);
+                    ICLSVessel clsVessel = IsInEditor ? CLS.CLSAddon.Vessel : CLS.CLSAddon.getCLSVessel(vessel);
                     if (clsVessel != null)
                     {
                         ICLSSpace clsSpace = clsVessel.Parts.Find(p => p.Part == part)?.Space;
                         if (clsSpace != null)
                             return clsSpace.GetCrewCount();
-                        else Core.Log($"Could not find CLS space for part {part?.name}.", LogLevel.Error);
+                        else Log($"Could not find CLS space for part {part?.name}.", LogLevel.Error);
                     }
-                    else Core.Log($"Could not find CLS vessel for part {part?.name} in vessel {vessel?.name ?? "N/A"}.", LogLevel.Error);
+                    else Log($"Could not find CLS vessel for part {part?.name} in vessel {vessel?.name ?? "N/A"}.", LogLevel.Error);
                 }
 
-                if (Core.IsInEditor)
+                if (IsInEditor)
                     return ShipConstruction.ShipManifest.CrewCount;
 
                 return vessel != null ? vessel.GetCrewCount() : 0;
@@ -202,7 +204,7 @@ namespace KerbalHealth
                 availableResources.TryGetValue(mkh.resource, out double availableAmount);
                 if (requiredAmount > 0 && availableAmount <= 0)
                 {
-                    Core.Log($"{mkh.Title} Module in {proto_part?.name} is starving of {mkh.resource} ({requiredAmount} @ {mkh.ecPerSec} EC/sec needed, {availableAmount} available).");
+                    Log($"{mkh.Title} Module in {proto_part?.name} is starving of {mkh.resource} ({requiredAmount} @ {mkh.ecPerSec} EC/sec needed, {availableAmount} available).");
                     mkh.starving = true;
                 }
                 resourceChangeRequest.Add(new KeyValuePair<string, double>(mkh.resource, -mkh.ecPerSec));
@@ -236,7 +238,7 @@ namespace KerbalHealth
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            Core.Log($"ModuleKerbalHealth.OnStart({state}) for {PartName}");
+            Log($"ModuleKerbalHealth.OnStart({state}) for {PartName}");
             if (crewCap < 0)
                 crewCap = part.CrewCapacity;
             if (IsAlwaysActive)
@@ -245,7 +247,7 @@ namespace KerbalHealth
                 Events["OnToggleActive"].guiActive = false;
                 Events["OnToggleActive"].guiActiveEditor = false;
             }
-            if (Core.IsInEditor && resource == "ElectricCharge")
+            if (IsInEditor && resource == "ElectricCharge")
                 ecPerSec = TotalResourceConsumption;
             Fields["ecPerSec"].guiName = Localizer.Format("#KH_Module_ECUsage", Title); // + EC Usage:
             if (!IsSwitchable)
@@ -257,8 +259,8 @@ namespace KerbalHealth
             {
                 engineModules = part.FindModulesImplementing<IEngineStatus>();
                 if (engineModules != null)
-                    Core.Log($"{PartName} has {engineModules.Count} engine module(s).");
-                else Core.Log($"Could not find an engine module for {PartName} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
+                    Log($"{PartName} has {engineModules.Count} engine module(s).");
+                else Log($"Could not find an engine module for {PartName} although it has engineRadioactivity of {engineRadioactivity}.", LogLevel.Error);
             }
             UpdateGUIName();
             lastUpdated = Planetarium.GetUniversalTime();
@@ -266,7 +268,7 @@ namespace KerbalHealth
 
         public void FixedUpdate()
         {
-            if (Core.IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
+            if (IsInEditor || !KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
             double time = Planetarium.GetUniversalTime();
             if (isActive && (resourceConsumption > 0 || resourceConsumptionPerKerbal > 0))
@@ -277,7 +279,7 @@ namespace KerbalHealth
                     ecPerSec = 0;
                 starving = (providedAmount = vessel.RequestResource(part, ResourceDefinition.id, requiredAmount, false)) * 2 < requiredAmount;
                 if (starving)
-                    Core.Log($"{Title} Module in {PartName} is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
+                    Log($"{Title} Module in {PartName} is starving of {resource} ({requiredAmount} needed, {providedAmount} provided).");
             }
             else ecPerSec = 0;
             lastUpdated = time;
@@ -327,18 +329,18 @@ namespace KerbalHealth
         {
             isActive = IsAlwaysActive || !isActive;
             UpdateGUIName();
-            if (Core.IsInEditor)
+            if (IsInEditor)
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
         [KSPEvent(name = "OnSwitchConfig", guiActiveEditor = true, guiName = "#KH_Module_SwitchConfig")]
         public void OnSwitchConfig()
         {
-            Core.Log("ModuleKerbalHealth.OnSwitchConfig");
-            if (IsSwitchable && Core.IsInEditor)
+            Log("ModuleKerbalHealth.OnSwitchConfig");
+            if (IsSwitchable && IsInEditor)
                 multiplierMode = !multiplierMode;
             UpdateGUIName();
-            if (Core.IsInEditor)
+            if (IsInEditor)
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
@@ -385,7 +387,7 @@ namespace KerbalHealth
 
         void UpdateGUIName()
         {
-            Core.Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
+            Log($"UpdateGUIName for {Title}. Space = {space}, multiply factor = {multiplyFactor}, multiplierMode is {multiplierMode}. Effective space is {Space}, multiplier {Multiplier}.");
             if (IsSwitchable)
                 Fields.SetValue("configName", Title);
             Events["OnToggleActive"].guiName = Localizer.Format(isActive ? "#KH_Module_Disable" : "#KH_Module_Enable", Title);//"Disable ""Enable "
