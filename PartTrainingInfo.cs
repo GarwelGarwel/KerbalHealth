@@ -30,7 +30,7 @@ namespace KerbalHealth
             Level = level;
         }
 
-        public void StartTraining(float complexity) => Count++;
+        public void StartTraining() => Count++;
 
         public void StopTraining() => Count = 0;
 

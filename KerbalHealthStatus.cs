@@ -742,18 +742,21 @@ namespace KerbalHealth
         {
             Log($"KerbalHealthStatus.StartTraining({parts.Count} parts, '{vesselName}') for {name}");
 
-            // Clearing complexity of all trained parts to prepare for updating the list
+            // First stopping training for all parts to prepare for updating the list
             StopTraining(IsTrainingAtKSC && !IsInEditor ? "#KH_TrainingStopped" : null);
 
-            // Setting complexity of all currently trainable parts
+            // Restarting training for all currently trainable parts
             int count = 0;
             foreach (ModuleKerbalHealth mkh in parts.GetTrainableModules())
             {
                 PartTrainingInfo trainingInfo = GetTrainingPart(mkh.PartName);
                 if (trainingInfo != null)
+                {
+                    trainingInfo.Complexity = mkh.complexity;
                     if (IsTrainingAtKSC && trainingInfo.KSCTrainingComplete)
                         continue;
-                    else trainingInfo.StartTraining(mkh.complexity);
+                    else trainingInfo.StartTraining();
+                }
                 else TrainedParts.Add(new PartTrainingInfo(mkh.PartName, mkh.complexity, 1, KerbalHealthFactorsSettings.Instance.TrainingEnabled ? 0 : KSCTrainingCap));
                 Log($"Now training for {mkh.PartName} (complexity: {mkh.complexity}).");
                 count++;
