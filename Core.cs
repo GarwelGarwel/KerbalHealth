@@ -278,8 +278,8 @@ namespace KerbalHealth
             foreach (Part part in allParts)
                 foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(mkh => mkh.complexity != 0))
                 {
-                    if (!res.Any(mkh2 => mkh2.PartName == mkh.PartName))
-                        res.Add(mkh);
+                    //if (!res.Any(mkh2 => mkh2.PartName == mkh.PartName))
+                    res.Add(mkh);
                     break;
                 }
             return res;

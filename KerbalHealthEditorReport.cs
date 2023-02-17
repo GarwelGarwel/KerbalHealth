@@ -7,6 +7,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+using static KerbalHealth.Core;
+
 namespace KerbalHealth
 {
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
@@ -30,7 +32,7 @@ namespace KerbalHealth
         {
             if (!KerbalHealthGeneralSettings.Instance.modEnabled)
                 return;
-            Core.Log("KerbalHealthEditorReport.Start", LogLevel.Important);
+            Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
             GameEvents.onEditorShipModified.Add(_ => Invalidate());
             GameEvents.onEditorPodDeleted.Add(Invalidate);
@@ -38,7 +40,7 @@ namespace KerbalHealth
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {
-                Core.Log("Registering AppLauncher button...");
+                Log("Registering AppLauncher button...");
                 Texture2D icon = new Texture2D(38, 38);
                 icon.LoadImage(File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "icon.png")));
                 appLauncherButton = ApplicationLauncher.Instance.AddModApplication(OnAppLauncherClicked, OnAppLauncherClicked, null, null, null, null, ApplicationLauncher.AppScenes.ALWAYS, icon);
@@ -46,7 +48,7 @@ namespace KerbalHealth
 
             if (ToolbarManager.ToolbarAvailable)
             {
-                Core.Log("Registering Toolbar button...");
+                Log("Registering Toolbar button...");
                 toolbarButton = ToolbarManager.Instance.add("KerbalHealth", "HealthReport");
                 toolbarButton.Text = Localizer.Format("#KH_ER_ButtonTitle");
                 toolbarButton.TexturePath = "KerbalHealth/toolbar";
@@ -55,18 +57,18 @@ namespace KerbalHealth
             }
 
             Core.KerbalHealthList.RegisterKerbals();
-            Core.Log("KerbalHealthEditorReport.Start finished.");
+            Log("KerbalHealthEditorReport.Start finished.");
         }
 
         public void OnDisable()
         {
-            Core.Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
+            Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
             HideWindow();
             if (toolbarButton != null)
                 toolbarButton.Destroy();
             if (appLauncherButton != null && ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
-            Core.Log("KerbalHealthEditorReport.OnDisable finished.");
+            Log("KerbalHealthEditorReport.OnDisable finished.");
         }
 
         #endregion LIFE CYCLE
@@ -85,7 +87,6 @@ namespace KerbalHealth
         }
 
         const int reportsColumnCount = 3;
-        int trainingColumnCount = 4;
         PopupDialog window;
         WindowMode windowMode = WindowMode.HealthReport;
         static Vector2 windowPosition = new Vector2(0.5f, 0.5f);
@@ -97,7 +98,7 @@ namespace KerbalHealth
 
         public void ShowWindow()
         {
-            Core.Log("KerbalHealthEditorReport.DisplayData", LogLevel.Important);
+            Log("KerbalHealthEditorReport.DisplayData", LogLevel.Important);
             if (ShipConstruction.ShipManifest == null)
             {
                 HideWindow();
@@ -126,7 +127,7 @@ namespace KerbalHealth
                     gridContent.Add(new DialogGUILabel("", true));
 
                 // Preparing factors checklist
-                List<DialogGUIToggle> checklist = new List<DialogGUIToggle>(Core.Factors.Where(f => f.ShownInEditor).Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
+                List<DialogGUIToggle> checklist = new List<DialogGUIToggle>(Factors.Where(f => f.ShownInEditor).Select(f => new DialogGUIToggle(f.IsEnabledInEditor, f.Title, state =>
                 {
                     f.SetEnabledInEditor(state);
                     Invalidate();
@@ -212,7 +213,7 @@ namespace KerbalHealth
                         new DialogGUIHorizontalLayout(
                             true,
                             false,
-                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && Core.AnyTrainableParts(EditorLogic.SortedShipList), true),
+                            new DialogGUIButton(Localizer.Format("#KH_ER_TrainingMode"), SwitchToTrainingMode, () => KerbalHealthFactorsSettings.Instance.TrainingEnabled && AnyTrainableParts(EditorLogic.SortedShipList), true),
                             new DialogGUIButton(Localizer.Format("#KH_ER_Reset"), OnResetButtonSelected, false))),
                     false,
                     HighLogic.UISkin,
@@ -227,7 +228,7 @@ namespace KerbalHealth
                 IList<ModuleKerbalHealth> trainableParts = EditorLogic.SortedShipList.GetTrainableModules();
                 if (trainableParts.Count == 0)
                 {
-                    Core.Log($"No trainable parts found.", LogLevel.Important);
+                    Log($"No trainable parts found.", LogLevel.Important);
                     SwitchToReportMode();
                     return;
                 }
@@ -237,15 +238,23 @@ namespace KerbalHealth
                     .ToList();
 
                 // Creating column titles
-                trainingColumnCount = trainableParts.Count + 3;
-                gridContent = new List<DialogGUIBase>((kerbals.Count + 1) * trainingColumnCount)
+                gridContent = new List<DialogGUIBase>()
                 {
                     new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_Name")}</color></b>", true),
                     new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_TrainingTime")}</color></b>", true),
                     new DialogGUILabel($"<b><color=white>{Localizer.Format("#KH_ER_TotalTraining")}</color></b>", true)
                 };
                 for (int i = 0; i < trainableParts.Count; i++)
-                    gridContent.Add(new DialogGUILabel($"<b><color=white>{Core.GetPartTitle(trainableParts[i].PartName)}{(trainableParts[i].complexity != 1 ? $" ({trainableParts[i].complexity:P0})" : "")}</color></b>", true));
+                {
+                    int count = 1;
+                    for (int j = trainableParts.Count - 1; j > i; j--)
+                        if (trainableParts[i].PartName == trainableParts[j].PartName)
+                        {
+                            count++;
+                            trainableParts.RemoveAt(j);
+                        }
+                    gridContent.Add(new DialogGUILabel($"<b><color=white>{GetPartTitle(trainableParts[i].PartName)}{(trainableParts[i].complexity != 1 ? $" ({trainableParts[i].complexity:P0})" : "")}{(count > 1 ? $" x{count}" : "")}</color></b>", true));
+                }
 
                 // Filling out the rows
                 kerbalsToTrain.Clear();
@@ -265,7 +274,7 @@ namespace KerbalHealth
                         kerbalsToTrain.Add(kerbal.Name, kerbalTrainingStatus == 4);
                         gridContent.Add(new DialogGUIToggle(kerbalTrainingStatus == 4, $"<b>{kerbal.FullName}</b>", state =>
                         {
-                            Core.Log($"kerbalsToTrain['{kerbal.Name}'] = {state}");
+                            Log($"kerbalsToTrain['{kerbal.Name}'] = {state}");
                             kerbalsToTrain[kerbal.Name] = state;
                         }));
                     }
@@ -283,11 +292,11 @@ namespace KerbalHealth
 
                         case 3:
                         case 4:
-                            gridContent.Add(new DialogGUILabel($"<b><color=white>{Core.ParseUT(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
+                            gridContent.Add(new DialogGUILabel($"<b><color=white>{ParseUT(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
                             break;
                     }
 
-                    gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {Core.KSCTrainingCap:P0}</b>", true));
+                    gridContent.Add(new DialogGUILabel($"<b>{kerbal.GetTrainingLevel():P1} / {KSCTrainingCap:P0}</b>", true));
                     for (int j = 0; j < trainableParts.Count; j++)
                     {
                         PartTrainingInfo tp = kerbal.GetTrainingPart(trainableParts[j].PartName);
@@ -305,7 +314,7 @@ namespace KerbalHealth
                         "",
                         Localizer.Format("#KH_ER_TrainingInfo_Title"),
                         HighLogic.UISkin,
-                        new Rect(windowPosition.x, windowPosition.y, trainingColumnCount * 120 + 20, 10),
+                        new Rect(windowPosition.x, windowPosition.y, trainableParts.Count * 120 + 380, 10),
                         new DialogGUIGridLayout(
                             new RectOffset(5, 5, 5, 5),
                             new Vector2(110, 30),
@@ -314,7 +323,7 @@ namespace KerbalHealth
                             GridLayoutGroup.Axis.Horizontal,
                             TextAnchor.MiddleCenter,
                             GridLayoutGroup.Constraint.FixedColumnCount,
-                            trainingColumnCount,
+                            3 + trainableParts.Count,
                             gridContent.ToArray()),
                         new DialogGUIHorizontalLayout(
                             true,
@@ -360,7 +369,7 @@ namespace KerbalHealth
             // # of tracked kerbals has changed => close & reopen the window
             if (windowMode == WindowMode.Training || gridContent.Count != (ShipConstruction.ShipManifest.CrewCount + 1) * reportsColumnCount)
             {
-                Core.Log("Kerbals' number has changed. Recreating the Health Report window.", LogLevel.Important);
+                Log("Kerbals' number has changed. Recreating the Health Report window.", LogLevel.Important);
                 RedrawWindow();
                 return;
             }
@@ -384,7 +393,7 @@ namespace KerbalHealth
                     clsSpaceNameLbl.SetOptionText(Localizer.Format("#KH_ER_CLSSpace", clsSpace.Name));
                 }
                 else clsSpaceNameLbl.SetOptionText("");
-                Core.Log($"Selected CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
+                Log($"Selected CLS space index: {clsSpaceIndex}/{CLSSpacesCount}; space: {clsSpace?.Name ?? "N/A"}");
             }
 
             foreach (ProtoCrewMember pcm in ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm != null))
@@ -392,7 +401,7 @@ namespace KerbalHealth
                 khs = Core.KerbalHealthList[pcm]?.Clone();
                 if (khs == null)
                 {
-                    Core.Log($"Could not create a clone of KerbalHealthStatus for {pcm.name}. It is {(Core.KerbalHealthList[pcm] == null ? "not " : "")}found in KerbalHealthList, which contains {Core.KerbalHealthList.Count} records.", LogLevel.Error);
+                    Log($"Could not create a clone of KerbalHealthStatus for {pcm.name}. It is {(Core.KerbalHealthList[pcm] == null ? "not " : "")}found in KerbalHealthList, which contains {Core.KerbalHealthList.Count} records.", LogLevel.Error);
                     i++;
                     continue;
                 }
@@ -401,7 +410,7 @@ namespace KerbalHealth
                 string color = "";
                 if (clsSpace != null && pcm.GetCLSSpace() == clsSpace)
                 {
-                    Core.Log($"{pcm.name} is in the current {clsSpace.Name} CLS space.");
+                    Log($"{pcm.name} is in the current {clsSpace.Name} CLS space.");
                     color = "<color=white>";
                 }
                 else color = "<color=yellow>";
@@ -417,13 +426,13 @@ namespace KerbalHealth
                 gridContent[(i + 1) * reportsColumnCount + 1].SetOptionText($"{color}{s}</color>");
                 s = balanceHP > khs.CriticalHP
                     ? "—"
-                    : (khs.Recuperation > khs.Decay ? "> " : "") + Core.ParseUT(khs.ETAToNextCondition, false, 100);
+                    : (khs.Recuperation > khs.Decay ? "> " : "") + ParseUT(khs.ETAToNextCondition, false, 100);
                 gridContent[(i + 1) * reportsColumnCount + 2].SetOptionText($"{color}{s}</color>");
                 i++;
             }
 
             HealthEffect vesselEffects = new HealthEffect(EditorLogic.SortedShipList, ShipConstruction.ShipManifest.CrewCount, clsSpace);
-            Core.Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
+            Log($"{(clsSpace != null ? clsSpace.Name : "Vessel's")} effects:\n{vesselEffects}");
 
             spaceLbl.SetOptionText($"<color=white>{vesselEffects.Space:F1}</color>");
             complexityLbl.SetOptionText($"<color=white>{EditorLogic.SortedShipList.GetTrainableModules().Sum(mkh => mkh.complexity):P0}</color>");
@@ -468,8 +477,8 @@ namespace KerbalHealth
 
         void OnResetButtonSelected()
         {
-            Core.Log("OnResetButtonSelected", LogLevel.Important);
-            foreach (HealthFactor f in Core.Factors)
+            Log("OnResetButtonSelected", LogLevel.Important);
+            foreach (HealthFactor f in Factors)
                 f.ResetEnabledInEditor();
             HealthModulesEnabled = true;
             SimulateTrained = true;
@@ -478,32 +487,32 @@ namespace KerbalHealth
 
         void SwitchToTrainingMode()
         {
-            Core.Log("OnSwitchToTrainingMode");
+            Log("OnSwitchToTrainingMode");
             windowMode = WindowMode.Training;
             RedrawWindow();
         }
 
         void SwitchToReportMode()
         {
-            Core.Log("OnSwitchToReportMode");
+            Log("OnSwitchToReportMode");
             windowMode = WindowMode.HealthReport;
             RedrawWindow();
         }
 
         void OnTrainButtonSelected()
         {
-            Core.Log("OnTrainButtonSelected", LogLevel.Important);
+            Log("OnTrainButtonSelected", LogLevel.Important);
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled)
                 return;
 
             int count = 0;
             foreach (string kerbal in kerbalsToTrain.Where(kvp => kvp.Value).Select(kvp => kvp.Key))
             {
-                Core.Log($"Starting training of {kerbal}");
+                Log($"Starting training of {kerbal}");
                 KerbalHealthStatus khs = Core.KerbalHealthList[kerbal];
                 if (khs == null)
                 {
-                    Core.Log($"{kerbal} is marked for training but not present in KerbalHealthList!", LogLevel.Error);
+                    Log($"{kerbal} is marked for training but not present in KerbalHealthList!", LogLevel.Error);
                     continue;
                 }
                 //khs.StopTraining(null);

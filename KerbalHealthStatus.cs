@@ -718,6 +718,7 @@ namespace KerbalHealth
         public float GetTrainingLevel(bool simulateTrained = false)
         {
             float totalTraining = 0, totalComplexity = 0;
+
             if (IsInEditor)
                 foreach (ModuleKerbalHealth mkh in EditorLogic.SortedShipList.GetTrainableModules())
                 {
@@ -725,10 +726,10 @@ namespace KerbalHealth
                     totalComplexity += mkh.complexity;
                 }
 
-            else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.Complexity > 0))
+            else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.TrainingNow))
                 {
-                    totalTraining += tp.Complexity * tp.Level;
-                    totalComplexity += tp.Complexity;
+                    totalTraining += tp.Complexity * tp.Count * tp.Level;
+                    totalComplexity += tp.Complexity * tp.Count;
                 }
 
             return totalComplexity != 0 ? totalTraining / totalComplexity : KSCTrainingCap;
@@ -741,19 +742,22 @@ namespace KerbalHealth
         {
             Log($"KerbalHealthStatus.StartTraining({parts.Count} parts, '{vesselName}') for {name}");
 
-            // Clearing complexity of all trained parts to prepare for updating the list
+            // First stopping training for all parts to prepare for updating the list
             StopTraining(IsTrainingAtKSC && !IsInEditor ? "#KH_TrainingStopped" : null);
 
-            // Setting complexity of all currently trainable parts
+            // Restarting training for all currently trainable parts
             int count = 0;
             foreach (ModuleKerbalHealth mkh in parts.GetTrainableModules())
             {
                 PartTrainingInfo trainingInfo = GetTrainingPart(mkh.PartName);
                 if (trainingInfo != null)
+                {
+                    trainingInfo.Complexity = mkh.complexity;
                     if (IsTrainingAtKSC && trainingInfo.KSCTrainingComplete)
                         continue;
-                    else trainingInfo.StartTraining(mkh.complexity);
-                else TrainedParts.Add(new PartTrainingInfo(mkh.PartName, mkh.complexity, KerbalHealthFactorsSettings.Instance.TrainingEnabled ? 0 : KSCTrainingCap));
+                    else trainingInfo.StartTraining();
+                }
+                else TrainedParts.Add(new PartTrainingInfo(mkh.PartName, mkh.complexity, 1, KerbalHealthFactorsSettings.Instance.TrainingEnabled ? 0 : KSCTrainingCap));
                 Log($"Now training for {mkh.PartName} (complexity: {mkh.complexity}).");
                 count++;
             }
@@ -761,7 +765,7 @@ namespace KerbalHealth
             if (count > 0)
             {
                 TrainingVessel = vesselName;
-                Log($"Training {name} for {vesselName} ({count} untrained modules).");
+                Log($"Training {name} for {vesselName} ({count} untrained parts).");
             }
         }
 
@@ -784,7 +788,7 @@ namespace KerbalHealth
 
             // Step 1: Calculating training complexity of all yet untrained parts
             List<PartTrainingInfo> untrainedParts = TrainedParts.Where(tp => tp.TrainingNow).ToList();
-            float totalComplexity = untrainedParts.Sum(tp => tp.Complexity);
+            float totalComplexity = untrainedParts.Sum(tp => tp.Complexity * tp.Count);
             Log($"{name} is training for {untrainedParts.Count} parts. Total complexity: {totalComplexity}.");
             if (totalComplexity <= 0)
             {
@@ -813,7 +817,7 @@ namespace KerbalHealth
                     totalTrainingIncrease += InFlightTrainingCap - tp.Level;
                 }
                 tp.Level += partTrainingProgress;
-                Log($"Training level for part {tp.Name} with complexity {tp.Complexity} increases by {partTrainingProgress * KSPUtil.dateTimeFormatter.Day / interval:P2} per day and is currently {tp.Level:P3}.");
+                Log($"Training level for part {tp.Name} x{tp.Count} with complexity {tp.Complexity} increases by {partTrainingProgress * KSPUtil.dateTimeFormatter.Day / interval:P2} per day and is currently {tp.Level:P3}.");
                 if (!inflight && tp.KSCTrainingComplete)
                 {
                     Log($"Training for part {tp.Name} complete.");
@@ -823,7 +827,7 @@ namespace KerbalHealth
                 else trainingComplete = false;
             }
 
-            LastRealTrainingPerDay = inflight ? totalTrainingIncrease * TrainingPerDay / totalComplexity : TrainingPerDay / totalComplexity;
+            LastRealTrainingPerDay = inflight ? TrainingPerDay * totalTrainingIncrease / untrainedParts.Count / totalComplexity : TrainingPerDay / totalComplexity;
             if (trainingComplete)
                 StopTraining("#KH_TrainingComplete");
         }
@@ -1190,7 +1194,7 @@ namespace KerbalHealth
                 PartTrainingInfo trainingPart = GetTrainingPart(partName);
                 if (trainingPart != null)
                     trainingPart.Level = Math.Max(trainingPart.Level, KSCTrainingCap);
-                else TrainedParts.Add(new PartTrainingInfo(partName, 0, KSCTrainingCap));
+                else TrainedParts.Add(new PartTrainingInfo(partName, 0, 0, KSCTrainingCap));
             }
             if (!KerbalHealthFactorsSettings.Instance.TrainingEnabled && IsTrainingAtKSC)
                 StopTraining(null);
