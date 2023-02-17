@@ -18,7 +18,7 @@ namespace KerbalHealth
 
         public bool KSCTrainingComplete => Level >= Core.KSCTrainingCap;
 
-        public bool TrainingNow => Complexity > 0;
+        public bool TrainingNow => Count > 0;
 
         public PartTrainingInfo(ConfigNode n) => Load(n);
 

@@ -788,7 +788,7 @@ namespace KerbalHealth
 
             // Step 1: Calculating training complexity of all yet untrained parts
             List<PartTrainingInfo> untrainedParts = TrainedParts.Where(tp => tp.TrainingNow).ToList();
-            float totalComplexity = untrainedParts.Sum(tp => tp.Complexity);
+            float totalComplexity = untrainedParts.Sum(tp => tp.Complexity * tp.Count);
             Log($"{name} is training for {untrainedParts.Count} parts. Total complexity: {totalComplexity}.");
             if (totalComplexity <= 0)
             {
@@ -817,7 +817,7 @@ namespace KerbalHealth
                     totalTrainingIncrease += InFlightTrainingCap - tp.Level;
                 }
                 tp.Level += partTrainingProgress;
-                Log($"Training level for part {tp.Name} with complexity {tp.Complexity} increases by {partTrainingProgress * KSPUtil.dateTimeFormatter.Day / interval:P2} per day and is currently {tp.Level:P3}.");
+                Log($"Training level for part {tp.Name} x{tp.Count} with complexity {tp.Complexity} increases by {partTrainingProgress * KSPUtil.dateTimeFormatter.Day / interval:P2} per day and is currently {tp.Level:P3}.");
                 if (!inflight && tp.KSCTrainingComplete)
                 {
                     Log($"Training for part {tp.Name} complete.");
