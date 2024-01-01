@@ -1,6 +1,8 @@
-﻿using System;
+﻿using KSP.Localization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace KerbalHealth
 {
@@ -64,12 +66,13 @@ namespace KerbalHealth
             AddValue(ExposureMultiplier, "exposure", 1);
             AddValue(ShelterExposure, "shelterExposure", 1);
             AddValue(CrewCapacity, "crewCapacity", 0);
-            foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
-            {
-                ConfigNode n2 = new ConfigNode(FactorMultiplier.ConfigNodeName);
-                fm.Save(n2);
-                node.AddNode(n2);
-            }
+            for (int i = 0; i < FactorMultipliers.Count; i++)
+                if (!FactorMultipliers[i].IsTrivial)
+                {
+                    ConfigNode n2 = new ConfigNode(FactorMultiplier.ConfigNodeName);
+                    FactorMultipliers[i].Save(n2);
+                    node.AddNode(n2);
+                }
         }
 
         public void Load(ConfigNode node)
@@ -90,16 +93,15 @@ namespace KerbalHealth
             ShelterExposure = node.GetDouble("shelterExposure", 1);
             CrewCapacity = node.GetInt("crewCapacity");
             FactorMultipliers.Clear();
-            foreach (FactorMultiplier fm in node.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
+            FactorMultiplier fm = new FactorMultiplier(node);
+            if (!fm.IsTrivial)
                 FactorMultipliers.Add(fm);
+            foreach (FactorMultiplier fm2 in node.GetNodes(FactorMultiplier.ConfigNodeName).Select(n => new FactorMultiplier(n)))
+                FactorMultipliers.Add(fm2);
         }
 
         public HealthEffect()
-        {
-            foreach (HealthFactor f in Core.Factors)
-                FactorMultipliers.Add(new FactorMultiplier(f));
-            FactorMultipliers.Add(new FactorMultiplier());
-        }
+        { }
 
         public HealthEffect(ConfigNode configNode) => Load(configNode);
 
@@ -152,11 +154,12 @@ namespace KerbalHealth
                 parts.Add(part.parent);
             parts.AddRange(part.children);
             List<ModuleKerbalHealth> modules = new List<ModuleKerbalHealth>();
-            foreach (Part p in parts.Where(x => x.CrewCapacity == 0 || x == part))
-            {
-                modules.AddRange(p.FindModulesImplementing<ModuleKerbalHealth>());
-                s += GetResourceShielding(p);
-            }
+            for (int i = 0; i < parts.Count; i++)
+                if (parts[i].CrewCapacity == 0 || parts[i] == part)
+                {
+                    modules.AddRange(parts[i].FindModulesImplementing<ModuleKerbalHealth>());
+                    s += GetResourceShielding(parts[i]);
+                }
 
             s += modules.Where(mkh => mkh.IsModuleActive).Sum(mkh => mkh.shielding);
             return GetExposure(s, part.CrewCapacity);
@@ -237,11 +240,10 @@ namespace KerbalHealth
                     // Processing factor multiplier
                     if (mkh.Multiplier != 1)
                     {
-                        Core.Log($"Factor multiplier for {mkh.multiplyFactor}: {mkh.Multiplier:P1}.");
-                        FactorMultiplier factorMultiplier = GetFactorMultiplier(mkh.multiplyFactor);
+                        Core.Log($"Factor multiplier for {mkh.multiplyFactor}: {mkh.Multiplier:P1} (crew cap {mkh.crewCap}).");
                         if (mkh.crewCap > 0)
-                            factorMultiplier.AddRestrictedMultiplier(mkh.Multiplier, mkh.crewCap, crewCount);
-                        else factorMultiplier.AddFreeMultiplier(mkh.Multiplier);
+                            GetFactorMultiplier(mkh.multiplyFactor).AddMultiplier(mkh.Multiplier, mkh.crewCap, crewCount);
+                        else GetFactorMultiplier(mkh.multiplyFactor).AddMultiplier(mkh.Multiplier);
                     }
                 }
                 else Core.Log("The module is not in the kerbal's CLS space.");
@@ -262,14 +264,15 @@ namespace KerbalHealth
         /// Processes several parts and also records their RadiationShielding values
         /// </summary>
         /// <param name="parts"></param>
-        public void ProcessParts(IEnumerable<Part> parts, int crewCount, ConnectedLivingSpace.ICLSSpace clsSpace)
+        public void ProcessParts(IList<Part> parts, int crewCount, ConnectedLivingSpace.ICLSSpace clsSpace)
         {
             Core.Log($"Processing {parts.Count()} parts for {crewCount} crew in {(clsSpace != null ? clsSpace.Name : "a vessel")}...");
             List<PartExposureComparer> exposures = new List<PartExposureComparer>();
             CrewCapacity = 0;
 
-            foreach (Part p in parts)
+            for (int i = 0; i < parts.Count; i++)
             {
+                Part p = parts[i];
                 ProcessPart(p, crewCount, clsSpace == null || clsSpace.Parts.Any(clsPart => clsPart.Part == p));
                 if (p.CrewCapacity > 0)
                 {
@@ -306,34 +309,33 @@ namespace KerbalHealth
         /// <returns></returns>
         public override string ToString()
         {
-            string res = "";
+            StringBuilder res = new StringBuilder();
             if (HPChange != 0)
-                res = $"HP change per day: {HPChange:F2}";
+                res.AppendLine(Localizer.Format("#KH_Effect_HPChange", HPChange.ToString("F2")));
             if (MaxHP != 1)
-                res += $"\nMax HP: x{MaxHP}";
+                res.AppendLine(Localizer.Format("#KH_Effect_MaxHP", MaxHP.ToString("P0")));
             if (MaxHPBonus != 0)
-                res += $"\nMax HP bonus: {MaxHPBonus}";
+                res.AppendLine(Localizer.Format("#KH_Effect_MaxHPBonus", MaxHPBonus));
             if (CriticalHealth != 1)
-                res += $"\nCritical health: x{CriticalHealth}";
+                res.AppendLine(Localizer.Format("#KH_Effect_CriticalHealth", CriticalHealth.ToString("P0")));
             if (Space != 0)
-                res += $"\nSpace: {Space:F1}";
+                res.AppendLine(Localizer.Format("#KH_Effect_Space", Space.ToString("F1")));
             if (Recuperation != 0)
-                res += $"\nRecuperation Power: {Recuperation:F1}% (max {MaxRecuperaction:F1}%)";
+                res.AppendLine(Localizer.Format("#KH_Effect_Recuperation", Recuperation.ToString("F1"), MaxRecuperaction.ToString("F1")));
             if (Decay != 0)
-                res += $"\nDecay: {Decay:F1}%";
+                res.AppendLine(Localizer.Format("#KH_Effect_Decay", Decay.ToString("F1")));
             if (Shielding != 0)
-                res += $"\nShielding: {Shielding:F1}";
+                res.AppendLine(Localizer.Format("#KH_Effect_Shielding", Shielding.ToString("F1")));
             if (Radioactivity != 0)
-                res += $"\nParts radioactivity: {Radioactivity:F0}";
+                res.AppendLine(Localizer.Format("#KH_Effect_Radioactivity", Radioactivity.ToString("F0")));
             if (ExposureMultiplier != 1)
-                res += $"\nExposure multiplier: {ExposureMultiplier:P1}";
+                res.AppendLine(Localizer.Format("#KH_Effect_ExposureMultiplier", ExposureMultiplier.ToString("P1")));
             if (ShelterExposure != 1)
-                res += $"\nShelter exposure: {ShelterExposure:P1}";
+                res.AppendLine(Localizer.Format("#KH_Effect_ShelterExposure", ShelterExposure.ToString("P1")));
             if (CrewCapacity != 0)
-                res += $"\nCrew capacity: {CrewCapacity}";
-            foreach (FactorMultiplier fm in FactorMultipliers.Where(fm => !fm.IsTrivial))
-                res += $"\n{fm}";
-            return res.Trim();
+                res.AppendLine(Localizer.Format("#KH_Effect_CrewCapacity", CrewCapacity));
+            res.AppendLine(FactorMultipliers.ToString());
+            return res.ToStringAndRelease().Trim();
         }
 
         /// <summary>

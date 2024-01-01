@@ -1,10 +1,13 @@
-﻿using System;
+﻿using KSP.Localization;
+using System;
 
 namespace KerbalHealth
 {
     public class FactorMultiplier : IConfigNode
     {
         internal const string ConfigNodeName = "FACTOR_MULTIPLIER";
+
+        double freeMultiplier = 1;
 
         public string FactorName
         {
@@ -16,7 +19,18 @@ namespace KerbalHealth
 
         public double BonusSum { get; set; } = 0;
 
-        public double FreeMultiplier { get; set; } = 1;
+        public double FreeMultiplier
+        {
+            get => freeMultiplier;
+            set
+            {
+                freeMultiplier = value;
+                if (MinMultiplier > value)
+                    MinMultiplier = value;
+                else if (MaxMultiplier < value)
+                    MaxMultiplier = value;
+            }
+        }
 
         public double MinMultiplier { get; set; } = 1;
 
@@ -36,7 +50,7 @@ namespace KerbalHealth
         public void Save(ConfigNode node)
         {
             if (Factor != null)
-                node.AddValue("factor", FactorName);
+                node.AddValue("multiplyFactor", FactorName);
             if (BonusSum != 0)
                 node.AddValue("bonusSum", BonusSum);
             if (FreeMultiplier != 1)
@@ -49,11 +63,11 @@ namespace KerbalHealth
 
         public void Load(ConfigNode node)
         {
-            FactorName = node.GetString("factor");
+            FactorName = node.GetString("multiplyFactor");
             BonusSum = node.GetDouble("bonusSum");
-            FreeMultiplier = node.GetDouble("multiplier", 1);
             MinMultiplier = node.GetDouble("minMultiplier", 1);
             MaxMultiplier = node.GetDouble("maxMultiplier", 1);
+            FreeMultiplier = node.GetDouble("multiplier", 1);
         }
 
         public FactorMultiplier(HealthFactor factor = null) => Factor = factor;
@@ -65,26 +79,13 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="fm2"></param>
         /// <returns></returns>
-        public static FactorMultiplier Combine(FactorMultiplier fm1, FactorMultiplier fm2)
-        {
-            FactorMultiplier res = new FactorMultiplier(fm1.Factor);
-            if (fm1.Factor != fm2.Factor)
-            {
-                Core.Log($"Could not combine {fm1.FactorName} and {fm2.FactorName} multipliers.", LogLevel.Error);
-                return res;
-            }
-            res.BonusSum = fm1.BonusSum + fm2.BonusSum;
-            res.FreeMultiplier = fm1.FreeMultiplier * fm2.FreeMultiplier;
-            res.MinMultiplier = Math.Min(fm1.MinMultiplier, fm2.MinMultiplier);
-            res.MaxMultiplier = Math.Max(fm1.MaxMultiplier, fm2.MaxMultiplier);
-            return res;
-        }
+        public static FactorMultiplier Combine(FactorMultiplier fm1, FactorMultiplier fm2) => new FactorMultiplier(fm1.Factor).CombineWith(fm2);
 
         /// <summary>
         /// Adds a free (i.e. not restricted by crew cap) multiplier
         /// </summary>
         /// <param name="multiplier"></param>
-        public void AddFreeMultiplier(double multiplier)
+        public void AddMultiplier(double multiplier)
         {
             FreeMultiplier *= multiplier;
             if (multiplier < MinMultiplier)
@@ -93,7 +94,7 @@ namespace KerbalHealth
                 MaxMultiplier = multiplier;
         }
 
-        public void AddRestrictedMultiplier(double multiplier, int crewCap, int crew)
+        public void AddMultiplier(double multiplier, int crewCap, int crew)
         {
             BonusSum += Math.Abs(1 - multiplier) * crewCap / crew;
             if (multiplier < MinMultiplier)
@@ -111,14 +112,15 @@ namespace KerbalHealth
             }
 
             BonusSum += fm.BonusSum;
-            FreeMultiplier *= fm.FreeMultiplier;
             MinMultiplier = Math.Min(MinMultiplier, fm.MinMultiplier);
             MaxMultiplier = Math.Max(MaxMultiplier, fm.MaxMultiplier);
+            FreeMultiplier *= fm.FreeMultiplier;
             return this;
         }
 
-        public override string ToString() => IsTrivial
-                ? ""
-                : $"{Factor?.Name ?? "All factors "} {Multiplier:P1} (bonus sum: {BonusSum}; free multiplier: {FreeMultiplier}: multipliers {MinMultiplier}..{MaxMultiplier})";
+        public override string ToString() =>
+            IsTrivial
+                ? string.Empty
+                : Localizer.Format("#KH_FactorMultiplier_desc", Factor?.Name ?? Localizer.Format("#KH_FactorMultiplier_All"), Multiplier.ToString("P0"));
     }
 }
