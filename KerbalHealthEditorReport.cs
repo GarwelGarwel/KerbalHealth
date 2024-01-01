@@ -34,9 +34,9 @@ namespace KerbalHealth
                 return;
             Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
-            GameEvents.onEditorShipModified.Add(_ => Invalidate());
+            GameEvents.onEditorShipModified.Add(OnEditorShipModified);
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(_ => Invalidate());
+            GameEvents.onEditorScreenChange.Add(OnEditorScreenChange);
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {
@@ -62,14 +62,23 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+                return;
             Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
             HideWindow();
             if (toolbarButton != null)
                 toolbarButton.Destroy();
             if (appLauncherButton != null && ApplicationLauncher.Instance != null)
                 ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
+            GameEvents.onEditorShipModified.Remove(OnEditorShipModified);
+            GameEvents.onEditorPodDeleted.Remove(Invalidate);
+            GameEvents.onEditorScreenChange.Remove(OnEditorScreenChange);
             Log("KerbalHealthEditorReport.OnDisable finished.");
         }
+
+        void OnEditorShipModified(ShipConstruct parts) => Invalidate();
+
+        void OnEditorScreenChange(EditorScreen editorScreen) => Invalidate();
 
         #endregion LIFE CYCLE
 

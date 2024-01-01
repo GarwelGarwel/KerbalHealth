@@ -199,12 +199,14 @@ namespace KerbalHealth
             }
 
             // Getting factors' HP change per day for non-constant factors only, unless the kerbal is loaded or the scene is editor
-            foreach (HealthFactor f in Core.Factors.Where(f => unpacked || inEditor || !f.ConstantForUnloaded))
-            {
-                FactorsOriginal[f] = f.ChangePerDay(this);
-                if (IsLogging())
-                    Log($"{f.Name} factor is {FactorsOriginal[f]:F2} HP/day.");
-            }
+            for (int i = 0; i < Core.Factors.Count; i++)
+                if (unpacked || inEditor || !Core.Factors[i].ConstantForUnloaded)
+                {
+                    HealthFactor f = Core.Factors[i];
+                    FactorsOriginal[f] = f.ChangePerDay(this);
+                    if (IsLogging())
+                        Log($"{f.Name} factor is {FactorsOriginal[f]:F2} HP/day.");
+                }
             if (IsLogging())
                 Log($"Factors HP change before effects: {FactorsOriginal.Sum(kvp => kvp.Value):F2} HP/day.");
         }
@@ -343,13 +345,17 @@ namespace KerbalHealth
         {
             Log($"CalculateQuirkEffects for {Name}");
             quirksEffect = new HealthEffect();
-            foreach (HealthEffect effect in Quirks.SelectMany(q => q.GetApplicableEffects(this)))
+            for (int i = 0; i < Quirks.Count; i++)
             {
-                quirksEffect.CombineWith(effect);
-                if (IsLogging())
+                List<HealthEffect> effects = Quirks[i].GetApplicableEffects(this).ToList();
+                for (int j = 0; j < effects.Count; j++)
                 {
-                    Log($"Applied quirk effect: {effect}");
-                    Log($"Quirks effect:\n{quirksEffect}");
+                    quirksEffect.CombineWith(effects[j]);
+                    if (IsLogging())
+                    {
+                        Log($"Applied quirk effect: {effects[j]}");
+                        Log($"Quirks effect:\n{quirksEffect}");
+                    }
                 }
             }
         }
@@ -562,14 +568,7 @@ namespace KerbalHealth
         /// Adds the quirk unless it is already present
         /// </summary>
         /// <param name="quirk"></param>
-        public void AddQuirk(string quirk)
-        {
-            Quirk q = GetQuirk(quirk);
-            if (q == null)
-                q = new Quirk(quirk);
-            Core.Quirks.Add(q);
-            AddQuirk(q);
-        }
+        public void AddQuirk(string quirk) => AddQuirk(GetQuirk(quirk));
 
         public Quirk GetRandomQuirk(int level)
         {
@@ -614,7 +613,8 @@ namespace KerbalHealth
             if (q != null)
             {
                 Quirks.Add(q);
-                ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name, q), ProtoCrewMember);//"<color="white"><<1>></color> acquired a new quirk: <<2>>
+                if (q.IsVisible)
+                    ShowMessage(Localizer.Format("#KH_Condition_Quirk", Name, q), ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Assigned);
             }
             return q;
         }
@@ -720,11 +720,15 @@ namespace KerbalHealth
             float totalTraining = 0, totalComplexity = 0;
 
             if (IsInEditor)
-                foreach (ModuleKerbalHealth mkh in EditorLogic.SortedShipList.GetTrainableModules())
+            {
+                List<ModuleKerbalHealth> trainableParts = EditorLogic.SortedShipList.GetTrainableModules();
+                for (int i = 0; i < trainableParts.Count; i++)
                 {
+                    ModuleKerbalHealth mkh = trainableParts[i];
                     totalTraining += (simulateTrained ? Math.Max(KSCTrainingCap, TrainingLevelForModulePart(mkh)) : TrainingLevelForModulePart(mkh)) * mkh.complexity;
                     totalComplexity += mkh.complexity;
                 }
+            }
 
             else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.TrainingNow))
                 {
@@ -747,8 +751,10 @@ namespace KerbalHealth
 
             // Restarting training for all currently trainable parts
             int count = 0;
-            foreach (ModuleKerbalHealth mkh in parts.GetTrainableModules())
+            List<ModuleKerbalHealth> trainableModules = parts.GetTrainableModules();
+            for (int i = 0; i < trainableModules.Count; i++)
             {
+                ModuleKerbalHealth mkh = trainableModules[i];
                 PartTrainingInfo trainingInfo = GetTrainingPart(mkh.PartName);
                 if (trainingInfo != null)
                 {
@@ -774,8 +780,8 @@ namespace KerbalHealth
             Log($"Stopping training of {name}.");
             if (messageTag != null)
                 ShowMessage(Localizer.Format(messageTag, ProtoCrewMember.nameWithGender, TrainingVessel), ProtoCrewMember);
-            foreach (PartTrainingInfo trainingInfo in TrainedParts)
-                trainingInfo.StopTraining();
+            for (int i = 0; i < TrainedParts.Count; i++)
+                TrainedParts[i].StopTraining();
             RemoveCondition(Condition_Training);
             TrainingVessel = null;
             LastRealTrainingPerDay = 0;
@@ -808,8 +814,9 @@ namespace KerbalHealth
             // Step 2: Updating parts' training progress and calculating their base complexity to update vessel's training level
             bool trainingComplete = true;
             float totalTrainingIncrease = 0;
-            foreach (PartTrainingInfo tp in untrainedParts)
+            for (int i = 0; i < untrainedParts.Count; i++)
             {
+                PartTrainingInfo tp = untrainedParts[i];
                 float partTrainingProgress = trainingProgress;
                 if (inflight)
                 {
@@ -1145,10 +1152,10 @@ namespace KerbalHealth
             node.AddValue("dose", Dose);
             if (Radiation != 0)
                 node.AddValue("radiation", Radiation);
-            foreach (HealthCondition hc in Conditions)
-                node.AddValue("condition", hc.Name);
-            foreach (Quirk q in Quirks)
-                node.AddValue("quirk", q.Name);
+            for (int i = 0; i < Conditions.Count; i++)
+                node.AddValue("condition", Conditions[i].Name);
+            for (int i = 0; i < Quirks.Count; i++)
+                node.AddValue("quirk", Quirks[i].Name);
             if (QuirkLevel != 0)
                 node.AddValue("quirkLevel", QuirkLevel);
             if (!IsCapable)
@@ -1157,9 +1164,9 @@ namespace KerbalHealth
                 node.AddValue("onEva", true);
             if (TrainingVessel != null)
                 node.AddValue("trainingVessel", TrainingVessel);
-            foreach (PartTrainingInfo tp in TrainedParts)
+            for (int i = 0; i < TrainedParts.Count; i++)
             {
-                tp.Save(n2 = new ConfigNode(PartTrainingInfo.ConfigNodeName));
+                TrainedParts[i].Save(n2 = new ConfigNode(PartTrainingInfo.ConfigNodeName));
                 node.AddNode(n2);
             }
         }

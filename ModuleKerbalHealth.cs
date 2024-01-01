@@ -301,7 +301,6 @@ namespace KerbalHealth
                     if (multiplierMode || !IsSwitchable)
                         return Localizer.Format("#KH_Module_type4");//"Lounge"
                     break;
-
                 case "loneliness":
                     return Localizer.Format("#KH_Module_type5");//"Meditation"
                 case "microgravity":

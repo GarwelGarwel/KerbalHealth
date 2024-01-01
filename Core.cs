@@ -98,7 +98,7 @@ namespace KerbalHealth
             else Log($"Can't find ResourceDefinition for {name}.");
         }
 
-        public static Quirk GetQuirk(string name) => Quirks.Find(q => name.Equals(q.Name, StringComparison.OrdinalIgnoreCase));
+        public static Quirk GetQuirk(string name) => Quirks.Find(q => name == q.Name);
 
         public static PlanetHealthConfig GetPlanetConfig(string name)
         {
@@ -272,16 +272,19 @@ namespace KerbalHealth
         /// <summary>
         /// Returns a list of unique part modules that are used in training & stress calculations
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainableModules(this IEnumerable<Part> allParts)
+        public static List<ModuleKerbalHealth> GetTrainableModules(this IList<Part> allParts)
         {
             List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
-            foreach (Part part in allParts)
-                foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(mkh => mkh.complexity != 0))
-                {
-                    //if (!res.Any(mkh2 => mkh2.PartName == mkh.PartName))
-                    res.Add(mkh);
-                    break;
-                }
+            for (int i = 0; i < allParts.Count; i++)
+            {
+                List<ModuleKerbalHealth> modules = allParts[i].FindModulesImplementing<ModuleKerbalHealth>();
+                for (int j = 0; j < modules.Count; j++)
+                    if (modules[j].complexity != 0)
+                    {
+                        res.Add(modules[j]);
+                        break;
+                    }
+            }
             return res;
         }
 

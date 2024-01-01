@@ -43,7 +43,6 @@
         /// Returns actual factor's HP change per day for a given kerbal, before factor multipliers
         /// </summary>
         /// <param name="khs"></param>
-        /// <returns></returns>
         abstract public double ChangePerDay(KerbalHealthStatus khs);
     }
 }
