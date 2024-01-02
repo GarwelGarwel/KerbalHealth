@@ -66,10 +66,9 @@ namespace KerbalHealth
                 return;
             Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
             HideWindow();
-            if (toolbarButton != null)
-                toolbarButton.Destroy();
-            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
-                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
+            toolbarButton?.Destroy();
+            if (appLauncherButton != null)
+                ApplicationLauncher.Instance?.RemoveModApplication(appLauncherButton);
             GameEvents.onEditorShipModified.Remove(OnEditorShipModified);
             GameEvents.onEditorPodDeleted.Remove(Invalidate);
             GameEvents.onEditorScreenChange.Remove(OnEditorScreenChange);

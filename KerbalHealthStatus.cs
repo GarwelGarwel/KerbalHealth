@@ -337,8 +337,7 @@ namespace KerbalHealth
             Log($"CalculateLocationEffectInEditor for {Name}");
             ConnectedLivingSpace.ICLSSpace space = CLS.Enabled ? ProtoCrewMember.GetCLSSpace() : null;
             LocationEffect = new HealthEffect(EditorLogic.SortedShipList, Math.Max(space != null ? space.Crew.Count : ShipConstruction.ShipManifest.CrewCount, 1), space);
-            if (IsLogging())
-                Log($"Location effect:\n{locationEffect}");
+            Log($"Location effect:\n{locationEffect}");
         }
 
         void CalculateQuirkEffects()

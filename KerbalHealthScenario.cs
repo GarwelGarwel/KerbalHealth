@@ -97,7 +97,7 @@ namespace KerbalHealth
             else Log($"Kerbal Health v{version}");
 
 #if DEBUG
-            Core.Log("Debug mode", LogLevel.Important);
+            Log("Debug mode", LogLevel.Important);
 #endif
 
             // This needs to be run even if the mod is disabled, so that its settings can be reset:
