@@ -15,7 +15,7 @@ namespace KerbalHealth
         #region BASIC PROPERTIES
 
         string name;
-        string trait = null;
+        string trait;
 
         ProtoCrewMember pcmCached;
 
@@ -729,11 +729,13 @@ namespace KerbalHealth
                 }
             }
 
-            else foreach (PartTrainingInfo tp in TrainedParts.Where(tp => tp.TrainingNow))
-                {
-                    totalTraining += tp.Complexity * tp.Count * tp.Level;
-                    totalComplexity += tp.Complexity * tp.Count;
-                }
+            else for (int i = 0; i < TrainedParts.Count; i++)
+                    if (TrainedParts[i].TrainingNow)
+                    {
+                        PartTrainingInfo tp = TrainedParts[i];
+                        totalTraining += tp.Complexity * tp.Count * tp.Level;
+                        totalComplexity += tp.Complexity * tp.Count;
+                    }
 
             return totalComplexity != 0 ? totalTraining / totalComplexity : KSCTrainingCap;
         }

@@ -8,7 +8,7 @@ namespace KerbalHealth
     {
         public FactorMultiplier this[HealthFactor factor]
         {
-            get => Find(fm => fm.Factor == factor) ?? new FactorMultiplier(factor);
+            get => Find(factor) ?? new FactorMultiplier(factor);
 
             set
             {
@@ -66,7 +66,7 @@ namespace KerbalHealth
         public FactorMultiplierList CombineWith(FactorMultiplierList list)
         {
             for (int i = 0; i < list.Count; i++)
-                this[i].CombineWith(list[i]);
+                this[list[i].Factor]?.CombineWith(list[i]);
             return this;
         }
 

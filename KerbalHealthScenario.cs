@@ -325,7 +325,7 @@ namespace KerbalHealth
                 {
                     ProtoCrewMember pcm = crew[Rand.Next(crew.Count)];
                     Log($"Clearing {pcm.name}'s radiation dose of {Core.KerbalHealthList[pcm].Dose:N0} BED.");
-                    ShowMessage(Localizer.Format("#KH_MSG_AnomalyDecontamination", pcm.nameWithGender, PrefixFormat(Core.KerbalHealthList[pcm].Dose)), pcm);
+                    ShowMessage(Localizer.Format("#KH_MSG_AnomalyDecontamination", pcm.nameWithGender, Core.KerbalHealthList[pcm].Dose.PrefixFormat()), pcm);
                     Core.KerbalHealthList[pcm].Dose = 0;
                 }
             }
@@ -387,11 +387,11 @@ namespace KerbalHealth
                     string formatTag = "", formatUntag = "", s;
                     if (healthFrozen || change == 0 || (khs.BalanceHP - khs.NextConditionHP) * change < 0)
                         if (khs.IsTrainingAtKSC)
-                            s = ParseUT(khs.CurrentTrainingETA, false, 10);
+                            s = TimeToString(khs.CurrentTrainingETA, false, 10);
                         else s = "—";
                     else
                     {
-                        s = ParseUT(khs.ETAToNextCondition, false, 100);
+                        s = TimeToString(khs.ETAToNextCondition, false, 100);
                         if (change < 0)
                         {
                             formatTag = khs.HP <= khs.CriticalHP ? "<color=red>" : "<color=orange>";
@@ -402,9 +402,9 @@ namespace KerbalHealth
                     gridContent[(i + 1) * colNumMain + 1].SetOptionText(formatTag + khs.LocationString + formatUntag);
                     gridContent[(i + 1) * colNumMain + 2].SetOptionText(formatTag + khs.ConditionString + formatUntag);
                     gridContent[(i + 1) * colNumMain + 3].SetOptionText($"{formatTag}{100 * khs.Health:F2}% ({khs.HP:F2}){formatUntag}");
-                    gridContent[(i + 1) * colNumMain + 4].SetOptionText(formatTag + (healthFrozen || khs.Health >= 1 ? "—" : SignValue(change, "F2")) + formatUntag);
+                    gridContent[(i + 1) * colNumMain + 4].SetOptionText(formatTag + (healthFrozen || khs.Health >= 1 ? "—" : change.SignValue("F2")) + formatUntag);
                     gridContent[(i + 1) * colNumMain + 5].SetOptionText(formatTag + s + formatUntag);
-                    gridContent[((i + 1) * colNumMain) + 6].SetOptionText($"{formatTag}{PrefixFormat(khs.Dose, 3)}{(khs.Radiation != 0 ? $" ({Localizer.Format("#KH_HM_perDay", PrefixFormat(khs.Radiation, 3, true))})" : "")}{formatUntag}");
+                    gridContent[((i + 1) * colNumMain) + 6].SetOptionText($"{formatTag}{khs.Dose.PrefixFormat(3)}{(khs.Radiation != 0 ? $" ({Localizer.Format("#KH_HM_perDay", khs.Radiation.PrefixFormat(3, true))})" : "")}{formatUntag}");
                 }
             }
 
@@ -444,7 +444,7 @@ namespace KerbalHealth
                 gridContent[i + 2].SetOptionText($"<color=white>{(healthFrozen ? Localizer.Format("#KH_NA") : $"{selectedKHS.Recuperation:F1}%{(selectedKHS.Decay != 0 ? $"/ {-selectedKHS.Decay:F1}%" : "")} ({selectedKHS.HPChangeMarginal:F2} HP)")}</color>");
                 gridContent[i + 4].SetOptionText($"<color=white>{selectedKHS.Exposure:P1} / {selectedKHS.ShelterExposure:P1}</color>");
                 gridContent[i + 6].SetOptionText($"<color=white>{selectedKHS.Radiation:N0}/day</color>");
-                gridContent[i + 8].children[0].SetOptionText($"<color=white>{PrefixFormat(selectedKHS.Dose, 6)}</color>");
+                gridContent[i + 8].children[0].SetOptionText($"<color=white>{selectedKHS.Dose.PrefixFormat(6)}</color>");
                 gridContent[i + 10].SetOptionText($"<color=white>{1 - selectedKHS.RadiationMaxHPModifier:P2}</color>");
             }
             dirty = false;
@@ -903,7 +903,7 @@ namespace KerbalHealth
 #endif
 
             Log($"UT is {time}. Updating for {interval} seconds.");
-            ClearCache();
+            ClearVesselsCache();
             if (HighLogic.LoadedSceneIsFlight && vesselChanged)
             {
                 Log("Vessel has changed or just loaded. Ordering kerbals to train for it in-flight, and checking if anyone's on EVA.");
@@ -926,13 +926,13 @@ namespace KerbalHealth
                         int j = 0;
                         double m = radStorms[i].Magnitutde * KerbalHealthStatus.GetSolarRadiationProportion(radStorms[i].DistanceFromSun) * KerbalHealthRadiationSettings.Instance.RadStormMagnitude;
                         Log($"Radstorm {i} hits {radStorms[i].Name} with magnitude of {m} ({radStorms[i].Magnitutde} before modifiers).", LogLevel.Important);
-                        string s = Localizer.Format("#KH_RadStorm_report1", PrefixFormat(m, 5), radStorms[i].Name);
+                        string s = Localizer.Format("#KH_RadStorm_report1", m.PrefixFormat(5), radStorms[i].Name);
                         foreach (KerbalHealthStatus khs in Core.KerbalHealthList.Values.Where(khs => radStorms[i].Affects(khs.ProtoCrewMember)))
                         {
                             double d = m * KerbalHealthStatus.GetCosmicRadiationRate(khs.ProtoCrewMember.GetVessel()) * khs.ShelterExposure;
                             khs.AddDose(d);
                             Log($"The radstorm irradiates {khs.Name} by {d:N0} BED.");
-                            s += Localizer.Format("#KH_RadStorm_report2", khs.Name, PrefixFormat(d, 5));
+                            s += Localizer.Format("#KH_RadStorm_report2", khs.Name, d.PrefixFormat(5));
                             j++;
                         }
                         if (j > 0)
@@ -1065,7 +1065,7 @@ namespace KerbalHealth
                    selectedKHS.GetTrainingLevel().ToString("P2"),
                    KSCTrainingCap.ToString("P0"),
                    selectedKHS.LastRealTrainingPerDay.ToString("P2"),
-                   ParseUT(selectedKHS.CurrentTrainingETA, false, 10));
+                   TimeToString(selectedKHS.CurrentTrainingETA, false, 10));
             else if (selectedKHS.TrainingVessel != null)
                 msg = Localizer.Format(
                    "#KH_TI_KerbalTrainingInFlight",
@@ -1171,7 +1171,7 @@ namespace KerbalHealth
                     selectedKHS.ProtoCrewMember.nameWithGender,
                     KerbalHealthRadiationSettings.Instance.DecontaminationHealthLoss.ToString("P0"),
                     KerbalHealthRadiationSettings.Instance.DecontaminationRate.ToString("N0"),
-                    ParseUT(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2),
+                    TimeToString(selectedKHS.Dose / KerbalHealthRadiationSettings.Instance.DecontaminationRate * 21600, false, 2),
                     KerbalHealthRadiationSettings.Instance.DecontaminationMinHealth.ToString("P0"));
 
                 if (!selectedKHS.IsReadyForDecontamination)

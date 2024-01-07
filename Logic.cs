@@ -204,7 +204,7 @@ namespace KerbalHealth
             if (KerbalStatus != null)
                 res += $"\n{indent2}Kerbal is {KerbalStatus}";
             if (!double.IsNaN(MissionTime))
-                res += $"\n{indent2}Mission lasts at least {Core.ParseUT(MissionTime, false, 100)}";
+                res += $"\n{indent2}Mission lasts at least {Core.TimeToString(MissionTime, false, 100)}";
             if (Gender != null)
                 res += $"\n{indent2}Kerbal is {Gender}";
             if (GenderPresent != null)

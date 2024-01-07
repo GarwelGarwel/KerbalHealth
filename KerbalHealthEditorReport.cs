@@ -300,7 +300,7 @@ namespace KerbalHealth
 
                         case 3:
                         case 4:
-                            gridContent.Add(new DialogGUILabel($"<b><color=white>{ParseUT(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
+                            gridContent.Add(new DialogGUILabel($"<b><color=white>{TimeToString(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
                             break;
                     }
 
@@ -434,7 +434,7 @@ namespace KerbalHealth
                 gridContent[(i + 1) * reportsColumnCount + 1].SetOptionText($"{color}{s}</color>");
                 s = balanceHP > khs.CriticalHP
                     ? "—"
-                    : (khs.Recuperation > khs.Decay ? "> " : "") + ParseUT(khs.ETAToNextCondition, false, 100);
+                    : (khs.Recuperation > khs.Decay ? "> " : "") + TimeToString(khs.ETAToNextCondition, false, 100);
                 gridContent[(i + 1) * reportsColumnCount + 2].SetOptionText($"{color}{s}</color>");
                 i++;
             }
