@@ -25,7 +25,7 @@ The following factors may affect kerbal's health:
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
 - **Loneliness** (only one kerbal in the vessel): -1 HP/day
 - **Isolation** (no working CommNet connection to home): -0.5 HP/day
-- **EVA**: -8 HP/day
+- **EVA**: -18 HP/day
 - **Home** (in Kerbin's low atmosphere): +2 HP/day
 - **KSC** (kerbal is recuperating at KSC, i.e. available): +3 HP/day
 
@@ -43,9 +43,9 @@ Kerbals can be trained to specific part types, e.g. Mk 1 Pod or the Science Lab.
 
 Training can take two forms:
 
-- In-flight training takes place automatically whenever the kerbal is on a mission and *not* landed on the home planet (i.e. Kerbin). They will gradually get used to the parts on their vessel and therefore slowly reduce the Stress they take from spaceflight. More challenging situations provide significantly more training speed, based on their science multiplier. However, this process gives diminishing returns. For instance, an astronaut with 0% training may increase their training level by 1% per day, but when they reach 50% training, they will only get 0.5% per day, and so on. So you can never really reach 100% training, but the experience using a part a kerbal has, the less Stress they will take.
+- In-flight training takes place automatically whenever the kerbal is on a mission and *not* landed on the home planet (i.e. Kerbin). They will gradually get used to the parts on their vessel and therefore slowly reduce the Stress they take from spaceflight. More challenging situations provide significantly more training speed, based on their science multiplier. However, this process gives diminishing returns. For instance, an astronaut with 0% training may increase their training level by 1% per day, but when they reach 50% training, they will only get 0.5% per day, and so on. So you can never really reach 100% training, but the more experience with a part a kerbal has, the less Stress they will take.
 
-- Training at KSC has the obvious benefit of preparing the kerbal for their mission without exposing them to its dangers. It is recommended that you train your kerbals at KSC before sending them to where no kerbal has gone before. The drawback is that KSC training has a cap, which depends on your Astronaut Complex level. You can't increase their training level beyond that without actually going to space. The kerbals also have to be healty (i.e. have no health conditions) to train, and they won't recover their health while they are training at the KSC.
+- Training at KSC has the obvious benefit of preparing the kerbal for their mission without exposing them to its dangers. It is recommended that you train your kerbals at KSC before sending them to where no kerbal has gone before. The drawback is that KSC training has a cap, which depends on your Astronaut Complex level. You can't increase their training level beyond that without actually going to space. The kerbals also have to be healthy (i.e. have no health conditions) to train, and they won't recover their health while they are training at the KSC.
 
 KSC training level caps based on your Astronaut Complex facility level:
 - Level 1: 30% reduction (i.e. -1.4 HP/day)
@@ -56,9 +56,9 @@ To start KSC training, load the vessel in the Editor, open the Health Report and
 
 If you disable KSC training in the Settings, kerbals are always assumed to be fully KSC-trained for all parts. In-flight training still takes place as usual.
 
-The other way to reduce Stress is to have more than one kerbal of a certain profession on a vessel. Then they are assumed to be working in shifts or helping each other, and their Stress level is reduced accordingly. For instance, a Pilot that loses 0.8 HP/day to Stress when alone will lose 0.4 HP/day if there is another Pilot on the ship.
+The other way to reduce Stress is to have more than one kerbal of a certain profession on a vessel. Then they are assumed to be working in shifts or helping each other, and their Stress level is reduced accordingly. For instance, a Pilot who loses 0.8 HP/day to Stress when alone will lose 0.4 HP/day if there is another Pilot on the ship.
 
-Tourists don't benefit from having more "colleagues" on a vessel. Instead, they get peace of mind from knowing that there is professional crew to look after them. Their Stress is reduced by the number of non-Tourist crew members on the vessel plus 1. For example, a Tourist that normally loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is one crew member, ~0.27 if there are two crew members etc.
+Tourists don't benefit from having more "colleagues" on a vessel. Instead, they get peace of mind from knowing that there is professional crew to look after them. Their Stress is reduced by the number of non-Tourist crew members on the vessel plus 1. For example, a Tourist that normally loses 0.8 HP/day to Stress will lose 0.4 HP/day if there is one crew member, 0.27 if there are two crew members etc.
 
 ## Health Recuperation and Health Decay
 
@@ -74,7 +74,7 @@ Decay is the opposite to Recuperation: for every percentage point of Decay, your
 
 ## Radiation
 
-All kerbals on missions are affected by radiation, which slowly but permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (when you eat a banana, you get approximately 1e-7 Sv of radiation). 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal.
+All kerbals on missions are affected by radiation, which slowly but semi-permanently reduces their maximum HP. Radiation is measured in banana equivalent doses (when you eat a banana, you get approximately 1e-7 Sv of radiation). 1e7 (10,000,000) bananas reduce max HP by 10%; 1e8 (100,000,000) bananas kill a kerbal.
 
 The amount of Radiation a kerbal receives depends on many factors. Most importantly, it is determined by their location. Many planets and some moons have magnetic fields that stop some radiation; atmospheres are also very effective in shielding it (see [wiki](https://github.com/GarwelGarwel/KerbalHealth/wiki/Radiation) for more). Being close to a celestial body helps screen some rays too. E.g., radiation level at Kerbin's sea level is 1,000 times lower than in interplanetary space just outside Kerbin's SOI. Cosmic radiation is also a bit higher closer to the Sun. To check environment before sending astronauts, you can use magnetometers and Geiger counters provided by supported mods or embedded in advanced stock probe cores.
 
@@ -90,7 +90,7 @@ It is possible to cure radiation by decontaminating a kerbal, but it is hard. To
 
 ## Quirks
 
-Whenever a kerbal levels up, there is a 25% chance that he or she will acquire a health quirk (unless he/she already has two). Discovering an anomaly can also grant a free quirk. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
+Whenever a kerbal levels up, there is a chance that he or she will acquire a health quirk. Discovering an anomaly can also grant a free quirk. These can be positive or negative and usually affect kerbals' vulnerability to various health factors and dangers. Chances of getting some quirks depend on courage and stupidity of a particular kerbal. The [full list](https://github.com/GarwelGarwel/KerbalHealth/wiki/Quirks) can be found in the Kerbal Health Wiki.
 
 ## Conditions and Random Events
 
