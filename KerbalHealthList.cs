@@ -79,16 +79,18 @@ namespace KerbalHealth
             List<ProtoCrewMember> list = new List<ProtoCrewMember>(kerbalRoster.Crew);
             list.AddRange(kerbalRoster.Tourist);
             Core.Log($"{list.Count} total trackable kerbals.", LogLevel.Important);
-            foreach (ProtoCrewMember pcm in list.Where(pcm => pcm.IsTrackable()))
-                Add(pcm);
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].IsTrackable())
+                    Add(list[i]);
             Core.Log($"KerbalHealthList updated: {Count} kerbals found.", LogLevel.Important);
         }
 
         public void Update(float interval)
         {
             RemoveUntrackable();
-            foreach (KerbalHealthStatus khs in Values)
-                khs.Update(interval);
+            List<KerbalHealthStatus> list = List;
+            for (int i = 0; i < Count; i++)
+                list[i].Update(interval);
         }
 
         /// <summary>
@@ -104,13 +106,12 @@ namespace KerbalHealth
 
         void RemoveUntrackable()
         {
-            List<string> toRemove = new List<string>(Values
-                .Where(khs => !khs.ProtoCrewMember.IsTrackable() && !khs.IsFrozen)
-                .Select(khs => khs.Name));
-            foreach (string name in toRemove)
+            List<KerbalHealthStatus> list = List;
+            for (int i = Count - 1; i >= 0; i--)
             {
-                Core.Log($"{name} is not trackable anymore. Marking for removal.");
-                Remove(name);
+                KerbalHealthStatus khs = list[i];
+                if (!khs.ProtoCrewMember.IsTrackable() && !khs.IsFrozen)
+                    Remove(khs.Name);
             }
         }
     }

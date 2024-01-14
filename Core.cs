@@ -3,6 +3,7 @@ using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 
 namespace KerbalHealth
@@ -39,7 +40,8 @@ namespace KerbalHealth
         /// </summary>
         public static Dictionary<string, HealthCondition> HealthConditions;
 
-        static readonly string[] prefixes = { "", "K", "M", "G", "T" };
+        //static readonly string[] prefixes = { "", "K", "M", "G", "T" };
+        static readonly string prefixes = "KMGT";
 
         static Dictionary<string, Vessel> kerbalVesselsCache = new Dictionary<string, Vessel>();
 
@@ -98,7 +100,7 @@ namespace KerbalHealth
             else Log($"Can't find ResourceDefinition for {name}.");
         }
 
-        public static Quirk GetQuirk(string name) => Quirks.Find(q => name.Equals(q.Name, StringComparison.OrdinalIgnoreCase));
+        public static Quirk GetQuirk(string name) => Quirks.Find(q => name == q.Name);
 
         public static PlanetHealthConfig GetPlanetConfig(string name)
         {
@@ -178,6 +180,8 @@ namespace KerbalHealth
 
         #endregion
 
+        #region VESSEL UTILITIES
+
         public static string GetPartTitle(string partName) =>
             partName.StartsWith("kerbalEVA") ? Localizer.Format("#KH_SpacesuitPart", partName) : (PartLoader.getPartInfoByName(partName)?.title ?? partName);
 
@@ -202,7 +206,7 @@ namespace KerbalHealth
         /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
         /// </summary>
-        public static void ClearCache() => kerbalVesselsCache.Clear();
+        public static void ClearVesselsCache() => kerbalVesselsCache.Clear();
 
         /// <summary>
         /// Returns <see cref="Vessel"/> the kerbal is in or null if the kerbal is not assigned
@@ -229,6 +233,10 @@ namespace KerbalHealth
             else Log($"{pcm.name} is {pcm.rosterStatus} and was not found in any of the {FlightGlobals.Vessels.Count} vessels!", LogLevel.Important);
             return vessel;
         }
+
+        #endregion
+
+        #region CELESTIAL BODY UTILITIES
 
         public static bool IsPlanet(this CelestialBody body) => body?.orbit?.referenceBody == Sun.Instance.sun;
 
@@ -258,6 +266,8 @@ namespace KerbalHealth
             return vessel.altitude < body.scienceValues.InSpaceHighDataValue ? body.scienceValues.InSpaceLowDataValue : body.scienceValues.InSpaceHighDataValue;
         }
 
+        #endregion
+
         #region TRAINING
 
         static List<float> trainingCaps;
@@ -272,16 +282,19 @@ namespace KerbalHealth
         /// <summary>
         /// Returns a list of unique part modules that are used in training & stress calculations
         /// </summary>
-        public static List<ModuleKerbalHealth> GetTrainableModules(this IEnumerable<Part> allParts)
+        public static List<ModuleKerbalHealth> GetTrainableModules(this IList<Part> allParts)
         {
             List<ModuleKerbalHealth> res = new List<ModuleKerbalHealth>();
-            foreach (Part part in allParts)
-                foreach (ModuleKerbalHealth mkh in part.FindModulesImplementing<ModuleKerbalHealth>().Where(mkh => mkh.complexity != 0))
-                {
-                    //if (!res.Any(mkh2 => mkh2.PartName == mkh.PartName))
-                    res.Add(mkh);
-                    break;
-                }
+            for (int i = 0; i < allParts.Count; i++)
+            {
+                List<ModuleKerbalHealth> modules = allParts[i].FindModulesImplementing<ModuleKerbalHealth>();
+                for (int j = 0; j < modules.Count; j++)
+                    if (modules[j].complexity != 0)
+                    {
+                        res.Add(modules[j]);
+                        break;
+                    }
+            }
             return res;
         }
 
@@ -346,22 +359,24 @@ namespace KerbalHealth
         /// </summary>
         /// <param name="value">Value to present as a string</param>
         /// <param name="format">String format according to Double.ToString</param>
-        public static string SignValue(double value, string format) => (value > 0 ? "+" : "") + value.ToString(format);
+        public static string SignValue(this double value, string format) => (value > 0 ? "+" : "") + value.ToString(format);
 
         /// <summary>
         /// Converts a number into a string with a multiplicative character (K, M, G or T), if applicable
         /// </summary>
         /// <param name="value">The value to convert</param>
         /// <param name="digits">Number of digits to allow before the prefix (must be 3 or more)</param>
-        public static string PrefixFormat(double value, int digits = 3, bool mandatorySign = false)
+        public static string PrefixFormat(this double value, int digits = 3, bool mandatorySign = false)
         {
             double v = Math.Abs(value);
             if (v < 0.5)
                 return "0";
+            if (v < 1000)
+                return mandatorySign ? value.SignValue($"g{digits}") : value.ToString($"g{digits}");
             int n, m = (int)Math.Pow(10, digits);
-            for (n = 0; v >= m && n < prefixes.Length - 1; n++)
+            for (n = -1; v >= m && n < prefixes.Length; n++)
                 v /= 1000;
-            return (value < 0 ? "-" : (mandatorySign && value > 0 ? "+" : "")) + v.ToString("N" + (digits - Math.Truncate(Math.Log10(v)) - 1)) + prefixes[n];
+            return (value < 0 ? "-" : (mandatorySign && value > 0 ? "+" : "")) + v.ToString($"g{digits}") + prefixes[n];
         }
 
         /// <summary>
@@ -375,51 +390,56 @@ namespace KerbalHealth
         /// <param name="time">Time in seconds</param>
         /// <param name="showSeconds">If false, seconds will be displayed only if time is less than 1 minute; otherwise always</param>
         /// <param name="daysTimeLimit">If time is longer than this number of days, time value will be skipped; -1 to alwys show time</param>
-        public static string ParseUT(double time, bool showSeconds = true, int daysTimeLimit = -1)
+        public static string TimeToString(double time, bool showSeconds = true, int daysTimeLimit = -1)
         {
-            if (double.IsNaN(time) || time == 0)
+            if (time <= 0 || double.IsNaN(time))
                 return "—";
             if (time > KSPUtil.dateTimeFormatter.Year * 10)
-                return "10y+";
+                return ">10 y";
             double t = time;
             int y, d, m, h;
-            string res = "";
             bool show0 = false;
+            StringBuilder res;
+
             if (t >= KSPUtil.dateTimeFormatter.Year)
             {
-                y = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Year);
+                y = GetYear(t);
                 t -= y * KSPUtil.dateTimeFormatter.Year;
-                res = $"{y} y";
+                res = new StringBuilder($"{y} y ");
                 show0 = true;
             }
+            else res = new StringBuilder();
+            
             if (t >= KSPUtil.dateTimeFormatter.Day || (show0 && t >= 1))
             {
                 d = (int)Math.Floor(t / KSPUtil.dateTimeFormatter.Day);
                 t -= d * KSPUtil.dateTimeFormatter.Day;
-                res = $"{res} {d} d";
+                res.Append($"{d} d ");
                 show0 = true;
             }
+            
             if (daysTimeLimit == -1 || time < KSPUtil.dateTimeFormatter.Day * daysTimeLimit)
             {
                 if (t >= 3600 || show0)
                 {
                     h = (int)Math.Floor(t / 3600);
                     t -= h * 3600;
-                    res = $"{res} {h} h";
+                    res.Append($"{h} h ");
                     show0 = true;
                 }
                 if (t >= 60 || show0)
                 {
                     m = (int)Math.Floor(t / 60);
                     t -= m * 60;
-                    res = $"{res} {m} m";
+                    res.Append($"{m} m ");
                 }
-                if (time < 60 || (showSeconds && Math.Floor(t) > 0))
-                    res = $"{res} {t:F0} s";
+                if (time < 60 || (showSeconds && t >= 1))
+                    return res.Append($"{t:F0} s").ToStringAndRelease();
             }
             else if (time < KSPUtil.dateTimeFormatter.Day)
-                res = "0 d";
-            return res.Trim();
+                return "0 d";
+            
+            return res.ToStringAndRelease().TrimEnd();
         }
 
         #endregion
@@ -502,7 +522,7 @@ namespace KerbalHealth
             ConfigLoaded = true;
         }
 
-        #region LOG
+        #region LOGGING
 
         /// <summary>
         /// Current <see cref="LogLevel"/>: either Debug or Important

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace KerbalHealth
 {
@@ -9,6 +10,7 @@ namespace KerbalHealth
     public class Quirk
     {
         string title;
+        string description;
 
         public string Name { get; set; }
 
@@ -18,7 +20,22 @@ namespace KerbalHealth
             set => title = value;
         }
 
-        public string Description { get; set; }
+        public string Description
+        {
+            get
+            {
+                if (description == null || description.Length == 0)
+                {
+                    StringBuilder desc = new StringBuilder();
+                    for (int i = 0; i < Effects.Count; i++)
+                        desc.AppendLine(Effects[i].ToString());
+                    description = desc.ToString();
+                    Core.Log($"Quirk {Name} ({Effects.Count} effects):\r\n{description}");
+                }
+                return description;
+            }
+            set => description = value;
+        }
 
         public bool IsVisible { get; set; } = true;
 
@@ -46,11 +63,7 @@ namespace KerbalHealth
             Core.Log($"Quirk loaded: {this}");
         }
 
-        public Quirk(string name)
-        {
-            Name = name;
-            IsVisible = false;
-        }
+        public Quirk(string name) => Name = name;
 
         /// <summary>
         /// Returns true if this quirk can be assigned to the given kerbal at a certain experience level
@@ -67,20 +80,6 @@ namespace KerbalHealth
 
         public override int GetHashCode() => Name.GetHashCode();
 
-        public override string ToString()
-        {
-            string res = $"{Title}.";
-            if (!string.IsNullOrEmpty(Description))
-                res += $"\n{Description}";
-            if (Effects.Count == 1)
-                res += $"\nEffect: {Effects[0]}";
-            if (Effects.Count > 1)
-            {
-                res += "\nEffects:";
-                foreach (ConditionalEffect he in Effects)
-                    res += $"\n{he}";
-            }
-            return res;
-        }
+        public override string ToString() => $"{Title}\n{Description}";
     }
 }

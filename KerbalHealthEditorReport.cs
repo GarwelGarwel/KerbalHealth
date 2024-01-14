@@ -34,9 +34,9 @@ namespace KerbalHealth
                 return;
             Log("KerbalHealthEditorReport.Start", LogLevel.Important);
 
-            GameEvents.onEditorShipModified.Add(_ => Invalidate());
+            GameEvents.onEditorShipModified.Add(OnEditorShipModified);
             GameEvents.onEditorPodDeleted.Add(Invalidate);
-            GameEvents.onEditorScreenChange.Add(_ => Invalidate());
+            GameEvents.onEditorScreenChange.Add(OnEditorScreenChange);
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
             {
@@ -62,14 +62,22 @@ namespace KerbalHealth
 
         public void OnDisable()
         {
+            if (!KerbalHealthGeneralSettings.Instance.modEnabled)
+                return;
             Log("KerbalHealthEditorReport.OnDisable", LogLevel.Important);
             HideWindow();
-            if (toolbarButton != null)
-                toolbarButton.Destroy();
-            if (appLauncherButton != null && ApplicationLauncher.Instance != null)
-                ApplicationLauncher.Instance.RemoveModApplication(appLauncherButton);
+            toolbarButton?.Destroy();
+            if (appLauncherButton != null)
+                ApplicationLauncher.Instance?.RemoveModApplication(appLauncherButton);
+            GameEvents.onEditorShipModified.Remove(OnEditorShipModified);
+            GameEvents.onEditorPodDeleted.Remove(Invalidate);
+            GameEvents.onEditorScreenChange.Remove(OnEditorScreenChange);
             Log("KerbalHealthEditorReport.OnDisable finished.");
         }
+
+        void OnEditorShipModified(ShipConstruct parts) => Invalidate();
+
+        void OnEditorScreenChange(EditorScreen editorScreen) => Invalidate();
 
         #endregion LIFE CYCLE
 
@@ -292,7 +300,7 @@ namespace KerbalHealth
 
                         case 3:
                         case 4:
-                            gridContent.Add(new DialogGUILabel($"<b><color=white>{ParseUT(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
+                            gridContent.Add(new DialogGUILabel($"<b><color=white>{TimeToString(kerbal.TrainingETAFor(trainableParts), false, 10)}</color></b>", true));
                             break;
                     }
 
@@ -426,7 +434,7 @@ namespace KerbalHealth
                 gridContent[(i + 1) * reportsColumnCount + 1].SetOptionText($"{color}{s}</color>");
                 s = balanceHP > khs.CriticalHP
                     ? "—"
-                    : (khs.Recuperation > khs.Decay ? "> " : "") + ParseUT(khs.ETAToNextCondition, false, 100);
+                    : (khs.Recuperation > khs.Decay ? "> " : "") + TimeToString(khs.ETAToNextCondition, false, 100);
                 gridContent[(i + 1) * reportsColumnCount + 2].SetOptionText($"{color}{s}</color>");
                 i++;
             }

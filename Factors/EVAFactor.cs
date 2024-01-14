@@ -4,7 +4,7 @@ namespace KerbalHealth
 {
     class EVAFactor : HealthFactor
     {
-        public const float BaseChangePerDay_Default = -8;
+        public const float BaseChangePerDay_Default = -18;
 
         public override string Name => "EVA";
 

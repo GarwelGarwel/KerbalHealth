@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace KerbalHealth
 {
@@ -7,7 +8,7 @@ namespace KerbalHealth
     {
         public FactorMultiplier this[HealthFactor factor]
         {
-            get => Find(fm => fm.Factor == factor) ?? new FactorMultiplier(factor);
+            get => Find(factor) ?? new FactorMultiplier(factor);
 
             set
             {
@@ -23,14 +24,14 @@ namespace KerbalHealth
                         this[i] = value;
                         return;
                     }
-                Add(value);
+                base.Add(value);
             }
         }
 
         public FactorMultiplierList()
         {
-            foreach (HealthFactor f in Core.Factors)
-                base.Add(new FactorMultiplier(f));
+            for (int i = 0; i < Core.Factors.Count; i++)
+                base.Add(new FactorMultiplier(Core.Factors[i]));
             base.Add(new FactorMultiplier());
         }
 
@@ -38,11 +39,15 @@ namespace KerbalHealth
             : base(list)
         { }
 
-        public new FactorMultiplier Add(FactorMultiplier factorMultiplier)
+        public new void Add(FactorMultiplier factorMultiplier)
         {
-            if (Find(factorMultiplier.Factor) == null)
-                base.Add(factorMultiplier);
-            return factorMultiplier;
+            for (int i = 0; i < Count; i++)
+                if (this[i].Factor == factorMultiplier.Factor)
+                {
+                    this[i].CombineWith(factorMultiplier);
+                    return;
+                }
+            base.Add(factorMultiplier);
         }
 
         public FactorMultiplier Find(HealthFactor factor) => Find(fm => fm.Factor == factor);
@@ -60,9 +65,18 @@ namespace KerbalHealth
 
         public FactorMultiplierList CombineWith(FactorMultiplierList list)
         {
-            foreach (FactorMultiplier fm in list)
-                this[fm.Factor].CombineWith(fm);
+            for (int i = 0; i < list.Count; i++)
+                this[list[i].Factor]?.CombineWith(list[i]);
             return this;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder res = new StringBuilder();
+            for (int i = 0; i < Count; i++)
+                if (!this[i].IsTrivial)
+                    res.AppendLine(this[i].ToString());
+            return res.ToStringAndRelease();
         }
     }
 }
