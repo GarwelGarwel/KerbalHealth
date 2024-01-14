@@ -592,7 +592,7 @@ namespace KerbalHealth
             }
 
             double r = Rand.NextDouble() * weightSum;
-            Log($"Quirk selection roll: {r} out of {weightSum}.");
+            Log($"Quirk selection roll: {r} out of {weightSum}. Total available quirks: {availableQuirks.Count}.");
             for (int i = 0; i < availableQuirks.Count; i++)
             {
                 r -= weights[i];
@@ -624,10 +624,13 @@ namespace KerbalHealth
         {
             if (KerbalHealthQuirkSettings.Instance.AwardQuirksOnMissions || (ProtoCrewMember.rosterStatus == ProtoCrewMember.RosterStatus.Available))
             {
-                for (int l = QuirkLevel + 1; l <= ProtoCrewMember.experienceLevel; l++)
+                for (int l = QuirkLevel; l <= ProtoCrewMember.experienceLevel; l++)
                 {
                     if (Quirks.Count >= KerbalHealthQuirkSettings.Instance.MaxQuirks)
+                    {
+                        Log($"{Name} at level {l} is eligible for a quirk roll, but already has {Quirks.Count} quirks.");
                         break;
+                    }
                     if (Rand.NextDouble() < KerbalHealthQuirkSettings.Instance.QuirkChance)
                     {
                         Log($"A quirk will be added to {Name} (level {l}).");
@@ -635,7 +638,7 @@ namespace KerbalHealth
                     }
                     else Log($"No quirks will be added to {Name} (level {l}).");
                 }
-                QuirkLevel = ProtoCrewMember.experienceLevel;
+                QuirkLevel = ProtoCrewMember.experienceLevel + 1;
             }
         }
 
