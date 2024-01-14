@@ -553,6 +553,8 @@ namespace KerbalHealth
         /// </summary>
         public int QuirkLevel { get; set; } = 0;
 
+        public bool HasQuirk(string quirk) => Quirks.Any(q => q.Name == quirk);
+
         /// <summary>
         /// Adds the quirk unless it is already present
         /// </summary>

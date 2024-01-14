@@ -1113,7 +1113,6 @@ namespace KerbalHealth
                     msg.AppendLine();
                     msg.AppendLine($"<b><color=white>{q.Title}</color></b>");
                     msg.AppendLine(q.Description);
-                    msg.AppendLine();
                 }
             PopupDialog.SpawnPopupDialog(
                 new MultiOptionDialog(

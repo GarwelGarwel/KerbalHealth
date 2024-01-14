@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace KerbalHealth
 {
@@ -28,6 +29,7 @@ namespace KerbalHealth
         public string GenderPresent { get; set; } = null;
         public string TraitPresent { get; set; } = null;
         public string ConditionPresent { get; set; } = null;
+        public string Quirk { get; set; } = null;
 
         public List<Logic> Operands { get; set; } = new List<Logic>();
 
@@ -62,6 +64,7 @@ namespace KerbalHealth
             GenderPresent = node.GetString("genderPresent");
             TraitPresent = node.GetString("traitPresent");
             ConditionPresent = node.GetString("conditionPresent");
+            Quirk = node.GetString("quirk");
             Operands = new List<Logic>(node.GetNodes(ConfigNodeName).Select(n => new Logic(n)));
         }
 
@@ -181,6 +184,9 @@ namespace KerbalHealth
             if (ConditionPresent != null)
                 Op(ref res, v != null && Core.GetCrew(pcm, false).Any(crewmate => Core.KerbalHealthList[crewmate].HasCondition(ConditionPresent) && crewmate != pcm));
 
+            if (Quirk != null)
+                Op(ref res, Core.KerbalHealthList[pcm].HasQuirk(Quirk));
+
             foreach (Logic l in Operands)
                 Op(ref res, l.Test(pcm));
 
@@ -189,7 +195,7 @@ namespace KerbalHealth
 
         public string Description(int level)
         {
-            string res = "";
+            StringBuilder res = new StringBuilder();
             string indent1 = "";
             for (int i = 0; i < level; i++)
                 indent1 += Padding;
@@ -198,27 +204,31 @@ namespace KerbalHealth
                 indent1 += " ";
 
             if (Situation != null)
-                res += $"\n{indent2}Is {Situation}";
+                res.AppendLine($"{indent2}Is {Situation}");
             if (InSOI != null)
-                res += $"\n{indent2}Kerbal is in the SOI of {InSOI}";
+                res.AppendLine($"{indent2}Kerbal is in the SOI of {InSOI}");
             if (KerbalStatus != null)
-                res += $"\n{indent2}Kerbal is {KerbalStatus}";
+                res.AppendLine($"{indent2}Kerbal is {KerbalStatus}");
             if (!double.IsNaN(MissionTime))
-                res += $"\n{indent2}Mission lasts at least {Core.TimeToString(MissionTime, false, 100)}";
+                res.AppendLine($"{indent2}Mission lasts at least {Core.TimeToString(MissionTime, false, 100)}");
             if (Gender != null)
-                res += $"\n{indent2}Kerbal is {Gender}";
+                res.AppendLine($"{indent2}Kerbal is {Gender}");
             if (GenderPresent != null)
-                res += $"\n{indent2}{GenderPresent} gender kerbal(s) present in the vessel";
+                res.AppendLine($"{indent2}{GenderPresent} gender kerbal(s) present in the vessel");
             if (TraitPresent != null)
-                res += $"\n{indent2}{TraitPresent} kerbal(s) present in the vessel";
+                res.AppendLine($"{indent2}{TraitPresent} kerbal(s) present in the vessel");
             if (ConditionPresent != null)
-                res += $"\n{indent2}Kerbal(s) with {ConditionPresent} present in the vessel";
+                res.AppendLine($"{indent2}Kerbal(s) with {ConditionPresent} present in the vessel");
+            if (Quirk != null)
+                res.AppendLine($"{indent2}Kerbal has {Core.GetQuirk(Quirk)?.Title ?? "UNKNOWN"} quirk");
+                
             foreach (Logic l in Operands)
-                res += $"\n{l.Description(level + 1)}";
-            if (res.Count(c => c == '\n') > 1)
-                res = $"{indent1}{(Operator == OperatorType.And ? (Inverse ? "One" : "All") : (Inverse ? "None" : "One"))} of the following conditions is {((Operator == OperatorType.And) && Inverse ? "false" : "true")}:{res}";
-            else res = (res.Length != 0) && Inverse ? $"{indent1}This is FALSE:{res}" : res.Trim('\n');
-            return res;
+                res.AppendLine(l.Description(level + 1));
+            if (res.ToString().Count(c => c == '\n') > 1)
+                res.Insert(0, $"{indent1}{(Operator == OperatorType.And ? (Inverse ? "One" : "All") : (Inverse ? "None" : "One"))} of the following conditions is {((Operator == OperatorType.And) && Inverse ? "false" : "true")}\n");
+            else if (Inverse && res.Length != 0)
+                res.Insert(0, $"{indent1}This is FALSE:\n");
+            return res.ToStringAndRelease();
         }
 
         public override string ToString() => Description(0);

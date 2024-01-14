@@ -13,6 +13,8 @@ namespace KerbalHealth
     {
         public const string ConfigNodeName = "HEALTH_EFFECTS";
 
+        public string Description { get; set; }
+
         public double HPChange { get; set; }
 
         public double MaxHP { get; set; } = 1;
@@ -79,6 +81,7 @@ namespace KerbalHealth
         {
             if (node == null)
                 return;
+            Description = node.GetString("description");
             HPChange = node.GetDouble("hpChange");
             MaxHP = node.GetDouble("maxHP", 1);
             MaxHPBonus = node.GetDouble("maxHPBonus");
@@ -189,6 +192,10 @@ namespace KerbalHealth
         {
             if (effect == null)
                 return this;
+            if (effect.Description != null && effect.Description.Length > 0)
+                if (Description != null && Description.Length > 0)
+                    Description = $"{Description}\n{effect.Description}";
+                else Description = effect.Description;
             HPChange += effect.HPChange;
             MaxHP *= effect.MaxHP;
             MaxHPBonus += effect.MaxHPBonus;
@@ -310,6 +317,8 @@ namespace KerbalHealth
         public override string ToString()
         {
             StringBuilder res = new StringBuilder();
+            if (Description != null) 
+                res.AppendLine(Localizer.Format(Description));
             if (HPChange != 0)
                 res.AppendLine(Localizer.Format("#KH_Effect_HPChange", HPChange.ToString("F2")));
             if (MaxHP != 1)

@@ -52,8 +52,8 @@ namespace KerbalHealth
         public static double Calculate(List<MTBEModifier> modifiers, double baseValue, ProtoCrewMember pcm)
         {
             double v = baseValue;
-            foreach (MTBEModifier m in modifiers)
-                v = m.Calculate(v, pcm);
+            for (int i = 0; i < modifiers.Count; i++)
+                v = modifiers[i].Calculate(v, pcm);
             return v;
         }
 
@@ -93,6 +93,9 @@ namespace KerbalHealth
                     break;
             }
 
+            if (v != baseValue)
+                Core.Log($"MTBE for {pcm.name} changed from {baseValue:F0} to {v:F0}.");
+
             return v;
         }
 
@@ -113,7 +116,7 @@ namespace KerbalHealth
                     res = "Base MTBE's power of ";
                     break;
             }
-            res += $"{Value}\r\nLogic: {Logic}";
+            res += $"{Value}\nLogic: {Logic}";
             return res;
         }
     }
