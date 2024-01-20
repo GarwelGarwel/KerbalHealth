@@ -127,7 +127,12 @@ namespace KerbalHealth
             SetupKerbalism();
 
             if (CLS.Enabled)
-                Log("ConnectedLivingSpace detected.");
+                Log("ConnectedLivingSpace detected.", LogLevel.Important);
+            else Log("ConnectedLivingSpace not found.");
+
+            if (RemoteTech.Installed)
+                Log("RemoteTech detected.", LogLevel.Important);
+            else Log("RemoteTech not found.");
 
             if (KerbalHealthGeneralSettings.Instance.ShowAppLauncherButton)
                 RegisterAppLauncherButton();
@@ -742,7 +747,7 @@ namespace KerbalHealth
         {
             if (!DFWrapper.InstanceExists)
             {
-                Log("Initializing DFWrapper...", LogLevel.Important);
+                Log("Initializing DFWrapper...");
                 DFWrapper.InitDFWrapper();
                 if (DFWrapper.InstanceExists)
                     Log("DFWrapper initialized.", LogLevel.Important);
@@ -767,7 +772,6 @@ namespace KerbalHealth
         {
             if (KerbalHealthGeneralSettings.Instance.modEnabled && KerbalHealthGeneralSettings.Instance.KerbalismIntegration && Kerbalism.Found && !Kerbalism.IsSetup)
             {
-                Log("Initializing Kerbalism integration...", LogLevel.Important);
                 Kerbalism.SetRuleProperty("radiation", "degeneration", KerbalHealthRadiationSettings.Instance.RadiationEnabled ? 0 : 1);
                 Kerbalism.SetRuleProperty("stress", "degeneration", 0);
                 Kerbalism.FeatureComfort = false;
@@ -777,6 +781,7 @@ namespace KerbalHealth
                 Log($"Kerbalism Comfort feature is {(Kerbalism.FeatureComfort ? "enabled" : "disabled")}.");
                 Log($"Kerbalism Living Space feature is {(Kerbalism.FeatureLivingSpace ? "enabled" : "disabled")}.");
                 Kerbalism.IsSetup = true;
+                Log("Kerbalism integration initialized.", LogLevel.Important);
             }
         }
 

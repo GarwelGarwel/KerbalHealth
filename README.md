@@ -24,7 +24,7 @@ The following factors may affect kerbal's health:
 - **Confinement**: -2 x *Crew* / *Living Space* HP/day (Living Space is provided by most crewed parts based on their size, capacity, function etc.)
 - **Microgravity** (orbital or suborbital flight or under 0.1 g, e.g. Minmus): -1 HP/day
 - **Loneliness** (only one kerbal in the vessel): -1 HP/day
-- **Isolation** (no working CommNet connection to home): -0.5 HP/day
+- **Isolation** (no working CommNet or RT connection to home): -0.5 HP/day
 - **EVA**: -18 HP/day
 - **Home** (in Kerbin's low atmosphere): +2 HP/day
 - **KSC** (kerbal is recuperating at KSC, i.e. available): +3 HP/day
@@ -138,6 +138,7 @@ Kerbal Health should work well alongside most other mods and will try to adapt t
 - [Outer Planets Mod](https://forum.kerbalspaceprogram.com/index.php?/topic/165854-ksp-142-outer-planets-mod221-15-april-2018/)
 - [Probes Before Crew](https://forum.kerbalspaceprogram.com/index.php?/topic/181013-ksp-181-probes-before-crew-pbc-version-28/)
 - [Rational Resources & Rational Resources Parts](https://forum.kerbalspaceprogram.com/index.php?/topic/184875-*/)
+- [RemoteTech](https://remotetechnologiesgroup.github.io/RemoteTech/)
 - [ReStock+](https://forum.kerbalspaceprogram.com/index.php?/topic/182679-161-restock-revamping-ksps-art/)
 - [RLA Reborn](https://forum.kerbalspaceprogram.com/index.php?/topic/175512-14-rla-reborn/)
 - [RSCapsuledyne](https://forum.kerbalspaceprogram.com/index.php?/topic/164829-18x-spacetux-industries-recycled-parts/)
@@ -163,7 +164,6 @@ If you would like to include special support for your (or your favorite) mod, le
 - Any mod, which can temporarily make kerbals Tourists, can conflict with Kerbal Health if both mods change kerbals' status and then turn it back. In some situations it may mean that your kerbals will remain Tourists indefinitely or become active too soon. Kerbal Health tries to fix some of these situations, but cannot prevent all of them.
 - Custom solar systems with multiple stars can work in strange ways with radiation mechanics. Disable radiation in the settings if you have problems.
 - It is recommended to disable habitation mechanics of USI-LS (and other similar mods) as these largely have the same goal as Kerbal Health.
-- RemoteTech's connection state is not supported for the purpose of the Connected Factor status. You may simply disable or reduce Connected factor.
 
 ## Copyright and License
 

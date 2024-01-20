@@ -115,6 +115,7 @@
     <Compile Include="Settings\KerbalHealthGeneralSettings.cs" />
     <Compile Include="Factors\ConditionsFactor.cs" />
     <Compile Include="Wrappers\Kerbalism.cs" />
+    <Compile Include="Wrappers\RemoteTech.cs" />
     <Compile Include="Wrappers\ToolbarWrapper.cs" />
     <Compile Include="Quirk.cs" />
     <Compile Include="HealthEffect.cs" />
