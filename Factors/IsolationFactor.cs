@@ -19,7 +19,7 @@ namespace KerbalHealth
             if (Core.IsInEditor)
                 return IsEnabledInEditor() ? BaseChangePerDay : 0;
             Vessel v = khs.ProtoCrewMember.GetVessel();
-            return (v.loaded && v.Connection != null && v.Connection.IsConnectedHome) ? 0 : BaseChangePerDay;
+            return v != null && v.IsConnectedHome() ? 0 : BaseChangePerDay;
         }
     }
 }

@@ -204,6 +204,12 @@ namespace KerbalHealth
             || pcm.rosterStatus == Status_Frozen);
 
         /// <summary>
+        /// Returns true if the vessel has a KSC connection either with CommNet or RemoteTech
+        /// </summary>
+        public static bool IsConnectedHome(this Vessel v) =>
+            (v.Connection != null && v.Connection.IsConnectedHome) || (RemoteTech.Installed && v.IsConnectedWithRemoteTech());
+
+        /// <summary>
         /// Clears kerbal vessels cache, to be called on every list update or when necessary
         /// </summary>
         public static void ClearVesselsCache() => kerbalVesselsCache.Clear();
