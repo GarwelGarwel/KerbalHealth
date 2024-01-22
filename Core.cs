@@ -377,10 +377,10 @@ namespace KerbalHealth
             double v = Math.Abs(value);
             if (v < 0.5)
                 return "0";
-            if (v < 1000)
-                return mandatorySign ? value.SignValue($"g{digits}") : value.ToString($"g{digits}");
             int n, m = (int)Math.Pow(10, digits);
-            for (n = -1; v >= m && n < prefixes.Length; n++)
+            if (v < m)
+                return mandatorySign ? value.SignValue($"g{digits}") : value.ToString($"g{digits}");
+            for (n = -1; v >= m && n < 3; n++)
                 v /= 1000;
             return (value < 0 ? "-" : (mandatorySign && value > 0 ? "+" : "")) + v.ToString($"g{digits}") + prefixes[n];
         }
