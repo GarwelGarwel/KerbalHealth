@@ -1,4 +1,5 @@
-﻿using KSP.Localization;
+﻿using ConnectedLivingSpace;
+using KSP.Localization;
 using KSP.UI.Screens;
 using System;
 using System.Collections.Generic;
@@ -161,7 +162,11 @@ namespace KerbalHealth
         {
             Vessel vessel = pcm.GetVessel();
             if (!entireVessel && CLS.Enabled)
-                return pcm.GetCLSSpace(vessel).GetCrewCount();
+            {
+                ICLSSpace clsSpace = pcm.GetCLSSpace(vessel);
+                if (clsSpace != null)
+                    return clsSpace.GetCrewCount();
+            }
             if (IsInEditor)
                 return ShipConstruction.ShipManifest.CrewCount;
             return vessel != null ? vessel.GetCrewCount() : 1;

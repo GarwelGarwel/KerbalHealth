@@ -39,11 +39,18 @@ namespace KerbalHealth
                 return CLSAddon.Vessel?.Spaces?.Find(space => space.Parts.Any(part => part.Part == p));
             }
             ICLSVessel clsVessel = vessel == null ? CLSAddon.Vessel : CLSAddon.getCLSVessel(vessel);
-            return clsVessel?.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal.name == pcm.name));
+            if (clsVessel == null)
+            {
+                Core.Log($"Could not find CLS Vessel for {vessel?.name ?? "null"} where {pcm.name} is located.", LogLevel.Important);
+                return null;
+            }
+            return clsVessel.Spaces.Find(space => space.Crew.Any(kerbal => kerbal.Kerbal.name == pcm.name));
         }
 
         public static IEnumerable<ProtoCrewMember> GetCrew(this ICLSSpace clsSpace) =>
-            Core.IsInEditor ? ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm.GetCLSSpace() == clsSpace) : clsSpace.Crew.Select(kerbal => kerbal.Kerbal);
+            Core.IsInEditor
+            ? ShipConstruction.ShipManifest.GetAllCrew(false).Where(pcm => pcm.GetCLSSpace() == clsSpace)
+            : (clsSpace?.Crew.Select(kerbal => kerbal.Kerbal) ?? new List<ProtoCrewMember>());
 
         public static int GetCrewCount(this ICLSSpace clsSpace) =>
             clsSpace == null
