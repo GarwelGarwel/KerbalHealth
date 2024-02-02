@@ -131,8 +131,9 @@ namespace KerbalHealth
 
         [GameParameters.CustomParameterUI("#KH_GS_ResetSettings", toolTip = "#KH_GS_ResetSettings_desc")]//Reset Mod Settings""Check and quit to game to revert all Kerbal Health settings to their default values
         public bool ResetSettings = false;
+       
         [GameParameters.CustomParameterUI("Enable Unwarp Time", toolTip = "#KH_GS_UnwarpTime_desc")]//Toggles time warp getting set to 0 on KH alerts
-         public bool UnwarpTimeEnabled = true;
+        public bool UnwarpTimeEnabled = true;
 
     }
 }
