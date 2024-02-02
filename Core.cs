@@ -457,8 +457,12 @@ namespace KerbalHealth
                 $"{KSPUtil.PrintDateCompact(Planetarium.GetUniversalTime(), true)}: {msg}",
                 MessageSystemButton.MessageButtonColor.RED,
                 MessageSystemButton.ButtonIcons.ALERT));
-            if (unwarpTime)
+                // Check the configuration option before setting the time warp rate to 0
+            bool shouldUnwarp = HighLogic.CurrentGame.Parameters.CustomParams<KerbalHealthGeneralSettings>().UnwarpTimeEnabled;
+            if (unwarpTime && shouldUnwarp)
+            {
                 TimeWarp.SetRate(0, false, true);
+            }
         }
 
         public static void ShowMessage(string msg, ProtoCrewMember pcm)
