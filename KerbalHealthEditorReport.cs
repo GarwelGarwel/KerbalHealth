@@ -16,7 +16,16 @@ namespace KerbalHealth
     {
         Dictionary<string, bool> kerbalsToTrain = new Dictionary<string, bool>();
 
-        int CLSSpacesCount => CLS.Enabled ? CLS.CLSAddon.Vessel.Spaces.Count : 0;
+        int CLSSpacesCount
+        {
+            get
+            {
+                if (!CLS.Enabled)
+                    return 0;
+                List<ICLSSpace> spaces = CLS.CLSAddon?.Vessel?.Spaces;
+                return spaces != null ? spaces.Count : 0;
+            }
+        }
 
         public static bool HealthModulesEnabled { get; private set; } = true;
 
