@@ -354,7 +354,9 @@ namespace KerbalHealth
         public HealthEffect Clone()
         {
             HealthEffect hms = (HealthEffect)MemberwiseClone();
-            hms.FactorMultipliers = new FactorMultiplierList(FactorMultipliers);
+            hms.FactorMultipliers = new FactorMultiplierList();
+            foreach (var fm in FactorMultipliers)
+                hms.FactorMultipliers.Add(fm.Clone());
             return hms;
         }
 

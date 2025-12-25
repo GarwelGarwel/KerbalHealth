@@ -78,5 +78,16 @@ namespace KerbalHealth
                     res.AppendLine(this[i].ToString());
             return res.ToStringAndRelease();
         }
+
+        public FactorMultiplierList Clone()
+        {
+            FactorMultiplierList clone = new FactorMultiplierList();
+            clone.Clear(); // remove default entries from constructor
+
+            foreach (var fm in this)
+                clone.Add(fm.Clone()); // deep clone each FactorMultiplier
+
+            return clone;
+        }
     }
 }
