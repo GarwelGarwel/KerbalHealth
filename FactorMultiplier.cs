@@ -70,6 +70,17 @@ namespace KerbalHealth
             FreeMultiplier = node.GetDouble("multiplier", 1);
         }
 
+        public FactorMultiplier Clone()
+        {
+            return new FactorMultiplier(Factor)
+            {
+                BonusSum = this.BonusSum,
+                FreeMultiplier = this.FreeMultiplier,
+                MinMultiplier = this.MinMultiplier,
+                MaxMultiplier = this.MaxMultiplier
+            };
+        }
+
         public FactorMultiplier(HealthFactor factor = null) => Factor = factor;
 
         public FactorMultiplier(ConfigNode configNode) => Load(configNode);
