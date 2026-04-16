@@ -1086,7 +1086,24 @@ namespace KerbalHealth
                         ? Localizer.Format("#KH_Condition_KerbalDied_Conditions", ProtoCrewMember.nameWithGender, ConditionString)
                         : Localizer.Format("#KH_Condition_KerbalDied_NoConditions", ProtoCrewMember.nameWithGender),
                     true);
-                ProtoCrewMember.seat?.part.RemoveCrewmember(ProtoCrewMember);
+                if (ProtoCrewMember.seat != null)
+                {
+                    //Kill kerbal in spacecraft
+                    ProtoCrewMember.seat.part.RemoveCrewmember(ProtoCrewMember);
+                }
+                else
+                {
+                    // Kill kerbal on EVA
+                    Vessel evaVessel = ProtoCrewMember.GetVessel();
+                    if (evaVessel != null && evaVessel.isEVA)
+                    {
+                        Part evaPart = evaVessel.rootPart;
+                        if (evaPart != null)
+                        {
+                            evaPart.Die();
+                        }
+                    }
+                }
                 ProtoCrewMember.rosterStatus = ProtoCrewMember.RosterStatus.Dead;
                 Vessel.CrewWasModified(ProtoCrewMember.GetVessel());
                 return;
